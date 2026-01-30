@@ -1,0 +1,26 @@
+{
+  "tests": [
+    {
+      "name": "Test OPTIONS for CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Test notification without credentials",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "send",
+        "phone": "+79991234567",
+        "order_id": 1,
+        "work_description": "Тестовый заказ"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

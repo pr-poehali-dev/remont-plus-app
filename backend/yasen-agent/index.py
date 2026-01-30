@@ -171,13 +171,17 @@ def handle_create_order(event: dict) -> dict:
         cur.close()
         conn.close()
         
+        if contractor_phone:
+            send_order_notification(order_id, contractor_phone, work_description, price, deadline)
+        
         return {
             'statusCode': 200,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
             'body': json.dumps({
                 'success': True,
                 'order_id': order_id,
-                'created_at': created_at.isoformat()
+                'created_at': created_at.isoformat(),
+                'notification_sent': bool(contractor_phone)
             })
         }
     except Exception as e:
@@ -358,6 +362,27 @@ def get_yasen_prompt(user_role: str) -> str:
         return base_prompt + '\n\nСейчас ты общаешься с ИСПОЛНИТЕЛЕМ. Предоставь детали заказа и согласуй условия работы.'
     else:
         return base_prompt
+
+def send_order_notification(order_id: int, phone: str, work_description: str, price: float, deadline: str):
+    '''Отправка уведомления о наряде-заказе исполнителю'''
+    try:
+        notification_url = 'https://functions.poehali.dev/d6486f4d-19a8-4e90-b7c9-704773186863'
+        
+        requests.post(
+            notification_url,
+            json={
+                'action': 'send',
+                'type': 'both',
+                'phone': phone,
+                'order_id': order_id,
+                'work_description': work_description,
+                'price': price,
+                'deadline': deadline
+            },
+            timeout=5
+        )
+    except Exception as e:
+        print(f'Notification failed: {e}')
 
 def get_db_connection():
     '''Подключение к PostgreSQL'''

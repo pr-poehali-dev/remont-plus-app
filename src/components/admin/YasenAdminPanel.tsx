@@ -3,9 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 const YASEN_API_URL = 'https://functions.poehali.dev/f540d647-f4c0-4217-84af-9f25ac6a842d';
+const NOTIFICATIONS_API_URL = 'https://functions.poehali.dev/d6486f4d-19a8-4e90-b7c9-704773186863';
 
 interface WorkOrder {
   id: number;
@@ -32,6 +35,9 @@ export const YasenAdminPanel = () => {
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<WorkOrder | null>(null);
+  const [testPhone, setTestPhone] = useState('');
+  const [testTelegram, setTestTelegram] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
     loadOrders();
@@ -102,7 +108,7 @@ export const YasenAdminPanel = () => {
         </Card>
 
         <Tabs defaultValue="orders" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="orders" className="gap-2">
               <Icon name="ClipboardList" size={18} />
               Наряды-заказы
@@ -110,6 +116,10 @@ export const YasenAdminPanel = () => {
             <TabsTrigger value="recordings" className="gap-2">
               <Icon name="Mic" size={18} />
               Записи разговоров
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-2">
+              <Icon name="Bell" size={18} />
+              Уведомления
             </TabsTrigger>
           </TabsList>
 
@@ -266,6 +276,142 @@ export const YasenAdminPanel = () => {
                   ))}
                 </div>
               )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold">Настройка уведомлений</h2>
+
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Icon name="Send" size={24} className="text-primary" />
+                    Тестирование отправки
+                  </CardTitle>
+                  <CardDescription>
+                    Проверьте работу SMS и Telegram уведомлений
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Тест SMS</label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="+7 999 123-45-67"
+                          value={testPhone}
+                          onChange={(e) => setTestPhone(e.target.value)}
+                        />
+                        <Button
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(NOTIFICATIONS_API_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  action: 'test',
+                                  type: 'sms',
+                                  phone: testPhone
+                                })
+                              });
+                              const data = await response.json();
+                              toast({
+                                title: data.success ? 'SMS отправлено' : 'Ошибка',
+                                description: data.success ? 'Проверьте телефон' : data.result?.error || 'Не удалось отправить',
+                                variant: data.success ? 'default' : 'destructive'
+                              });
+                            } catch (error) {
+                              toast({
+                                title: 'Ошибка',
+                                description: 'Не удалось отправить SMS',
+                                variant: 'destructive'
+                              });
+                            }
+                          }}
+                        >
+                          <Icon name="Send" size={18} />
+                          Отправить
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Тест Telegram</label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Chat ID или @username"
+                          value={testTelegram}
+                          onChange={(e) => setTestTelegram(e.target.value)}
+                        />
+                        <Button
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(NOTIFICATIONS_API_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  action: 'test',
+                                  type: 'telegram',
+                                  telegram_id: testTelegram
+                                })
+                              });
+                              const data = await response.json();
+                              toast({
+                                title: data.success ? 'Сообщение отправлено' : 'Ошибка',
+                                description: data.success ? 'Проверьте Telegram' : data.result?.error || 'Не удалось отправить',
+                                variant: data.success ? 'default' : 'destructive'
+                              });
+                            } catch (error) {
+                              toast({
+                                title: 'Ошибка',
+                                description: 'Не удалось отправить в Telegram',
+                                variant: 'destructive'
+                              });
+                            }
+                          }}
+                        >
+                          <Icon name="Send" size={18} />
+                          Отправить
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-lg gradient-card">
+                <CardHeader>
+                  <CardTitle>Как настроить уведомления</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <Icon name="MessageSquare" size={18} />
+                      Telegram Bot
+                    </h4>
+                    <ol className="text-sm text-muted-foreground space-y-1 ml-6 list-decimal">
+                      <li>Найдите @BotFather в Telegram</li>
+                      <li>Создайте бота командой /newbot</li>
+                      <li>Скопируйте токен и добавьте в секреты проекта</li>
+                      <li>Узнайте Chat ID: отправьте боту /start и используйте @userinfobot</li>
+                    </ol>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <Icon name="Smartphone" size={18} />
+                      SMS уведомления
+                    </h4>
+                    <ol className="text-sm text-muted-foreground space-y-1 ml-6 list-decimal">
+                      <li>Зарегистрируйтесь на sms.ru или smsc.ru</li>
+                      <li>Получите API ключ в личном кабинете</li>
+                      <li>Пополните баланс для отправки SMS</li>
+                      <li>Добавьте ключ в секреты проекта</li>
+                    </ol>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
