@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import AdminPanel from "./pages/AdminPanel";
 import { ChatGPTPlaygroundPage } from "@/components/extensions/chatgpt-polza/ChatGPTPlaygroundPage";
 import { YasenAdminPanel } from "@/components/admin/YasenAdminPanel";
 import { VoiceChat } from "@/components/voice/VoiceChat";
@@ -24,6 +25,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/chatgpt" element={<ChatGPTPlaygroundPage apiUrl={CHATGPT_API_URL} defaultModel="openai/gpt-4o-mini" />} />
             <Route path="/admin" element={<YasenAdminPanel />} />
+            <Route path="/admin-panel" element={<AdminPanel />} />
             <Route path="/yasen" element={<VoiceChat />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

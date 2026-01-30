@@ -1,23 +1,116 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 export const ProfileSection = () => {
+  const [phone, setPhone] = useState('');
+  const [name, setName] = useState('');
+  const [isIdentified, setIsIdentified] = useState(false);
+  const { toast } = useToast();
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (!numbers) return '';
+    if (numbers.length <= 1) return `+${numbers}`;
+    if (numbers.length <= 4) return `+7 ${numbers.slice(1)}`;
+    if (numbers.length <= 7) return `+7 ${numbers.slice(1, 4)} ${numbers.slice(4)}`;
+    if (numbers.length <= 9) return `+7 ${numbers.slice(1, 4)} ${numbers.slice(4, 7)}-${numbers.slice(7)}`;
+    return `+7 ${numbers.slice(1, 4)} ${numbers.slice(4, 7)}-${numbers.slice(7, 9)}-${numbers.slice(9, 11)}`;
+  };
+
+  const handleIdentify = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (name && phone) {
+      setIsIdentified(true);
+      localStorage.setItem('profile_identified', 'true');
+      localStorage.setItem('profile_name', name);
+      localStorage.setItem('profile_phone', phone);
+      toast({
+        title: 'Идентификация пройдена!',
+        description: 'Ваш профиль успешно сохранён'
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
-      <Card className="shadow-lg border-0 overflow-hidden">
-        <div className="gradient-purple-pink p-6 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-2xl font-bold">
-              ИИ
+      {!isIdentified ? (
+        <Card className="shadow-lg border-0">
+          <CardHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Icon name="User" size={24} className="text-primary" />
+              </div>
+              <div>
+                <CardTitle>Идентификация пользователя</CardTitle>
+                <CardDescription>Заполните данные для доступа к кабинету</CardDescription>
+              </div>
             </div>
-            <div>
-              <h2 className="text-2xl font-bold">Иван Иванов</h2>
-              <p className="text-white/90 text-sm">+7 (999) 123-45-67</p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleIdentify} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Имя и фамилия</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Иван Иванов"
+                  required
+                  className="h-12"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Телефон</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  placeholder="+7 999 123-45-67"
+                  required
+                  className="h-12"
+                />
+              </div>
+
+              <div className="bg-primary/5 rounded-lg p-4 space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <Icon name="CheckCircle2" size={16} className="text-green-500" />
+                  <span>Данные сохраняются локально</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Icon name="Shield" size={16} className="text-blue-500" />
+                  <span>Безопасное хранение информации</span>
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full h-12">
+                <Icon name="CheckCircle2" size={20} className="mr-2" />
+                Подтвердить данные
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="shadow-lg border-0 overflow-hidden">
+          <div className="gradient-purple-pink p-6 text-white">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-2xl font-bold">
+                {name.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">{name}</h2>
+                <p className="text-white/90 text-sm">{phone}</p>
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
       <Card className="shadow-lg border-0">
         <CardHeader>
@@ -191,9 +284,9 @@ export const ProfileSection = () => {
         <Button 
           variant="outline" 
           className="w-full h-12 justify-start gap-3"
-          onClick={() => window.location.href = '/admin'}
+          onClick={() => window.location.href = '/admin-panel'}
         >
-          <Icon name="Settings" size={20} />
+          <Icon name="Shield" size={20} />
           Панель администратора
         </Button>
         <Button variant="outline" className="w-full h-12 justify-start gap-3">
