@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { HomeSection } from '@/components/sections/HomeSection';
@@ -6,9 +6,32 @@ import { DesignerSection } from '@/components/sections/DesignerSection';
 import { WorkersSection } from '@/components/sections/WorkersSection';
 import { ControlSection } from '@/components/sections/ControlSection';
 import { ProfileSection } from '@/components/sections/ProfileSection';
+import CustomerDashboard from '@/pages/CustomerDashboard';
+import ContractorDashboard from '@/pages/ContractorDashboard';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('home');
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+  };
+
+  if (user) {
+    if (user.user_type === 'customer') {
+      return <CustomerDashboard user={user} onLogout={handleLogout} />;
+    } else if (user.user_type === 'contractor') {
+      return <ContractorDashboard user={user} onLogout={handleLogout} />;
+    }
+  }
 
   const navigationItems = [
     { id: 'home', icon: 'Home', label: 'Главная' },

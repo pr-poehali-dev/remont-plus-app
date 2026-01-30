@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Send SMS code",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "send_code",
+        "phone": "+79991234567",
+        "user_type": "customer"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get non-existent user",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "get_user",
+        "phone": "+79999999999"
+      },
+      "expectedStatus": 404,
+      "expectedBody": {
+        "error": "User not found"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -7,7 +7,13 @@ import { RegistrationForm } from '@/components/auth/RegistrationForm';
 
 export const HomeSection = () => {
   const [showRegistration, setShowRegistration] = useState(false);
-  const [registrationType, setRegistrationType] = useState<'customer' | 'contractor'>('customer');
+  const [user, setUser] = useState<any>(null);
+
+  const handleLoginSuccess = (userData: any) => {
+    setUser(userData);
+    setShowRegistration(false);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -217,7 +223,10 @@ export const HomeSection = () => {
       </Card>
 
       {showRegistration && (
-        <RegistrationForm onClose={() => setShowRegistration(false)} />
+        <RegistrationForm 
+          onClose={() => setShowRegistration(false)} 
+          onSuccess={handleLoginSuccess}
+        />
       )}
     </div>
   );
