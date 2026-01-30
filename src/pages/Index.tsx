@@ -71,7 +71,7 @@ const Index = () => {
       <div className="gradient-purple-pink rounded-3xl p-8 text-white shadow-2xl">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Ремонт+</h1>
+            <h1 className="text-3xl font-bold mb-2">ЯСЕН</h1>
             <p className="text-white/90 text-sm">Ваш умный помощник в ремонте</p>
           </div>
           <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
