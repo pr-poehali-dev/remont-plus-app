@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 import { AddMeasurementForm } from '@/components/measurements/AddMeasurementForm';
+import { PhotoUpload } from '@/components/photos/PhotoUpload';
 
 const PROJECTS_API_URL = 'https://functions.poehali.dev/91a90ccd-9392-4390-8d40-9b2eb3908daa';
 
@@ -59,6 +60,7 @@ export const ProjectDetails = ({ projectId, onBack }: ProjectDetailsProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [showAddMeasurement, setShowAddMeasurement] = useState(false);
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Project>>({});
   const { toast } = useToast();
 
@@ -399,8 +401,8 @@ export const ProjectDetails = ({ projectId, onBack }: ProjectDetailsProps) => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Фотографии объекта</CardTitle>
-                  <Button>
-                    <Icon name="Upload" size={18} className="mr-2" />
+                  <Button onClick={() => setShowPhotoUpload(true)}>
+                    <Icon name="Camera" size={18} className="mr-2" />
                     Загрузить
                   </Button>
                 </div>
@@ -410,6 +412,10 @@ export const ProjectDetails = ({ projectId, onBack }: ProjectDetailsProps) => {
                   <div className="text-center py-8 text-muted-foreground">
                     <Icon name="Image" size={48} className="mx-auto mb-3 opacity-50" />
                     <p>Фотографий пока нет</p>
+                    <Button className="mt-4" onClick={() => setShowPhotoUpload(true)}>
+                      <Icon name="Camera" size={18} className="mr-2" />
+                      Загрузить первое фото
+                    </Button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -443,6 +449,17 @@ export const ProjectDetails = ({ projectId, onBack }: ProjectDetailsProps) => {
             onClose={() => setShowAddMeasurement(false)}
             onSuccess={() => {
               setShowAddMeasurement(false);
+              loadProject();
+            }}
+          />
+        )}
+
+        {showPhotoUpload && (
+          <PhotoUpload
+            projectId={projectId}
+            onCancel={() => setShowPhotoUpload(false)}
+            onSuccess={() => {
+              setShowPhotoUpload(false);
               loadProject();
             }}
           />

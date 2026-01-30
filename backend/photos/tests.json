@@ -1,0 +1,27 @@
+{
+  "tests": [
+    {
+      "name": "Get photos without project_id",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "project_id is required"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Upload photo without data",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "project_id": 1
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "project_id and photo are required"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
