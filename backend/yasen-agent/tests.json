@@ -1,0 +1,39 @@
+{
+  "tests": [
+    {
+      "name": "Test OPTIONS for CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedHeaders": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "name": "Test chat endpoint",
+      "method": "POST",
+      "path": "/?action=chat",
+      "body": {
+        "message": "Здравствуйте, мне нужно сделать ремонт в ванной",
+        "user_role": "customer"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test get orders",
+      "method": "GET",
+      "path": "/?action=orders&limit=10",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "orders": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

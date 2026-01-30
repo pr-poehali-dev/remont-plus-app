@@ -166,14 +166,39 @@ export const ProfileSection = () => {
         </CardContent>
       </Card>
 
+      <Card className="shadow-lg border-0 gradient-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Icon name="Bot" size={24} className="text-primary" />
+            Голосовой помощник ЯСЕН
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Общайтесь с ИИ-агентом голосом для создания нарядов-заказов
+          </p>
+          <Button 
+            className="w-full gradient-purple-pink text-white border-0 h-14"
+            onClick={() => window.location.href = '/yasen'}
+          >
+            <Icon name="Mic" size={20} className="mr-2" />
+            Начать разговор с ЯСЕН
+          </Button>
+        </CardContent>
+      </Card>
+
       <div className="space-y-2">
+        <Button 
+          variant="outline" 
+          className="w-full h-12 justify-start gap-3"
+          onClick={() => window.location.href = '/admin'}
+        >
+          <Icon name="Settings" size={20} />
+          Панель администратора
+        </Button>
         <Button variant="outline" className="w-full h-12 justify-start gap-3">
           <Icon name="History" size={20} />
           История операций
-        </Button>
-        <Button variant="outline" className="w-full h-12 justify-start gap-3">
-          <Icon name="Settings" size={20} />
-          Настройки профиля
         </Button>
         <Button variant="outline" className="w-full h-12 justify-start gap-3 text-red-600 hover:text-red-700">
           <Icon name="LogOut" size={20} />

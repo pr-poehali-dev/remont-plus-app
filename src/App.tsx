@@ -9,6 +9,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { ChatGPTPlaygroundPage } from "@/components/extensions/chatgpt-polza/ChatGPTPlaygroundPage";
+import { YasenAdminPanel } from "@/components/admin/YasenAdminPanel";
+import { VoiceChat } from "@/components/voice/VoiceChat";
 
 const queryClient = new QueryClient();
 const CHATGPT_API_URL = "https://functions.poehali.dev/00a8f93c-2a78-4e87-83ba-786960f47f06";
@@ -31,6 +33,8 @@ const App = () => {
           <Routes>
             <Route path="/" element={isAuthenticated ? <Index /> : <Auth onLogin={handleLogin} />} />
             <Route path="/chatgpt" element={<ChatGPTPlaygroundPage apiUrl={CHATGPT_API_URL} defaultModel="openai/gpt-4o-mini" />} />
+            <Route path="/admin" element={<YasenAdminPanel />} />
+            <Route path="/yasen" element={<VoiceChat />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
