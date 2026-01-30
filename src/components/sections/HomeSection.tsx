@@ -1,9 +1,14 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
+import { RegistrationForm } from '@/components/auth/RegistrationForm';
 
 export const HomeSection = () => {
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [registrationType, setRegistrationType] = useState<'customer' | 'contractor'>('customer');
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="gradient-purple-pink rounded-3xl p-8 text-white shadow-2xl">
@@ -18,11 +23,23 @@ export const HomeSection = () => {
         </div>
         
         <div className="grid grid-cols-2 gap-3 mt-6">
-          <Button className="bg-white text-primary hover:bg-white/90 font-semibold h-14 text-base">
+          <Button 
+            className="bg-white text-primary hover:bg-white/90 font-semibold h-14 text-base"
+            onClick={() => {
+              setRegistrationType('customer');
+              setShowRegistration(true);
+            }}
+          >
             <Icon name="User" size={20} className="mr-2" />
             ЗАКАЗЧИК
           </Button>
-          <Button className="bg-white/20 backdrop-blur text-white hover:bg-white/30 font-semibold h-14 text-base border-2 border-white/40">
+          <Button 
+            className="bg-white/20 backdrop-blur text-white hover:bg-white/30 font-semibold h-14 text-base border-2 border-white/40"
+            onClick={() => {
+              setRegistrationType('contractor');
+              setShowRegistration(true);
+            }}
+          >
             <Icon name="Briefcase" size={20} className="mr-2" />
             ИСПОЛНИТЕЛЬ
           </Button>
@@ -140,7 +157,13 @@ export const HomeSection = () => {
             </div>
           </div>
 
-          <Button className="w-full mt-6 h-12 text-base font-semibold">
+          <Button 
+            className="w-full mt-6 h-12 text-base font-semibold"
+            onClick={() => {
+              setRegistrationType('customer');
+              setShowRegistration(true);
+            }}
+          >
             Начать работу
             <Icon name="ArrowRight" size={20} className="ml-2" />
           </Button>
@@ -179,12 +202,23 @@ export const HomeSection = () => {
               <span className="text-sm font-medium">Увеличение дохода</span>
             </div>
           </div>
-          <Button variant="outline" className="w-full mt-6 h-12 text-base font-semibold border-2">
+          <Button 
+            variant="outline" 
+            className="w-full mt-6 h-12 text-base font-semibold border-2"
+            onClick={() => {
+              setRegistrationType('contractor');
+              setShowRegistration(true);
+            }}
+          >
             Зарегистрироваться как исполнитель
             <Icon name="UserPlus" size={20} className="ml-2" />
           </Button>
         </CardContent>
       </Card>
+
+      {showRegistration && (
+        <RegistrationForm onClose={() => setShowRegistration(false)} />
+      )}
     </div>
   );
 };
