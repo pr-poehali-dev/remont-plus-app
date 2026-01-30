@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 import { YasenAdminPanel } from '@/components/admin/YasenAdminPanel';
+import { AdminStats } from '@/components/admin/AdminStats';
 
 export const AdminPanel = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -29,6 +30,7 @@ export const AdminPanel = () => {
 
     if (password === ADMIN_PASSWORD) {
       localStorage.setItem('admin_auth', 'true');
+      localStorage.setItem('admin_password', password);
       setIsAuthenticated(true);
       toast({
         title: 'Добро пожаловать!',
@@ -48,6 +50,7 @@ export const AdminPanel = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('admin_auth');
+    localStorage.removeItem('admin_password');
     setIsAuthenticated(false);
     toast({
       title: 'Выход',
@@ -138,6 +141,14 @@ export const AdminPanel = () => {
           </CardHeader>
         </Card>
 
+        <AdminStats />
+
+        <Card className="shadow-lg border-0 mt-6">
+          <CardHeader>
+            <CardTitle>Панель ЯСЕН</CardTitle>
+            <CardDescription>Управление голосовым помощником</CardDescription>
+          </CardHeader>
+        </Card>
         <YasenAdminPanel />
       </div>
     </div>

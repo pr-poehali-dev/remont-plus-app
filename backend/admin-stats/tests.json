@@ -1,0 +1,27 @@
+{
+  "tests": [
+    {
+      "name": "Get stats without token",
+      "method": "GET",
+      "path": "/?action=stats",
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "Unauthorized"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get stats with invalid action",
+      "method": "GET",
+      "path": "/?action=invalid",
+      "headers": {
+        "X-Admin-Token": "admin2025"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "Invalid action"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
