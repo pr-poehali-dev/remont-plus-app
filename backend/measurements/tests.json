@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "Get measurements for non-existent project",
+      "method": "GET",
+      "path": "/?project_id=99999",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "measurements": []
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create measurement - missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "project_id": 1,
+        "room_name": "Гостиная"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "project_id, room_name, length, width and height are required"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

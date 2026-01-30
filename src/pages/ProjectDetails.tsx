@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import { AddMeasurementForm } from '@/components/measurements/AddMeasurementForm';
 
 const PROJECTS_API_URL = 'https://functions.poehali.dev/91a90ccd-9392-4390-8d40-9b2eb3908daa';
 
@@ -57,6 +58,7 @@ export const ProjectDetails = ({ projectId, onBack }: ProjectDetailsProps) => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [showAddMeasurement, setShowAddMeasurement] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Project>>({});
   const { toast } = useToast();
 
@@ -342,7 +344,7 @@ export const ProjectDetails = ({ projectId, onBack }: ProjectDetailsProps) => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Измерения помещений</CardTitle>
-                  <Button>
+                  <Button onClick={() => setShowAddMeasurement(true)}>
                     <Icon name="Plus" size={18} className="mr-2" />
                     Добавить
                   </Button>
@@ -434,6 +436,17 @@ export const ProjectDetails = ({ projectId, onBack }: ProjectDetailsProps) => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {showAddMeasurement && (
+          <AddMeasurementForm
+            projectId={projectId}
+            onClose={() => setShowAddMeasurement(false)}
+            onSuccess={() => {
+              setShowAddMeasurement(false);
+              loadProject();
+            }}
+          />
+        )}
       </div>
     </div>
   );
