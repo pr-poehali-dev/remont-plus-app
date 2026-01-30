@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "Create project - missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "user_id": 1,
+        "title": "Ремонт квартиры"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "user_id, title and address are required"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get user projects (empty list)",
+      "method": "GET",
+      "path": "/?user_id=99999",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "projects": []
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

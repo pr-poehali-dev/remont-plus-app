@@ -1,7 +1,12 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import { CreateProjectForm } from '@/components/projects/CreateProjectForm';
+
+const PROJECTS_API_URL = 'https://functions.poehali.dev/91a90ccd-9392-4390-8d40-9b2eb3908daa';
 
 interface User {
   id: number;
@@ -11,12 +16,72 @@ interface User {
   user_type: string;
 }
 
+interface Project {
+  id: number;
+  title: string;
+  address: string;
+  project_type: string;
+  area?: number;
+  rooms?: number;
+  budget?: number;
+  status: string;
+  progress: number;
+  created_at: string;
+}
+
 interface CustomerDashboardProps {
   user: User;
   onLogout: () => void;
 }
 
 export const CustomerDashboard = ({ user, onLogout }: CustomerDashboardProps) => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const { toast } = useToast();
+
+  const loadProjects = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${PROJECTS_API_URL}?user_id=${user.id}`);
+      const data = await response.json();
+      if (data.projects) {
+        setProjects(data.projects);
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось загрузить проекты',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProjects();
+  }, [user.id]);
+
+  const handleCreateSuccess = () => {
+    setShowCreateForm(false);
+    loadProjects();
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { label: string; color: string }> = {
+      draft: { label: 'Черновик', color: 'bg-gray-500' },
+      measurement: { label: 'Замеры', color: 'bg-blue-500' },
+      design: { label: 'Дизайн', color: 'bg-purple-500' },
+      estimate: { label: 'Смета', color: 'bg-orange-500' },
+      in_progress: { label: 'В работе', color: 'bg-green-500' },
+      completed: { label: 'Завершён', color: 'bg-emerald-500' },
+      cancelled: { label: 'Отменён', color: 'bg-red-500' }
+    };
+    const info = statusMap[status] || { label: status, color: 'bg-gray-500' };
+    return <Badge className={`${info.color} text-white border-0`}>{info.label}</Badge>;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-orange-50 pb-24">
       <div className="max-w-2xl mx-auto p-6 space-y-6">
@@ -49,20 +114,81 @@ export const CustomerDashboard = ({ user, onLogout }: CustomerDashboardProps) =>
 
         <Card className="shadow-lg border-0">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Icon name="Briefcase" size={24} className="text-primary" />
-              Мои проекты
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <Icon name="FolderOpen" size={48} className="mx-auto mb-3 opacity-50" />
-              <p>У вас пока нет проектов</p>
-              <Button className="mt-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="Briefcase" size={24} className="text-primary" />
+                Мои проекты
+              </CardTitle>
+              <Button onClick={() => setShowCreateForm(true)}>
                 <Icon name="Plus" size={18} className="mr-2" />
-                Создать первый проект
+                Создать
               </Button>
             </div>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="text-center py-8">
+                <Icon name="Loader2" size={48} className="mx-auto mb-3 animate-spin text-primary" />
+                <p className="text-muted-foreground">Загрузка проектов...</p>
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Icon name="FolderOpen" size={48} className="mx-auto mb-3 opacity-50" />
+                <p>У вас пока нет проектов</p>
+                <Button className="mt-4" onClick={() => setShowCreateForm(true)}>
+                  <Icon name="Plus" size={18} className="mr-2" />
+                  Создать первый проект
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {projects.map((project) => (
+                  <Card key={project.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">{project.title}</h3>
+                          <p className="text-sm text-muted-foreground mb-3">{project.address}</p>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {getStatusBadge(project.status)}
+                            {project.area && (
+                              <Badge variant="outline">
+                                <Icon name="Maximize2" size={12} className="mr-1" />
+                                {project.area} м²
+                              </Badge>
+                            )}
+                            {project.rooms && (
+                              <Badge variant="outline">
+                                <Icon name="DoorOpen" size={12} className="mr-1" />
+                                {project.rooms} комн.
+                              </Badge>
+                            )}
+                            {project.budget && (
+                              <Badge variant="outline">
+                                <Icon name="Wallet" size={12} className="mr-1" />
+                                {project.budget.toLocaleString()} ₽
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-muted rounded-full h-2">
+                              <div 
+                                className="bg-primary h-2 rounded-full transition-all"
+                                style={{ width: `${project.progress}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium">{project.progress}%</span>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="icon">
+                          <Icon name="ChevronRight" size={20} />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -142,6 +268,14 @@ export const CustomerDashboard = ({ user, onLogout }: CustomerDashboardProps) =>
             </div>
           </CardContent>
         </Card>
+
+        {showCreateForm && (
+          <CreateProjectForm
+            userId={user.id}
+            onClose={() => setShowCreateForm(false)}
+            onSuccess={handleCreateSuccess}
+          />
+        )}
       </div>
     </div>
   );
