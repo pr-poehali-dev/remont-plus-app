@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 import { CreateProjectForm } from '@/components/projects/CreateProjectForm';
+import ProjectDetails from '@/pages/ProjectDetails';
 
 const PROJECTS_API_URL = 'https://functions.poehali.dev/91a90ccd-9392-4390-8d40-9b2eb3908daa';
 
@@ -38,6 +39,7 @@ export const CustomerDashboard = ({ user, onLogout }: CustomerDashboardProps) =>
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const { toast } = useToast();
 
   const loadProjects = async () => {
@@ -81,6 +83,15 @@ export const CustomerDashboard = ({ user, onLogout }: CustomerDashboardProps) =>
     const info = statusMap[status] || { label: status, color: 'bg-gray-500' };
     return <Badge className={`${info.color} text-white border-0`}>{info.label}</Badge>;
   };
+
+  if (selectedProjectId) {
+    return (
+      <ProjectDetails 
+        projectId={selectedProjectId} 
+        onBack={() => setSelectedProjectId(null)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-orange-50 pb-24">
@@ -180,7 +191,11 @@ export const CustomerDashboard = ({ user, onLogout }: CustomerDashboardProps) =>
                             <span className="text-sm font-medium">{project.progress}%</span>
                           </div>
                         </div>
-                        <Button variant="ghost" size="icon">
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => setSelectedProjectId(project.id)}
+                        >
                           <Icon name="ChevronRight" size={20} />
                         </Button>
                       </div>
