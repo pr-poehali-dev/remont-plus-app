@@ -110,6 +110,13 @@ export const AdminPanel = () => {
                     Доступ ограничен. Только для администраторов системы.
                   </span>
                 </div>
+                <div className="flex items-start gap-2 bg-primary/5 p-2 rounded">
+                  <Icon name="Key" size={16} className="flex-shrink-0 mt-0.5 text-primary" />
+                  <div>
+                    <span className="text-muted-foreground">Пароль по умолчанию: </span>
+                    <span className="font-mono font-bold text-primary">admin2025</span>
+                  </div>
+                </div>
               </div>
             </form>
           </CardContent>
