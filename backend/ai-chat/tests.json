@@ -1,0 +1,37 @@
+{
+  "tests": [
+    {
+      "name": "POST request with valid messages",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "Какие материалы лучше использовать для отделки ванной комнаты?"
+          }
+        ]
+      },
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST request with empty messages",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "messages": []
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "Messages array is required"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "OPTIONS request for CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}

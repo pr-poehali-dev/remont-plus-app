@@ -47,16 +47,45 @@ export default function AIChat() {
     setInputMessage("");
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const apiMessages = [...messages, userMessage].map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      const response = await fetch('https://functions.poehali.dev/bead5363-79de-43a3-8d46-8c1cc2b00ad4', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ messages: apiMessages })
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка при получении ответа от ИИ');
+      }
+
+      const data = await response.json();
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Отличный вопрос! Для спальни рекомендую спокойные пастельные тона и натуральные материалы. Могу показать несколько вариантов дизайна и рассчитать примерную стоимость. Хотите увидеть визуализацию?",
+        content: data.message,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Error calling AI:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Извините, произошла ошибка при обработке вашего запроса. Попробуйте еще раз.",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
