@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Message {
   id: string;
@@ -15,16 +15,11 @@ interface Message {
 
 export default function AIChat() {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content: "Здравствуйте! Я ваш ИИ-консультант по ремонту. Расскажите о вашей квартире и планах на ремонт, и я помогу создать идеальный проект!",
-      timestamp: new Date()
-    }
-  ]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
   const quickQuestions = [
     "Какой стиль выбрать для спальни?",
@@ -32,6 +27,70 @@ export default function AIChat() {
     "Какие материалы лучше для ванной?",
     "Как сэкономить на ремонте?"
   ];
+
+  useEffect(() => {
+    const savedSessionId = localStorage.getItem('aiChatSessionId');
+    if (savedSessionId) {
+      setSessionId(savedSessionId);
+      loadChatHistory(savedSessionId);
+    } else {
+      setIsLoadingHistory(false);
+      setMessages([
+        {
+          id: "1",
+          role: "assistant",
+          content: "Здравствуйте! Я ваш ИИ-консультант по ремонту. Расскажите о вашей квартире и планах на ремонт, и я помогу создать идеальный проект!",
+          timestamp: new Date()
+        }
+      ]);
+    }
+  }, []);
+
+  const loadChatHistory = async (sessionId: string) => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/bead5363-79de-43a3-8d46-8c1cc2b00ad4', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ sessionId, loadHistory: true })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.messages && data.messages.length > 0) {
+          const loadedMessages = data.messages.map((msg: any, index: number) => ({
+            id: `${index}`,
+            role: msg.role,
+            content: msg.content,
+            timestamp: new Date(msg.timestamp)
+          }));
+          setMessages(loadedMessages);
+        } else {
+          setMessages([
+            {
+              id: "1",
+              role: "assistant",
+              content: "Здравствуйте! Я ваш ИИ-консультант по ремонту. Расскажите о вашей квартире и планах на ремонт, и я помогу создать идеальный проект!",
+              timestamp: new Date()
+            }
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading history:', error);
+      setMessages([
+        {
+          id: "1",
+          role: "assistant",
+          content: "Здравствуйте! Я ваш ИИ-консультант по ремонту. Расскажите о вашей квартире и планах на ремонт, и я помогу создать идеальный проект!",
+          timestamp: new Date()
+        }
+      ]);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
@@ -58,7 +117,10 @@ export default function AIChat() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ messages: apiMessages })
+        body: JSON.stringify({ 
+          messages: apiMessages,
+          sessionId: sessionId || undefined
+        })
       });
 
       if (!response.ok) {
@@ -66,6 +128,11 @@ export default function AIChat() {
       }
 
       const data = await response.json();
+
+      if (data.sessionId && !sessionId) {
+        setSessionId(data.sessionId);
+        localStorage.setItem('aiChatSessionId', data.sessionId);
+      }
 
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -93,6 +160,30 @@ export default function AIChat() {
     handleSendMessage(inputMessage);
   };
 
+  const handleNewChat = () => {
+    localStorage.removeItem('aiChatSessionId');
+    setSessionId(null);
+    setMessages([
+      {
+        id: "1",
+        role: "assistant",
+        content: "Здравствуйте! Я ваш ИИ-консультант по ремонту. Расскажите о вашей квартире и планах на ремонт, и я помогу создать идеальный проект!",
+        timestamp: new Date()
+      }
+    ]);
+  };
+
+  if (isLoadingHistory) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка истории...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b sticky top-0 z-10">
@@ -108,6 +199,10 @@ export default function AIChat() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={handleNewChat}>
+                <Icon name="Plus" className="mr-2 h-4 w-4" />
+                Новый чат
+              </Button>
               <Button variant="outline" onClick={() => navigate('/designer')}>
                 <Icon name="Palette" className="mr-2 h-4 w-4" />
                 Создать проект
@@ -194,10 +289,13 @@ export default function AIChat() {
 
           <div className="space-y-6">
             <Card className="p-6">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
                 <Icon name="MessageSquare" className="h-5 w-5 text-purple-600" />
                 Быстрые вопросы
               </h3>
+              {sessionId && (
+                <p className="text-xs text-gray-500 mb-3">Сессия: {sessionId.slice(0, 8)}...</p>
+              )}
               <div className="space-y-2">
                 {quickQuestions.map((question, index) => (
                   <Button
@@ -231,7 +329,7 @@ export default function AIChat() {
               <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-purple-400 transition-colors cursor-pointer">
                 <Icon name="Image" className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                 <p className="text-sm text-gray-600 mb-1">Загрузите фото помещения</p>
-                <p className="text-xs text-gray-500">для персональных рекомендаций</p>
+                <p className="text-xs text-gray-500">для более точных рекомендаций</p>
               </div>
             </Card>
           </div>

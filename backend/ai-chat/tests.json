@@ -1,7 +1,7 @@
 {
   "tests": [
     {
-      "name": "POST request with valid messages",
+      "name": "POST request with valid messages and new session",
       "method": "POST",
       "path": "/",
       "body": {
@@ -15,17 +15,14 @@
       "expectedStatus": 200
     },
     {
-      "name": "POST request with empty messages",
+      "name": "Load chat history for existing session",
       "method": "POST",
       "path": "/",
       "body": {
-        "messages": []
+        "sessionId": "test-session-123",
+        "loadHistory": true
       },
-      "expectedStatus": 400,
-      "expectedBody": {
-        "error": "Messages array is required"
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "OPTIONS request for CORS",
