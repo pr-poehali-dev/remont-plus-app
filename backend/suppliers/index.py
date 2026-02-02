@@ -12,7 +12,7 @@ def handler(event: dict, context) -> dict:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type'
             },
             'body': '',
@@ -120,6 +120,70 @@ def handler(event: dict, context) -> dict:
                 'isBase64Encoded': False
             }
         
+        elif method == 'PUT':
+            body = json.loads(event.get('body', '{}'))
+            product_id = body.get('id')
+            
+            cursor.execute('''
+                UPDATE supplier_products
+                SET name = %s, description = %s, category = %s, subcategory = %s,
+                    price = %s, unit = %s, delivery_cost = %s, floor_lifting_cost = %s,
+                    in_stock = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            ''', (
+                body.get('name'),
+                body.get('description'),
+                body.get('category'),
+                body.get('subcategory'),
+                body.get('price'),
+                body.get('unit'),
+                body.get('delivery_cost', 0),
+                body.get('floor_lifting_cost', 0),
+                body.get('in_stock', True),
+                product_id
+            ))
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'success': True, 'message': 'Товар обновлен'}),
+                'isBase64Encoded': False
+            }
+        
+        elif method == 'DELETE':
+            params = event.get('queryStringParameters') or {}
+            product_id = params.get('id')
+            
+            if not product_id:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Product ID required'}),
+                    'isBase64Encoded': False
+                }
+            
+            cursor.execute('UPDATE supplier_products SET in_stock = false WHERE id = %s', (product_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'success': True, 'message': 'Товар удален'}),
+                'isBase64Encoded': False
+            }
+        
         elif method == 'POST':
             body = json.loads(event.get('body', '{}'))
             action = body.get('action')
@@ -149,6 +213,41 @@ def handler(event: dict, context) -> dict:
                         'Access-Control-Allow-Origin': '*'
                     },
                     'body': json.dumps({'success': True, 'item_id': item_id}),
+                    'isBase64Encoded': False
+                }
+            
+            elif action == 'create_product':
+                cursor.execute('''
+                    INSERT INTO supplier_products 
+                    (supplier_id, name, description, category, subcategory, price, unit,
+                     delivery_cost, floor_lifting_cost, in_stock)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                ''', (
+                    body.get('supplier_id', 1),
+                    body.get('name'),
+                    body.get('description'),
+                    body.get('category'),
+                    body.get('subcategory'),
+                    body.get('price'),
+                    body.get('unit'),
+                    body.get('delivery_cost', 0),
+                    body.get('floor_lifting_cost', 0),
+                    body.get('in_stock', True)
+                ))
+                
+                product_id = cursor.fetchone()[0]
+                conn.commit()
+                cursor.close()
+                conn.close()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'success': True, 'product_id': product_id}),
                     'isBase64Encoded': False
                 }
             

@@ -86,10 +86,16 @@ export default function Home() {
             <div className="hidden md:flex items-center gap-8 text-sm">
               <a href="#services" className="hover:text-primary transition-colors">Услуги</a>
               <a href="#advantages" className="hover:text-primary transition-colors">Преимущества</a>
-              <button onClick={() => navigate('/suppliers')} className="hover:text-primary transition-colors">Поставщики</button>
+              <button onClick={() => navigate('/suppliers')} className="hover:text-primary transition-colors font-medium">
+                Материалы
+              </button>
               <a href="#contacts" className="hover:text-primary transition-colors">Контакты</a>
-              <div className="flex items-center gap-2 text-right">
-                <div>
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
+                  <Icon name="User" className="h-4 w-4 mr-1" />
+                  Кабинет
+                </Button>
+                <div className="text-right">
                   <div className="font-bold text-base">+7 (987) 980-77-77</div>
                   <div className="text-xs text-gray-600">Пн-Вс 9:00-21:00</div>
                 </div>

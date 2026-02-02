@@ -84,6 +84,10 @@ export default function Suppliers() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => navigate('/profile')}>
+                <Icon name="User" className="mr-2 h-4 w-4" />
+                Личный кабинет
+              </Button>
               <Button variant="outline" onClick={() => navigate('/designer')}>
                 <Icon name="Palette" className="mr-2 h-4 w-4" />
                 Мои проекты
