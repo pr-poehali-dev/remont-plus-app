@@ -1,10 +1,32 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function Home() {
   const navigate = useNavigate();
+  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleCallbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setIsSubmitted(true);
+    setIsSubmitting(false);
+    
+    setTimeout(() => {
+      setIsSubmitted(false);
+      setPhone("");
+      setName("");
+    }, 3000);
+  };
 
   const services = [
     {
@@ -98,24 +120,65 @@ export default function Home() {
               ИИ создаст проект, рассчитает смету и подберет исполнителей. 
               Сэкономьте до 150 000 ₽ на услугах специалистов.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg" 
-                className="text-lg h-14 px-8 bg-primary hover:bg-primary/90 text-black font-semibold"
-                onClick={() => navigate('/ai-chat')}
-              >
-                <Icon name="MessageSquare" className="mr-2 h-5 w-5" />
-                Бесплатная консультация
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="text-lg h-14 px-8 border-2"
-                onClick={() => navigate('/designer')}
-              >
-                <Icon name="Calculator" className="mr-2 h-5 w-5" />
-                Рассчитать смету
-              </Button>
+            <div className="grid sm:grid-cols-2 gap-4 max-w-xl">
+              <Card className="p-6 bg-white shadow-lg">
+                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                  <Icon name="Phone" className="h-5 w-5 text-primary" />
+                  Заказать звонок
+                </h3>
+                {!isSubmitted ? (
+                  <form onSubmit={handleCallbackSubmit} className="space-y-3">
+                    <Input 
+                      placeholder="Ваше имя"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                    <Input 
+                      type="tel"
+                      placeholder="+7 (___) ___-__-__"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                    />
+                    <Button 
+                      type="submit"
+                      className="w-full bg-primary hover:bg-primary/90 text-black font-semibold"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Отправка..." : "Перезвоните мне"}
+                    </Button>
+                    <p className="text-xs text-gray-500 text-center">
+                      Перезвоним в течение 5 минут
+                    </p>
+                  </form>
+                ) : (
+                  <div className="text-center py-4">
+                    <Icon name="CheckCircle2" className="h-12 w-12 text-green-500 mx-auto mb-2" />
+                    <p className="font-semibold text-green-600">Заявка принята!</p>
+                    <p className="text-sm text-gray-600 mt-1">Скоро вам перезвонят</p>
+                  </div>
+                )}
+              </Card>
+              <div className="flex flex-col gap-3">
+                <Button 
+                  size="lg" 
+                  className="h-14 bg-primary hover:bg-primary/90 text-black font-semibold text-base"
+                  onClick={() => navigate('/ai-chat')}
+                >
+                  <Icon name="MessageSquare" className="mr-2 h-5 w-5" />
+                  Чат с ИИ-консультантом
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="h-14 border-2 text-base"
+                  onClick={() => navigate('/designer')}
+                >
+                  <Icon name="Calculator" className="mr-2 h-5 w-5" />
+                  Рассчитать смету
+                </Button>
+              </div>
             </div>
           </div>
         </div>
