@@ -86,6 +86,7 @@ export default function Home() {
             <div className="hidden md:flex items-center gap-8 text-sm">
               <a href="#services" className="hover:text-primary transition-colors">Услуги</a>
               <a href="#advantages" className="hover:text-primary transition-colors">Преимущества</a>
+              <button onClick={() => navigate('/suppliers')} className="hover:text-primary transition-colors">Поставщики</button>
               <a href="#contacts" className="hover:text-primary transition-colors">Контакты</a>
               <div className="flex items-center gap-2 text-right">
                 <div>

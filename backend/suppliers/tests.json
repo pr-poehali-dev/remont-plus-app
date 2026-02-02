@@ -1,0 +1,41 @@
+{
+  "tests": [
+    {
+      "name": "Получение списка товаров",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "products": "array",
+        "categories": "array",
+        "total": "number"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Фильтрация по категории",
+      "method": "GET",
+      "path": "/?category=Мебель",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "products": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Получение товаров проекта",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "get_project_products",
+        "project_id": 1
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "items": "array",
+        "summary": "object"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
