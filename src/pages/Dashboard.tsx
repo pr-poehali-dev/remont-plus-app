@@ -54,7 +54,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Icon name="Home" className="h-6 w-6 text-purple-600" />
-                <span className="text-xl font-bold">Ремонт без дизайнера</span>
+                <span className="text-xl font-bold">АВАНГАРД</span>
               </div>
               <nav className="hidden md:flex items-center gap-4">
                 <Button variant="ghost" onClick={() => navigate('/')}>Главная</Button>
