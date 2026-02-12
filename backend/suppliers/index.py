@@ -48,6 +48,8 @@ def handler(event: dict, context) -> dict:
                     p.delivery_days,
                     p.floor_lifting_cost,
                     p.specifications,
+                    p.rating,
+                    p.review_count,
                     s.id as supplier_id,
                     s.company_name,
                     s.rating,
@@ -92,11 +94,13 @@ def handler(event: dict, context) -> dict:
                     'delivery_days': row[12],
                     'floor_lifting_cost': float(row[13]) if row[13] else 0,
                     'specifications': row[14],
+                    'rating': float(row[15]) if row[15] else 0,
+                    'review_count': row[16] if row[16] else 0,
                     'supplier': {
-                        'id': row[15],
-                        'name': row[16],
-                        'rating': float(row[17]) if row[17] else 0,
-                        'verified': row[18]
+                        'id': row[17],
+                        'name': row[18],
+                        'rating': float(row[19]) if row[19] else 0,
+                        'verified': row[20]
                     }
                 })
             

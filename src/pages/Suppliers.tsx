@@ -23,6 +23,8 @@ interface Product {
   delivery_days: number;
   floor_lifting_cost: number;
   specifications: Record<string, string>;
+  rating: number;
+  review_count: number;
   supplier: {
     id: number;
     name: string;
@@ -225,6 +227,16 @@ export default function Suppliers() {
                   >
                     <meta itemProp="productID" content={String(product.id)} />
                     <meta itemProp="category" content={product.category} />
+                    
+                    {product.rating > 0 && (
+                      <div itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating" style={{display: 'none'}}>
+                        <meta itemProp="ratingValue" content={String(product.rating)} />
+                        <meta itemProp="reviewCount" content={String(product.review_count)} />
+                        <meta itemProp="bestRating" content="5" />
+                        <meta itemProp="worstRating" content="1" />
+                      </div>
+                    )}
+
                     <div className="aspect-video bg-gray-200 flex items-center justify-center" itemProp="image">
                       {product.image_url ? (
                         <img 
@@ -249,6 +261,27 @@ export default function Suppliers() {
                           </h3>
                         </div>
                       </div>
+
+                      {product.rating > 0 && (
+                        <div className="flex items-center gap-1 mb-2">
+                          <div className="flex">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Icon
+                                key={star}
+                                name="Star"
+                                className={`h-3 w-3 ${
+                                  star <= Math.round(product.rating)
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-xs text-gray-600">
+                            {product.rating} ({product.review_count} отзывов)
+                          </span>
+                        </div>
+                      )}
                       
                       <p className="text-xs text-gray-600 mb-3 line-clamp-2" itemProp="description">
                         {product.description}
