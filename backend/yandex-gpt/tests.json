@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "Тест консультации по ремонту",
+      "method": "POST",
+      "body": {
+        "message": "Какой ламинат лучше выбрать для кухни?"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Тест пустого сообщения",
+      "method": "POST",
+      "body": {
+        "message": ""
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
