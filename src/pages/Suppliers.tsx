@@ -41,7 +41,34 @@ export default function Suppliers() {
 
   useEffect(() => {
     loadProducts();
+    addOrganizationSchema();
   }, [selectedCategory, searchQuery]);
+
+  const addOrganizationSchema = () => {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'organization-schema';
+    
+    const organizationData = {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "АВАНГАРД",
+      "description": "Каталог товаров для ремонта и интерьера",
+      "url": window.location.origin,
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "RU"
+      }
+    };
+    
+    script.text = JSON.stringify(organizationData);
+    
+    const existingScript = document.getElementById('organization-schema');
+    if (existingScript) {
+      existingScript.remove();
+    }
+    document.head.appendChild(script);
+  };
 
   const loadProducts = async () => {
     setIsLoading(true);
@@ -190,12 +217,20 @@ export default function Suppliers() {
             ) : (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {products.map((product) => (
-                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="aspect-video bg-gray-200 flex items-center justify-center">
+                  <Card 
+                    key={product.id} 
+                    className="overflow-hidden hover:shadow-lg transition-shadow"
+                    itemScope 
+                    itemType="https://schema.org/Product"
+                  >
+                    <meta itemProp="productID" content={String(product.id)} />
+                    <meta itemProp="category" content={product.category} />
+                    <div className="aspect-video bg-gray-200 flex items-center justify-center" itemProp="image">
                       {product.image_url ? (
                         <img 
                           src={product.image_url} 
                           alt={product.name}
+                          itemProp="image"
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -209,19 +244,19 @@ export default function Suppliers() {
                           <Badge variant="outline" className="mb-2 text-xs">
                             {product.subcategory || product.category}
                           </Badge>
-                          <h3 className="font-semibold text-sm leading-tight mb-1">
+                          <h3 className="font-semibold text-sm leading-tight mb-1" itemProp="name">
                             {product.name}
                           </h3>
                         </div>
                       </div>
                       
-                      <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                      <p className="text-xs text-gray-600 mb-3 line-clamp-2" itemProp="description">
                         {product.description}
                       </p>
 
-                      <div className="flex items-center gap-2 mb-3 text-xs text-gray-600">
+                      <div className="flex items-center gap-2 mb-3 text-xs text-gray-600" itemProp="brand" itemScope itemType="https://schema.org/Brand">
                         <Icon name="Store" className="h-3 w-3" />
-                        <span>{product.supplier.name}</span>
+                        <span itemProp="name">{product.supplier.name}</span>
                         {product.supplier.verified && (
                           <Badge variant="default" className="text-xs px-1 py-0">
                             <Icon name="BadgeCheck" className="h-3 w-3" />
@@ -244,7 +279,11 @@ export default function Suppliers() {
                         )}
                       </div>
 
-                      <div className="flex items-end justify-between">
+                      <div className="flex items-end justify-between" itemProp="offers" itemScope itemType="https://schema.org/Offer">
+                        <link itemProp="url" href={`${window.location.origin}/suppliers?product=${product.id}`} />
+                        <meta itemProp="priceCurrency" content="RUB" />
+                        <meta itemProp="price" content={String(product.price)} />
+                        <meta itemProp="availability" content={product.in_stock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
                         <div>
                           <div className="text-2xl font-bold text-primary">
                             {formatPrice(product.price)} ₽
@@ -267,7 +306,7 @@ export default function Suppliers() {
                       </div>
 
                       {product.specifications && Object.keys(product.specifications).length > 0 && (
-                        <div className="mt-3 pt-3 border-t">
+                        <div className="mt-3 pt-3 border-t" itemProp="additionalProperty" itemScope itemType="https://schema.org/PropertyValue">
                           <details className="text-xs">
                             <summary className="cursor-pointer font-medium mb-2">
                               Характеристики
@@ -275,8 +314,8 @@ export default function Suppliers() {
                             <div className="space-y-1 text-gray-600">
                               {Object.entries(product.specifications).map(([key, value]) => (
                                 <div key={key} className="flex justify-between">
-                                  <span>{key}:</span>
-                                  <span className="font-medium">{value}</span>
+                                  <span itemProp="name">{key}:</span>
+                                  <span className="font-medium" itemProp="value">{value}</span>
                                 </div>
                               ))}
                             </div>
