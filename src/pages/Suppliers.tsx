@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -96,6 +97,13 @@ export default function Suppliers() {
           </div>
         </div>
       </header>
+
+      <Breadcrumbs 
+        items={[
+          { label: "Главная", path: "/" },
+          { label: "Каталог товаров", path: "/suppliers" }
+        ]}
+      />
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid lg:grid-cols-4 gap-6">

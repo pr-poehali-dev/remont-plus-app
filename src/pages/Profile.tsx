@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Icon from "@/components/ui/icon";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -53,6 +54,12 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Breadcrumbs 
+        items={[
+          { label: "Главная", path: "/" },
+          { label: "Личный кабинет", path: "/profile" }
+        ]}
+      />
       <header className="bg-white border-b shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
