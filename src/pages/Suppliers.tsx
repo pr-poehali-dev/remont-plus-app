@@ -79,8 +79,8 @@ export default function Suppliers() {
                 <Icon name="ArrowLeft" className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-xl font-bold">Поставщики материалов</h1>
-                <p className="text-sm text-gray-600">Каталог стройматериалов и интерьера</p>
+                <h1 className="text-xl font-bold">Каталог товаров АВАНГАРД</h1>
+                <p className="text-sm text-gray-600">Стройматериалы и интерьер для ремонта</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

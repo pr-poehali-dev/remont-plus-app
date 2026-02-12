@@ -45,9 +45,9 @@ export default function Home() {
       description: "Демонтаж, стяжка, штукатурка, электрика и сантехника"
     },
     {
-      icon: "Paintbrush",
-      title: "Чистовая отделка",
-      description: "Покраска, обои, напольные покрытия, декор"
+      icon: "Store",
+      title: "Каталог товаров для поставщиков",
+      description: "Размещайте свои товары в нашем каталоге строительных материалов"
     }
   ];
 
@@ -55,7 +55,7 @@ export default function Home() {
     {
       number: "01",
       title: "Бесплатная консультация",
-      description: "ИИ-помощник поможет определить объем работ и рассчитает предварительную смету"
+      description: "Выезд специалиста, замер помещения и расчет предварительной сметы"
     },
     {
       number: "02", 
@@ -69,8 +69,8 @@ export default function Home() {
     },
     {
       number: "04",
-      title: "Точные сроки",
-      description: "Соблюдение графика работ по дням с компенсацией за задержки"
+      title: "Каталог материалов",
+      description: "Поставщики могут размещать свои товары в нашем каталоге"
     }
   ];
 
@@ -118,14 +118,14 @@ export default function Home() {
         <div className="container mx-auto px-4 py-24 relative">
           <div className="max-w-2xl">
             <div className="inline-block bg-primary text-black text-sm font-semibold px-4 py-2 rounded-full mb-6">
-              ИИ-АГЕНТ ЗАМЕНИТ ДИЗАЙНЕРА
+              ПРОФЕССИОНАЛЬНЫЙ РЕМОНТ
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-              СЕРВИС УСЛУГ ОТ СТРОИТЕЛЬСТВА ДО РЕМОНТА ПОД КЛЮЧ
+              АВАНГАРД - РЕМОНТ И СТРОИТЕЛЬСТВО ПОД КЛЮЧ
             </h1>
             <p className="text-xl text-gray-700 mb-8">
-              ИИ создаст проект, рассчитает смету и подберет исполнителей. 
-              Сэкономьте до 150 000 ₽ на услугах специалистов.
+              Полный спектр услуг от черновых работ до финишной отделки.
+              Качественный ремонт с гарантией и в срок.
             </p>
             <div className="grid sm:grid-cols-2 gap-4 max-w-xl">
               <Card className="p-6 bg-white shadow-lg">
