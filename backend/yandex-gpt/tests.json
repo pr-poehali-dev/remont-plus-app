@@ -4,7 +4,23 @@
       "name": "Тест консультации по ремонту",
       "method": "POST",
       "body": {
-        "message": "Какой ламинат лучше выбрать для кухни?"
+        "message": "Привет"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Тест с историей чата",
+      "method": "POST",
+      "body": {
+        "message": "А для спальни?",
+        "history": [
+          {"role": "user", "text": "Какой ламинат для кухни?"},
+          {"role": "assistant", "text": "Для кухни рекомендую влагостойкий ламинат класса 33."}
+        ]
       },
       "expectedStatus": 200,
       "expectedBody": {

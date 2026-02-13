@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,11 +10,18 @@ interface Message {
   timestamp: Date;
 }
 
+const API_URL = 'https://functions.poehali.dev/5a1ec782-2df4-4948-89e4-7eaa77f6f7a2';
+
 export default function YandexGPTChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -25,19 +32,26 @@ export default function YandexGPTChat() {
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
     setError('');
 
     try {
-      const response = await fetch('https://functions.poehali.dev/5a1ec782-2df4-4948-89e4-7eaa77f6f7a2', {
+      const history = updatedMessages.slice(0, -1).map(m => ({
+        role: m.role,
+        text: m.text
+      }));
+
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          message: input
+          message: input,
+          history: history
         })
       });
 
@@ -61,11 +75,16 @@ export default function YandexGPTChat() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const clearChat = () => {
+    setMessages([]);
+    setError('');
   };
 
   return (
@@ -143,7 +162,7 @@ export default function YandexGPTChat() {
             </div>
           ))
         )}
-        
+
         {isLoading && (
           <div className="flex justify-start">
             <Card className="max-w-[80%] p-4 bg-white">
@@ -172,14 +191,26 @@ export default function YandexGPTChat() {
             </div>
           </Card>
         )}
+
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="border-t p-4 bg-white">
         <div className="flex gap-2">
+          {messages.length > 0 && (
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={clearChat}
+              title="Очистить чат"
+            >
+              <Icon name="Trash2" className="h-5 w-5" />
+            </Button>
+          )}
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder="Задайте вопрос о ремонте..."
             className="min-h-[60px] max-h-[120px] resize-none"
             disabled={isLoading}
