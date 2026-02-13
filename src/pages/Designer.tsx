@@ -13,15 +13,13 @@ import { useState, useEffect } from "react";
 const API_URL = "https://functions.poehali.dev/638dfd86-50f0-4ec4-a850-6feb9fa7797e";
 
 const DEFAULT_STAGES: ProjectStage[] = [
-  { id: "general", number: 1, title: "Общий вид помещения", description: "Планировка, зонирование и общая концепция интерьера всех комнат", icon: "LayoutDashboard", status: "not_started" },
-  { id: "walls", number: 2, title: "Раскладка помещений по стенам", description: "Детальная развертка каждой стены с отделочными материалами и размерами", icon: "PanelLeft", status: "not_started" },
-  { id: "electrical", number: 3, title: "Электрика", description: "Расположение розеток, выключателей, светильников и электрощита", icon: "Zap", status: "not_started" },
-  { id: "ventilation", number: 4, title: "Вентиляция", description: "Схема вентиляционных каналов, вытяжек и приточных клапанов", icon: "Wind", status: "not_started", optional: true },
-  { id: "plumbing", number: 5, title: "Водопровод и сантехника", description: "Расположение труб, стояков, смесителей, унитаза и ванны/душа", icon: "Droplets", status: "not_started" },
-  { id: "tiles", number: 6, title: "Раскладка плитки", description: "Схема укладки плитки на полах и стенах с рисунком и подрезками", icon: "Grid3x3", status: "not_started" },
-  { id: "furniture", number: 7, title: "Расположение мебели", description: "Планировка расстановки мебели во всех помещениях с размерами", icon: "Armchair", status: "not_started" },
-  { id: "kitchen", number: 8, title: "Кухонный гарнитур", description: "Планировка кухни, расположение техники, шкафов и рабочих зон", icon: "CookingPot", status: "not_started" },
-  { id: "bedroom", number: 9, title: "Спальня", description: "Расположение кровати, шкафов, освещения и текстиля", icon: "Bed", status: "not_started" },
+  { id: "planning", number: 1, title: "Планировочное решение", description: "Зонирование, расстановка мебели, перегородки и функциональные зоны помещений", icon: "LayoutDashboard", status: "not_started" },
+  { id: "drawings", number: 2, title: "Чертежи и схемы помещений", description: "Обмерный план, развёртки стен, планы полов и потолков с размерами", icon: "Ruler", status: "not_started" },
+  { id: "visualization", number: 3, title: "Визуализации интерьеров", description: "3D-визуализации каждого помещения с выбранным стилем и цветовой палитрой", icon: "Eye", status: "not_started" },
+  { id: "materials", number: 4, title: "Выбор материалов и отделки", description: "Подбор напольных покрытий, плитки, обоев, краски и декоративных панелей", icon: "Palette", status: "not_started" },
+  { id: "electrical", number: 5, title: "Электроразводка и освещение", description: "Схема розеток, выключателей, светильников, электрощита и сценариев света", icon: "Zap", status: "not_started" },
+  { id: "plumbing", number: 6, title: "Сантехнические работы", description: "Разводка труб, расположение смесителей, унитаза, ванны, душа и полотенцесушителей", icon: "Droplets", status: "not_started" },
+  { id: "decor", number: 7, title: "Декорирование", description: "Текстиль, шторы, картины, аксессуары, растения и финальная стилизация пространства", icon: "Flower2", status: "not_started" },
 ];
 
 const styles = [
