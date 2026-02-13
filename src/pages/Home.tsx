@@ -115,7 +115,7 @@ export default function Home() {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-4xl">
           <div className="text-center mb-10">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">Ремонт и строительство</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">ДИЗАЙН ПРОЕКТ И РЕМОНТ ПОД КОНТРОЛЕМ</h1>
             <p className="text-gray-500 text-lg">
               {user ? `${user.name}, выберите раздел` : "Выберите, кто вы"}
             </p>
