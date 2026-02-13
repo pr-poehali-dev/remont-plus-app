@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Designer() {
   const navigate = useNavigate();
@@ -25,12 +25,24 @@ export default function Designer() {
     { id: "eclectic", name: "Эклектика", icon: "Palette" }
   ];
 
-  const materials = [
-    { name: "Ламинат Premium", price: "1 200 ₽/м²" },
-    { name: "Керамогранит", price: "2 500 ₽/м²" },
-    { name: "Краска латексная", price: "450 ₽/л" },
-    { name: "Обои виниловые", price: "850 ₽/рул" }
-  ];
+  const [materials, setMaterials] = useState<{name: string; price: string}[]>([]);
+
+  useEffect(() => {
+    fetch('https://functions.poehali.dev/dd454a25-9f55-4cfb-9e59-736a4a1256fd')
+      .then(r => r.json())
+      .then(data => {
+        const active = (data.materials || []).filter((m: { is_active: boolean }) => m.is_active);
+        setMaterials(active);
+      })
+      .catch(() => {
+        setMaterials([
+          { name: "Ламинат Premium", price: "1 200 ₽/м²" },
+          { name: "Керамогранит", price: "2 500 ₽/м²" },
+          { name: "Краска латексная", price: "450 ₽/л" },
+          { name: "Обои виниловые", price: "850 ₽/рул" }
+        ]);
+      });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">

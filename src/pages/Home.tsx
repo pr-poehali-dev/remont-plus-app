@@ -87,7 +87,7 @@ export default function Home() {
               <a href="#services" className="hover:text-primary transition-colors">Услуги</a>
               <a href="#advantages" className="hover:text-primary transition-colors">Преимущества</a>
               <button onClick={() => navigate('/suppliers')} className="hover:text-primary transition-colors font-medium">
-                Материалы
+                Каталог
               </button>
               <a href="#contacts" className="hover:text-primary transition-colors">Контакты</a>
               <div className="flex items-center gap-4">

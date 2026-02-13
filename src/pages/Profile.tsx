@@ -73,15 +73,13 @@ export default function Profile() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {user.isAdmin && (
-                <Button variant="outline" onClick={() => navigate('/admin')}>
-                  <Icon name="Settings" className="mr-2 h-4 w-4" />
-                  Админ-панель
-                </Button>
-              )}
+              <Button variant="outline" onClick={() => navigate('/admin')}>
+                <Icon name="Settings" className="mr-2 h-4 w-4" />
+                Админ-панель
+              </Button>
               <Button variant="outline" onClick={() => navigate('/suppliers')}>
                 <Icon name="Package" className="mr-2 h-4 w-4" />
-                Материалы
+                Каталог
               </Button>
             </div>
           </div>
