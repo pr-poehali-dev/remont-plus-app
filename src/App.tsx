@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AIChat from "./pages/AIChat";
 import Designer from "./pages/Designer";
+import DesignerStage from "./pages/DesignerStage";
 import Calculator from "./pages/Calculator";
 import Catalog from "./pages/Catalog";
 import Dashboard from "./pages/Dashboard";
@@ -34,6 +35,7 @@ const App = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/ai-chat" element={<AIChat />} />
             <Route path="/designer" element={<Designer />} />
+            <Route path="/designer/:stageId" element={<DesignerStage />} />
             <Route path="/calculator" element={<Calculator />} />
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/dashboard" element={<Dashboard />} />
