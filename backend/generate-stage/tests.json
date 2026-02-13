@@ -1,0 +1,47 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS returns CORS headers",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET returns method not allowed",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 405
+    },
+    {
+      "name": "POST without body returns 400",
+      "method": "POST",
+      "path": "/",
+      "body": {},
+      "expectedStatus": 400
+    },
+    {
+      "name": "POST with invalid stage returns 400",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "stage_id": "nonexistent",
+        "description": "test"
+      },
+      "expectedStatus": 400
+    },
+    {
+      "name": "POST generates stage content",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "stage_id": "general",
+        "description": "Квартира 60 м², 2 комнаты, для семьи из 3 человек"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "stage_id": "general"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

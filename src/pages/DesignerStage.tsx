@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+
+const GENERATE_URL = "https://functions.poehali.dev/746aa569-de80-47ab-978b-595df0f02c43";
 
 interface StageConfig {
   title: string;
@@ -161,7 +162,7 @@ const STAGE_CONFIG: Record<string, StageConfig> = {
     icon: "CookingPot",
     description: "Детальная планировка кухни: расположение шкафов, техники, рабочего треугольника и систем хранения.",
     tips: [
-      "Рабочий треугольник: холодильник → мойка → плита",
+      "Рабочий треугольник: холодильник - мойка - плита",
       "Между мойкой и плитой — минимум 60 см рабочей поверхности",
       "Верхние шкафы — на высоте 50-60 см от столешницы",
       "Розетки для техники — за шкафами на высоте 110 см",
@@ -202,14 +203,70 @@ const STAGE_CONFIG: Record<string, StageConfig> = {
   },
 };
 
+function formatAiContent(content: string) {
+  const lines = content.split("\n");
+  return lines.map((line, i) => {
+    const trimmed = line.trim();
+    if (!trimmed) return <br key={i} />;
+
+    if (trimmed.startsWith("### ")) {
+      return <h4 key={i} className="font-semibold text-sm mt-4 mb-1">{trimmed.slice(4)}</h4>;
+    }
+    if (trimmed.startsWith("## ")) {
+      return <h3 key={i} className="font-bold text-base mt-5 mb-2">{trimmed.slice(3)}</h3>;
+    }
+    if (trimmed.startsWith("# ")) {
+      return <h2 key={i} className="font-bold text-lg mt-5 mb-2">{trimmed.slice(2)}</h2>;
+    }
+    if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+      return (
+        <div key={i} className="flex gap-2 ml-2 text-sm text-gray-700">
+          <span className="text-primary mt-0.5">&#8226;</span>
+          <span>{trimmed.slice(2)}</span>
+        </div>
+      );
+    }
+    if (/^\d+\.\s/.test(trimmed)) {
+      const text = trimmed.replace(/^\d+\.\s/, "");
+      const num = trimmed.match(/^(\d+)\./)?.[1];
+      return (
+        <div key={i} className="flex gap-2 ml-2 text-sm text-gray-700">
+          <span className="font-semibold text-primary min-w-[20px]">{num}.</span>
+          <span>{text}</span>
+        </div>
+      );
+    }
+    if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
+      return <p key={i} className="font-semibold text-sm mt-2">{trimmed.slice(2, -2)}</p>;
+    }
+
+    return <p key={i} className="text-sm text-gray-700 leading-relaxed">{line}</p>;
+  });
+}
+
 export default function DesignerStage() {
   const { stageId } = useParams<{ stageId: string }>();
   const navigate = useNavigate();
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const config = stageId ? STAGE_CONFIG[stageId] : null;
 
   const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set());
   const [notes, setNotes] = useState("");
+  const [userDescription, setUserDescription] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiResult, setAiResult] = useState<string | null>(null);
+  const [aiProvider, setAiProvider] = useState<string | null>(null);
+  const [generationHistory, setGenerationHistory] = useState<Array<{ content: string; timestamp: string }>>([]);
+
+  useEffect(() => {
+    setAiResult(null);
+    setAiProvider(null);
+    setUserDescription("");
+    setNotes("");
+    setCheckedItems(new Set());
+    setGenerationHistory([]);
+  }, [stageId]);
 
   if (!config) {
     return (
@@ -236,6 +293,50 @@ export default function DesignerStage() {
   const checkedPercent = config.checklistItems.length > 0
     ? Math.round((checkedItems.size / config.checklistItems.length) * 100)
     : 0;
+
+  const handleGenerate = async () => {
+    if (!userDescription.trim()) return;
+
+    setIsGenerating(true);
+    setAiResult(null);
+
+    try {
+      const response = await fetch(GENERATE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stage_id: stageId,
+          description: userDescription.trim(),
+          notes: notes.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "Ошибка генерации");
+      }
+
+      const data = await response.json();
+      setAiResult(data.content);
+      setAiProvider(data.provider);
+      setGenerationHistory((prev) => [
+        ...prev,
+        {
+          content: data.content,
+          timestamp: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+
+      setTimeout(() => {
+        resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Неизвестная ошибка";
+      setAiResult(`Ошибка: ${msg}. Попробуйте ещё раз.`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -265,18 +366,20 @@ export default function DesignerStage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/ai-chat")}
-              >
-                <Icon name="Sparkles" className="mr-2 h-4 w-4" />
-                Спросить ИИ
-              </Button>
-              <Button size="sm">
-                <Icon name="Save" className="mr-2 h-4 w-4" />
-                Сохранить
-              </Button>
+              {aiResult && (
+                <Button variant="outline" size="sm" onClick={() => {
+                  const blob = new Blob([aiResult], { type: "text/plain;charset=utf-8" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${config.title}.txt`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}>
+                  <Icon name="Download" className="mr-2 h-4 w-4" />
+                  Скачать
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -286,46 +389,135 @@ export default function DesignerStage() {
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <Card className="p-6">
-              <p className="text-gray-700 leading-relaxed mb-6">{config.description}</p>
+              <p className="text-gray-700 leading-relaxed mb-5">{config.description}</p>
 
-              <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center mb-4">
-                <div className="text-center">
-                  <Icon name={config.icon} className="h-16 w-16 text-gray-300 mx-auto mb-3" />
-                  <h3 className="font-semibold text-gray-500 mb-2">Рабочая область</h3>
-                  <p className="text-sm text-gray-400 mb-4">
-                    Здесь будет схема / визуализация этого этапа
-                  </p>
-                  <Button>
-                    <Icon name="Sparkles" className="mr-2 h-4 w-4" />
-                    Сгенерировать с помощью ИИ
-                  </Button>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-semibold mb-2 block flex items-center gap-2">
+                    <Icon name="FileText" className="h-4 w-4 text-primary" />
+                    Опишите ваше помещение
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">{config.aiPromptHint}</p>
+                  <textarea
+                    className="w-full min-h-[100px] px-3 py-2 border rounded-lg text-sm resize-y focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                    placeholder="Например: Квартира 60 м², 2 комнаты, для семьи из 3 человек. Нужна зона отдыха и рабочее место..."
+                    value={userDescription}
+                    onChange={(e) => setUserDescription(e.target.value)}
+                  />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
-                  >
-                    <Icon name="Plus" className="h-5 w-5 text-gray-400" />
+                <div>
+                  <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                    <Icon name="StickyNote" className="h-4 w-4 text-gray-400" />
+                    Дополнительные заметки
+                    <span className="text-xs text-gray-400">(необязательно)</span>
+                  </label>
+                  <textarea
+                    className="w-full min-h-[60px] px-3 py-2 border rounded-lg text-sm resize-y"
+                    placeholder="Размеры, особенности, пожелания..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                </div>
+
+                <Button
+                  className="w-full h-12 text-base"
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !userDescription.trim()}
+                >
+                  {isGenerating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />
+                      ИИ генерирует рекомендации...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="Sparkles" className="mr-2 h-5 w-5" />
+                      {aiResult ? "Перегенерировать" : "Сгенерировать рекомендации ИИ"}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </Card>
+
+            {isGenerating && (
+              <Card className="p-8">
+                <div className="flex flex-col items-center justify-center">
+                  <div className="relative mb-4">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary" />
+                    <Icon name="Sparkles" className="h-6 w-6 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                   </div>
-                ))}
-              </div>
-            </Card>
+                  <h3 className="font-semibold mb-1">ИИ анализирует ваше помещение</h3>
+                  <p className="text-sm text-gray-500">Создаём детальные рекомендации для этапа «{config.title}»...</p>
+                </div>
+              </Card>
+            )}
 
-            <Card className="p-6">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Icon name="StickyNote" className="h-5 w-5 text-primary" />
-                Заметки
-              </h3>
-              <textarea
-                className="w-full min-h-[120px] px-3 py-2 border rounded-lg text-sm resize-y"
-                placeholder="Запишите свои идеи, размеры, пожелания..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </Card>
+            {aiResult && !isGenerating && (
+              <Card className="p-6 border-2 border-primary/20" ref={resultRef}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold flex items-center gap-2">
+                    <Icon name="Sparkles" className="h-5 w-5 text-primary" />
+                    Рекомендации ИИ
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    {aiProvider && (
+                      <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                        {aiProvider === "yandexgpt" ? "YandexGPT" : "ChatGPT"}
+                      </span>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(aiResult);
+                      }}
+                    >
+                      <Icon name="Copy" className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-5 space-y-1">
+                  {formatAiContent(aiResult)}
+                </div>
+              </Card>
+            )}
+
+            {generationHistory.length > 1 && (
+              <Card className="p-5">
+                <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Icon name="History" className="h-4 w-4 text-gray-400" />
+                  История генераций ({generationHistory.length})
+                </h3>
+                <div className="space-y-2">
+                  {generationHistory.map((item, idx) => (
+                    <button
+                      key={idx}
+                      className={`w-full text-left p-3 rounded-lg border text-sm transition-colors ${
+                        item.content === aiResult
+                          ? "border-primary bg-primary/5"
+                          : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                      onClick={() => {
+                        setAiResult(item.content);
+                        resultRef.current?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">
+                          Вариант {idx + 1}
+                        </span>
+                        <span className="text-xs text-gray-400">{item.timestamp}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        {item.content.slice(0, 120)}...
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            )}
           </div>
 
           <div className="space-y-6">
@@ -381,17 +573,25 @@ export default function DesignerStage() {
 
             <Card className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50">
               <Icon name="Sparkles" className="h-7 w-7 text-blue-600 mb-2" />
-              <h3 className="font-semibold text-sm mb-1 text-blue-900">Подсказка для ИИ</h3>
-              <p className="text-xs text-gray-600 mb-3">{config.aiPromptHint}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full text-xs"
-                onClick={() => navigate("/ai-chat")}
-              >
-                <Icon name="MessageSquare" className="mr-1.5 h-3.5 w-3.5" />
-                Открыть чат с ИИ
-              </Button>
+              <h3 className="font-semibold text-sm mb-1 text-blue-900">Как это работает</h3>
+              <ol className="text-xs text-gray-600 space-y-1.5 mt-2">
+                <li className="flex gap-2">
+                  <span className="font-bold text-blue-600">1.</span>
+                  Опишите помещение в текстовом поле
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-bold text-blue-600">2.</span>
+                  Нажмите «Сгенерировать рекомендации»
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-bold text-blue-600">3.</span>
+                  ИИ создаст детальный план для этого этапа
+                </li>
+                <li className="flex gap-2">
+                  <span className="font-bold text-blue-600">4.</span>
+                  Скачайте результат или перегенерируйте
+                </li>
+              </ol>
             </Card>
 
             <div className="flex gap-2">
