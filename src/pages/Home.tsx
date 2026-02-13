@@ -44,7 +44,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Icon name="Store" className="h-8 w-8 text-primary" />
+              <Icon name="Compass" className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold tracking-tight">АВАНГАРД</span>
             </div>
             <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500">
