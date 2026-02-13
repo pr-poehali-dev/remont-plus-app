@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
@@ -47,9 +48,19 @@ export default function Home() {
               <Icon name="Compass" className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold tracking-tight">АВАНГАРД</span>
             </div>
-            <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500">
-              <Icon name="Phone" className="h-4 w-4" />
-              <span className="font-medium text-gray-700">+7 (987) 980-77-77</span>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500 mr-2">
+                <Icon name="Phone" className="h-4 w-4" />
+                <span className="font-medium text-gray-700">+7 (987) 980-77-77</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>
+                <Icon name="LogIn" className="mr-1.5 h-4 w-4" />
+                Войти
+              </Button>
+              <Button size="sm" onClick={() => navigate("/register")}>
+                <Icon name="UserPlus" className="mr-1.5 h-4 w-4" />
+                Регистрация
+              </Button>
             </div>
           </div>
         </div>
