@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Icon from "@/components/ui/icon";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 
 const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
@@ -17,6 +17,8 @@ const userTypes = [
 
 export default function Register() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect");
   const [userType, setUserType] = useState("customer");
   const [formData, setFormData] = useState({ email: "", password: "", name: "", phone: "" });
   const [error, setError] = useState("");
@@ -49,7 +51,7 @@ export default function Register() {
 
       localStorage.setItem("avangard_user", JSON.stringify(data.user));
       localStorage.setItem("avangard_token", data.token);
-      navigate("/");
+      navigate(redirectTo || "/");
     } catch {
       setError("Сервер недоступен. Попробуйте позже.");
     } finally {
@@ -167,7 +169,7 @@ export default function Register() {
 
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Уже есть аккаунт? </span>
-              <Button variant="link" className="p-0 h-auto" onClick={() => navigate("/login")}>
+              <Button variant="link" className="p-0 h-auto" onClick={() => navigate(redirectTo ? `/login?redirect=${redirectTo}` : "/login")}>
                 Войти
               </Button>
             </div>

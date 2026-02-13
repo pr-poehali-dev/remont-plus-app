@@ -111,7 +111,7 @@ export default function Login() {
 
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Нет аккаунта? </span>
-              <Button variant="link" className="p-0 h-auto" onClick={() => navigate("/register")}>
+              <Button variant="link" className="p-0 h-auto" onClick={() => navigate(redirectTo ? `/register?redirect=${redirectTo}` : "/register")}>
                 Зарегистрироваться
               </Button>
             </div>
