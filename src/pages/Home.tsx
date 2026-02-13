@@ -128,7 +128,7 @@ export default function Home() {
               <Card
                 key={role.id}
                 className={`p-8 cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-2 border-transparent ${role.border}`}
-                onClick={() => navigate(user ? role.path : "/login")}
+                onClick={() => navigate(user ? role.path : `/login?redirect=${role.path}`)}
               >
                 <div className={`w-16 h-16 rounded-2xl ${role.bg} flex items-center justify-center mb-6`}>
                   <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${role.color} flex items-center justify-center`}>

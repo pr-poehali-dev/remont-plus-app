@@ -3,13 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 
 const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -39,7 +41,7 @@ export default function Login() {
       if (data.user.role === "admin") {
         navigate("/admin");
       } else {
-        navigate("/");
+        navigate(redirectTo || "/");
       }
     } catch {
       setError("Сервер недоступен. Попробуйте позже.");
