@@ -1,0 +1,41 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "List projects",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create project",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Тестовый проект",
+        "style": "modern",
+        "room_count": 2,
+        "total_area": 55
+      },
+      "expectedStatus": 201,
+      "expectedBody": {},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Save stage missing fields",
+      "method": "PUT",
+      "path": "/",
+      "body": {
+        "stage_id": "general"
+      },
+      "expectedStatus": 400
+    }
+  ]
+}
