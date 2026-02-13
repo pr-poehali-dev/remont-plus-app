@@ -34,12 +34,12 @@
       "method": "POST",
       "path": "/",
       "body": {
-        "stage_id": "general",
+        "stage_id": "planning",
         "description": "Квартира 60 м², 2 комнаты, для семьи из 3 человек"
       },
       "expectedStatus": 200,
       "expectedBody": {
-        "stage_id": "general"
+        "stage_id": "planning"
       },
       "bodyMatcher": "partial"
     }
