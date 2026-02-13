@@ -1,6 +1,7 @@
 import json
 import os
 import requests
+import base64
 
 STAGE_SYSTEM_PROMPTS = {
     "planning": "Ты — профессиональный дизайнер интерьера. Создай детальное планировочное решение для помещения. Опиши: зонирование пространства, расстановку мебели, расположение перегородок, функциональные зоны, маршруты передвижения и ширину проходов. Ответ структурируй по помещениям.",
@@ -18,19 +19,59 @@ BASE_SYSTEM = """Ты работаешь в компании АВАНГАРД �
 В конце добавь раздел "Рекомендуемые материалы" с примерными ценами.
 Отвечай на русском языке."""
 
+PHOTO_SYSTEM_ADDITION = """
+Клиент приложил фотографии помещения. Внимательно проанализируй их:
+- Оцени текущее состояние помещения
+- Определи примерные размеры и пропорции по фото
+- Учти существующую отделку, мебель, коммуникации
+- Дай рекомендации с учётом того, что видишь на фото"""
 
-def call_polza_ai(stage_id: str, user_description: str, notes: str) -> dict:
-    """Генерация схемы через Polza AI"""
+
+def build_user_content(user_description, notes, photos):
+    """Формирует content для user message с текстом и фото"""
+    parts = []
+
+    text = f"Описание помещения от клиента:\n{user_description}"
+    if notes:
+        text += f"\n\nДополнительные заметки клиента:\n{notes}"
+    if photos:
+        text += f"\n\nКлиент приложил {len(photos)} фото помещения. Проанализируй их и учти в рекомендациях."
+
+    parts.append({"type": "text", "text": text})
+
+    for photo in (photos or []):
+        data = photo.get("data", "")
+        mime = photo.get("type", "image/jpeg")
+        if data:
+            parts.append({
+                "type": "image_url",
+                "image_url": {"url": f"data:{mime};base64,{data}"}
+            })
+
+    return parts
+
+
+def call_polza_ai(stage_id, user_description, notes, photos=None):
+    """Генерация через Polza AI (OpenAI-совместимый, поддерживает vision)"""
     api_key = os.environ.get('POLZA_AI_API_KEY')
     if not api_key:
         return None
 
     stage_prompt = STAGE_SYSTEM_PROMPTS.get(stage_id, "Ты — профессиональный дизайнер интерьера.")
     system = f"{stage_prompt}\n\n{BASE_SYSTEM}"
+    if photos:
+        system += PHOTO_SYSTEM_ADDITION
 
-    user_msg = f"Описание помещения от клиента:\n{user_description}"
-    if notes:
-        user_msg += f"\n\nДополнительные заметки клиента:\n{notes}"
+    has_photos = photos and len(photos) > 0
+    model = 'gpt-4o-mini' if has_photos else 'gpt-4o-mini'
+
+    if has_photos:
+        user_content = build_user_content(user_description, notes, photos)
+    else:
+        text = f"Описание помещения от клиента:\n{user_description}"
+        if notes:
+            text += f"\n\nДополнительные заметки клиента:\n{notes}"
+        user_content = text
 
     response = requests.post(
         'https://api.polza.ai/v1/chat/completions',
@@ -39,15 +80,15 @@ def call_polza_ai(stage_id: str, user_description: str, notes: str) -> dict:
             'Content-Type': 'application/json'
         },
         json={
-            'model': 'gpt-4o-mini',
+            'model': model,
             'messages': [
                 {'role': 'system', 'content': system},
-                {'role': 'user', 'content': user_msg}
+                {'role': 'user', 'content': user_content}
             ],
             'temperature': 0.7,
             'max_tokens': 3000
         },
-        timeout=60
+        timeout=90
     )
 
     if response.status_code not in (200, 201):
@@ -60,8 +101,8 @@ def call_polza_ai(stage_id: str, user_description: str, notes: str) -> dict:
     }
 
 
-def call_yandex_gpt(stage_id: str, user_description: str, notes: str) -> dict:
-    """Генерация схемы через YandexGPT"""
+def call_yandex_gpt(stage_id, user_description, notes, photos=None):
+    """Генерация через YandexGPT (без поддержки vision — фото игнорируются)"""
     api_key = os.environ.get('YANDEX_GPT_API_KEY')
     folder_id = os.environ.get('YANDEX_FOLDER_ID', 'b1gjbflgkc6kmaki44db')
     if not api_key:
@@ -73,6 +114,8 @@ def call_yandex_gpt(stage_id: str, user_description: str, notes: str) -> dict:
     user_msg = f"Описание помещения от клиента:\n{user_description}"
     if notes:
         user_msg += f"\n\nДополнительные заметки клиента:\n{notes}"
+    if photos:
+        user_msg += f"\n\n(Клиент приложил {len(photos)} фотографий помещения, но в текстовом режиме они недоступны. Ориентируйся на текстовое описание.)"
 
     response = requests.post(
         'https://llm.api.cloud.yandex.net/foundationModels/v1/completion',
@@ -106,7 +149,7 @@ def call_yandex_gpt(stage_id: str, user_description: str, notes: str) -> dict:
 
 
 def handler(event: dict, context) -> dict:
-    """Генерация ИИ-схемы для этапа дизайн-проекта"""
+    """Генерация ИИ-рекомендаций для этапа дизайн-проекта с поддержкой фото"""
 
     if event.get('httpMethod') == 'OPTIONS':
         return {
@@ -133,6 +176,7 @@ def handler(event: dict, context) -> dict:
     stage_id = body.get('stage_id', '')
     description = body.get('description', '')
     notes = body.get('notes', '')
+    photos = body.get('photos', [])
 
     if not stage_id or not description:
         return {
@@ -150,9 +194,25 @@ def handler(event: dict, context) -> dict:
             'isBase64Encoded': False
         }
 
-    result = call_yandex_gpt(stage_id, description, notes)
-    if not result:
-        result = call_polza_ai(stage_id, description, notes)
+    valid_photos = []
+    for p in photos[:5]:
+        data = p.get('data', '')
+        if data and len(data) < 5_000_000:
+            valid_photos.append({
+                'data': data,
+                'type': p.get('type', 'image/jpeg')
+            })
+
+    has_photos = len(valid_photos) > 0
+
+    if has_photos:
+        result = call_polza_ai(stage_id, description, notes, valid_photos)
+        if not result:
+            result = call_yandex_gpt(stage_id, description, notes, valid_photos)
+    else:
+        result = call_yandex_gpt(stage_id, description, notes)
+        if not result:
+            result = call_polza_ai(stage_id, description, notes)
 
     if not result:
         return {
@@ -168,7 +228,8 @@ def handler(event: dict, context) -> dict:
         'body': json.dumps({
             'content': result['content'],
             'provider': result['provider'],
-            'stage_id': stage_id
+            'stage_id': stage_id,
+            'photos_analyzed': len(valid_photos)
         }, ensure_ascii=False),
         'isBase64Encoded': False
     }

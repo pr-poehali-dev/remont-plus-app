@@ -112,6 +112,8 @@ export default function DesignerStage() {
   const [generationHistory, setGenerationHistory] = useState<Array<{ content: string; timestamp: string }>>([]);
   const [isLoadingStage, setIsLoadingStage] = useState(true);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [photos, setPhotos] = useState<Array<{ data: string; type: string; preview: string }>>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setAiResult(null);
@@ -121,6 +123,7 @@ export default function DesignerStage() {
     setCheckedItems(new Set());
     setGenerationHistory([]);
     setSaveStatus("idle");
+    setPhotos([]);
 
     if (projectId && stageId) {
       loadStageData();
@@ -213,15 +216,41 @@ export default function DesignerStage() {
 
   const checkedPercent = config.checklistItems.length > 0 ? Math.round((checkedItems.size / config.checklistItems.length) * 100) : 0;
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const remaining = 5 - photos.length;
+    const toProcess = Array.from(files).slice(0, remaining);
+
+    toProcess.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(",")[1];
+        setPhotos((prev) => [
+          ...prev,
+          { data: base64, type: file.type, preview: result },
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleGenerate = async () => {
     if (!userDescription.trim()) return;
     setIsGenerating(true);
     setAiResult(null);
+    const photoPayload = photos.map((p) => ({ data: p.data, type: p.type }));
     try {
       const response = await fetch(GENERATE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stage_id: stageId, description: userDescription.trim(), notes: notes.trim() }),
+        body: JSON.stringify({ stage_id: stageId, description: userDescription.trim(), notes: notes.trim(), photos: photoPayload }),
       });
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
@@ -322,6 +351,34 @@ export default function DesignerStage() {
                     <Icon name="StickyNote" className="h-4 w-4 text-gray-400" />Дополнительные заметки <span className="text-xs text-gray-400">(необязательно)</span>
                   </label>
                   <textarea className="w-full min-h-[60px] px-3 py-2 border rounded-lg text-sm resize-y" placeholder="Размеры, особенности, пожелания..." value={notes} onChange={(e) => handleNotesChange(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                    <Icon name="Camera" className="h-4 w-4 text-gray-400" />Фото помещения <span className="text-xs text-gray-400">(до 5 фото, необязательно)</span>
+                  </label>
+                  <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} />
+                  <div className="flex flex-wrap gap-3">
+                    {photos.map((photo, idx) => (
+                      <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border group">
+                        <img src={photo.preview} alt={`Фото ${idx + 1}`} className="w-full h-full object-cover" />
+                        <button onClick={() => removePhoto(idx)} className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Icon name="X" className="h-3 w-3 text-white" />
+                        </button>
+                      </div>
+                    ))}
+                    {photos.length < 5 && (
+                      <button onClick={() => fileInputRef.current?.click()} className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 hover:border-primary hover:bg-primary/5 transition-colors">
+                        <Icon name="Plus" className="h-5 w-5 text-gray-400" />
+                        <span className="text-[10px] text-gray-400">Добавить</span>
+                      </button>
+                    )}
+                  </div>
+                  {photos.length > 0 && (
+                    <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                      <Icon name="CheckCircle2" className="h-3 w-3" />
+                      {photos.length} фото — ИИ проанализирует их при генерации
+                    </p>
+                  )}
                 </div>
                 <Button className="w-full h-12 text-base" onClick={handleGenerate} disabled={isGenerating || !userDescription.trim()}>
                   {isGenerating ? (<><div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2" />ИИ генерирует рекомендации...</>) : (<><Icon name="Sparkles" className="mr-2 h-5 w-5" />{aiResult ? "Перегенерировать" : "Сгенерировать рекомендации ИИ"}</>)}
