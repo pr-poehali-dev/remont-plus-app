@@ -2,6 +2,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  user_type: string;
+  role: string;
+}
 
 const roles = [
   {
@@ -38,6 +47,20 @@ const roles = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("avangard_user");
+    if (saved) {
+      try { setUser(JSON.parse(saved)); } catch { /* ignore */ }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("avangard_user");
+    localStorage.removeItem("avangard_token");
+    setUser(null);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -53,14 +76,37 @@ export default function Home() {
                 <Icon name="Phone" className="h-4 w-4" />
                 <span className="font-medium text-gray-700">+7 (987) 980-77-77</span>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>
-                <Icon name="LogIn" className="mr-1.5 h-4 w-4" />
-                Войти
-              </Button>
-              <Button size="sm" onClick={() => navigate("/register")}>
-                <Icon name="UserPlus" className="mr-1.5 h-4 w-4" />
-                Регистрация
-              </Button>
+              {user ? (
+                <>
+                  <div className="hidden sm:flex items-center gap-2 text-sm">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Icon name="User" className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="font-medium">{user.name}</span>
+                  </div>
+                  {user.role === "admin" && (
+                    <Button variant="outline" size="sm" onClick={() => navigate("/admin")}>
+                      <Icon name="Shield" className="mr-1.5 h-4 w-4" />
+                      Админ
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>
+                    <Icon name="LogOut" className="mr-1.5 h-4 w-4" />
+                    Выйти
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>
+                    <Icon name="LogIn" className="mr-1.5 h-4 w-4" />
+                    Войти
+                  </Button>
+                  <Button size="sm" onClick={() => navigate("/register")}>
+                    <Icon name="UserPlus" className="mr-1.5 h-4 w-4" />
+                    Регистрация
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -70,7 +116,9 @@ export default function Home() {
         <div className="w-full max-w-4xl">
           <div className="text-center mb-10">
             <h1 className="text-3xl md:text-4xl font-bold mb-3">Ремонт и строительство</h1>
-            <p className="text-gray-500 text-lg">Выберите, кто вы</p>
+            <p className="text-gray-500 text-lg">
+              {user ? `${user.name}, выберите раздел` : "Выберите, кто вы"}
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -87,7 +135,7 @@ export default function Home() {
                 </div>
                 <h2 className="text-xl font-bold mb-3 tracking-wide">{role.title}</h2>
                 <p className="text-gray-500 text-sm leading-relaxed">{role.description}</p>
-                <div className="mt-6 flex items-center text-sm font-medium text-gray-400 group-hover:text-gray-600">
+                <div className="mt-6 flex items-center text-sm font-medium text-gray-400">
                   Перейти <Icon name="ArrowRight" className="ml-2 h-4 w-4" />
                 </div>
               </Card>

@@ -1,18 +1,72 @@
 {
   "tests": [
     {
-      "name": "Send SMS code",
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Register new user",
       "method": "POST",
       "path": "/",
       "body": {
-        "action": "send_code",
-        "phone": "+79991234567",
+        "action": "register",
+        "email": "test_auth_user@example.com",
+        "password": "test123456",
+        "name": "Тест Юзер",
+        "phone": "+70000000001",
         "user_type": "customer"
       },
       "expectedStatus": 200,
       "expectedBody": {
-        "success": true,
-        "message": "string"
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login with registered user",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "login",
+        "email": "test_auth_user@example.com",
+        "password": "test123456"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login with wrong password",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "login",
+        "email": "test_auth_user@example.com",
+        "password": "wrongpass"
+      },
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Register duplicate email",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "register",
+        "email": "test_auth_user@example.com",
+        "password": "test123456",
+        "name": "Другой Юзер"
+      },
+      "expectedStatus": 409,
+      "expectedBody": {
+        "error": "string"
       },
       "bodyMatcher": "partial"
     },

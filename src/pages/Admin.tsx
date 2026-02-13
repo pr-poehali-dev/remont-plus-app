@@ -18,6 +18,13 @@ export default function Admin() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const saved = localStorage.getItem("avangard_user");
+    if (!saved) { navigate("/login"); return; }
+    try {
+      const u = JSON.parse(saved);
+      if (u.role !== "admin") { navigate("/"); return; }
+    } catch { navigate("/login"); return; }
+
     loadProducts();
     loadMaterials();
   }, []);

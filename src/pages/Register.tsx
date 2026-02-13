@@ -7,82 +7,95 @@ import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
+const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
+
+const userTypes = [
+  { value: "customer", icon: "Home", title: "Заказчик", description: "Хочу сделать ремонт" },
+  { value: "contractor", icon: "Hammer", title: "Исполнитель", description: "Выполняю ремонтные работы" },
+  { value: "supplier", icon: "Store", title: "Поставщик", description: "Поставляю материалы" },
+];
+
 export default function Register() {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState<"client" | "contractor" | "supplier">("client");
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    phone: ""
-  });
+  const [userType, setUserType] = useState("customer");
+  const [formData, setFormData] = useState({ email: "", password: "", name: "", phone: "" });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const res = await fetch(AUTH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "register",
+          email: formData.email.trim(),
+          password: formData.password,
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          user_type: userType,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Ошибка регистрации");
+        return;
+      }
+
+      localStorage.setItem("avangard_user", JSON.stringify(data.user));
+      localStorage.setItem("avangard_token", data.token);
+      navigate("/");
+    } catch {
+      setError("Сервер недоступен. Попробуйте позже.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const userTypes = [
-    {
-      value: "client",
-      icon: "User",
-      title: "Клиент",
-      description: "Я хочу сделать ремонт"
-    },
-    {
-      value: "contractor",
-      icon: "Hammer",
-      title: "Исполнитель",
-      description: "Я выполняю ремонтные работы"
-    },
-    {
-      value: "supplier",
-      icon: "Package",
-      title: "Поставщик",
-      description: "Я поставляю материалы"
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/')}
-            className="mb-4"
-          >
+          <Button variant="ghost" onClick={() => navigate("/")} className="mb-4">
             <Icon name="ArrowLeft" className="mr-2 h-4 w-4" />
             На главную
           </Button>
           <h1 className="text-3xl font-bold mb-2">Регистрация</h1>
-          <p className="text-gray-600">Создайте аккаунт и начните работу с платформой</p>
+          <p className="text-gray-600">Создайте аккаунт и начните работу</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>Выберите тип аккаунта</CardTitle>
-            <CardDescription>
-              Выберите, как вы будете использовать платформу
-            </CardDescription>
+            <CardDescription>Как вы будете использовать платформу</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <RadioGroup value={userType} onValueChange={(value) => setUserType(value as typeof userType)}>
+              {error && (
+                <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg flex items-center gap-2">
+                  <Icon name="AlertCircle" className="h-4 w-4 flex-shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              <RadioGroup value={userType} onValueChange={setUserType}>
                 <div className="grid md:grid-cols-3 gap-4">
                   {userTypes.map((type) => (
                     <Label
                       key={type.value}
                       htmlFor={type.value}
                       className={`flex flex-col items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                        userType === type.value
-                          ? "border-purple-600 bg-purple-50"
-                          : "border-gray-200 hover:border-purple-200"
+                        userType === type.value ? "border-primary bg-primary/5" : "border-gray-200 hover:border-primary/30"
                       }`}
                     >
                       <RadioGroupItem value={type.value} id={type.value} className="sr-only" />
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        userType === type.value ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-600"
+                        userType === type.value ? "bg-primary text-primary-foreground" : "bg-gray-100 text-gray-600"
                       }`}>
                         <Icon name={type.icon} className="h-6 w-6" />
                       </div>
@@ -97,7 +110,7 @@ export default function Register() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Имя</Label>
+                  <Label htmlFor="name">Имя *</Label>
                   <Input
                     id="name"
                     placeholder="Иван Иванов"
@@ -114,13 +127,12 @@ export default function Register() {
                     placeholder="+7 (999) 123-45-67"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -132,31 +144,30 @@ export default function Register() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Пароль</Label>
+                <Label htmlFor="password">Пароль * <span className="text-xs text-gray-400">(минимум 6 символов)</span></Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Минимум 8 символов"
+                  placeholder="Придумайте пароль"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
-                  minLength={8}
+                  minLength={6}
                 />
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
-                <Icon name="UserPlus" className="mr-2 h-5 w-5" />
-                Создать аккаунт
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? (
+                  <><div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />Регистрация...</>
+                ) : (
+                  <><Icon name="UserPlus" className="mr-2 h-5 w-5" />Создать аккаунт</>
+                )}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Уже есть аккаунт? </span>
-              <Button 
-                variant="link" 
-                className="p-0 h-auto"
-                onClick={() => navigate('/login')}
-              >
+              <Button variant="link" className="p-0 h-auto" onClick={() => navigate("/login")}>
                 Войти
               </Button>
             </div>
