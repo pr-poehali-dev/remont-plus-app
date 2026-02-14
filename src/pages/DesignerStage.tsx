@@ -114,6 +114,7 @@ export default function DesignerStage() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [photos, setPhotos] = useState<Array<{ data: string; type: string; preview: string }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setAiResult(null);
@@ -357,6 +358,7 @@ export default function DesignerStage() {
                     <Icon name="Camera" className="h-4 w-4 text-gray-400" />Фото помещения <span className="text-xs text-gray-400">(до 5 фото, необязательно)</span>
                   </label>
                   <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} />
+                  <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoUpload} />
                   <div className="flex flex-wrap gap-3">
                     {photos.map((photo, idx) => (
                       <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border group">
@@ -367,10 +369,16 @@ export default function DesignerStage() {
                       </div>
                     ))}
                     {photos.length < 5 && (
-                      <button onClick={() => fileInputRef.current?.click()} className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 hover:border-primary hover:bg-primary/5 transition-colors">
-                        <Icon name="Plus" className="h-5 w-5 text-gray-400" />
-                        <span className="text-[10px] text-gray-400">Добавить</span>
-                      </button>
+                      <div className="flex gap-2">
+                        <button onClick={() => cameraInputRef.current?.click()} className="w-20 h-20 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50/50 flex flex-col items-center justify-center gap-1 hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                          <Icon name="Camera" className="h-5 w-5 text-blue-400" />
+                          <span className="text-[10px] text-blue-400 font-medium">Камера</span>
+                        </button>
+                        <button onClick={() => fileInputRef.current?.click()} className="w-20 h-20 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 hover:border-primary hover:bg-primary/5 transition-colors">
+                          <Icon name="ImagePlus" className="h-5 w-5 text-gray-400" />
+                          <span className="text-[10px] text-gray-400">Галерея</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                   {photos.length > 0 && (
