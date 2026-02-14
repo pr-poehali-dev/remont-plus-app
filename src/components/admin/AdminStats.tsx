@@ -206,7 +206,7 @@ export const AdminStats = () => {
                   <span className="font-semibold">{stats.users.customers}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Исполнители:</span>
+                  <span className="text-muted-foreground">Мастера:</span>
                   <span className="font-semibold">{stats.users.contractors}</span>
                 </div>
               </div>
@@ -352,7 +352,7 @@ export const AdminStats = () => {
                   <SelectContent>
                     <SelectItem value="all">Все типы</SelectItem>
                     <SelectItem value="customer">Заказчики</SelectItem>
-                    <SelectItem value="contractor">Исполнители</SelectItem>
+                    <SelectItem value="contractor">Мастера</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -382,7 +382,7 @@ export const AdminStats = () => {
                         </div>
                         <div className="text-right">
                           <Badge variant={user.user_type === 'customer' ? 'default' : 'secondary'}>
-                            {user.user_type === 'customer' ? 'Заказчик' : 'Исполнитель'}
+                            {user.user_type === 'customer' ? 'Заказчик' : 'Мастер'}
                           </Badge>
                           {user.is_verified && (
                             <div className="mt-2">

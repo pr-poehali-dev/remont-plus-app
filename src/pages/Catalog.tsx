@@ -93,12 +93,12 @@ export default function Catalog() {
               </Button>
               <div>
                 <h1 className="text-xl font-bold">Каталог</h1>
-                <p className="text-sm text-gray-600">Проверенные исполнители и поставщики</p>
+                <p className="text-sm text-gray-600">Проверенные мастера и поставщики</p>
               </div>
             </div>
             <Button onClick={() => navigate('/register')}>
               <Icon name="UserPlus" className="mr-2 h-4 w-4" />
-              Стать исполнителем
+              Стать мастером
             </Button>
           </div>
         </div>
@@ -118,7 +118,7 @@ export default function Catalog() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="contractors">Исполнители</SelectItem>
+                      <SelectItem value="contractors">Мастера</SelectItem>
                       <SelectItem value="suppliers">Поставщики</SelectItem>
                     </SelectContent>
                   </Select>
@@ -175,7 +175,7 @@ export default function Catalog() {
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold mb-1">
-                  {userType === "contractors" ? "Исполнители" : "Поставщики"}
+                  {userType === "contractors" ? "Мастера" : "Поставщики"}
                 </h2>
                 <p className="text-gray-600">Найдено {data.length} результатов</p>
               </div>

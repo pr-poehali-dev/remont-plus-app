@@ -181,7 +181,7 @@ export const ProfileSection = () => {
                 </div>
                 <div>
                   <h4 className="font-semibold">Техническое задание</h4>
-                  <p className="text-xs text-muted-foreground">Формирование ТЗ для исполнителей</p>
+                  <p className="text-xs text-muted-foreground">Формирование ТЗ для мастеров</p>
                 </div>
               </div>
               <div className="text-right">

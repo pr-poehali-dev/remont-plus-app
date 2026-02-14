@@ -222,7 +222,7 @@ export const PhotoUpload = ({ projectId, onSuccess, onCancel }: PhotoUploadProps
                 </div>
                 <div className="flex items-start gap-2">
                   <Icon name="CheckCircle2" size={16} className="flex-shrink-0 mt-0.5 text-green-500" />
-                  <span>Фотографии помогут дизайнерам и исполнителям</span>
+                  <span>Фотографии помогут дизайнерам и мастерам</span>
                 </div>
               </div>
             </div>

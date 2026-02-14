@@ -11,7 +11,7 @@ const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce
 
 const userTypes = [
   { value: "customer", icon: "Home", title: "Заказчик", description: "Хочу сделать ремонт" },
-  { value: "contractor", icon: "Hammer", title: "Исполнитель", description: "Выполняю ремонтные работы" },
+  { value: "contractor", icon: "Hammer", title: "Мастер", description: "Выполняю ремонтные работы" },
   { value: "supplier", icon: "Store", title: "Поставщик", description: "Поставляю материалы" },
 ];
 

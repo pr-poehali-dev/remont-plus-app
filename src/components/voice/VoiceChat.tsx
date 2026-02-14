@@ -165,7 +165,7 @@ export const VoiceChat = ({ userRole = 'customer', conversationId }: VoiceChatPr
           <div>
             <h3 className="text-xl font-bold">ЯСЕН — Голосовой помощник</h3>
             <p className="text-sm text-white/90 font-normal">
-              {userRole === 'customer' ? 'Режим: Заказчик' : 'Режим: Исполнитель'}
+              {userRole === 'customer' ? 'Режим: Заказчик' : 'Режим: Мастер'}
             </p>
           </div>
         </CardTitle>

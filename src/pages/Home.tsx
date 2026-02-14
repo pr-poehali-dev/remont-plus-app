@@ -16,7 +16,7 @@ const roles = [
   {
     id: "customer",
     title: "ЗАКАЗЧИК",
-    description: "Создайте дизайн-проект с помощью ИИ, рассчитайте смету и найдите исполнителей",
+    description: "Создайте дизайн-проект с помощью ИИ, рассчитайте смету и найдите мастеров",
     icon: "Home",
     color: "from-amber-500 to-orange-500",
     bg: "bg-amber-50",
@@ -25,7 +25,7 @@ const roles = [
   },
   {
     id: "contractor",
-    title: "ИСПОЛНИТЕЛЬ",
+    title: "МАСТЕР",
     description: "Находите заказы на ремонт, управляйте проектами и получайте клиентов",
     icon: "Hammer",
     color: "from-blue-500 to-indigo-500",

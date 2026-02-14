@@ -38,7 +38,7 @@ const Index = () => {
     { id: 'projects', icon: 'Briefcase', label: 'Проекты' },
     { id: 'designer', icon: 'Palette', label: 'Дизайнер' },
     { id: 'materials', icon: 'Package', label: 'Каталог' },
-    { id: 'workers', icon: 'Users', label: 'Исполнители' },
+    { id: 'workers', icon: 'Users', label: 'Мастера' },
     { id: 'foreman', icon: 'UserCog', label: 'Прораб' },
     { id: 'control', icon: 'ClipboardCheck', label: 'Контроль' },
     { id: 'profile', icon: 'User', label: 'Кабинет' },

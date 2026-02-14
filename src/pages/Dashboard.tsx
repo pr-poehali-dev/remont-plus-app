@@ -143,7 +143,7 @@ export default function Dashboard() {
                     <p className="text-gray-600 mb-1">{project.room}</p>
                     {project.contractor && (
                       <p className="text-sm text-gray-600">
-                        Исполнитель: <span className="font-medium">{project.contractor}</span>
+                        Мастер: <span className="font-medium">{project.contractor}</span>
                       </p>
                     )}
                   </div>

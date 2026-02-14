@@ -74,7 +74,7 @@ export default function Calculator() {
               <Tabs defaultValue="estimate">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="estimate">Смета</TabsTrigger>
-                  <TabsTrigger value="contractors">Предложения исполнителей</TabsTrigger>
+                  <TabsTrigger value="contractors">Предложения мастеров</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="estimate" className="mt-6">
@@ -192,7 +192,7 @@ export default function Calculator() {
                   ))}
 
                   <Button variant="outline" className="w-full">
-                    Показать еще исполнителей
+                    Показать ещё мастеров
                   </Button>
                 </TabsContent>
               </Tabs>
@@ -250,7 +250,7 @@ export default function Calculator() {
                 </li>
                 <li className="flex gap-2">
                   <Icon name="Check" className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span>Сравните предложения минимум 3 исполнителей</span>
+                  <span>Сравните предложения минимум 3 мастеров</span>
                 </li>
                 <li className="flex gap-2">
                   <Icon name="Check" className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />

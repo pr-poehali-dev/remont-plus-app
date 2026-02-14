@@ -78,7 +78,7 @@ export default function Projects() {
               </Button>
               <div>
                 <h1 className="text-xl font-bold">Портфолио проектов</h1>
-                <p className="text-sm text-gray-600">Реализованные ремонты от наших исполнителей</p>
+                <p className="text-sm text-gray-600">Реализованные ремонты от наших мастеров</p>
               </div>
             </div>
             <Button onClick={() => navigate('/designer')}>
@@ -159,7 +159,7 @@ export default function Projects() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-600 mb-1">Исполнитель</p>
+                        <p className="text-sm text-gray-600 mb-1">Мастер</p>
                         <p className="text-sm font-medium">{project.contractor}</p>
                       </div>
                     </div>
@@ -190,7 +190,7 @@ export default function Projects() {
             <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Icon name="CheckCircle" className="h-8 w-8 text-purple-600" />
             </div>
-            <h3 className="font-semibold text-lg mb-2">Проверенные исполнители</h3>
+            <h3 className="font-semibold text-lg mb-2">Проверенные мастера</h3>
             <p className="text-sm text-gray-600">
               Все проекты реализованы сертифицированными подрядчиками
             </p>

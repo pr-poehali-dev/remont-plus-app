@@ -191,7 +191,7 @@ export const YasenAdminPanel = () => {
                             </div>
                             {order.contractor_phone && (
                               <div>
-                                <p className="text-sm text-muted-foreground mb-1">Исполнитель:</p>
+                                <p className="text-sm text-muted-foreground mb-1">Мастер:</p>
                                 <p className="font-medium flex items-center gap-2">
                                   <Icon name="Phone" size={16} />
                                   {order.contractor_phone}

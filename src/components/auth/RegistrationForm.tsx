@@ -157,7 +157,7 @@ export const RegistrationForm = ({ onClose, onSuccess }: RegistrationFormProps) 
                 </TabsTrigger>
                 <TabsTrigger value="contractor" className="flex items-center gap-2">
                   <Icon name="Briefcase" size={16} />
-                  Исполнитель
+                  Мастер
                 </TabsTrigger>
               </TabsList>
 

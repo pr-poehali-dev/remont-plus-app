@@ -41,7 +41,7 @@ export const HomeSection = () => {
             onClick={() => setShowRegistration(true)}
           >
             <Icon name="Briefcase" size={20} className="mr-2" />
-            ИСПОЛНИТЕЛЬ
+            МАСТЕР
           </Button>
         </div>
       </div>
@@ -171,7 +171,7 @@ export const HomeSection = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Icon name="Briefcase" size={24} className="text-primary" />
-            Для исполнителя
+            Для мастера
           </CardTitle>
           <CardDescription>Получайте заказы от проверенных клиентов</CardDescription>
         </CardHeader>
@@ -204,7 +204,7 @@ export const HomeSection = () => {
             className="w-full mt-6 h-12 text-base font-semibold border-2"
             onClick={() => setShowRegistration(true)}
           >
-            Зарегистрироваться как исполнитель
+            Зарегистрироваться как мастер
             <Icon name="UserPlus" size={20} className="ml-2" />
           </Button>
         </CardContent>

@@ -41,7 +41,7 @@ export const WorkersSection = () => {
         <div className="gradient-purple-pink p-6 text-white">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
             <Icon name="Users" size={28} />
-            Исполнители
+            Мастера
           </h2>
           <p className="text-white/90 text-sm">Проверенные специалисты с высоким рейтингом</p>
         </div>

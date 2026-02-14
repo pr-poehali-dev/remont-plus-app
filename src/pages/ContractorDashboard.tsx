@@ -44,7 +44,7 @@ export const ContractorDashboard = ({ user, onLogout }: ContractorDashboardProps
         <div className="gradient-orange-blue rounded-3xl p-8 text-white shadow-2xl">
           <div className="flex items-center gap-3 mb-4">
             <Icon name="Briefcase" size={32} />
-            <h2 className="text-2xl font-bold">Личный кабинет исполнителя</h2>
+            <h2 className="text-2xl font-bold">Личный кабинет мастера</h2>
           </div>
           <p className="text-white/90">Просматривайте заказы и управляйте проектами</p>
         </div>
