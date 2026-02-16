@@ -1,0 +1,2 @@
+ALTER TABLE t_p46588937_remont_plus_app.users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP;
+ALTER TABLE t_p46588937_remont_plus_app.users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT TRUE;

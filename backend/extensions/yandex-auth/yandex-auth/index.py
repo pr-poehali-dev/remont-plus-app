@@ -358,15 +358,18 @@ def handle_callback(event: dict, origin: str) -> dict:
                 }
             }, origin)
 
-        except Exception:
+        except Exception as e:
             conn.rollback()
+            print(f"Database error: {e}")
             return error(500, 'Database error', origin)
         finally:
             conn.close()
 
-    except HTTPError:
+    except HTTPError as e:
+        print(f"Yandex API error: {e}")
         return error(500, 'Yandex API error', origin)
-    except Exception:
+    except Exception as e:
+        print(f"Internal server error: {e}")
         return error(500, 'Internal server error', origin)
 
 
