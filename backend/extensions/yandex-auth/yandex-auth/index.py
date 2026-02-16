@@ -325,8 +325,8 @@ def handle_callback(event: dict, origin: str) -> dict:
                     # 3. Create new user
                     cur.execute(
                         f"""INSERT INTO {S}users
-                            (yandex_id, email, name, avatar_url, email_verified, created_at, updated_at, last_login_at)
-                            VALUES (%s, %s, %s, %s, TRUE, %s, %s, %s)
+                            (yandex_id, email, name, avatar_url, phone, user_type, created_at, updated_at, last_login_at)
+                            VALUES (%s, %s, %s, %s, '', 'customer', %s, %s, %s)
                             RETURNING id""",
                         (yandex_id, email, name, picture, now, now, now)
                     )

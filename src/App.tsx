@@ -18,6 +18,7 @@ import Projects from "./pages/Projects";
 import Suppliers from "./pages/Suppliers";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import YandexCallback from "./pages/YandexCallback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => {
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/auth/yandex/callback" element={<YandexCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

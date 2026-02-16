@@ -5,8 +5,11 @@ import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
+import { YandexLoginButton } from "@/components/extensions/yandex-auth/YandexLoginButton";
+import { useYandexAuth } from "@/components/extensions/yandex-auth/useYandexAuth";
 
 const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
+const YANDEX_AUTH_URL = "https://functions.poehali.dev/e79ea16f-9897-425c-8f3a-6944097e6748";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,6 +19,21 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const yandexAuth = useYandexAuth({
+    apiUrls: {
+      authUrl: `${YANDEX_AUTH_URL}?action=auth-url`,
+      callback: `${YANDEX_AUTH_URL}?action=callback`,
+      refresh: `${YANDEX_AUTH_URL}?action=refresh`,
+      logout: `${YANDEX_AUTH_URL}?action=logout`,
+    },
+    onAuthChange: (user) => {
+      if (user) {
+        localStorage.setItem("avangard_user", JSON.stringify(user));
+        navigate(redirectTo || "/");
+      }
+    },
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,6 +126,21 @@ export default function Login() {
                 )}
               </Button>
             </form>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-white px-4 text-gray-500">или</span>
+              </div>
+            </div>
+
+            <YandexLoginButton
+              onClick={yandexAuth.login}
+              isLoading={yandexAuth.isLoading}
+              className="w-full"
+            />
 
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Нет аккаунта? </span>
