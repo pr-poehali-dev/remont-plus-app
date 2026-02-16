@@ -74,7 +74,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500 mr-2">
                 <Icon name="Phone" className="h-4 w-4" />
-                <span className="font-medium text-gray-700">+7 (987) 980-77-77</span>
+                <span className="font-medium text-gray-700">8 (927) 748-68-68</span>
               </div>
               {user ? (
                 <>
