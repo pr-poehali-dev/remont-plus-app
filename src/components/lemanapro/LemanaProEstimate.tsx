@@ -81,6 +81,22 @@ export default function LemanaProEstimate({
               Перейти к каталогу
             </Button>
           </Card>
+          <Card className="p-4 bg-amber-50/60 border-amber-200">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                <Icon name="Lightbulb" className="h-5 w-5 text-amber-600" />
+              </div>
+              <div className="text-sm space-y-1">
+                <p className="font-medium text-amber-900">Как пользоваться калькулятором</p>
+                <ol className="text-amber-800 space-y-0.5 list-decimal list-inside text-xs leading-relaxed">
+                  <li>Выберите шаблон планировки или задайте размеры комнат вручную</li>
+                  <li>Отметьте галочками нужные материалы (пол, стены, потолок)</li>
+                  <li>Нажмите «Рассчитать» — позиции добавятся в смету с учётом упаковки</li>
+                  <li>Укажите цены вручную или посмотрите на сайте ЛеманаПро</li>
+                </ol>
+              </div>
+            </div>
+          </Card>
           <MaterialCalculator
             estimateItems={estimateItems}
             setEstimateItems={setEstimateItems}
