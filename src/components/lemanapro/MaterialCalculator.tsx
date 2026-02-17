@@ -21,6 +21,16 @@ interface MaterialCalculatorProps {
 
 type AreaType = "floor" | "wall" | "ceiling";
 
+interface Room {
+  id: string;
+  name: string;
+  length: string;
+  width: string;
+  height: string;
+  doors: string;
+  windows: string;
+}
+
 interface MaterialNorm {
   subcategory: string;
   consumptionPer: string;
@@ -59,6 +69,34 @@ const areaIcons: Record<AreaType, string> = {
   ceiling: "ArrowUpFromLine",
 };
 
+const defaultRoomNames = [
+  "Комната 1", "Комната 2", "Комната 3", "Кухня", "Коридор",
+  "Ванная", "Санузел", "Спальня", "Гостиная", "Детская",
+];
+
+function makeRoom(index: number): Room {
+  return {
+    id: `room_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    name: defaultRoomNames[index] || `Комната ${index + 1}`,
+    length: "",
+    width: "",
+    height: "2.7",
+    doors: "1",
+    windows: "1",
+  };
+}
+
+function roomAreas(room: Room) {
+  const l = parseFloat(room.length) || 0;
+  const w = parseFloat(room.width) || 0;
+  const h = parseFloat(room.height) || 0;
+  const d = parseInt(room.doors) || 0;
+  const win = parseInt(room.windows) || 0;
+  const floor = l * w;
+  const wall = Math.max(0, 2 * (l + w) * h - d * 1.8 - win * 1.5);
+  return { floor, wall, ceiling: floor, valid: l > 0 && w > 0 && h > 0 };
+}
+
 function normId(norm: MaterialNorm): string {
   return `${norm.subcategory}__${norm.area}`;
 }
@@ -84,30 +122,29 @@ export default function MaterialCalculator({
   estimateItems,
   setEstimateItems,
 }: MaterialCalculatorProps) {
-  const [length, setLength] = useState<string>("");
-  const [width, setWidth] = useState<string>("");
-  const [height, setHeight] = useState<string>("2.7");
-  const [doors, setDoors] = useState<string>("1");
-  const [windows, setWindows] = useState<string>("1");
+  const [rooms, setRooms] = useState<Room[]>([makeRoom(0)]);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [result, setResult] = useState<{ added: number; updated: number } | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(rooms[0]?.id ?? null);
 
-  const l = parseFloat(length) || 0;
-  const w = parseFloat(width) || 0;
-  const h = parseFloat(height) || 0;
-  const d = parseInt(doors) || 0;
-  const win = parseInt(windows) || 0;
-
-  const floorArea = l * w;
-  const wallArea = Math.max(0, 2 * (l + w) * h - d * 1.8 - win * 1.5);
-  const ceilingArea = floorArea;
-
-  const isValid = l > 0 && w > 0 && h > 0;
+  const totals = useMemo(() => {
+    let floor = 0, wall = 0, ceiling = 0, validCount = 0;
+    for (const room of rooms) {
+      const a = roomAreas(room);
+      if (a.valid) {
+        floor += a.floor;
+        wall += a.wall;
+        ceiling += a.ceiling;
+        validCount++;
+      }
+    }
+    return { floor, wall, ceiling, validCount, hasValid: validCount > 0 };
+  }, [rooms]);
 
   const areaByType: Record<AreaType, number> = {
-    floor: floorArea,
-    wall: wallArea,
-    ceiling: ceilingArea,
+    floor: totals.floor,
+    wall: totals.wall,
+    ceiling: totals.ceiling,
   };
 
   const normsGrouped = useMemo(() => {
@@ -139,8 +176,28 @@ export default function MaterialCalculator({
     setResult(null);
   }
 
+  function addRoom() {
+    const newRoom = makeRoom(rooms.length);
+    setRooms([...rooms, newRoom]);
+    setExpanded(newRoom.id);
+    setResult(null);
+  }
+
+  function removeRoom(id: string) {
+    if (rooms.length <= 1) return;
+    const updated = rooms.filter((r) => r.id !== id);
+    setRooms(updated);
+    if (expanded === id) setExpanded(updated[0]?.id ?? null);
+    setResult(null);
+  }
+
+  function updateRoom(id: string, field: Partial<Room>) {
+    setRooms(rooms.map((r) => (r.id === id ? { ...r, ...field } : r)));
+    setResult(null);
+  }
+
   function handleCalculate() {
-    if (!isValid) return;
+    if (!totals.hasValid) return;
 
     const selectedNorms = materialNorms.filter((n) => checked[normId(n)]);
 
@@ -165,6 +222,10 @@ export default function MaterialCalculator({
         items[existingIdx] = { ...items[existingIdx], quantity };
         updated++;
       } else {
+        const roomNames = rooms
+          .filter((r) => roomAreas(r).valid)
+          .map((r) => r.name)
+          .join(", ");
         const newItem: EstimateSavedItem = {
           id: `calc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
           name: subcategoryName,
@@ -175,7 +236,7 @@ export default function MaterialCalculator({
           price: 0,
           unit,
           packaging,
-          note: "Авторасчёт по площади",
+          note: `Авторасчёт: ${roomNames}`,
           addedAt: new Date().toISOString(),
         };
         items.push(newItem);
@@ -209,7 +270,7 @@ export default function MaterialCalculator({
           />
           <Icon name={areaIcons[area]} className="h-4 w-4 text-amber-700" />
           <span className="font-medium text-sm text-amber-900">{areaLabels[area]}</span>
-          {isValid && (
+          {totals.hasValid && (
             <Badge variant="outline" className="ml-auto text-xs border-amber-300 text-amber-700">
               {areaByType[area].toFixed(1)} м²
             </Badge>
@@ -218,7 +279,7 @@ export default function MaterialCalculator({
         <div className="space-y-0.5">
           {norms.map((norm) => {
             const id = normId(norm);
-            const qty = isValid ? calcQuantity(norm) : 0;
+            const qty = totals.hasValid ? calcQuantity(norm) : 0;
             const subData = findSubcategoryData(norm.subcategory);
             const rounded = subData ? roundUpToPackaging(qty, subData.packaging) : Math.ceil(qty);
 
@@ -232,7 +293,7 @@ export default function MaterialCalculator({
                   onCheckedChange={() => toggleNorm(id)}
                 />
                 <span className="flex-1 min-w-0 truncate">{norm.subcategory}</span>
-                {isValid && (
+                {totals.hasValid && (
                   <span className="text-xs font-mono text-amber-800 whitespace-nowrap">
                     {rounded} {norm.consumptionPer}
                   </span>
@@ -257,79 +318,139 @@ export default function MaterialCalculator({
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4 space-y-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Длина комнаты (м)</label>
-            <Input
-              type="number"
-              min="0"
-              step="0.1"
-              placeholder="0"
-              value={length}
-              onChange={(e) => { setLength(e.target.value); setResult(null); }}
-              className="h-8 text-sm bg-white"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Ширина комнаты (м)</label>
-            <Input
-              type="number"
-              min="0"
-              step="0.1"
-              placeholder="0"
-              value={width}
-              onChange={(e) => { setWidth(e.target.value); setResult(null); }}
-              className="h-8 text-sm bg-white"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Высота потолков (м)</label>
-            <Input
-              type="number"
-              min="0"
-              step="0.1"
-              value={height}
-              onChange={(e) => { setHeight(e.target.value); setResult(null); }}
-              className="h-8 text-sm bg-white"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Кол-во дверей</label>
-            <Input
-              type="number"
-              min="0"
-              step="1"
-              value={doors}
-              onChange={(e) => { setDoors(e.target.value); setResult(null); }}
-              className="h-8 text-sm bg-white"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Кол-во окон</label>
-            <Input
-              type="number"
-              min="0"
-              step="1"
-              value={windows}
-              onChange={(e) => { setWindows(e.target.value); setResult(null); }}
-              className="h-8 text-sm bg-white"
-            />
-          </div>
+        <div className="space-y-2">
+          {rooms.map((room, idx) => {
+            const areas = roomAreas(room);
+            const isExpanded = expanded === room.id;
+
+            return (
+              <div key={room.id} className="border rounded-lg bg-white overflow-hidden">
+                <div
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none hover:bg-gray-50"
+                  onClick={() => setExpanded(isExpanded ? null : room.id)}
+                >
+                  <Icon
+                    name={isExpanded ? "ChevronDown" : "ChevronRight"}
+                    className="h-4 w-4 text-gray-400 shrink-0"
+                  />
+                  <Input
+                    value={room.name}
+                    onChange={(e) => updateRoom(room.id, { name: e.target.value })}
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-7 text-sm font-medium border-0 shadow-none px-1 bg-transparent focus-visible:ring-1 max-w-[140px]"
+                  />
+                  {areas.valid && (
+                    <Badge variant="outline" className="text-[10px] border-amber-300 text-amber-700 ml-auto shrink-0">
+                      {areas.floor.toFixed(1)} м²
+                    </Badge>
+                  )}
+                  {!areas.valid && idx === 0 && (
+                    <span className="text-xs text-gray-400 ml-auto">Укажите размеры</span>
+                  )}
+                  {rooms.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-gray-400 hover:text-red-500 shrink-0"
+                      onClick={(e) => { e.stopPropagation(); removeRoom(room.id); }}
+                    >
+                      <Icon name="X" className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+
+                {isExpanded && (
+                  <div className="px-3 pb-3 pt-1 border-t">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Длина (м)</label>
+                        <Input
+                          type="number" min="0" step="0.1" placeholder="0"
+                          value={room.length}
+                          onChange={(e) => updateRoom(room.id, { length: e.target.value })}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Ширина (м)</label>
+                        <Input
+                          type="number" min="0" step="0.1" placeholder="0"
+                          value={room.width}
+                          onChange={(e) => updateRoom(room.id, { width: e.target.value })}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Высота (м)</label>
+                        <Input
+                          type="number" min="0" step="0.1"
+                          value={room.height}
+                          onChange={(e) => updateRoom(room.id, { height: e.target.value })}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Дверей</label>
+                        <Input
+                          type="number" min="0" step="1"
+                          value={room.doors}
+                          onChange={(e) => updateRoom(room.id, { doors: e.target.value })}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Окон</label>
+                        <Input
+                          type="number" min="0" step="1"
+                          value={room.windows}
+                          onChange={(e) => updateRoom(room.id, { windows: e.target.value })}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                    {areas.valid && (
+                      <div className="flex flex-wrap gap-1.5 mt-2 text-[10px]">
+                        <span className="text-gray-500">Пол: {areas.floor.toFixed(1)} м²</span>
+                        <span className="text-gray-400">·</span>
+                        <span className="text-gray-500">Стены: {areas.wall.toFixed(1)} м²</span>
+                        <span className="text-gray-400">·</span>
+                        <span className="text-gray-500">Потолок: {areas.ceiling.toFixed(1)} м²</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full border-dashed border-amber-300 text-amber-700 hover:bg-amber-50"
+            onClick={addRoom}
+          >
+            <Icon name="Plus" className="h-3.5 w-3.5 mr-1.5" />
+            Добавить комнату
+          </Button>
         </div>
 
-        {isValid && (
+        {totals.hasValid && (
           <div className="flex flex-wrap gap-2 text-xs">
             <Badge variant="outline" className="border-amber-300 bg-white text-amber-800">
+              <Icon name="Home" className="h-3 w-3 mr-1" />
+              {totals.validCount} {totals.validCount === 1 ? "комната" : totals.validCount < 5 ? "комнаты" : "комнат"}
+            </Badge>
+            <Badge variant="outline" className="border-amber-300 bg-white text-amber-800">
               <Icon name="Layers" className="h-3 w-3 mr-1" />
-              Пол: {floorArea.toFixed(1)} м²
+              Пол: {totals.floor.toFixed(1)} м²
             </Badge>
             <Badge variant="outline" className="border-amber-300 bg-white text-amber-800">
               <Icon name="PanelLeft" className="h-3 w-3 mr-1" />
-              Стены: {wallArea.toFixed(1)} м²
+              Стены: {totals.wall.toFixed(1)} м²
             </Badge>
             <Badge variant="outline" className="border-amber-300 bg-white text-amber-800">
               <Icon name="ArrowUpFromLine" className="h-3 w-3 mr-1" />
-              Потолок: {ceilingArea.toFixed(1)} м²
+              Потолок: {totals.ceiling.toFixed(1)} м²
             </Badge>
           </div>
         )}
@@ -340,7 +461,7 @@ export default function MaterialCalculator({
 
         <Button
           onClick={handleCalculate}
-          disabled={!isValid || !hasChecked}
+          disabled={!totals.hasValid || !hasChecked}
           className="w-full bg-amber-600 hover:bg-amber-700 text-white"
         >
           <Icon name="Calculator" className="h-4 w-4" />
