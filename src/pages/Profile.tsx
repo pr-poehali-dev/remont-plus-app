@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Icon from "@/components/ui/icon";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import AddressForm from "@/components/AddressForm";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -88,10 +89,14 @@ export default function Profile() {
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile">
               <Icon name="User" className="h-4 w-4 mr-2" />
               Профиль
+            </TabsTrigger>
+            <TabsTrigger value="address">
+              <Icon name="MapPin" className="h-4 w-4 mr-2" />
+              Адрес
             </TabsTrigger>
             <TabsTrigger value="projects">
               <Icon name="FolderOpen" className="h-4 w-4 mr-2" />
@@ -161,6 +166,18 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="address">
+            <Card className="p-8">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold mb-1">Адрес доставки</h2>
+                <p className="text-gray-600 text-sm">
+                  Укажите адрес для доставки строительных материалов от поставщиков
+                </p>
+              </div>
+              <AddressForm userId={1} />
             </Card>
           </TabsContent>
 
