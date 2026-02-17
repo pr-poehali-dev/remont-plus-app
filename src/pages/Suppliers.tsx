@@ -40,6 +40,7 @@ export default function Suppliers() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [areaFilter, setAreaFilter] = useState<string>('');
 
   useEffect(() => {
     loadProducts();
@@ -94,6 +95,28 @@ export default function Suppliers() {
       setIsLoading(false);
     }
   };
+
+  const areaRanges = [
+    { label: 'Любая', value: '' },
+    { label: 'до 25 м²', value: '0-25' },
+    { label: '25–35 м²', value: '25-35' },
+    { label: '35–50 м²', value: '35-50' },
+    { label: '50–70 м²', value: '50-70' },
+    { label: 'от 70 м²', value: '70-999' },
+  ];
+
+  const hasAreaSpecs = selectedCategory === 'Кондиционеры' || products.some(
+    (p) => p.specifications?.['площадь_м2']
+  );
+
+  const filteredProducts = areaFilter
+    ? products.filter((p) => {
+        const area = parseFloat(p.specifications?.['площадь_м2'] || '0');
+        if (!area) return true;
+        const [min, max] = areaFilter.split('-').map(Number);
+        return area >= min && area <= max;
+      })
+    : products;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU').format(price);
@@ -158,7 +181,7 @@ export default function Suppliers() {
                   <Button
                     variant={selectedCategory === '' ? 'default' : 'outline'}
                     className="w-full justify-start"
-                    onClick={() => setSelectedCategory('')}
+                    onClick={() => { setSelectedCategory(''); setAreaFilter(''); }}
                   >
                     Все категории
                   </Button>
@@ -167,13 +190,35 @@ export default function Suppliers() {
                       key={category}
                       variant={selectedCategory === category ? 'default' : 'outline'}
                       className="w-full justify-start text-sm"
-                      onClick={() => setSelectedCategory(category)}
+                      onClick={() => { setSelectedCategory(category); setAreaFilter(''); }}
                     >
                       {category}
                     </Button>
                   ))}
                 </div>
               </div>
+
+              {hasAreaSpecs && (
+                <div className="mt-6 pt-6 border-t">
+                  <label className="text-sm font-medium mb-3 block flex items-center gap-2">
+                    <Icon name="Ruler" className="h-4 w-4 text-primary" />
+                    Площадь помещения
+                  </label>
+                  <div className="space-y-1.5">
+                    {areaRanges.map((range) => (
+                      <Button
+                        key={range.value}
+                        variant={areaFilter === range.value ? 'default' : 'outline'}
+                        size="sm"
+                        className="w-full justify-start text-sm"
+                        onClick={() => setAreaFilter(range.value)}
+                      >
+                        {range.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-6 pt-6 border-t">
                 <div className="bg-primary/10 rounded-lg p-4">
@@ -194,7 +239,7 @@ export default function Suppliers() {
                     {selectedCategory || 'Все товары'}
                   </h2>
                   <p className="text-gray-600">
-                    Найдено товаров: {products.length}
+                    Найдено товаров: {filteredProducts.length}
                   </p>
                 </div>
               </div>
@@ -205,20 +250,20 @@ export default function Suppliers() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
                 <p className="text-gray-600">Загрузка товаров...</p>
               </div>
-            ) : products.length === 0 ? (
+            ) : filteredProducts.length === 0 ? (
               <Card className="p-12 text-center">
                 <Icon name="Package" className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Товары не найдены</h3>
                 <p className="text-gray-600 mb-4">
                   Попробуйте изменить фильтры или поисковый запрос
                 </p>
-                <Button onClick={() => { setSelectedCategory(''); setSearchQuery(''); }}>
+                <Button onClick={() => { setSelectedCategory(''); setSearchQuery(''); setAreaFilter(''); }}>
                   Сбросить фильтры
                 </Button>
               </Card>
             ) : (
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {products.map((product) => (
+                {filteredProducts.map((product) => (
                   <Card 
                     key={product.id} 
                     className="overflow-hidden hover:shadow-lg transition-shadow"
@@ -283,6 +328,26 @@ export default function Suppliers() {
                         </div>
                       )}
                       
+                      {product.specifications?.['площадь_м2'] && (
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          <Badge variant="secondary" className="text-xs">
+                            <Icon name="Maximize2" className="h-3 w-3 mr-1" />
+                            до {product.specifications['площадь_м2']} м²
+                          </Badge>
+                          {product.specifications?.['тип_компрессора'] && (
+                            <Badge variant={product.specifications['тип_компрессора'] === 'инвертор' ? 'default' : 'outline'} className="text-xs">
+                              {product.specifications['тип_компрессора'] === 'инвертор' ? 'Инвертор' : 'On/Off'}
+                            </Badge>
+                          )}
+                          {product.specifications?.['wifi'] === 'да' && (
+                            <Badge variant="outline" className="text-xs">
+                              <Icon name="Wifi" className="h-3 w-3 mr-1" />
+                              Wi-Fi
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+
                       <p className="text-xs text-gray-600 mb-3 line-clamp-2" itemProp="description">
                         {product.description}
                       </p>
