@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { type EstimateSavedItem, saveEstimateItems } from "@/lib/lemanapro-data";
+import { exportLemanaProPdf } from "@/lib/export-pdf";
 
 interface LemanaProEstimateProps {
   estimateItems: EstimateSavedItem[];
@@ -186,7 +187,11 @@ export default function LemanaProEstimate({
                   </p>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
+                <Button variant="outline" onClick={() => exportLemanaProPdf(estimateItems)}>
+                  <Icon name="Download" className="mr-1.5 h-4 w-4" />
+                  PDF
+                </Button>
                 <Button variant="outline" onClick={() => navigate("/calculator")}>
                   <Icon name="Calculator" className="mr-1.5 h-4 w-4" />
                   В калькулятор

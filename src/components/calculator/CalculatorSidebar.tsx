@@ -8,9 +8,10 @@ import { useNavigate } from "react-router-dom";
 
 interface CalculatorSidebarProps {
   lemanaItemsCount: number;
+  onExportPdf?: () => void;
 }
 
-export default function CalculatorSidebar({ lemanaItemsCount }: CalculatorSidebarProps) {
+export default function CalculatorSidebar({ lemanaItemsCount, onExportPdf }: CalculatorSidebarProps) {
   const navigate = useNavigate();
 
   return (
@@ -97,7 +98,7 @@ export default function CalculatorSidebar({ lemanaItemsCount }: CalculatorSideba
       <Card className="p-6">
         <h3 className="font-semibold mb-3">Экспорт сметы</h3>
         <div className="space-y-2">
-          <Button variant="outline" className="w-full justify-start">
+          <Button variant="outline" className="w-full justify-start" onClick={onExportPdf}>
             <Icon name="FileText" className="mr-2 h-4 w-4" />
             PDF документ
           </Button>

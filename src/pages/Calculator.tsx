@@ -6,6 +6,7 @@ import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getEstimateItems, type EstimateSavedItem } from "@/lib/lemanapro-data";
+import { exportEstimatePdf } from "@/lib/export-pdf";
 import EstimateTab from "@/components/calculator/EstimateTab";
 import LemanaProTab from "@/components/calculator/LemanaProTab";
 import ContractorsTab from "@/components/calculator/ContractorsTab";
@@ -57,7 +58,7 @@ export default function Calculator() {
                 <Icon name="FileSpreadsheet" className="mr-2 h-4 w-4" />
                 Экспорт Excel
               </Button>
-              <Button>
+              <Button onClick={() => exportEstimatePdf(items, lemanaItems)}>
                 <Icon name="Download" className="mr-2 h-4 w-4" />
                 Скачать PDF
               </Button>
@@ -107,7 +108,10 @@ export default function Calculator() {
             </Card>
           </div>
 
-          <CalculatorSidebar lemanaItemsCount={lemanaItems.length} />
+          <CalculatorSidebar
+            lemanaItemsCount={lemanaItems.length}
+            onExportPdf={() => exportEstimatePdf(items, lemanaItems)}
+          />
         </div>
       </div>
     </div>
