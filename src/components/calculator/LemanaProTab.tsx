@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { type EstimateSavedItem, saveEstimateItems, roundUpToPackaging } from "@/lib/lemanapro-data";
+import MaterialCalculator from "@/components/lemanapro/MaterialCalculator";
 
 interface LemanaProTabProps {
   lemanaItems: EstimateSavedItem[];
@@ -64,6 +65,12 @@ export default function LemanaProTab({ lemanaItems, setLemanaItems }: LemanaProT
             <Icon name="ShoppingCart" className="mr-2 h-4 w-4" />
             Открыть каталог ЛеманаПро
           </Button>
+          <div className="mt-6 w-full max-w-lg mx-auto">
+            <MaterialCalculator
+              estimateItems={lemanaItems}
+              setEstimateItems={setLemanaItems}
+            />
+          </div>
         </div>
       ) : (
         <div className="space-y-6">
@@ -177,6 +184,11 @@ export default function LemanaProTab({ lemanaItems, setLemanaItems }: LemanaProT
               </div>
             );
           })}
+
+          <MaterialCalculator
+            estimateItems={lemanaItems}
+            setEstimateItems={setLemanaItems}
+          />
 
           <Card className="p-4 bg-green-50/50 border-green-200">
             <div className="flex items-center justify-between flex-wrap gap-3">

@@ -6,6 +6,7 @@ import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { type EstimateSavedItem, saveEstimateItems, roundUpToPackaging } from "@/lib/lemanapro-data";
 import { exportLemanaProPdf } from "@/lib/export-pdf";
+import MaterialCalculator from "./MaterialCalculator";
 
 interface LemanaProEstimateProps {
   estimateItems: EstimateSavedItem[];
@@ -191,6 +192,11 @@ export default function LemanaProEstimate({
               </div>
             );
           })}
+
+          <MaterialCalculator
+            estimateItems={estimateItems}
+            setEstimateItems={setEstimateItems}
+          />
 
           <Card className="p-5 bg-primary/5 border-primary/20 mt-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
