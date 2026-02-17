@@ -41,7 +41,7 @@ const roles = [
     color: "from-emerald-500 to-teal-500",
     bg: "bg-emerald-50",
     border: "hover:border-emerald-300",
-    path: "/catalog",
+    path: "/suppliers",
   },
 ];
 

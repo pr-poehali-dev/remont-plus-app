@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 import { CreateProjectForm } from '@/components/projects/CreateProjectForm';
 import ProjectDetails from '@/pages/ProjectDetails';
+import AddressForm from '@/components/AddressForm';
 
 const PROJECTS_API_URL = 'https://functions.poehali.dev/91a90ccd-9392-4390-8d40-9b2eb3908daa';
 
@@ -251,6 +252,19 @@ export const CustomerDashboard = ({ user, onLogout }: CustomerDashboardProps) =>
                 </div>
               </div>
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg border-0">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Icon name="MapPin" size={24} className="text-primary" />
+              Адрес доставки
+            </CardTitle>
+            <CardDescription>Укажите адрес для доставки строительных материалов</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AddressForm userId={user.id} />
           </CardContent>
         </Card>
 
