@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { type EstimateSavedItem, roundUpToPackaging } from "./lemanapro-data";
-import type { EstimateItem } from "@/components/calculator/EstimateTab";
+import type { EstimateItem } from "@/pages/Calculator";
 
 const formatPrice = (n: number) => n.toLocaleString("ru-RU");
 
