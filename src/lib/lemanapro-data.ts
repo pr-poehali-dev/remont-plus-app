@@ -32,6 +32,14 @@ export function saveEstimateItems(items: EstimateSavedItem[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 }
 
+export function subcategoryUrl(name: string) {
+  return `${BASE_URL}/search/?q=${encodeURIComponent(name)}`;
+}
+
+export function categoryUrl(slug: string) {
+  return `${BASE_URL}/catalogue/${slug}/`;
+}
+
 export const categories: Category[] = [
   {
     name: "Стройматериалы",
@@ -39,12 +47,12 @@ export const categories: Category[] = [
     icon: "Warehouse",
     description: "Сухие смеси, гипсокартон, утеплители, кирпич, блоки",
     subcategories: [
-      { name: "Сухие смеси", slug: "suhie-smesi" },
-      { name: "Гипсокартон", slug: "gipsokarton-i-komplektuyushchie" },
+      { name: "Сухие смеси и грунтовки", slug: "suhie-smesi-i-gruntovki" },
+      { name: "Гипсокартон", slug: "gipsokarton" },
       { name: "Утеплители", slug: "utepliteli" },
       { name: "Пиломатериалы", slug: "pilomaterialy" },
-      { name: "Кирпич и блоки", slug: "kirpich-i-bloki" },
-      { name: "Цемент и бетон", slug: "tsement-i-beton" },
+      { name: "Кирпич и блоки", slug: "kirpich" },
+      { name: "Цемент", slug: "cement" },
     ],
   },
   {
@@ -57,7 +65,7 @@ export const categories: Category[] = [
       { name: "Напольная плитка", slug: "napolnaya-plitka" },
       { name: "Керамогранит", slug: "keramogranit" },
       { name: "Мозаика", slug: "mozaika" },
-      { name: "Клей для плитки", slug: "klej-dlya-plitki" },
+      { name: "Клей для плитки", slug: "klei-dlya-plitki" },
       { name: "Затирки", slug: "zatirki" },
     ],
   },
@@ -70,7 +78,7 @@ export const categories: Category[] = [
       { name: "Смесители", slug: "smesiteli" },
       { name: "Унитазы", slug: "unitazy" },
       { name: "Раковины", slug: "rakoviny" },
-      { name: "Ванны", slug: "vanny-i-komplektuyushchie" },
+      { name: "Ванны", slug: "vanny" },
       { name: "Душевые кабины", slug: "dushevye-kabiny" },
       { name: "Полотенцесушители", slug: "polotentsesushiteli" },
     ],
@@ -84,9 +92,9 @@ export const categories: Category[] = [
       { name: "Ламинат", slug: "laminat" },
       { name: "Линолеум", slug: "linoleum" },
       { name: "Паркет", slug: "parket" },
-      { name: "Кварц-винил (SPC/LVT)", slug: "kvarts-vinilovaya-plitka" },
+      { name: "Кварц-виниловая плитка", slug: "kvarts-vinilovaya-plitka" },
       { name: "Ковролин", slug: "kovrolin" },
-      { name: "Подложка", slug: "podlozhka" },
+      { name: "Подложка под напольные покрытия", slug: "podlozhka-pod-napolnye-pokrytiya" },
     ],
   },
   {
@@ -105,7 +113,7 @@ export const categories: Category[] = [
   },
   {
     name: "Обои",
-    slug: "oboi",
+    slug: "oboi-dlya-sten-i-potolka",
     icon: "Wallpaper",
     description: "Виниловые, флизелиновые, бумажные обои и клей",
     subcategories: [
@@ -113,34 +121,34 @@ export const categories: Category[] = [
       { name: "Флизелиновые обои", slug: "flizelinovye-oboi" },
       { name: "Обои под покраску", slug: "oboi-pod-pokrasku" },
       { name: "Фотообои", slug: "fotooboi" },
-      { name: "Клей для обоев", slug: "klej-dlya-oboev" },
+      { name: "Клей для обоев", slug: "klei-dlya-oboev" },
     ],
   },
   {
     name: "Электрика",
-    slug: "elektrika",
+    slug: "elektrotovary",
     icon: "Zap",
     description: "Кабели, розетки, выключатели, автоматы, щитки",
     subcategories: [
       { name: "Кабели и провода", slug: "kabeli-i-provoda" },
       { name: "Розетки и выключатели", slug: "rozetki-i-vyklyuchateli" },
-      { name: "Автоматы и УЗО", slug: "avtomaty-i-uzo" },
-      { name: "Щитки", slug: "shchitki" },
+      { name: "Автоматы и УЗО", slug: "avtomaty-uzo" },
+      { name: "Электрощитки", slug: "elektricheskie-shchity" },
       { name: "Удлинители", slug: "udliniteli" },
     ],
   },
   {
     name: "Освещение",
-    slug: "osveshchenie-zhilyh-pomeshcheniy",
+    slug: "osveshchenie",
     icon: "Lightbulb",
     description: "Люстры, светильники, бра, лампочки, споты",
     subcategories: [
       { name: "Люстры", slug: "lyustry" },
       { name: "Потолочные светильники", slug: "potolochnye-svetilniki" },
-      { name: "Бра и настенные", slug: "bra" },
+      { name: "Бра и настенные светильники", slug: "bra" },
       { name: "Точечные светильники", slug: "tochechnye-svetilniki" },
       { name: "Лампочки", slug: "lampochki" },
-      { name: "LED-ленты", slug: "svetodiodnye-lenty" },
+      { name: "Светодиодные ленты", slug: "svetodiodnye-lenty" },
     ],
   },
   {
@@ -152,7 +160,7 @@ export const categories: Category[] = [
       { name: "Межкомнатные двери", slug: "mezhkomnatnye-dveri" },
       { name: "Входные двери", slug: "vhodnye-dveri" },
       { name: "Дверная фурнитура", slug: "dvernaya-furnitura" },
-      { name: "Арки и порталы", slug: "arki-i-portaly" },
+      { name: "Арки и порталы", slug: "arki" },
     ],
   },
   {
@@ -163,7 +171,7 @@ export const categories: Category[] = [
     subcategories: [
       { name: "Электроинструменты", slug: "elektroinstrumenty" },
       { name: "Ручной инструмент", slug: "ruchnoj-instrument" },
-      { name: "Измерительный", slug: "izmeritelnyj-instrument" },
+      { name: "Измерительный инструмент", slug: "izmeritelnyj-instrument" },
       { name: "Расходные материалы", slug: "rashodnye-materialy" },
     ],
   },
@@ -175,8 +183,8 @@ export const categories: Category[] = [
     subcategories: [
       { name: "Кухонные гарнитуры", slug: "kuhonnye-garnitury" },
       { name: "Столешницы", slug: "stoleshnitsy" },
-      { name: "Мойки", slug: "mojki" },
-      { name: "Смесители кухонные", slug: "smesiteli-dlya-kuhni" },
+      { name: "Кухонные мойки", slug: "kuhonnye-moyki" },
+      { name: "Смесители для кухни", slug: "smesiteli-dlya-kukhni" },
     ],
   },
   {
@@ -189,7 +197,7 @@ export const categories: Category[] = [
       { name: "Стеллажи", slug: "stellazhi" },
       { name: "Столы", slug: "stoly" },
       { name: "Стулья", slug: "stulya" },
-      { name: "Кровати и матрасы", slug: "krovati-i-matrasy" },
+      { name: "Кровати и матрасы", slug: "krovati" },
     ],
   },
 ];

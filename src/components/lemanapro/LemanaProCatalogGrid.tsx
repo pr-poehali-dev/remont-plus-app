@@ -8,10 +8,11 @@ import { useToast } from "@/hooks/use-toast";
 import {
   type Category,
   type EstimateSavedItem,
-  BASE_URL,
   saveEstimateItems,
   filterCategories,
   groupCategories,
+  subcategoryUrl,
+  categoryUrl,
 } from "@/lib/lemanapro-data";
 
 interface LemanaProCatalogGridProps {
@@ -34,7 +35,7 @@ export default function LemanaProCatalogGrid({
     subcategorySlug: string,
     categoryName: string
   ) => {
-    const url = `${BASE_URL}/catalogue/${subcategorySlug}/`;
+    const url = subcategoryUrl(subcategoryName);
     const existing = estimateItems.find(
       (i) => i.subcategory === subcategoryName && i.category === categoryName
     );
@@ -69,12 +70,12 @@ export default function LemanaProCatalogGrid({
       (i) => i.subcategory === subcategoryName && i.category === categoryName
     );
 
-  const openSubcategory = (slug: string) => {
-    window.open(`${BASE_URL}/catalogue/${slug}/`, "_blank", "noopener");
+  const openSubcategory = (name: string) => {
+    window.open(subcategoryUrl(name), "_blank", "noopener");
   };
 
   const openCategory = (slug: string) => {
-    window.open(`${BASE_URL}/catalogue/${slug}/`, "_blank", "noopener");
+    window.open(categoryUrl(slug), "_blank", "noopener");
   };
 
   return (
@@ -168,7 +169,7 @@ interface CategoryCardProps {
   estimateItems: EstimateSavedItem[];
   onAddToEstimate: (subcategoryName: string, subcategorySlug: string, categoryName: string) => void;
   onRemoveFromEstimate: (id: string) => void;
-  onOpenSubcategory: (slug: string) => void;
+  onOpenSubcategory: (name: string) => void;
   onOpenCategory: (slug: string) => void;
 }
 
@@ -220,7 +221,7 @@ function CategoryCard({
               >
                 <button
                   className="text-sm hover:text-primary transition-colors flex items-center gap-1.5 group/link"
-                  onClick={() => onOpenSubcategory(sub.slug)}
+                  onClick={() => onOpenSubcategory(sub.name)}
                 >
                   <span>{sub.name}</span>
                   <Icon
