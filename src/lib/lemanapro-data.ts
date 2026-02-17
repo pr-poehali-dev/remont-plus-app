@@ -1,12 +1,21 @@
 export const BASE_URL = "https://samara.lemanapro.ru";
 export const STORAGE_KEY = "avangard_lemanapro_estimate";
 
+export type UnitType = "шт" | "м²" | "м" | "л" | "кг" | "рулон" | "комплект" | "упак";
+
+export interface Subcategory {
+  name: string;
+  slug: string;
+  unit: UnitType;
+  packaging: number;
+}
+
 export interface Category {
   name: string;
   slug: string;
   icon: string;
   description: string;
-  subcategories: { name: string; slug: string }[];
+  subcategories: Subcategory[];
 }
 
 export interface EstimateSavedItem {
@@ -17,13 +26,20 @@ export interface EstimateSavedItem {
   url: string;
   quantity: number;
   price: number;
+  unit: UnitType;
+  packaging: number;
   note: string;
   addedAt: string;
 }
 
 export function getEstimateItems(): EstimateSavedItem[] {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    const items = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return items.map((i: EstimateSavedItem) => ({
+      ...i,
+      unit: i.unit || "шт",
+      packaging: i.packaging || 1,
+    }));
   } catch {
     return [];
   }
@@ -31,6 +47,11 @@ export function getEstimateItems(): EstimateSavedItem[] {
 
 export function saveEstimateItems(items: EstimateSavedItem[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}
+
+export function roundUpToPackaging(quantity: number, packaging: number): number {
+  if (packaging <= 1) return Math.ceil(quantity);
+  return Math.ceil(quantity / packaging) * packaging;
 }
 
 export function subcategoryUrl(name: string) {
@@ -48,12 +69,12 @@ export const categories: Category[] = [
     icon: "Warehouse",
     description: "Сухие смеси, гипсокартон, утеплители, кирпич, блоки",
     subcategories: [
-      { name: "Сухие смеси и грунтовки", slug: "suhie-smesi-i-gruntovki" },
-      { name: "Гипсокартон", slug: "gipsokarton" },
-      { name: "Утеплители", slug: "utepliteli" },
-      { name: "Пиломатериалы", slug: "pilomaterialy" },
-      { name: "Кирпич и блоки", slug: "kirpich" },
-      { name: "Цемент", slug: "cement" },
+      { name: "Сухие смеси и грунтовки", slug: "suhie-smesi-i-gruntovki", unit: "кг", packaging: 25 },
+      { name: "Гипсокартон", slug: "gipsokarton", unit: "шт", packaging: 1 },
+      { name: "Утеплители", slug: "utepliteli", unit: "м²", packaging: 1 },
+      { name: "Пиломатериалы", slug: "pilomaterialy", unit: "м", packaging: 1 },
+      { name: "Кирпич и блоки", slug: "kirpich", unit: "шт", packaging: 1 },
+      { name: "Цемент", slug: "cement", unit: "кг", packaging: 50 },
     ],
   },
   {
@@ -62,12 +83,12 @@ export const categories: Category[] = [
     icon: "Grid3x3",
     description: "Керамическая плитка, керамогранит, мозаика, клей",
     subcategories: [
-      { name: "Настенная плитка", slug: "nastennaya-plitka" },
-      { name: "Напольная плитка", slug: "napolnaya-plitka" },
-      { name: "Керамогранит", slug: "keramogranit" },
-      { name: "Мозаика", slug: "mozaika" },
-      { name: "Клей для плитки", slug: "klei-dlya-plitki" },
-      { name: "Затирки", slug: "zatirki" },
+      { name: "Настенная плитка", slug: "nastennaya-plitka", unit: "м²", packaging: 1 },
+      { name: "Напольная плитка", slug: "napolnaya-plitka", unit: "м²", packaging: 1 },
+      { name: "Керамогранит", slug: "keramogranit", unit: "м²", packaging: 1 },
+      { name: "Мозаика", slug: "mozaika", unit: "м²", packaging: 1 },
+      { name: "Клей для плитки", slug: "klei-dlya-plitki", unit: "кг", packaging: 25 },
+      { name: "Затирки", slug: "zatirki", unit: "кг", packaging: 2 },
     ],
   },
   {
@@ -76,12 +97,12 @@ export const categories: Category[] = [
     icon: "Droplets",
     description: "Смесители, унитазы, раковины, ванны, душевые",
     subcategories: [
-      { name: "Смесители", slug: "smesiteli" },
-      { name: "Унитазы", slug: "unitazy" },
-      { name: "Раковины", slug: "rakoviny" },
-      { name: "Ванны", slug: "vanny" },
-      { name: "Душевые кабины", slug: "dushevye-kabiny" },
-      { name: "Полотенцесушители", slug: "polotentsesushiteli" },
+      { name: "Смесители", slug: "smesiteli", unit: "шт", packaging: 1 },
+      { name: "Унитазы", slug: "unitazy", unit: "шт", packaging: 1 },
+      { name: "Раковины", slug: "rakoviny", unit: "шт", packaging: 1 },
+      { name: "Ванны", slug: "vanny", unit: "шт", packaging: 1 },
+      { name: "Душевые кабины", slug: "dushevye-kabiny", unit: "шт", packaging: 1 },
+      { name: "Полотенцесушители", slug: "polotentsesushiteli", unit: "шт", packaging: 1 },
     ],
   },
   {
@@ -90,12 +111,12 @@ export const categories: Category[] = [
     icon: "Layers",
     description: "Ламинат, линолеум, паркет, ковролин, подложка",
     subcategories: [
-      { name: "Ламинат", slug: "laminat" },
-      { name: "Линолеум", slug: "linoleum" },
-      { name: "Паркет", slug: "parket" },
-      { name: "Кварц-виниловая плитка", slug: "kvarts-vinilovaya-plitka" },
-      { name: "Ковролин", slug: "kovrolin" },
-      { name: "Подложка под напольные покрытия", slug: "podlozhka-pod-napolnye-pokrytiya" },
+      { name: "Ламинат", slug: "laminat", unit: "м²", packaging: 1 },
+      { name: "Линолеум", slug: "linoleum", unit: "м²", packaging: 1 },
+      { name: "Паркет", slug: "parket", unit: "м²", packaging: 1 },
+      { name: "Кварц-виниловая плитка", slug: "kvarts-vinilovaya-plitka", unit: "м²", packaging: 1 },
+      { name: "Ковролин", slug: "kovrolin", unit: "м²", packaging: 1 },
+      { name: "Подложка под напольные покрытия", slug: "podlozhka-pod-napolnye-pokrytiya", unit: "м²", packaging: 1 },
     ],
   },
   {
@@ -104,12 +125,12 @@ export const categories: Category[] = [
     icon: "Paintbrush",
     description: "Интерьерные и фасадные краски, лаки, грунтовки",
     subcategories: [
-      { name: "Интерьерные краски", slug: "interernye-kraski" },
-      { name: "Фасадные краски", slug: "fasadnye-kraski" },
-      { name: "Лаки", slug: "laki" },
-      { name: "Грунтовки", slug: "gruntovki" },
-      { name: "Эмали", slug: "emali" },
-      { name: "Колеровка", slug: "kolerovka" },
+      { name: "Интерьерные краски", slug: "interernye-kraski", unit: "л", packaging: 1 },
+      { name: "Фасадные краски", slug: "fasadnye-kraski", unit: "л", packaging: 1 },
+      { name: "Лаки", slug: "laki", unit: "л", packaging: 1 },
+      { name: "Грунтовки", slug: "gruntovki", unit: "л", packaging: 1 },
+      { name: "Эмали", slug: "emali", unit: "л", packaging: 1 },
+      { name: "Колеровка", slug: "kolerovka", unit: "л", packaging: 1 },
     ],
   },
   {
@@ -118,11 +139,11 @@ export const categories: Category[] = [
     icon: "Wallpaper",
     description: "Виниловые, флизелиновые, бумажные обои и клей",
     subcategories: [
-      { name: "Виниловые обои", slug: "vinilovye-oboi" },
-      { name: "Флизелиновые обои", slug: "flizelinovye-oboi" },
-      { name: "Обои под покраску", slug: "oboi-pod-pokrasku" },
-      { name: "Фотообои", slug: "fotooboi" },
-      { name: "Клей для обоев", slug: "klei-dlya-oboev" },
+      { name: "Виниловые обои", slug: "vinilovye-oboi", unit: "рулон", packaging: 1 },
+      { name: "Флизелиновые обои", slug: "flizelinovye-oboi", unit: "рулон", packaging: 1 },
+      { name: "Обои под покраску", slug: "oboi-pod-pokrasku", unit: "рулон", packaging: 1 },
+      { name: "Фотообои", slug: "fotooboi", unit: "шт", packaging: 1 },
+      { name: "Клей для обоев", slug: "klei-dlya-oboev", unit: "упак", packaging: 1 },
     ],
   },
   {
@@ -131,11 +152,11 @@ export const categories: Category[] = [
     icon: "Zap",
     description: "Кабели, розетки, выключатели, автоматы, щитки",
     subcategories: [
-      { name: "Кабели и провода", slug: "kabeli-i-provoda" },
-      { name: "Розетки и выключатели", slug: "rozetki-i-vyklyuchateli" },
-      { name: "Автоматы и УЗО", slug: "avtomaty-uzo" },
-      { name: "Электрощитки", slug: "elektricheskie-shchity" },
-      { name: "Удлинители", slug: "udliniteli" },
+      { name: "Кабели и провода", slug: "kabeli-i-provoda", unit: "м", packaging: 1 },
+      { name: "Розетки и выключатели", slug: "rozetki-i-vyklyuchateli", unit: "шт", packaging: 1 },
+      { name: "Автоматы и УЗО", slug: "avtomaty-uzo", unit: "шт", packaging: 1 },
+      { name: "Электрощитки", slug: "elektricheskie-shchity", unit: "шт", packaging: 1 },
+      { name: "Удлинители", slug: "udliniteli", unit: "шт", packaging: 1 },
     ],
   },
   {
@@ -144,12 +165,12 @@ export const categories: Category[] = [
     icon: "Lightbulb",
     description: "Люстры, светильники, бра, лампочки, споты",
     subcategories: [
-      { name: "Люстры", slug: "lyustry" },
-      { name: "Потолочные светильники", slug: "potolochnye-svetilniki" },
-      { name: "Бра и настенные светильники", slug: "bra" },
-      { name: "Точечные светильники", slug: "tochechnye-svetilniki" },
-      { name: "Лампочки", slug: "lampochki" },
-      { name: "Светодиодные ленты", slug: "svetodiodnye-lenty" },
+      { name: "Люстры", slug: "lyustry", unit: "шт", packaging: 1 },
+      { name: "Потолочные светильники", slug: "potolochnye-svetilniki", unit: "шт", packaging: 1 },
+      { name: "Бра и настенные светильники", slug: "bra", unit: "шт", packaging: 1 },
+      { name: "Точечные светильники", slug: "tochechnye-svetilniki", unit: "шт", packaging: 1 },
+      { name: "Лампочки", slug: "lampochki", unit: "шт", packaging: 1 },
+      { name: "Светодиодные ленты", slug: "svetodiodnye-lenty", unit: "м", packaging: 5 },
     ],
   },
   {
@@ -158,10 +179,10 @@ export const categories: Category[] = [
     icon: "DoorOpen",
     description: "Межкомнатные, входные двери, фурнитура",
     subcategories: [
-      { name: "Межкомнатные двери", slug: "mezhkomnatnye-dveri" },
-      { name: "Входные двери", slug: "vhodnye-dveri" },
-      { name: "Дверная фурнитура", slug: "dvernaya-furnitura" },
-      { name: "Арки и порталы", slug: "arki" },
+      { name: "Межкомнатные двери", slug: "mezhkomnatnye-dveri", unit: "шт", packaging: 1 },
+      { name: "Входные двери", slug: "vhodnye-dveri", unit: "шт", packaging: 1 },
+      { name: "Дверная фурнитура", slug: "dvernaya-furnitura", unit: "комплект", packaging: 1 },
+      { name: "Арки и порталы", slug: "arki", unit: "шт", packaging: 1 },
     ],
   },
   {
@@ -170,10 +191,10 @@ export const categories: Category[] = [
     icon: "Wrench",
     description: "Ручной и электроинструмент, расходники",
     subcategories: [
-      { name: "Электроинструменты", slug: "elektroinstrumenty" },
-      { name: "Ручной инструмент", slug: "ruchnoj-instrument" },
-      { name: "Измерительный инструмент", slug: "izmeritelnyj-instrument" },
-      { name: "Расходные материалы", slug: "rashodnye-materialy" },
+      { name: "Электроинструменты", slug: "elektroinstrumenty", unit: "шт", packaging: 1 },
+      { name: "Ручной инструмент", slug: "ruchnoj-instrument", unit: "шт", packaging: 1 },
+      { name: "Измерительный инструмент", slug: "izmeritelnyj-instrument", unit: "шт", packaging: 1 },
+      { name: "Расходные материалы", slug: "rashodnye-materialy", unit: "упак", packaging: 1 },
     ],
   },
   {
@@ -182,10 +203,10 @@ export const categories: Category[] = [
     icon: "CookingPot",
     description: "Кухонные гарнитуры, столешницы, мойки",
     subcategories: [
-      { name: "Кухонные гарнитуры", slug: "kuhonnye-garnitury" },
-      { name: "Столешницы", slug: "stoleshnitsy" },
-      { name: "Кухонные мойки", slug: "kuhonnye-moyki" },
-      { name: "Смесители для кухни", slug: "smesiteli-dlya-kukhni" },
+      { name: "Кухонные гарнитуры", slug: "kuhonnye-garnitury", unit: "комплект", packaging: 1 },
+      { name: "Столешницы", slug: "stoleshnitsy", unit: "м", packaging: 1 },
+      { name: "Кухонные мойки", slug: "kuhonnye-moyki", unit: "шт", packaging: 1 },
+      { name: "Смесители для кухни", slug: "smesiteli-dlya-kukhni", unit: "шт", packaging: 1 },
     ],
   },
   {
@@ -194,11 +215,11 @@ export const categories: Category[] = [
     icon: "Sofa",
     description: "Шкафы, стеллажи, столы, стулья, кровати",
     subcategories: [
-      { name: "Шкафы", slug: "shkafy" },
-      { name: "Стеллажи", slug: "stellazhi" },
-      { name: "Столы", slug: "stoly" },
-      { name: "Стулья", slug: "stulya" },
-      { name: "Кровати и матрасы", slug: "krovati" },
+      { name: "Шкафы", slug: "shkafy", unit: "шт", packaging: 1 },
+      { name: "Стеллажи", slug: "stellazhi", unit: "шт", packaging: 1 },
+      { name: "Столы", slug: "stoly", unit: "шт", packaging: 1 },
+      { name: "Стулья", slug: "stulya", unit: "шт", packaging: 1 },
+      { name: "Кровати и матрасы", slug: "krovati", unit: "шт", packaging: 1 },
     ],
   },
 ];

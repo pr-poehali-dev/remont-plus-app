@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import type { EstimateSavedItem } from "./lemanapro-data";
+import { type EstimateSavedItem, roundUpToPackaging } from "./lemanapro-data";
 import type { EstimateItem } from "@/components/calculator/EstimateTab";
 
 const formatPrice = (n: number) => n.toLocaleString("ru-RU");
@@ -79,7 +79,10 @@ export function exportEstimatePdf(items: EstimateItem[], lemanaItems: EstimateSa
     doc.text("LemanapPro (Samara)", 14, y);
     y += 3;
 
-    const lemanaTotal = lemanaItems.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
+    const lemanaTotal = lemanaItems.reduce((s, i) => {
+      const rounded = roundUpToPackaging(i.quantity, i.packaging || 1);
+      return s + (i.price || 0) * rounded;
+    }, 0);
 
     const grouped = lemanaItems.reduce<Record<string, EstimateSavedItem[]>>((acc, item) => {
       if (!acc[item.category]) acc[item.category] = [];
@@ -92,12 +95,17 @@ export function exportEstimatePdf(items: EstimateItem[], lemanaItems: EstimateSa
     for (const [cat, catItems] of Object.entries(grouped)) {
       for (const item of catItems) {
         idx++;
-        const lineTotal = (item.price || 0) * item.quantity;
+        const unit = item.unit || "pcs";
+        const rounded = roundUpToPackaging(item.quantity, item.packaging || 1);
+        const lineTotal = (item.price || 0) * rounded;
+        const qtyLabel = rounded !== item.quantity
+          ? `${item.quantity} -> ${rounded} ${unit}`
+          : `${rounded} ${unit}`;
         rows.push([
           idx,
           cat,
           item.name + (item.note ? ` (${item.note})` : ""),
-          item.quantity,
+          qtyLabel,
           item.price ? formatPrice(item.price) + " rub" : "-",
           lineTotal ? formatPrice(lineTotal) + " rub" : "-",
         ]);

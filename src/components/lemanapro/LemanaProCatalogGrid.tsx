@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
   type Category,
+  type Subcategory,
   type EstimateSavedItem,
   saveEstimateItems,
   filterCategories,
@@ -30,34 +31,32 @@ export default function LemanaProCatalogGrid({
 
   const filtered = filterCategories(search);
 
-  const addToEstimate = (
-    subcategoryName: string,
-    subcategorySlug: string,
-    categoryName: string
-  ) => {
-    const url = subcategoryUrl(subcategoryName);
+  const addToEstimate = (sub: Subcategory, categoryName: string) => {
+    const url = subcategoryUrl(sub.name);
     const existing = estimateItems.find(
-      (i) => i.subcategory === subcategoryName && i.category === categoryName
+      (i) => i.subcategory === sub.name && i.category === categoryName
     );
     if (existing) {
-      toast({ title: "Уже в смете", description: `${subcategoryName} уже добавлен` });
+      toast({ title: "Уже в смете", description: `${sub.name} уже добавлен` });
       return;
     }
     const newItem: EstimateSavedItem = {
       id: crypto.randomUUID(),
-      name: subcategoryName,
+      name: sub.name,
       category: categoryName,
-      subcategory: subcategoryName,
+      subcategory: sub.name,
       url,
-      quantity: 1,
+      quantity: sub.packaging > 1 ? sub.packaging : 1,
       price: 0,
+      unit: sub.unit,
+      packaging: sub.packaging,
       note: "",
       addedAt: new Date().toISOString(),
     };
     const updated = [...estimateItems, newItem];
     setEstimateItems(updated);
     saveEstimateItems(updated);
-    toast({ title: "Добавлено в смету", description: subcategoryName });
+    toast({ title: "Добавлено в смету", description: sub.name });
   };
 
   const removeFromEstimate = (id: string) => {
@@ -168,7 +167,7 @@ interface CategoryCardProps {
   onToggle: () => void;
   isInEstimate: (subcategoryName: string, categoryName: string) => boolean;
   estimateItems: EstimateSavedItem[];
-  onAddToEstimate: (subcategoryName: string, subcategorySlug: string, categoryName: string) => void;
+  onAddToEstimate: (sub: Subcategory, categoryName: string) => void;
   onRemoveFromEstimate: (id: string) => void;
   onOpenSubcategory: (name: string) => void;
   onOpenCategory: (slug: string) => void;
@@ -225,6 +224,7 @@ function CategoryCard({
                   onClick={() => onOpenSubcategory(sub.name)}
                 >
                   <span>{sub.name}</span>
+                  <span className="text-[10px] text-gray-400 font-normal">{sub.unit}</span>
                   <Icon
                     name="ExternalLink"
                     className="h-3 w-3 text-gray-300 group-hover/link:text-primary"
@@ -241,7 +241,7 @@ function CategoryCard({
                       );
                       if (item) onRemoveFromEstimate(item.id);
                     } else {
-                      onAddToEstimate(sub.name, sub.slug, cat.name);
+                      onAddToEstimate(sub, cat.name);
                     }
                   }}
                 >

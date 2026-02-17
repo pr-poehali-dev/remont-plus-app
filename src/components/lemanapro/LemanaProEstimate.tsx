@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
-import { type EstimateSavedItem, saveEstimateItems } from "@/lib/lemanapro-data";
+import { type EstimateSavedItem, saveEstimateItems, roundUpToPackaging } from "@/lib/lemanapro-data";
 import { exportLemanaProPdf } from "@/lib/export-pdf";
 
 interface LemanaProEstimateProps {
@@ -41,8 +42,10 @@ export default function LemanaProEstimate({
     {}
   );
 
-  const totalSum = estimateItems.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
-  const totalUnits = estimateItems.reduce((s, i) => s + i.quantity, 0);
+  const totalSum = estimateItems.reduce((s, i) => {
+    const rounded = roundUpToPackaging(i.quantity, i.packaging || 1);
+    return s + (i.price || 0) * rounded;
+  }, 0);
   const hasPrices = estimateItems.some((i) => i.price > 0);
 
   const formatPrice = (n: number) => n.toLocaleString("ru-RU");
@@ -79,7 +82,10 @@ export default function LemanaProEstimate({
       ) : (
         <>
           {Object.entries(estimateByCategory).map(([cat, items]) => {
-            const catTotal = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
+            const catTotal = items.reduce((s, i) => {
+              const rounded = roundUpToPackaging(i.quantity, i.packaging || 1);
+              return s + (i.price || 0) * rounded;
+            }, 0);
             return (
               <div key={cat} className="mb-6">
                 <div className="flex items-center justify-between mb-3">
@@ -95,13 +101,21 @@ export default function LemanaProEstimate({
                 </div>
                 <div className="space-y-2">
                   {items.map((item) => {
-                    const lineTotal = (item.price || 0) * item.quantity;
+                    const pkg = item.packaging || 1;
+                    const unit = item.unit || "шт";
+                    const rounded = roundUpToPackaging(item.quantity, pkg);
+                    const wasRounded = rounded !== item.quantity;
+                    const lineTotal = (item.price || 0) * rounded;
                     return (
                       <Card key={item.id} className="p-4">
                         <div className="flex items-start gap-3">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
                               <span className="font-medium">{item.name}</span>
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal">
+                                {unit}
+                                {pkg > 1 && ` × ${pkg}`}
+                              </Badge>
                               <button
                                 className="text-gray-400 hover:text-blue-500 transition-colors"
                                 onClick={() => window.open(item.url, "_blank", "noopener")}
@@ -117,21 +131,28 @@ export default function LemanaProEstimate({
                             </div>
                             <div className="flex items-center gap-2 flex-wrap">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-xs text-gray-500">Кол-во:</span>
+                                <span className="text-xs text-gray-500">Нужно, {unit}:</span>
                                 <Input
                                   type="number"
-                                  min={1}
+                                  min={0.1}
+                                  step={pkg > 1 ? pkg : 1}
                                   value={item.quantity}
                                   onChange={(e) =>
                                     updateField(item.id, {
-                                      quantity: Math.max(1, parseInt(e.target.value) || 1),
+                                      quantity: Math.max(0.1, parseFloat(e.target.value) || 0.1),
                                     })
                                   }
                                   className="w-20 h-8 text-sm"
                                 />
                               </div>
+                              {wasRounded && (
+                                <span className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                                  <Icon name="ArrowUp" className="h-3 w-3" />
+                                  к закупке: {rounded} {unit}
+                                </span>
+                              )}
                               <div className="flex items-center gap-1.5">
-                                <span className="text-xs text-gray-500">Цена ₽:</span>
+                                <span className="text-xs text-gray-500">Цена/{unit}:</span>
                                 <Input
                                   type="number"
                                   min={0}
@@ -175,7 +196,7 @@ export default function LemanaProEstimate({
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <p className="font-semibold">
-                  Итого: {estimateItems.length} позиций, {totalUnits} ед.
+                  Итого: {estimateItems.length} позиций
                 </p>
                 {hasPrices ? (
                   <p className="text-2xl font-bold text-primary mt-1">
