@@ -74,6 +74,62 @@ const defaultRoomNames = [
   "Ванная", "Санузел", "Спальня", "Гостиная", "Детская",
 ];
 
+interface ApartmentPreset {
+  label: string;
+  icon: string;
+  area: string;
+  rooms: Omit<Room, "id">[];
+}
+
+const presets: ApartmentPreset[] = [
+  {
+    label: "Студия",
+    icon: "Square",
+    area: "~28 м²",
+    rooms: [
+      { name: "Студия", length: "6", width: "3.5", height: "2.7", doors: "1", windows: "1" },
+      { name: "Санузел", length: "2.2", width: "1.5", height: "2.7", doors: "1", windows: "0" },
+      { name: "Коридор", length: "3", width: "1.2", height: "2.7", doors: "1", windows: "0" },
+    ],
+  },
+  {
+    label: "Однушка",
+    icon: "LayoutGrid",
+    area: "~38 м²",
+    rooms: [
+      { name: "Комната", length: "5", width: "3.5", height: "2.7", doors: "1", windows: "1" },
+      { name: "Кухня", length: "3.5", width: "2.8", height: "2.7", doors: "1", windows: "1" },
+      { name: "Ванная", length: "2.2", width: "1.5", height: "2.7", doors: "1", windows: "0" },
+      { name: "Коридор", length: "4", width: "1.3", height: "2.7", doors: "2", windows: "0" },
+    ],
+  },
+  {
+    label: "Двушка",
+    icon: "Columns2",
+    area: "~54 м²",
+    rooms: [
+      { name: "Гостиная", length: "5.5", width: "3.5", height: "2.7", doors: "1", windows: "1" },
+      { name: "Спальня", length: "4", width: "3", height: "2.7", doors: "1", windows: "1" },
+      { name: "Кухня", length: "3.5", width: "3", height: "2.7", doors: "1", windows: "1" },
+      { name: "Ванная", length: "2.5", width: "1.7", height: "2.7", doors: "1", windows: "0" },
+      { name: "Коридор", length: "5", width: "1.4", height: "2.7", doors: "3", windows: "0" },
+    ],
+  },
+  {
+    label: "Трёшка",
+    icon: "Columns3",
+    area: "~72 м²",
+    rooms: [
+      { name: "Гостиная", length: "5.5", width: "4", height: "2.7", doors: "1", windows: "1" },
+      { name: "Спальня", length: "4.5", width: "3", height: "2.7", doors: "1", windows: "1" },
+      { name: "Детская", length: "4", width: "3", height: "2.7", doors: "1", windows: "1" },
+      { name: "Кухня", length: "4", width: "3", height: "2.7", doors: "1", windows: "1" },
+      { name: "Ванная", length: "2.5", width: "1.7", height: "2.7", doors: "1", windows: "0" },
+      { name: "Коридор", length: "6", width: "1.5", height: "2.7", doors: "4", windows: "0" },
+    ],
+  },
+];
+
 function makeRoom(index: number): Room {
   return {
     id: `room_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -173,6 +229,16 @@ export default function MaterialCalculator({
       next[normId(n)] = !allChecked;
     }
     setChecked(next);
+    setResult(null);
+  }
+
+  function applyPreset(preset: ApartmentPreset) {
+    const newRooms: Room[] = preset.rooms.map((r) => ({
+      ...r,
+      id: `room_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    }));
+    setRooms(newRooms);
+    setExpanded(newRooms[0]?.id ?? null);
     setResult(null);
   }
 
@@ -318,6 +384,24 @@ export default function MaterialCalculator({
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4 space-y-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+          {presets.map((preset) => (
+            <Button
+              key={preset.label}
+              variant="outline"
+              size="sm"
+              className="h-auto py-1.5 px-2 border-amber-200 hover:bg-amber-50 hover:border-amber-400 flex flex-col items-center gap-0.5"
+              onClick={() => applyPreset(preset)}
+            >
+              <div className="flex items-center gap-1">
+                <Icon name={preset.icon} className="h-3.5 w-3.5 text-amber-600" />
+                <span className="text-xs font-medium">{preset.label}</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground">{preset.area}</span>
+            </Button>
+          ))}
+        </div>
+
         <div className="space-y-2">
           {rooms.map((room, idx) => {
             const areas = roomAreas(room);
