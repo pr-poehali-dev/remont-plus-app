@@ -1,58 +1,32 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getEstimateItems, saveEstimateItems, type EstimateSavedItem } from "@/lib/lemanapro-data";
+import { getEstimateItems, type EstimateSavedItem } from "@/lib/lemanapro-data";
+import EstimateTab from "@/components/calculator/EstimateTab";
+import LemanaProTab from "@/components/calculator/LemanaProTab";
+import ContractorsTab from "@/components/calculator/ContractorsTab";
+import CalculatorSidebar from "@/components/calculator/CalculatorSidebar";
 
-interface EstimateItem {
-  id: string;
-  category: string;
-  name: string;
-  unit: string;
-  quantity: number;
-  price: number;
-  total: number;
-}
+const defaultItems = [
+  { id: "1", category: "Материалы", name: "Ламинат Premium 33 класс", unit: "м²", quantity: 20, price: 1200, total: 24000 },
+  { id: "2", category: "Материалы", name: "Краска латексная белая", unit: "л", quantity: 15, price: 450, total: 6750 },
+  { id: "3", category: "Работы", name: "Демонтаж старого покрытия", unit: "м²", quantity: 20, price: 350, total: 7000 },
+  { id: "4", category: "Работы", name: "Укладка ламината", unit: "м²", quantity: 20, price: 800, total: 16000 },
+  { id: "5", category: "Работы", name: "Покраска стен", unit: "м²", quantity: 45, price: 400, total: 18000 },
+];
 
 export default function Calculator() {
   const navigate = useNavigate();
-  const [items, setItems] = useState<EstimateItem[]>([
-    { id: "1", category: "Материалы", name: "Ламинат Premium 33 класс", unit: "м²", quantity: 20, price: 1200, total: 24000 },
-    { id: "2", category: "Материалы", name: "Краска латексная белая", unit: "л", quantity: 15, price: 450, total: 6750 },
-    { id: "3", category: "Работы", name: "Демонтаж старого покрытия", unit: "м²", quantity: 20, price: 350, total: 7000 },
-    { id: "4", category: "Работы", name: "Укладка ламината", unit: "м²", quantity: 20, price: 800, total: 16000 },
-    { id: "5", category: "Работы", name: "Покраска стен", unit: "м²", quantity: 45, price: 400, total: 18000 }
-  ]);
+  const [items] = useState(defaultItems);
   const [lemanaItems, setLemanaItems] = useState<EstimateSavedItem[]>([]);
 
   useEffect(() => {
     setLemanaItems(getEstimateItems());
   }, []);
-
-  const removeLemanaItem = (id: string) => {
-    const updated = lemanaItems.filter((i) => i.id !== id);
-    setLemanaItems(updated);
-    saveEstimateItems(updated);
-  };
-
-  const updateLemanaQuantity = (id: string, quantity: number) => {
-    const updated = lemanaItems.map((i) => (i.id === id ? { ...i, quantity: Math.max(1, quantity) } : i));
-    setLemanaItems(updated);
-    saveEstimateItems(updated);
-  };
-
-  const updateLemanaNote = (id: string, note: string) => {
-    const updated = lemanaItems.map((i) => (i.id === id ? { ...i, note } : i));
-    setLemanaItems(updated);
-    saveEstimateItems(updated);
-  };
 
   const totalMaterials = items.filter(i => i.category === "Материалы").reduce((sum, i) => sum + i.total, 0);
   const totalWorks = items.filter(i => i.category === "Работы").reduce((sum, i) => sum + i.total, 0);
@@ -61,14 +35,8 @@ export default function Calculator() {
   const contractors = [
     { name: "СтройЭксперт", rating: 4.8, reviews: 127, price: grandTotal * 1.0, experience: "12 лет" },
     { name: "РемонтПро", rating: 4.6, reviews: 89, price: grandTotal * 1.15, experience: "8 лет" },
-    { name: "МастерДом", rating: 4.9, reviews: 234, price: grandTotal * 0.95, experience: "15 лет" }
+    { name: "МастерДом", rating: 4.9, reviews: 234, price: grandTotal * 0.95, experience: "15 лет" },
   ];
-
-  const lemanaByCategory = lemanaItems.reduce<Record<string, EstimateSavedItem[]>>((acc, item) => {
-    if (!acc[item.category]) acc[item.category] = [];
-    acc[item.category].push(item);
-    return acc;
-  }, {});
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -117,335 +85,29 @@ export default function Calculator() {
                 </TabsList>
 
                 <TabsContent value="estimate" className="mt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Детализация расходов</h3>
-                    <Button variant="outline" size="sm">
-                      <Icon name="Plus" className="mr-2 h-4 w-4" />
-                      Добавить позицию
-                    </Button>
-                  </div>
-
-                  <div className="border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Категория</TableHead>
-                          <TableHead>Наименование</TableHead>
-                          <TableHead>Ед.</TableHead>
-                          <TableHead>Кол-во</TableHead>
-                          <TableHead>Цена</TableHead>
-                          <TableHead>Сумма</TableHead>
-                          <TableHead></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {items.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell className="font-medium">{item.category}</TableCell>
-                            <TableCell>{item.name}</TableCell>
-                            <TableCell>{item.unit}</TableCell>
-                            <TableCell>{item.quantity}</TableCell>
-                            <TableCell>{item.price.toLocaleString('ru-RU')} ₽</TableCell>
-                            <TableCell className="font-semibold">{item.total.toLocaleString('ru-RU')} ₽</TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
-                                <Button variant="ghost" size="icon">
-                                  <Icon name="Pencil" className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon">
-                                  <Icon name="Trash2" className="h-4 w-4 text-red-500" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  <Card className="mt-6 p-6 bg-gray-50">
-                    <div className="grid md:grid-cols-3 gap-6">
-                      <div>
-                        <p className="text-sm text-gray-600 mb-1">Материалы</p>
-                        <p className="text-2xl font-bold">{totalMaterials.toLocaleString('ru-RU')} ₽</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 mb-1">Работы</p>
-                        <p className="text-2xl font-bold">{totalWorks.toLocaleString('ru-RU')} ₽</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 mb-1">Общая стоимость</p>
-                        <p className="text-3xl font-bold text-purple-600">{grandTotal.toLocaleString('ru-RU')} ₽</p>
-                      </div>
-                    </div>
-                  </Card>
+                  <EstimateTab
+                    items={items}
+                    totalMaterials={totalMaterials}
+                    totalWorks={totalWorks}
+                    grandTotal={grandTotal}
+                  />
                 </TabsContent>
 
                 <TabsContent value="lemanapro" className="mt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold">Товары из ЛеманаПро</h3>
-                      <p className="text-sm text-gray-500">Сохранённые позиции из каталога</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => navigate("/lemanapro")}>
-                      <Icon name="ShoppingCart" className="mr-2 h-4 w-4" />
-                      В каталог
-                    </Button>
-                  </div>
-
-                  {lemanaItems.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Icon name="ShoppingCart" className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                      <p className="text-gray-500 mb-2">Нет сохранённых товаров</p>
-                      <p className="text-gray-400 text-sm mb-4">
-                        Перейдите в каталог ЛеманаПро и добавьте нужные товары в смету
-                      </p>
-                      <Button onClick={() => navigate("/lemanapro")}>
-                        <Icon name="ShoppingCart" className="mr-2 h-4 w-4" />
-                        Открыть каталог ЛеманаПро
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {Object.entries(lemanaByCategory).map(([cat, catItems]) => (
-                        <div key={cat}>
-                          <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                            <span className="w-1 h-4 bg-green-500 rounded-full" />
-                            {cat}
-                          </h4>
-                          <div className="space-y-2">
-                            {catItems.map((item) => (
-                              <Card key={item.id} className="p-4">
-                                <div className="flex items-start gap-3">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <span className="font-medium">{item.name}</span>
-                                      <button
-                                        className="text-gray-400 hover:text-blue-500 transition-colors"
-                                        onClick={() => window.open(item.url, "_blank", "noopener")}
-                                        title="Открыть на сайте ЛеманаПро"
-                                      >
-                                        <Icon name="ExternalLink" className="h-3.5 w-3.5" />
-                                      </button>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-xs text-gray-500">Кол-во:</span>
-                                        <Input
-                                          type="number"
-                                          min={1}
-                                          value={item.quantity}
-                                          onChange={(e) =>
-                                            updateLemanaQuantity(item.id, parseInt(e.target.value) || 1)
-                                          }
-                                          className="w-20 h-8 text-sm"
-                                        />
-                                      </div>
-                                      <Input
-                                        placeholder="Заметка (арт., цвет, размер...)"
-                                        value={item.note}
-                                        onChange={(e) => updateLemanaNote(item.id, e.target.value)}
-                                        className="flex-1 h-8 text-sm"
-                                      />
-                                    </div>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-gray-400 hover:text-red-500 flex-shrink-0"
-                                    onClick={() => removeLemanaItem(item.id)}
-                                  >
-                                    <Icon name="Trash2" className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </Card>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-
-                      <Card className="p-4 bg-green-50/50 border-green-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icon name="Package" className="h-5 w-5 text-green-600" />
-                            <div>
-                              <p className="font-medium text-sm">
-                                Итого: {lemanaItems.length} позиций, {lemanaItems.reduce((s, i) => s + i.quantity, 0)} ед.
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                Цены уточняйте на сайте ЛеманаПро
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate("/lemanapro")}
-                          >
-                            <Icon name="Plus" className="mr-1.5 h-4 w-4" />
-                            Добавить ещё
-                          </Button>
-                        </div>
-                      </Card>
-                    </div>
-                  )}
+                  <LemanaProTab
+                    lemanaItems={lemanaItems}
+                    setLemanaItems={setLemanaItems}
+                  />
                 </TabsContent>
 
                 <TabsContent value="contractors" className="mt-6 space-y-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Сравнение предложений</h3>
-                    <Button variant="outline" size="sm">
-                      <Icon name="Filter" className="mr-2 h-4 w-4" />
-                      Фильтры
-                    </Button>
-                  </div>
-
-                  {contractors.map((contractor, index) => (
-                    <Card key={index} className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex gap-4">
-                          <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                            {contractor.name[0]}
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-lg mb-1">{contractor.name}</h4>
-                            <div className="flex items-center gap-3 text-sm text-gray-600">
-                              <div className="flex items-center gap-1">
-                                <Icon name="Star" className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                <span className="font-medium">{contractor.rating}</span>
-                                <span>({contractor.reviews} отзывов)</span>
-                              </div>
-                              <span>·</span>
-                              <span>Опыт {contractor.experience}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600 mb-1">Стоимость</p>
-                          <p className="text-2xl font-bold text-purple-600">
-                            {contractor.price.toLocaleString('ru-RU')} ₽
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button className="flex-1">
-                          <Icon name="MessageSquare" className="mr-2 h-4 w-4" />
-                          Написать
-                        </Button>
-                        <Button variant="outline" className="flex-1">
-                          <Icon name="Eye" className="mr-2 h-4 w-4" />
-                          Подробнее
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
-
-                  <Button variant="outline" className="w-full">
-                    Показать ещё мастеров
-                  </Button>
+                  <ContractorsTab contractors={contractors} />
                 </TabsContent>
               </Tabs>
             </Card>
           </div>
 
-          <div className="space-y-6">
-            <Card className="p-6">
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Icon name="Settings" className="h-5 w-5 text-purple-600" />
-                Параметры расчета
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <Label>Площадь помещения</Label>
-                  <Input type="number" defaultValue="20" className="mt-2" />
-                </div>
-                <div>
-                  <Label>Регион</Label>
-                  <Select defaultValue="msk">
-                    <SelectTrigger className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="msk">Москва</SelectItem>
-                      <SelectItem value="spb">Санкт-Петербург</SelectItem>
-                      <SelectItem value="other">Другой регион</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Срочность</Label>
-                  <Select defaultValue="normal">
-                    <SelectTrigger className="mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="normal">Обычная</SelectItem>
-                      <SelectItem value="fast">Срочно (+20%)</SelectItem>
-                      <SelectItem value="very-fast">Очень срочно (+40%)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button className="w-full">Пересчитать</Button>
-              </div>
-            </Card>
-
-            {lemanaItems.length > 0 && (
-              <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <Icon name="ShoppingCart" className="h-5 w-5 text-green-600" />
-                  <h3 className="font-semibold">ЛеманаПро</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-3">
-                  {lemanaItems.length} товаров сохранено в смете
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full border-green-300 hover:bg-green-100"
-                  onClick={() => navigate("/lemanapro")}
-                >
-                  <Icon name="Plus" className="mr-2 h-4 w-4" />
-                  Добавить из каталога
-                </Button>
-              </Card>
-            )}
-
-            <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
-              <Icon name="Lightbulb" className="h-8 w-8 text-blue-600 mb-3" />
-              <h3 className="font-semibold mb-2">Рекомендации</h3>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li className="flex gap-2">
-                  <Icon name="Check" className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span>Заказывайте материалы с запасом 10-15%</span>
-                </li>
-                <li className="flex gap-2">
-                  <Icon name="Check" className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span>Сравните предложения минимум 3 мастеров</span>
-                </li>
-                <li className="flex gap-2">
-                  <Icon name="Check" className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span>Проверяйте наличие материалов у поставщика</span>
-                </li>
-              </ul>
-            </Card>
-
-            <Card className="p-6">
-              <h3 className="font-semibold mb-3">Экспорт сметы</h3>
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
-                  <Icon name="FileText" className="mr-2 h-4 w-4" />
-                  PDF документ
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Icon name="FileSpreadsheet" className="mr-2 h-4 w-4" />
-                  Excel таблица
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Icon name="Mail" className="mr-2 h-4 w-4" />
-                  Отправить на email
-                </Button>
-              </div>
-            </Card>
-          </div>
+          <CalculatorSidebar lemanaItemsCount={lemanaItems.length} />
         </div>
       </div>
     </div>
