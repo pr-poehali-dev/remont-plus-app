@@ -18,24 +18,17 @@ export default function LemanaProEstimate({
 }: LemanaProEstimateProps) {
   const navigate = useNavigate();
 
+  const update = (updated: EstimateSavedItem[]) => {
+    setEstimateItems(updated);
+    saveEstimateItems(updated);
+  };
+
   const removeFromEstimate = (id: string) => {
-    const updated = estimateItems.filter((i) => i.id !== id);
-    setEstimateItems(updated);
-    saveEstimateItems(updated);
+    update(estimateItems.filter((i) => i.id !== id));
   };
 
-  const updateItemQuantity = (id: string, quantity: number) => {
-    const updated = estimateItems.map((i) =>
-      i.id === id ? { ...i, quantity: Math.max(1, quantity) } : i
-    );
-    setEstimateItems(updated);
-    saveEstimateItems(updated);
-  };
-
-  const updateItemNote = (id: string, note: string) => {
-    const updated = estimateItems.map((i) => (i.id === id ? { ...i, note } : i));
-    setEstimateItems(updated);
-    saveEstimateItems(updated);
+  const updateField = (id: string, field: Partial<EstimateSavedItem>) => {
+    update(estimateItems.map((i) => (i.id === id ? { ...i, ...field } : i)));
   };
 
   const estimateByCategory = estimateItems.reduce<Record<string, EstimateSavedItem[]>>(
@@ -46,6 +39,12 @@ export default function LemanaProEstimate({
     },
     {}
   );
+
+  const totalSum = estimateItems.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
+  const totalUnits = estimateItems.reduce((s, i) => s + i.quantity, 0);
+  const hasPrices = estimateItems.some((i) => i.price > 0);
+
+  const formatPrice = (n: number) => n.toLocaleString("ru-RU");
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -78,71 +77,114 @@ export default function LemanaProEstimate({
         </Card>
       ) : (
         <>
-          {Object.entries(estimateByCategory).map(([cat, items]) => (
-            <div key={cat} className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                <span className="w-1 h-4 bg-primary rounded-full" />
-                {cat}
-              </h3>
-              <div className="space-y-2">
-                {items.map((item) => (
-                  <Card key={item.id} className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-medium">{item.name}</span>
-                          <button
-                            className="text-gray-400 hover:text-blue-500 transition-colors"
-                            onClick={() => window.open(item.url, "_blank", "noopener")}
-                            title="Открыть на сайте ЛеманаПро"
-                          >
-                            <Icon name="ExternalLink" className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs text-gray-500">Кол-во:</span>
-                            <Input
-                              type="number"
-                              min={1}
-                              value={item.quantity}
-                              onChange={(e) =>
-                                updateItemQuantity(item.id, parseInt(e.target.value) || 1)
-                              }
-                              className="w-20 h-8 text-sm"
-                            />
+          {Object.entries(estimateByCategory).map(([cat, items]) => {
+            const catTotal = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
+            return (
+              <div key={cat} className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                    <span className="w-1 h-4 bg-primary rounded-full" />
+                    {cat}
+                  </h3>
+                  {catTotal > 0 && (
+                    <span className="text-sm font-medium text-gray-600">
+                      {formatPrice(catTotal)} ₽
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {items.map((item) => {
+                    const lineTotal = (item.price || 0) * item.quantity;
+                    return (
+                      <Card key={item.id} className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-medium">{item.name}</span>
+                              <button
+                                className="text-gray-400 hover:text-blue-500 transition-colors"
+                                onClick={() => window.open(item.url, "_blank", "noopener")}
+                                title="Открыть на сайте ЛеманаПро"
+                              >
+                                <Icon name="ExternalLink" className="h-3.5 w-3.5" />
+                              </button>
+                              {lineTotal > 0 && (
+                                <span className="ml-auto text-sm font-semibold text-primary">
+                                  {formatPrice(lineTotal)} ₽
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-gray-500">Кол-во:</span>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  value={item.quantity}
+                                  onChange={(e) =>
+                                    updateField(item.id, {
+                                      quantity: Math.max(1, parseInt(e.target.value) || 1),
+                                    })
+                                  }
+                                  className="w-20 h-8 text-sm"
+                                />
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-gray-500">Цена ₽:</span>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  placeholder="0"
+                                  value={item.price || ""}
+                                  onChange={(e) =>
+                                    updateField(item.id, {
+                                      price: Math.max(0, parseFloat(e.target.value) || 0),
+                                    })
+                                  }
+                                  className="w-28 h-8 text-sm"
+                                />
+                              </div>
+                              <Input
+                                placeholder="Заметка (арт., цвет...)"
+                                value={item.note}
+                                onChange={(e) => updateField(item.id, { note: e.target.value })}
+                                className="flex-1 min-w-[120px] h-8 text-sm"
+                              />
+                            </div>
                           </div>
-                          <Input
-                            placeholder="Заметка (арт., цвет...)"
-                            value={item.note}
-                            onChange={(e) => updateItemNote(item.id, e.target.value)}
-                            className="flex-1 h-8 text-sm"
-                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-gray-400 hover:text-red-500 flex-shrink-0"
+                            onClick={() => removeFromEstimate(item.id)}
+                          >
+                            <Icon name="Trash2" className="h-4 w-4" />
+                          </Button>
                         </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-gray-400 hover:text-red-500 flex-shrink-0"
-                        onClick={() => removeFromEstimate(item.id)}
-                      >
-                        <Icon name="Trash2" className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
+                      </Card>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <Card className="p-5 bg-primary/5 border-primary/20 mt-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <p className="font-semibold">Итого: {estimateItems.length} позиций</p>
-                <p className="text-sm text-gray-500">
-                  Общее количество единиц:{" "}
-                  {estimateItems.reduce((s, i) => s + i.quantity, 0)}
+                <p className="font-semibold">
+                  Итого: {estimateItems.length} позиций, {totalUnits} ед.
                 </p>
+                {hasPrices ? (
+                  <p className="text-2xl font-bold text-primary mt-1">
+                    {formatPrice(totalSum)} ₽
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    Укажите цены, чтобы увидеть итоговую сумму
+                  </p>
+                )}
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => navigate("/calculator")}>

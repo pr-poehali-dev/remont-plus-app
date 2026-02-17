@@ -16,6 +16,7 @@ export interface EstimateSavedItem {
   subcategory: string;
   url: string;
   quantity: number;
+  price: number;
   note: string;
   addedAt: string;
 }

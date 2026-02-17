@@ -50,6 +50,7 @@ export default function LemanaProCatalogGrid({
       subcategory: subcategoryName,
       url,
       quantity: 1,
+      price: 0,
       note: "",
       addedAt: new Date().toISOString(),
     };

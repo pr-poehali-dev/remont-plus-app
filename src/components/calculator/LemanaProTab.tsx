@@ -13,24 +13,17 @@ interface LemanaProTabProps {
 export default function LemanaProTab({ lemanaItems, setLemanaItems }: LemanaProTabProps) {
   const navigate = useNavigate();
 
+  const update = (updated: EstimateSavedItem[]) => {
+    setLemanaItems(updated);
+    saveEstimateItems(updated);
+  };
+
   const removeLemanaItem = (id: string) => {
-    const updated = lemanaItems.filter((i) => i.id !== id);
-    setLemanaItems(updated);
-    saveEstimateItems(updated);
+    update(lemanaItems.filter((i) => i.id !== id));
   };
 
-  const updateLemanaQuantity = (id: string, quantity: number) => {
-    const updated = lemanaItems.map((i) =>
-      i.id === id ? { ...i, quantity: Math.max(1, quantity) } : i
-    );
-    setLemanaItems(updated);
-    saveEstimateItems(updated);
-  };
-
-  const updateLemanaNote = (id: string, note: string) => {
-    const updated = lemanaItems.map((i) => (i.id === id ? { ...i, note } : i));
-    setLemanaItems(updated);
-    saveEstimateItems(updated);
+  const updateField = (id: string, field: Partial<EstimateSavedItem>) => {
+    update(lemanaItems.map((i) => (i.id === id ? { ...i, ...field } : i)));
   };
 
   const lemanaByCategory = lemanaItems.reduce<Record<string, EstimateSavedItem[]>>((acc, item) => {
@@ -38,6 +31,11 @@ export default function LemanaProTab({ lemanaItems, setLemanaItems }: LemanaProT
     acc[item.category].push(item);
     return acc;
   }, {});
+
+  const totalSum = lemanaItems.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
+  const totalUnits = lemanaItems.reduce((s, i) => s + i.quantity, 0);
+  const hasPrices = lemanaItems.some((i) => i.price > 0);
+  const formatPrice = (n: number) => n.toLocaleString("ru-RU");
 
   return (
     <>
@@ -66,73 +64,116 @@ export default function LemanaProTab({ lemanaItems, setLemanaItems }: LemanaProT
         </div>
       ) : (
         <div className="space-y-6">
-          {Object.entries(lemanaByCategory).map(([cat, catItems]) => (
-            <div key={cat}>
-              <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                <span className="w-1 h-4 bg-green-500 rounded-full" />
-                {cat}
-              </h4>
-              <div className="space-y-2">
-                {catItems.map((item) => (
-                  <Card key={item.id} className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-medium">{item.name}</span>
-                          <button
-                            className="text-gray-400 hover:text-blue-500 transition-colors"
-                            onClick={() => window.open(item.url, "_blank", "noopener")}
-                            title="Открыть на сайте ЛеманаПро"
-                          >
-                            <Icon name="ExternalLink" className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs text-gray-500">Кол-во:</span>
-                            <Input
-                              type="number"
-                              min={1}
-                              value={item.quantity}
-                              onChange={(e) =>
-                                updateLemanaQuantity(item.id, parseInt(e.target.value) || 1)
-                              }
-                              className="w-20 h-8 text-sm"
-                            />
+          {Object.entries(lemanaByCategory).map(([cat, catItems]) => {
+            const catTotal = catItems.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
+            return (
+              <div key={cat}>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                    <span className="w-1 h-4 bg-green-500 rounded-full" />
+                    {cat}
+                  </h4>
+                  {catTotal > 0 && (
+                    <span className="text-sm font-medium text-gray-600">
+                      {formatPrice(catTotal)} ₽
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {catItems.map((item) => {
+                    const lineTotal = (item.price || 0) * item.quantity;
+                    return (
+                      <Card key={item.id} className="p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-medium">{item.name}</span>
+                              <button
+                                className="text-gray-400 hover:text-blue-500 transition-colors"
+                                onClick={() => window.open(item.url, "_blank", "noopener")}
+                                title="Открыть на сайте ЛеманаПро"
+                              >
+                                <Icon name="ExternalLink" className="h-3.5 w-3.5" />
+                              </button>
+                              {lineTotal > 0 && (
+                                <span className="ml-auto text-sm font-semibold text-primary">
+                                  {formatPrice(lineTotal)} ₽
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-gray-500">Кол-во:</span>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  value={item.quantity}
+                                  onChange={(e) =>
+                                    updateField(item.id, {
+                                      quantity: Math.max(1, parseInt(e.target.value) || 1),
+                                    })
+                                  }
+                                  className="w-20 h-8 text-sm"
+                                />
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-gray-500">Цена ₽:</span>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  placeholder="0"
+                                  value={item.price || ""}
+                                  onChange={(e) =>
+                                    updateField(item.id, {
+                                      price: Math.max(0, parseFloat(e.target.value) || 0),
+                                    })
+                                  }
+                                  className="w-28 h-8 text-sm"
+                                />
+                              </div>
+                              <Input
+                                placeholder="Заметка (арт., цвет, размер...)"
+                                value={item.note}
+                                onChange={(e) => updateField(item.id, { note: e.target.value })}
+                                className="flex-1 min-w-[120px] h-8 text-sm"
+                              />
+                            </div>
                           </div>
-                          <Input
-                            placeholder="Заметка (арт., цвет, размер...)"
-                            value={item.note}
-                            onChange={(e) => updateLemanaNote(item.id, e.target.value)}
-                            className="flex-1 h-8 text-sm"
-                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-gray-400 hover:text-red-500 flex-shrink-0"
+                            onClick={() => removeLemanaItem(item.id)}
+                          >
+                            <Icon name="Trash2" className="h-4 w-4" />
+                          </Button>
                         </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-gray-400 hover:text-red-500 flex-shrink-0"
-                        onClick={() => removeLemanaItem(item.id)}
-                      >
-                        <Icon name="Trash2" className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
+                      </Card>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <Card className="p-4 bg-green-50/50 border-green-200">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <Icon name="Package" className="h-5 w-5 text-green-600" />
                 <div>
                   <p className="font-medium text-sm">
-                    Итого: {lemanaItems.length} позиций,{" "}
-                    {lemanaItems.reduce((s, i) => s + i.quantity, 0)} ед.
+                    Итого: {lemanaItems.length} позиций, {totalUnits} ед.
                   </p>
-                  <p className="text-xs text-gray-500">Цены уточняйте на сайте ЛеманаПро</p>
+                  {hasPrices ? (
+                    <p className="text-lg font-bold text-primary">
+                      {formatPrice(totalSum)} ₽
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-500">
+                      Укажите цены, чтобы увидеть сумму
+                    </p>
+                  )}
                 </div>
               </div>
               <Button variant="outline" size="sm" onClick={() => navigate("/lemanapro")}>
