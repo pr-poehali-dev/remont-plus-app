@@ -54,6 +54,16 @@ const roles = [
     path: "/showroom",
   },
   {
+    id: "prices",
+    title: "ПРАЙС-ЛИСТ",
+    description: "Цены на все виды работ: отделка, сантехника, электрика, двери, окна, кондиционеры",
+    icon: "ClipboardList",
+    color: "from-rose-500 to-red-500",
+    bg: "bg-rose-50",
+    border: "hover:border-rose-300",
+    path: "/prices",
+  },
+  {
     id: "lemanapro",
     title: "ЛЕМАНАПРО",
     description: "Каталог товаров для ремонта от ЛеманаПро — Самара",
@@ -143,12 +153,12 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {roles.map((role) => (
               <Card
                 key={role.id}
                 className={`p-8 cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-2 border-transparent ${role.border}`}
-                onClick={() => navigate(role.id === "showroom" || role.id === "lemanapro" ? role.path : (user ? role.path : `/login?redirect=${role.path}`))}
+                onClick={() => navigate(["showroom", "lemanapro", "prices"].includes(role.id) ? role.path : (user ? role.path : `/login?redirect=${role.path}`))}
               >
                 <div className={`w-16 h-16 rounded-2xl ${role.bg} flex items-center justify-center mb-6`}>
                   <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${role.color} flex items-center justify-center`}>
