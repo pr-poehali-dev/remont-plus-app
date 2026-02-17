@@ -53,6 +53,16 @@ const roles = [
     border: "hover:border-violet-300",
     path: "/showroom",
   },
+  {
+    id: "lemanapro",
+    title: "ЛЕМАНАПРО",
+    description: "Каталог товаров для ремонта от ЛеманаПро — Самара",
+    icon: "ShoppingCart",
+    color: "from-green-500 to-lime-500",
+    bg: "bg-green-50",
+    border: "hover:border-green-300",
+    path: "/lemanapro",
+  },
 ];
 
 export default function Home() {
@@ -123,7 +133,7 @@ export default function Home() {
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-5xl">
+        <div className="w-full max-w-6xl">
           <div className="text-center mb-10">
             <h1 className="text-3xl md:text-4xl font-bold mb-3">ДИЗАЙН ПРОЕКТ И РЕМОНТ ПОД КОНТРОЛЕМ</h1>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto">
@@ -133,12 +143,12 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
             {roles.map((role) => (
               <Card
                 key={role.id}
                 className={`p-8 cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-2 border-transparent ${role.border}`}
-                onClick={() => navigate(role.id === "showroom" ? role.path : (user ? role.path : `/login?redirect=${role.path}`))}
+                onClick={() => navigate(role.id === "showroom" || role.id === "lemanapro" ? role.path : (user ? role.path : `/login?redirect=${role.path}`))}
               >
                 <div className={`w-16 h-16 rounded-2xl ${role.bg} flex items-center justify-center mb-6`}>
                   <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${role.color} flex items-center justify-center`}>

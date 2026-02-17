@@ -20,6 +20,7 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import YandexCallback from "./pages/YandexCallback";
 import Showroom from "./pages/Showroom";
+import LemanaProCatalog from "./pages/LemanaProCatalog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => {
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/showroom" element={<Showroom />} />
+            <Route path="/lemanapro" element={<LemanaProCatalog />} />
             <Route path="/auth/yandex/callback" element={<YandexCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
