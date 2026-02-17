@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getEstimateItems, saveEstimateItems, type EstimateSavedItem } from "./LemanaProCatalog";
+import { getEstimateItems, saveEstimateItems, type EstimateSavedItem } from "@/lib/lemanapro-data";
 
 interface EstimateItem {
   id: string;
