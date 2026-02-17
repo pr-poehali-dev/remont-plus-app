@@ -192,3 +192,23 @@ export function groupNorms(): Record<AreaType, MaterialNorm[]> {
   }
   return groups;
 }
+
+const ROOMS_STORAGE_KEY = "avangard_calc_rooms";
+
+export function saveRooms(rooms: Room[]) {
+  try {
+    localStorage.setItem(ROOMS_STORAGE_KEY, JSON.stringify(rooms));
+  } catch { /* ignore */ }
+}
+
+export function loadRooms(): Room[] | null {
+  try {
+    const raw = localStorage.getItem(ROOMS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}

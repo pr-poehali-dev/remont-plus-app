@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   type EstimateSavedItem,
   saveEstimateItems,
@@ -21,6 +21,8 @@ import {
   groupNorms,
   findSubcategoryData,
   findCategoryName,
+  saveRooms,
+  loadRooms,
 } from "./calc-data";
 import RoomEditor from "./RoomEditor";
 import NormSelector from "./NormSelector";
@@ -34,10 +36,14 @@ export default function MaterialCalculator({
   estimateItems,
   setEstimateItems,
 }: MaterialCalculatorProps) {
-  const [rooms, setRooms] = useState<Room[]>([makeRoom(0)]);
+  const [rooms, setRooms] = useState<Room[]>(() => loadRooms() || [makeRoom(0)]);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [result, setResult] = useState<{ added: number; updated: number } | null>(null);
   const [expanded, setExpanded] = useState<string | null>(rooms[0]?.id ?? null);
+
+  useEffect(() => {
+    saveRooms(rooms);
+  }, [rooms]);
 
   const totals = useMemo(() => calcTotals(rooms), [rooms]);
 
