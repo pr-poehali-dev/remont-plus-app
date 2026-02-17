@@ -69,17 +69,23 @@ export default function LemanaProEstimate({
       </div>
 
       {estimateItems.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Icon name="ClipboardList" className="h-16 w-16 text-gray-200 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg mb-2">Смета пуста</p>
-          <p className="text-gray-400 text-sm mb-6">
-            Раскройте категорию в каталоге и нажмите «В смету» рядом с нужным товаром
-          </p>
-          <Button onClick={() => setShowEstimate(false)}>
-            <Icon name="ShoppingCart" className="mr-2 h-4 w-4" />
-            Перейти к каталогу
-          </Button>
-        </Card>
+        <div className="space-y-6">
+          <Card className="p-12 text-center">
+            <Icon name="ClipboardList" className="h-16 w-16 text-gray-200 mx-auto mb-4" />
+            <p className="text-gray-500 text-lg mb-2">Смета пуста</p>
+            <p className="text-gray-400 text-sm mb-6">
+              Рассчитайте материалы по площади или добавьте товары из каталога вручную
+            </p>
+            <Button onClick={() => setShowEstimate(false)}>
+              <Icon name="ShoppingCart" className="mr-2 h-4 w-4" />
+              Перейти к каталогу
+            </Button>
+          </Card>
+          <MaterialCalculator
+            estimateItems={estimateItems}
+            setEstimateItems={setEstimateItems}
+          />
+        </div>
       ) : (
         <>
           {Object.entries(estimateByCategory).map(([cat, items]) => {
