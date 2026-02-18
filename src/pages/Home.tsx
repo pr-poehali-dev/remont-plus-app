@@ -80,24 +80,33 @@ const sections = [
   },
 ];
 
-const REGION_LABELS: Record<string, string> = {
-  moscow: "Москва и область",
-  moscow_region: "Московская область",
-  spb: "Санкт-Петербург и область",
-  leningrad_region: "Ленинградская область",
-  krasnodar: "Краснодарский край",
-  novosibirsk: "Новосибирск и область",
-  ekaterinburg: "Екатеринбург и область",
-  kazan: "Казань и область",
-  nizhny_novgorod: "Нижний Новгород и область",
-  samara: "Самара и область",
-  rostov: "Ростов-на-Дону и область",
-  voronezh: "Воронеж и область",
-  tyumen: "Тюмень и область",
-  krasnoyarsk: "Красноярск и область",
-  chelyabinsk: "Челябинск и область",
-  other: "Вся Россия",
+interface RegionData {
+  label: string;
+  city: string;
+  coeff: number;
+  districts: [string, string, string];
+}
+
+const REGIONS: Record<string, RegionData> = {
+  moscow: { label: "Москва и область", city: "Москве", coeff: 1.3, districts: ["Хамовники", "Бутово", "Мытищи"] },
+  moscow_region: { label: "Московская область", city: "Подмосковье", coeff: 1.2, districts: ["Красногорск", "Одинцово", "Балашиха"] },
+  spb: { label: "Санкт-Петербург и область", city: "Санкт-Петербурге", coeff: 1.2, districts: ["Петроградский р-н", "Василеостровский р-н", "Приморский р-н"] },
+  leningrad_region: { label: "Ленинградская область", city: "Ленобласти", coeff: 1.1, districts: ["Всеволожск", "Гатчина", "Мурино"] },
+  krasnodar: { label: "Краснодарский край", city: "Краснодаре", coeff: 1.05, districts: ["Центральный р-н", "Юбилейный", "Прикубанский р-н"] },
+  novosibirsk: { label: "Новосибирск и область", city: "Новосибирске", coeff: 0.9, districts: ["Центральный р-н", "Октябрьский р-н", "Ленинский р-н"] },
+  ekaterinburg: { label: "Екатеринбург и область", city: "Екатеринбурге", coeff: 0.95, districts: ["Центр", "Академический", "Ботанический"] },
+  kazan: { label: "Казань и область", city: "Казани", coeff: 0.9, districts: ["Вахитовский р-н", "Ново-Савиновский р-н", "Советский р-н"] },
+  nizhny_novgorod: { label: "Нижний Новгород и область", city: "Нижнем Новгороде", coeff: 0.9, districts: ["Нижегородский р-н", "Советский р-н", "Приокский р-н"] },
+  samara: { label: "Самара и область", city: "Самаре", coeff: 0.85, districts: ["Октябрьский р-н", "Ленинский р-н", "Кировский р-н"] },
+  rostov: { label: "Ростов-на-Дону и область", city: "Ростове-на-Дону", coeff: 0.9, districts: ["Ворошиловский р-н", "Кировский р-н", "Советский р-н"] },
+  voronezh: { label: "Воронеж и область", city: "Воронеже", coeff: 0.85, districts: ["Центральный р-н", "Коминтерновский р-н", "Левобережный р-н"] },
+  tyumen: { label: "Тюмень и область", city: "Тюмени", coeff: 1.0, districts: ["Центральный р-н", "Калининский р-н", "Ленинский р-н"] },
+  krasnoyarsk: { label: "Красноярск и область", city: "Красноярске", coeff: 0.95, districts: ["Центральный р-н", "Советский р-н", "Октябрьский р-н"] },
+  chelyabinsk: { label: "Челябинск и область", city: "Челябинске", coeff: 0.85, districts: ["Центральный р-н", "Курчатовский р-н", "Калининский р-н"] },
+  other: { label: "Вся Россия", city: "вашем городе", coeff: 1.0, districts: ["Центральный р-н", "Новый район", "Пригород"] },
 };
+
+const BASE_PRICES = [320000, 580000, 290000];
 
 function detectRegionFromTimezone(): string {
   try {

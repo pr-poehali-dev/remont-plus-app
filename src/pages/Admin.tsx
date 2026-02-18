@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate } from "react-router-dom";
@@ -7,14 +8,19 @@ import { useState, useEffect } from "react";
 import AdminMaterialsTab, { type Material } from "@/components/admin/AdminMaterialsTab";
 import AdminProductsTab, { type Product } from "@/components/admin/AdminProductsTab";
 import AdminStatsTab from "@/components/admin/AdminStatsTab";
+import AdminPortfolioTab, { type PortfolioItem } from "@/components/admin/AdminPortfolioTab";
+import AdminReviewsTab, { type ReviewItem } from "@/components/admin/AdminReviewsTab";
 
 const SUPPLIERS_URL = 'https://functions.poehali.dev/735f02a5-eb3f-4e4b-b378-7564c92b8e00';
 const MATERIALS_URL = 'https://functions.poehali.dev/dd454a25-9f55-4cfb-9e59-736a4a1256fd';
+const ADMIN_API = 'https://functions.poehali.dev/874af9cd-edd6-471e-b6d4-e68c828e6dca';
 
 export default function Admin() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -27,6 +33,8 @@ export default function Admin() {
 
     loadProducts();
     loadMaterials();
+    loadPortfolio();
+    loadReviews();
   }, []);
 
   const loadProducts = async () => {
@@ -56,6 +64,34 @@ export default function Admin() {
     }
   };
 
+  const loadPortfolio = async () => {
+    try {
+      const response = await fetch(`${ADMIN_API}?action=portfolio`, {
+        headers: { "X-Admin-Token": "admin2025" },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPortfolio(data.items || []);
+      }
+    } catch (error) {
+      console.error('Error loading portfolio:', error);
+    }
+  };
+
+  const loadReviews = async () => {
+    try {
+      const response = await fetch(`${ADMIN_API}?action=reviews`, {
+        headers: { "X-Admin-Token": "admin2025" },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setReviews(data.items || []);
+      }
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Breadcrumbs
@@ -74,7 +110,7 @@ export default function Admin() {
               </Button>
               <div>
                 <h1 className="text-xl font-bold">Админ-панель</h1>
-                <p className="text-sm text-gray-600">Управление товарами, материалами и поставщиками</p>
+                <p className="text-sm text-gray-600">Управление контентом сайта</p>
               </div>
             </div>
           </div>
@@ -82,21 +118,39 @@ export default function Admin() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="materials" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="materials">
-              <Icon name="Layers" className="h-4 w-4 mr-2" />
+        <Tabs defaultValue="portfolio" className="space-y-6">
+          <TabsList className="flex-wrap h-auto gap-1">
+            <TabsTrigger value="portfolio" className="gap-1.5">
+              <Icon name="Image" className="h-4 w-4" />
+              Портфолио
+              {portfolio.length > 0 && <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 h-4">{portfolio.length}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="gap-1.5">
+              <Icon name="MessageSquare" className="h-4 w-4" />
+              Отзывы
+              {reviews.length > 0 && <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 h-4">{reviews.length}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="materials" className="gap-1.5">
+              <Icon name="Layers" className="h-4 w-4" />
               Материалы
             </TabsTrigger>
-            <TabsTrigger value="products">
-              <Icon name="Package" className="h-4 w-4 mr-2" />
-              Товары каталога
+            <TabsTrigger value="products" className="gap-1.5">
+              <Icon name="Package" className="h-4 w-4" />
+              Товары
             </TabsTrigger>
-            <TabsTrigger value="stats">
-              <Icon name="BarChart3" className="h-4 w-4 mr-2" />
+            <TabsTrigger value="stats" className="gap-1.5">
+              <Icon name="BarChart3" className="h-4 w-4" />
               Статистика
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="portfolio">
+            <AdminPortfolioTab items={portfolio} onReload={loadPortfolio} />
+          </TabsContent>
+
+          <TabsContent value="reviews">
+            <AdminReviewsTab items={reviews} onReload={loadReviews} />
+          </TabsContent>
 
           <TabsContent value="materials">
             <AdminMaterialsTab materials={materials} onReload={loadMaterials} />
