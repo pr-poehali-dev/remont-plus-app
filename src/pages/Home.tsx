@@ -15,7 +15,7 @@ interface User {
 const roles = [
   {
     id: "customer",
-    title: "ЗАКАЗЧИК",
+    title: "ДИЗАЙН-ПРОЕКТ",
     description: "Создайте дизайн-проект с помощью ИИ, рассчитайте смету и найдите мастеров",
     icon: "Home",
     color: "from-amber-500 to-orange-500",
