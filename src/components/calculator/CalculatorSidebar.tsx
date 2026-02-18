@@ -54,11 +54,6 @@ export default function CalculatorSidebar({
                   <SelectItem key={region.code} value={region.code}>
                     <div className="flex items-center justify-between w-full gap-3">
                       <span>{region.name}</span>
-                      {region.coefficient !== 1.0 && (
-                        <span className="text-xs text-gray-400">
-                          ×{region.coefficient.toFixed(2)}
-                        </span>
-                      )}
                     </div>
                   </SelectItem>
                 ))}
@@ -66,21 +61,7 @@ export default function CalculatorSidebar({
             </Select>
           </div>
 
-          {coefficient !== 1.0 && (
-            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm">
-              <div className="flex items-center gap-2 text-amber-700">
-                <Icon name="Info" size={14} />
-                <span>
-                  Коэффициент региона: <strong>×{coefficient.toFixed(2)}</strong>
-                </span>
-              </div>
-              <p className="text-xs text-amber-600 mt-1">
-                {coefficient > 1
-                  ? "Цены выше среднего для данного региона"
-                  : "Цены ниже среднего для данного региона"}
-              </p>
-            </div>
-          )}
+
         </div>
       </Card>
 

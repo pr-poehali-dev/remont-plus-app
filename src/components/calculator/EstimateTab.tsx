@@ -186,9 +186,9 @@ export default function EstimateTab({
             <div>
               <p className="text-sm text-gray-600 mb-1">Общая стоимость</p>
               <p className="text-3xl font-bold text-purple-600">{fmt(grandTotal)} ₽</p>
-              {regionName && coefficient !== 1 && (
+              {regionName && (
                 <p className="text-xs text-gray-400 mt-1">
-                  {regionName} (×{coefficient.toFixed(2)})
+                  {regionName}
                 </p>
               )}
             </div>

@@ -83,30 +83,28 @@ const sections = [
 interface RegionData {
   label: string;
   city: string;
-  coeff: number;
+  prices: [string, string, string];
   districts: [string, string, string];
 }
 
 const REGIONS: Record<string, RegionData> = {
-  moscow: { label: "Москва и область", city: "Москве", coeff: 1.3, districts: ["Хамовники", "Бутово", "Мытищи"] },
-  moscow_region: { label: "Московская область", city: "Подмосковье", coeff: 1.2, districts: ["Красногорск", "Одинцово", "Балашиха"] },
-  spb: { label: "Санкт-Петербург и область", city: "Санкт-Петербурге", coeff: 1.2, districts: ["Петроградский р-н", "Василеостровский р-н", "Приморский р-н"] },
-  leningrad_region: { label: "Ленинградская область", city: "Ленобласти", coeff: 1.1, districts: ["Всеволожск", "Гатчина", "Мурино"] },
-  krasnodar: { label: "Краснодарский край", city: "Краснодаре", coeff: 1.05, districts: ["Центральный р-н", "Юбилейный", "Прикубанский р-н"] },
-  novosibirsk: { label: "Новосибирск и область", city: "Новосибирске", coeff: 0.9, districts: ["Центральный р-н", "Октябрьский р-н", "Ленинский р-н"] },
-  ekaterinburg: { label: "Екатеринбург и область", city: "Екатеринбурге", coeff: 0.95, districts: ["Центр", "Академический", "Ботанический"] },
-  kazan: { label: "Казань и область", city: "Казани", coeff: 0.9, districts: ["Вахитовский р-н", "Ново-Савиновский р-н", "Советский р-н"] },
-  nizhny_novgorod: { label: "Нижний Новгород и область", city: "Нижнем Новгороде", coeff: 0.9, districts: ["Нижегородский р-н", "Советский р-н", "Приокский р-н"] },
-  samara: { label: "Самара и область", city: "Самаре", coeff: 0.85, districts: ["Октябрьский р-н", "Ленинский р-н", "Кировский р-н"] },
-  rostov: { label: "Ростов-на-Дону и область", city: "Ростове-на-Дону", coeff: 0.9, districts: ["Ворошиловский р-н", "Кировский р-н", "Советский р-н"] },
-  voronezh: { label: "Воронеж и область", city: "Воронеже", coeff: 0.85, districts: ["Центральный р-н", "Коминтерновский р-н", "Левобережный р-н"] },
-  tyumen: { label: "Тюмень и область", city: "Тюмени", coeff: 1.0, districts: ["Центральный р-н", "Калининский р-н", "Ленинский р-н"] },
-  krasnoyarsk: { label: "Красноярск и область", city: "Красноярске", coeff: 0.95, districts: ["Центральный р-н", "Советский р-н", "Октябрьский р-н"] },
-  chelyabinsk: { label: "Челябинск и область", city: "Челябинске", coeff: 0.85, districts: ["Центральный р-н", "Курчатовский р-н", "Калининский р-н"] },
-  other: { label: "Вся Россия", city: "вашем городе", coeff: 1.0, districts: ["Центральный р-н", "Новый район", "Пригород"] },
+  moscow: { label: "Москва и область", city: "Москве", prices: ["от 420 000 ₽", "от 750 000 ₽", "от 380 000 ₽"], districts: ["Хамовники", "Бутово", "Мытищи"] },
+  moscow_region: { label: "Московская область", city: "Подмосковье", prices: ["от 380 000 ₽", "от 700 000 ₽", "от 350 000 ₽"], districts: ["Красногорск", "Одинцово", "Балашиха"] },
+  spb: { label: "Санкт-Петербург и область", city: "Санкт-Петербурге", prices: ["от 380 000 ₽", "от 700 000 ₽", "от 350 000 ₽"], districts: ["Петроградский р-н", "Василеостровский р-н", "Приморский р-н"] },
+  leningrad_region: { label: "Ленинградская область", city: "Ленобласти", prices: ["от 350 000 ₽", "от 640 000 ₽", "от 320 000 ₽"], districts: ["Всеволожск", "Гатчина", "Мурино"] },
+  krasnodar: { label: "Краснодарский край", city: "Краснодаре", prices: ["от 340 000 ₽", "от 610 000 ₽", "от 300 000 ₽"], districts: ["Центральный р-н", "Юбилейный", "Прикубанский р-н"] },
+  novosibirsk: { label: "Новосибирск и область", city: "Новосибирске", prices: ["от 290 000 ₽", "от 520 000 ₽", "от 260 000 ₽"], districts: ["Центральный р-н", "Октябрьский р-н", "Ленинский р-н"] },
+  ekaterinburg: { label: "Екатеринбург и область", city: "Екатеринбурге", prices: ["от 300 000 ₽", "от 550 000 ₽", "от 280 000 ₽"], districts: ["Центр", "Академический", "Ботанический"] },
+  kazan: { label: "Казань и область", city: "Казани", prices: ["от 290 000 ₽", "от 520 000 ₽", "от 260 000 ₽"], districts: ["Вахитовский р-н", "Ново-Савиновский р-н", "Советский р-н"] },
+  nizhny_novgorod: { label: "Нижний Новгород и область", city: "Нижнем Новгороде", prices: ["от 290 000 ₽", "от 520 000 ₽", "от 260 000 ₽"], districts: ["Нижегородский р-н", "Советский р-н", "Приокский р-н"] },
+  samara: { label: "Самара и область", city: "Самаре", prices: ["от 270 000 ₽", "от 490 000 ₽", "от 250 000 ₽"], districts: ["Октябрьский р-н", "Ленинский р-н", "Кировский р-н"] },
+  rostov: { label: "Ростов-на-Дону и область", city: "Ростове-на-Дону", prices: ["от 290 000 ₽", "от 520 000 ₽", "от 260 000 ₽"], districts: ["Ворошиловский р-н", "Кировский р-н", "Советский р-н"] },
+  voronezh: { label: "Воронеж и область", city: "Воронеже", prices: ["от 270 000 ₽", "от 490 000 ₽", "от 250 000 ₽"], districts: ["Центральный р-н", "Коминтерновский р-н", "Левобережный р-н"] },
+  tyumen: { label: "Тюмень и область", city: "Тюмени", prices: ["от 320 000 ₽", "от 580 000 ₽", "от 290 000 ₽"], districts: ["Центральный р-н", "Калининский р-н", "Ленинский р-н"] },
+  krasnoyarsk: { label: "Красноярск и область", city: "Красноярске", prices: ["от 300 000 ₽", "от 550 000 ₽", "от 280 000 ₽"], districts: ["Центральный р-н", "Советский р-н", "Октябрьский р-н"] },
+  chelyabinsk: { label: "Челябинск и область", city: "Челябинске", prices: ["от 270 000 ₽", "от 490 000 ₽", "от 250 000 ₽"], districts: ["Центральный р-н", "Курчатовский р-н", "Калининский р-н"] },
+  other: { label: "Вся Россия", city: "вашем городе", prices: ["от 320 000 ₽", "от 580 000 ₽", "от 290 000 ₽"], districts: ["Центральный р-н", "Новый район", "Пригород"] },
 };
-
-const BASE_PRICES = [320000, 580000, 290000];
 
 function detectRegionFromTimezone(): string {
   try {
@@ -123,10 +121,6 @@ function detectRegionFromTimezone(): string {
   } catch {
     return "samara";
   }
-}
-
-function fmtPrice(n: number) {
-  return "от " + new Intl.NumberFormat("ru-RU").format(Math.round(n / 10000) * 10000) + " ₽";
 }
 
 export default function Home() {
@@ -288,9 +282,9 @@ export default function Home() {
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/c50e56a4-0403-4a15-9304-377f1e623dcd.jpg", title: "Ванная комната", area: "8 м²", time: "14 дней", price: fmtPrice(BASE_PRICES[0] * region.coeff), district: region.districts[0] },
-                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/e8794aeb-95cc-471b-af60-ac670e68e682.jpg", title: "Кухня-гостиная", area: "25 м²", time: "21 день", price: fmtPrice(BASE_PRICES[1] * region.coeff), district: region.districts[1] },
-                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/3c16649d-8e76-43b4-9b6f-0ed4f4f2ff25.jpg", title: "Гостиная", area: "18 м²", time: "12 дней", price: fmtPrice(BASE_PRICES[2] * region.coeff), district: region.districts[2] },
+                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/c50e56a4-0403-4a15-9304-377f1e623dcd.jpg", title: "Ванная комната", area: "8 м²", time: "14 дней", price: region.prices[0], district: region.districts[0] },
+                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/e8794aeb-95cc-471b-af60-ac670e68e682.jpg", title: "Кухня-гостиная", area: "25 м²", time: "21 день", price: region.prices[1], district: region.districts[1] },
+                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/3c16649d-8e76-43b4-9b6f-0ed4f4f2ff25.jpg", title: "Гостиная", area: "18 м²", time: "12 дней", price: region.prices[2], district: region.districts[2] },
               ].map((project, idx) => (
                 <div key={idx} className="group relative rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
                   <div className="aspect-[4/3] overflow-hidden">

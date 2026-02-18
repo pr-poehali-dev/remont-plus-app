@@ -141,7 +141,7 @@ export default function Calculator() {
               <div>
                 <h1 className="text-xl font-bold">Калькулятор стоимости</h1>
                 <p className="text-sm text-gray-600">
-                  {currentRegion ? `${currentRegion.name} (×${coefficient.toFixed(2)})` : "Загрузка..."}
+                  {currentRegion ? currentRegion.name : "Загрузка..."}
                   {" · "}{items.length} позиций
                 </p>
               </div>
