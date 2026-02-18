@@ -231,6 +231,121 @@ def handler(event: dict, context) -> dict:
             })
         }
 
+    elif action == 'get_master_profile':
+        user_id = body.get('user_id')
+        if not user_id:
+            cursor.close()
+            conn.close()
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'user_id обязателен'}, ensure_ascii=False)}
+
+        cursor.execute("""
+            SELECT id, user_id, company_name, full_name, phone, email, citizenship,
+                   experience_years, specializations, has_tools, work_style,
+                   technologies_knowledge, certificates, portfolio_photos, portfolio_links,
+                   payment_methods, payment_schedule, discount_info, business_status,
+                   profile_completed, description, location
+            FROM contractors WHERE user_id = %s
+        """, (int(user_id),))
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if not row:
+            return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'profile': None, 'exists': False}, ensure_ascii=False)}
+
+        profile = {
+            'id': row[0], 'user_id': row[1], 'company_name': row[2] or '',
+            'full_name': row[3] or '', 'phone': row[4] or '', 'email': row[5] or '',
+            'citizenship': row[6] or '', 'experience_years': row[7],
+            'specializations': row[8] or [], 'has_tools': row[9] or False,
+            'work_style': row[10] or 'both', 'technologies_knowledge': row[11] or '',
+            'certificates': row[12] or [], 'portfolio_photos': row[13] or [],
+            'portfolio_links': row[14] or [], 'payment_methods': row[15] or [],
+            'payment_schedule': row[16] or '', 'discount_info': row[17] or '',
+            'business_status': row[18] or '', 'profile_completed': row[19] or False,
+            'description': row[20] or '', 'location': row[21] or '',
+        }
+        return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'profile': profile, 'exists': True}, ensure_ascii=False)}
+
+    elif action == 'save_master_profile':
+        user_id = body.get('user_id')
+        if not user_id:
+            cursor.close()
+            conn.close()
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'user_id обязателен'}, ensure_ascii=False)}
+
+        data = body.get('profile', {})
+        full_name = (data.get('full_name') or '').strip()
+        phone = (data.get('phone') or '').strip()
+        email = (data.get('email') or '').strip()
+        citizenship = (data.get('citizenship') or '').strip()
+        experience_years = data.get('experience_years')
+        specializations = data.get('specializations') or []
+        has_tools = bool(data.get('has_tools'))
+        work_style = data.get('work_style', 'both')
+        technologies_knowledge = (data.get('technologies_knowledge') or '').strip()
+        certificates = data.get('certificates') or []
+        portfolio_photos = data.get('portfolio_photos') or []
+        portfolio_links = data.get('portfolio_links') or []
+        payment_methods = data.get('payment_methods') or []
+        payment_schedule = data.get('payment_schedule') or ''
+        discount_info = (data.get('discount_info') or '').strip()
+        business_status = data.get('business_status') or ''
+        description = (data.get('description') or '').strip()
+        location = (data.get('location') or '').strip()
+        company_name = (data.get('company_name') or full_name).strip()
+
+        profile_completed = bool(full_name and phone and specializations)
+
+        cursor.execute("SELECT id FROM contractors WHERE user_id = %s", (int(user_id),))
+        existing = cursor.fetchone()
+
+        if existing:
+            cursor.execute("""
+                UPDATE contractors SET
+                    company_name=%s, full_name=%s, phone=%s, email=%s,
+                    citizenship=%s, experience_years=%s, specializations=%s,
+                    has_tools=%s, work_style=%s, technologies_knowledge=%s,
+                    certificates=%s, portfolio_photos=%s, portfolio_links=%s,
+                    payment_methods=%s, payment_schedule=%s, discount_info=%s,
+                    business_status=%s, profile_completed=%s, description=%s,
+                    location=%s, updated_at=NOW()
+                WHERE user_id=%s RETURNING id
+            """, (company_name, full_name, phone, email, citizenship,
+                  experience_years, specializations, has_tools, work_style,
+                  technologies_knowledge, certificates, portfolio_photos,
+                  portfolio_links, payment_methods, payment_schedule,
+                  discount_info, business_status, profile_completed,
+                  description, location, int(user_id)))
+        else:
+            cursor.execute("""
+                INSERT INTO contractors (
+                    user_id, company_name, full_name, phone, email, citizenship,
+                    experience_years, specializations, has_tools, work_style,
+                    technologies_knowledge, certificates, portfolio_photos,
+                    portfolio_links, payment_methods, payment_schedule,
+                    discount_info, business_status, profile_completed,
+                    description, location
+                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                RETURNING id
+            """, (int(user_id), company_name, full_name, phone, email, citizenship,
+                  experience_years, specializations, has_tools, work_style,
+                  technologies_knowledge, certificates, portfolio_photos,
+                  portfolio_links, payment_methods, payment_schedule,
+                  discount_info, business_status, profile_completed,
+                  description, location))
+
+        record_id = cursor.fetchone()[0]
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return {
+            'statusCode': 200,
+            'headers': headers,
+            'body': json.dumps({'success': True, 'id': record_id, 'profile_completed': profile_completed}, ensure_ascii=False)
+        }
+
     cursor.close()
     conn.close()
     return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Invalid action'})}

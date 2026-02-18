@@ -51,7 +51,12 @@ export default function Register() {
 
       localStorage.setItem("avangard_user", JSON.stringify(data.user));
       localStorage.setItem("avangard_token", data.token);
-      navigate(redirectTo || "/");
+
+      if (userType === "contractor") {
+        navigate("/master-profile");
+      } else {
+        navigate(redirectTo || "/");
+      }
     } catch {
       setError("Сервер недоступен. Попробуйте позже.");
     } finally {
