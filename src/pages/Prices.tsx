@@ -63,7 +63,7 @@ export default function Prices() {
   const [selectedRegion, setSelectedRegion] = useState("moscow");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
-  const [coefficient, setCoefficient] = useState(1.3);
+  const [, setCoefficient] = useState(1.3);
   const [loading, setLoading] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
@@ -173,14 +173,7 @@ export default function Prices() {
             <SelectContent>
               {regions.map((region) => (
                 <SelectItem key={region.code} value={region.code}>
-                  <div className="flex items-center justify-between w-full gap-4">
-                    <span>{region.name}</span>
-                    {region.coefficient !== 1.0 && (
-                      <span className="text-xs text-gray-400">
-                        ×{region.coefficient.toFixed(2)}
-                      </span>
-                    )}
-                  </div>
+                  {region.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -227,17 +220,7 @@ export default function Prices() {
               <Icon name="MapPin" size={13} />
               {currentRegion.name}
             </Badge>
-            {currentRegion.coefficient !== 1.0 && (
-              <Badge
-                variant={
-                  currentRegion.coefficient > 1 ? "destructive" : "default"
-                }
-                className="gap-1.5 px-3 py-1.5"
-              >
-                <Icon name="TrendingUp" size={13} />
-                Коэффициент: ×{currentRegion.coefficient.toFixed(2)}
-              </Badge>
-            )}
+            
             <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
               <Icon name="ClipboardList" size={13} />
               {totalItems} позиций
@@ -309,11 +292,8 @@ export default function Prices() {
                             <TableHead className="w-[15%] text-center">
                               Ед. изм.
                             </TableHead>
-                            <TableHead className="w-[17%] text-right">
+                            <TableHead className="w-[35%] text-right">
                               Цена, ₽
-                            </TableHead>
-                            <TableHead className="w-[18%] text-right text-gray-400 text-xs">
-                              Базовая
                             </TableHead>
                           </TableRow>
                         </TableHeader>
@@ -341,11 +321,7 @@ export default function Prices() {
                                 {item.unit}
                               </TableCell>
                               <TableCell className="text-right font-semibold text-lg">
-                                {formatPrice(item.price)}
-                              </TableCell>
-                              <TableCell className="text-right text-gray-400 text-sm">
-                                {coefficient !== 1.0 &&
-                                  formatPrice(item.price_base)}
+                                {formatPrice(item.price)} ₽
                               </TableCell>
                             </TableRow>
                           ))}
@@ -374,11 +350,7 @@ export default function Prices() {
                               <span className="font-semibold text-lg">
                                 {formatPrice(item.price)} ₽
                               </span>
-                              {coefficient !== 1.0 && (
-                                <span className="text-xs text-gray-400 ml-2">
-                                  (база: {formatPrice(item.price_base)})
-                                </span>
-                              )}
+                              
                             </div>
                           </div>
                         </div>
@@ -401,10 +373,6 @@ export default function Prices() {
               <p>
                 Цены указаны за работу без учёта стоимости материалов.
                 Окончательная стоимость определяется после осмотра объекта.
-              </p>
-              <p>
-                Региональный коэффициент отражает среднюю разницу в стоимости
-                работ между регионами.
               </p>
             </div>
           </div>
