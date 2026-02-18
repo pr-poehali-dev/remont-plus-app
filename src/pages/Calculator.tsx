@@ -37,7 +37,6 @@ export interface PriceItem {
   name: string;
   description: string | null;
   unit: string;
-  price_base: number;
   price: number;
 }
 
@@ -45,7 +44,6 @@ export interface Region {
   id: number;
   name: string;
   code: string;
-  coefficient: number;
 }
 
 export default function Calculator() {
@@ -57,7 +55,6 @@ export default function Calculator() {
   const [selectedRegion, setSelectedRegion] = useState(() => {
     return localStorage.getItem("avangard_calc_region") || "moscow";
   });
-  const [coefficient, setCoefficient] = useState(1.3);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,7 +75,6 @@ export default function Calculator() {
     const data = await response.json();
     setPriceCatalog(data.prices);
     setRegions(data.regions);
-    setCoefficient(data.coefficient);
     setLoading(false);
     localStorage.setItem("avangard_calc_region", selectedRegion);
   }, [selectedRegion]);
@@ -198,7 +194,6 @@ export default function Calculator() {
                     onUpdateItem={updateItem}
                     onAddItem={addItem}
                     regionName={currentRegion?.name}
-                    coefficient={coefficient}
                   />
                 </TabsContent>
 
@@ -222,7 +217,6 @@ export default function Calculator() {
             regions={regions}
             selectedRegion={selectedRegion}
             onRegionChange={setSelectedRegion}
-            coefficient={coefficient}
             grandTotal={grandTotal}
           />
         </div>

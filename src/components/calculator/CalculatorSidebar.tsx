@@ -18,7 +18,6 @@ interface CalculatorSidebarProps {
   regions: Region[];
   selectedRegion: string;
   onRegionChange: (code: string) => void;
-  coefficient: number;
   grandTotal: number;
 }
 
@@ -28,7 +27,6 @@ export default function CalculatorSidebar({
   regions,
   selectedRegion,
   onRegionChange,
-  coefficient,
   grandTotal,
 }: CalculatorSidebarProps) {
   const navigate = useNavigate();

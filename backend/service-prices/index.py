@@ -52,21 +52,17 @@ def handler(event: dict, context) -> dict:
         ORDER BY sort_order
     ''')
     regions = []
+    coefficients = {}
     for row in cursor.fetchall():
         regions.append({
             'id': row[0],
             'name': row[1],
             'code': row[2],
-            'coefficient': float(row[3]),
             'sort_order': row[4]
         })
+        coefficients[row[2]] = float(row[3])
     
-    coefficient = 1.0
-    if region_code:
-        for r in regions:
-            if r['code'] == region_code:
-                coefficient = r['coefficient']
-                break
+    coefficient = coefficients.get(region_code, 1.0)
     
     query = '''
         SELECT sp.id, sp.name, sp.description, sp.unit, sp.price_base, sp.sort_order,
@@ -108,7 +104,6 @@ def handler(event: dict, context) -> dict:
             'name': row[1],
             'description': row[2],
             'unit': row[3],
-            'price_base': base,
             'price': adjusted
         })
     
@@ -130,7 +125,6 @@ def handler(event: dict, context) -> dict:
             'regions': regions,
             'prices': result_categories,
             'selected_region': region_code,
-            'coefficient': coefficient,
             'total_items': total_items
         }, ensure_ascii=False),
         'isBase64Encoded': False

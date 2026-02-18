@@ -32,7 +32,6 @@ interface EstimateTabProps {
   onUpdateItem: (id: string, updates: Partial<EstimateItem>) => void;
   onAddItem: (item: EstimateItem) => void;
   regionName?: string;
-  coefficient: number;
 }
 
 export default function EstimateTab({
@@ -46,7 +45,6 @@ export default function EstimateTab({
   onRemoveItem,
   onUpdateItem,
   regionName,
-  coefficient,
 }: EstimateTabProps) {
   const [showPricePicker, setShowPricePicker] = useState(false);
   const [pickerSearch, setPickerSearch] = useState("");

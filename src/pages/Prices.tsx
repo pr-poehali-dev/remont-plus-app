@@ -28,7 +28,6 @@ interface Region {
   id: number;
   name: string;
   code: string;
-  coefficient: number;
 }
 
 interface Category {
@@ -43,7 +42,6 @@ interface PriceItem {
   name: string;
   description: string | null;
   unit: string;
-  price_base: number;
   price: number;
 }
 
@@ -63,7 +61,6 @@ export default function Prices() {
   const [selectedRegion, setSelectedRegion] = useState("moscow");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [search, setSearch] = useState("");
-  const [, setCoefficient] = useState(1.3);
   const [loading, setLoading] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
@@ -82,7 +79,6 @@ export default function Prices() {
     setRegions(data.regions);
     setCategories(data.categories);
     setPrices(data.prices);
-    setCoefficient(data.coefficient);
     setLoading(false);
 
     if (data.prices.length > 0 && expandedCategories.size === 0) {

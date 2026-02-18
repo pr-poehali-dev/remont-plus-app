@@ -21,7 +21,7 @@
       "method": "GET",
       "path": "/?region=moscow",
       "expectedStatus": 200,
-      "expectedBody": {"coefficient": "number"},
+      "expectedBody": {"selected_region": "string", "total_items": "number"},
       "bodyMatcher": "partial"
     }
   ]
