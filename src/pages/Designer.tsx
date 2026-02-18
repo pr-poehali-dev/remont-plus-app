@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import Icon from "@/components/ui/icon";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import AddressForm from "@/components/AddressForm";
 import ProjectStageCard, { type ProjectStage } from "@/components/designer/ProjectStageCard";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -465,6 +466,14 @@ export default function Designer() {
                 <Icon name="MessageSquare" className="mr-1.5 h-3.5 w-3.5" />
                 Спросить ИИ
               </Button>
+            </Card>
+
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Icon name="MapPin" className="h-5 w-5 text-primary" />
+                Адрес объекта
+              </h3>
+              <AddressForm userId={1} />
             </Card>
 
             <Button variant="outline" className="w-full" onClick={() => navigate("/calculator")}>
