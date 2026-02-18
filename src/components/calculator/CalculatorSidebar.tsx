@@ -19,6 +19,7 @@ interface CalculatorSidebarProps {
   selectedRegion: string;
   onRegionChange: (code: string) => void;
   grandTotal: number;
+  materialSurcharge: number;
 }
 
 export default function CalculatorSidebar({
@@ -28,6 +29,7 @@ export default function CalculatorSidebar({
   selectedRegion,
   onRegionChange,
   grandTotal,
+  materialSurcharge,
 }: CalculatorSidebarProps) {
   const navigate = useNavigate();
 
@@ -73,6 +75,12 @@ export default function CalculatorSidebar({
           <p className="text-xs text-gray-500 mt-1">
             Цены на работы с учётом региона
           </p>
+          {materialSurcharge > 0 && (
+            <p className="text-xs text-orange-600 mt-2 flex items-center gap-1">
+              <Icon name="Info" className="h-3 w-3" />
+              Вкл. наценку +{fmt(materialSurcharge)} ₽ за материалы
+            </p>
+          )}
         </Card>
       )}
 

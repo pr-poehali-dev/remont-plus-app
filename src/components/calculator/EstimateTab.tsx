@@ -24,6 +24,8 @@ interface EstimateTabProps {
   items: EstimateItem[];
   totalMaterials: number;
   totalWorks: number;
+  adjustedWorks: number;
+  materialSurcharge: number;
   grandTotal: number;
   priceCatalog: PriceCategory[];
   loading: boolean;
@@ -38,6 +40,8 @@ export default function EstimateTab({
   items,
   totalMaterials,
   totalWorks,
+  adjustedWorks,
+  materialSurcharge,
   grandTotal,
   priceCatalog,
   loading,
@@ -179,7 +183,13 @@ export default function EstimateTab({
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Работы</p>
-              <p className="text-2xl font-bold">{fmt(totalWorks)} ₽</p>
+              <p className="text-2xl font-bold">{fmt(adjustedWorks)} ₽</p>
+              {materialSurcharge > 0 && (
+                <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                  <Icon name="Info" className="h-3 w-3" />
+                  +{fmt(materialSurcharge)} ₽ (коэфф. за материалы)
+                </p>
+              )}
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Общая стоимость</p>
@@ -191,6 +201,14 @@ export default function EstimateTab({
               )}
             </div>
           </div>
+          {materialSurcharge > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-xs text-gray-500 flex items-center gap-1.5">
+                <Icon name="AlertCircle" className="h-3.5 w-3.5 text-orange-500" />
+                Стоимость работ увеличена до ×1,3 от стоимости материалов ({fmt(totalWorks)} → {fmt(adjustedWorks)} ₽)
+              </p>
+            </div>
+          )}
         </Card>
       )}
 

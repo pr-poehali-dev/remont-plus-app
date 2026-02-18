@@ -115,12 +115,19 @@ export default function Calculator() {
 
   const totalMaterials = items.filter(i => i.category === "Материалы").reduce((sum, i) => sum + i.total, 0);
   const totalWorks = items.filter(i => i.category === "Работы").reduce((sum, i) => sum + i.total, 0);
-  const grandTotal = totalMaterials + totalWorks;
+
+  const MATERIAL_COEFF = 1.3;
+  const minWorksFromMaterials = Math.round(totalMaterials * MATERIAL_COEFF);
+  const materialSurcharge = totalMaterials > 0 && totalWorks < minWorksFromMaterials
+    ? minWorksFromMaterials - totalWorks
+    : 0;
+  const adjustedWorks = totalWorks + materialSurcharge;
+  const grandTotal = totalMaterials + adjustedWorks;
 
   const contractors = [
-    { name: "СтройЭксперт", rating: 4.8, reviews: 127, price: grandTotal * 1.0, experience: "12 лет" },
-    { name: "РемонтПро", rating: 4.6, reviews: 89, price: grandTotal * 1.15, experience: "8 лет" },
-    { name: "МастерДом", rating: 4.9, reviews: 234, price: grandTotal * 0.95, experience: "15 лет" },
+    { name: "СтройЭксперт", rating: 4.8, reviews: 127, price: Math.round(grandTotal * 1.0), experience: "12 лет" },
+    { name: "РемонтПро", rating: 4.6, reviews: 89, price: Math.round(grandTotal * 1.15), experience: "8 лет" },
+    { name: "МастерДом", rating: 4.9, reviews: 234, price: Math.round(grandTotal * 0.95), experience: "15 лет" },
   ];
 
   const currentRegion = regions.find(r => r.code === selectedRegion);
@@ -186,6 +193,8 @@ export default function Calculator() {
                     items={items}
                     totalMaterials={totalMaterials}
                     totalWorks={totalWorks}
+                    adjustedWorks={adjustedWorks}
+                    materialSurcharge={materialSurcharge}
                     grandTotal={grandTotal}
                     priceCatalog={priceCatalog}
                     loading={loading}
@@ -213,11 +222,12 @@ export default function Calculator() {
 
           <CalculatorSidebar
             lemanaItemsCount={lemanaItems.length}
-            onExportPdf={() => exportEstimatePdf(items, lemanaItems)}
+            onExportPdf={() => exportEstimatePdf(items, lemanaItems, materialSurcharge)}
             regions={regions}
             selectedRegion={selectedRegion}
             onRegionChange={setSelectedRegion}
             grandTotal={grandTotal}
+            materialSurcharge={materialSurcharge}
           />
         </div>
       </div>

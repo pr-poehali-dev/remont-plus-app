@@ -5,7 +5,7 @@ import type { EstimateItem } from "@/pages/Calculator";
 
 const formatPrice = (n: number) => n.toLocaleString("ru-RU");
 
-export function exportEstimatePdf(items: EstimateItem[], lemanaItems: EstimateSavedItem[]) {
+export function exportEstimatePdf(items: EstimateItem[], lemanaItems: EstimateSavedItem[], materialSurcharge = 0) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
   doc.setFont("helvetica", "bold");
@@ -59,13 +59,26 @@ export function exportEstimatePdf(items: EstimateItem[], lemanaItems: EstimateSa
     y = (doc as unknown as Record<string, number>).lastAutoTable?.finalY ?? y + 40;
     y += 5;
 
+    const adjustedWorks = totalWorks + materialSurcharge;
+    const adjustedTotal = totalMaterials + adjustedWorks;
+
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.text(`Materials: ${formatPrice(totalMaterials)} rub`, 14, y);
-    doc.text(`Works: ${formatPrice(totalWorks)} rub`, 14, y + 5);
-    doc.setFont("helvetica", "bold");
-    doc.text(`TOTAL: ${formatPrice(grandTotal)} rub`, 14, y + 11);
-    y += 20;
+    doc.text(`Works: ${formatPrice(adjustedWorks)} rub`, 14, y + 5);
+    if (materialSurcharge > 0) {
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(180, 100, 0);
+      doc.text(`  incl. material surcharge (x1.3): +${formatPrice(materialSurcharge)} rub`, 14, y + 10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.text(`TOTAL: ${formatPrice(adjustedTotal)} rub`, 14, y + 17);
+      y += 26;
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.text(`TOTAL: ${formatPrice(adjustedTotal)} rub`, 14, y + 11);
+      y += 20;
+    }
   }
 
   if (lemanaItems.length > 0) {
