@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -279,28 +280,33 @@ export default function Home() {
                 <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Наши работы</span>
               </h2>
               <p className="text-gray-500 text-lg">Примеры завершённых проектов в {region.city}</p>
+              <p className="text-gray-400 text-sm mt-1">Двигайте ползунок, чтобы увидеть результат</p>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/c50e56a4-0403-4a15-9304-377f1e623dcd.jpg", title: "Ванная комната", area: "8 м²", time: "14 дней", price: region.prices[0], district: region.districts[0] },
-                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/e8794aeb-95cc-471b-af60-ac670e68e682.jpg", title: "Кухня-гостиная", area: "25 м²", time: "21 день", price: region.prices[1], district: region.districts[1] },
-                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/3c16649d-8e76-43b4-9b6f-0ed4f4f2ff25.jpg", title: "Гостиная", area: "18 м²", time: "12 дней", price: region.prices[2], district: region.districts[2] },
+                {
+                  before: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/d1145c26-c0f3-473a-870a-652d6c28a68c.jpg",
+                  after: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/c50e56a4-0403-4a15-9304-377f1e623dcd.jpg",
+                  title: "Ванная комната", area: "8 м²", time: "14 дней", price: region.prices[0], district: region.districts[0],
+                },
+                {
+                  before: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/88872eca-f623-4351-8d0f-b9961cc1509b.jpg",
+                  after: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/e8794aeb-95cc-471b-af60-ac670e68e682.jpg",
+                  title: "Кухня-гостиная", area: "25 м²", time: "21 день", price: region.prices[1], district: region.districts[1],
+                },
+                {
+                  before: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/f206b6d0-2b52-40ab-88bb-a249dcf1519d.jpg",
+                  after: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/3c16649d-8e76-43b4-9b6f-0ed4f4f2ff25.jpg",
+                  title: "Гостиная", area: "18 м²", time: "12 дней", price: region.prices[2], district: region.districts[2],
+                },
               ].map((project, idx) => (
-                <div key={idx} className="group relative rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
-                  <div className="aspect-[4/3] overflow-hidden">
-                    <img src={project.img} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500">
-                    <div className="flex gap-2 mb-2">
-                      <span className="bg-white/20 backdrop-blur-md text-white text-xs px-2.5 py-1 rounded-full">{project.area}</span>
-                      <span className="bg-white/20 backdrop-blur-md text-white text-xs px-2.5 py-1 rounded-full">{project.time}</span>
-                    </div>
-                    <p className="text-white font-bold text-lg">{project.title}</p>
-                    <p className="text-white/70 text-xs flex items-center gap-1"><Icon name="MapPin" size={11} />{project.district}</p>
-                    <p className="text-white/80 text-sm mt-1">{project.price}</p>
-                  </div>
-                  <div className="p-5 group-hover:opacity-0 transition-opacity duration-300">
+                <div key={idx} className="rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500">
+                  <BeforeAfterSlider
+                    beforeImg={project.before}
+                    afterImg={project.after}
+                    className="aspect-[4/3]"
+                  />
+                  <div className="p-5">
                     <h3 className="font-bold text-gray-900">{project.title}</h3>
                     <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><Icon name="MapPin" size={12} />{project.district}</p>
                     <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
