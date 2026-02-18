@@ -80,15 +80,55 @@ const sections = [
   },
 ];
 
+const REGION_LABELS: Record<string, string> = {
+  moscow: "Москва и область",
+  moscow_region: "Московская область",
+  spb: "Санкт-Петербург и область",
+  leningrad_region: "Ленинградская область",
+  krasnodar: "Краснодарский край",
+  novosibirsk: "Новосибирск и область",
+  ekaterinburg: "Екатеринбург и область",
+  kazan: "Казань и область",
+  nizhny_novgorod: "Нижний Новгород и область",
+  samara: "Самара и область",
+  rostov: "Ростов-на-Дону и область",
+  voronezh: "Воронеж и область",
+  tyumen: "Тюмень и область",
+  krasnoyarsk: "Красноярск и область",
+  chelyabinsk: "Челябинск и область",
+  other: "Вся Россия",
+};
+
+function detectRegionFromTimezone(): string {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const tzMap: Record<string, string> = {
+      "Europe/Moscow": "moscow",
+      "Europe/Samara": "samara",
+      "Asia/Yekaterinburg": "ekaterinburg",
+      "Asia/Novosibirsk": "novosibirsk",
+      "Asia/Krasnoyarsk": "krasnoyarsk",
+      "Asia/Tyumen": "tyumen",
+    };
+    return tzMap[tz] || "samara";
+  } catch {
+    return "samara";
+  }
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [regionLabel, setRegionLabel] = useState("Самара и область");
 
   useEffect(() => {
     const saved = localStorage.getItem("avangard_user");
     if (saved) {
       try { setUser(JSON.parse(saved)); } catch { /* ignore */ }
     }
+    const savedRegion = localStorage.getItem("avangard_calc_region");
+    const code = savedRegion || detectRegionFromTimezone();
+    setRegionLabel(REGION_LABELS[code] || "Вся Россия");
   }, []);
 
   const handleLogout = () => {
@@ -164,7 +204,7 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
               </span>
-              Самара и область
+              {regionLabel}
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-5 leading-tight">
               <span className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent">ДИЗАЙН-ПРОЕКТ</span>
