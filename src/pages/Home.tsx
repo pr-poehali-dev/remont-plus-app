@@ -156,8 +156,8 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-4 py-10 md:py-16">
-        <div className="w-full max-w-6xl">
+      <main className="flex-1 px-4 py-10 md:py-16">
+        <div className="w-full max-w-6xl mx-auto">
           <div className="text-center mb-12 animate-fade-in">
             <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
               <span className="relative flex h-2 w-2">
@@ -225,6 +225,101 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          <section className="mt-20">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
+                <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Наши работы</span>
+              </h2>
+              <p className="text-gray-500 text-lg">Примеры завершённых проектов в Самаре</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/c50e56a4-0403-4a15-9304-377f1e623dcd.jpg", title: "Ванная комната", area: "8 м²", time: "14 дней", price: "от 320 000 ₽" },
+                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/e8794aeb-95cc-471b-af60-ac670e68e682.jpg", title: "Кухня-гостиная", area: "25 м²", time: "21 день", price: "от 580 000 ₽" },
+                { img: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/3c16649d-8e76-43b4-9b6f-0ed4f4f2ff25.jpg", title: "Гостиная", area: "18 м²", time: "12 дней", price: "от 290 000 ₽" },
+              ].map((project, idx) => (
+                <div key={idx} className="group relative rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1">
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <img src={project.img} alt={project.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    <div className="flex gap-2 mb-2">
+                      <span className="bg-white/20 backdrop-blur-md text-white text-xs px-2.5 py-1 rounded-full">{project.area}</span>
+                      <span className="bg-white/20 backdrop-blur-md text-white text-xs px-2.5 py-1 rounded-full">{project.time}</span>
+                    </div>
+                    <p className="text-white font-bold text-lg">{project.title}</p>
+                    <p className="text-white/80 text-sm">{project.price}</p>
+                  </div>
+                  <div className="p-5 group-hover:opacity-0 transition-opacity duration-300">
+                    <h3 className="font-bold text-gray-900">{project.title}</h3>
+                    <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
+                      <span className="flex items-center gap-1"><Icon name="Ruler" size={14} />{project.area}</span>
+                      <span className="flex items-center gap-1"><Icon name="Clock" size={14} />{project.time}</span>
+                    </div>
+                    <p className="mt-2 font-semibold text-orange-500">{project.price}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-20">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
+                <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Отзывы клиентов</span>
+              </h2>
+              <p className="text-gray-500 text-lg">Что говорят о нас</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { name: "Анна К.", text: "Сделали ремонт ванной за 2 недели. Плитка уложена идеально, швы ровные. Мастера аккуратные, после себя всё убрали. Рекомендую!", rating: 5, date: "Январь 2026", emoji: "👩" },
+                { name: "Дмитрий П.", text: "Заказывал ремонт кухни под ключ. Дизайн-проект помог сразу понять, как будет выглядеть результат. Уложились в бюджет и сроки.", rating: 5, date: "Декабрь 2025", emoji: "👨" },
+                { name: "Елена М.", text: "Очень удобный калькулятор — сразу видно стоимость работ. Мастер приехал вовремя, работа выполнена качественно. Спасибо!", rating: 5, date: "Февраль 2026", emoji: "👩" },
+              ].map((review, idx) => (
+                <div key={idx} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center gap-1 mb-4">
+                    {Array.from({ length: review.rating }).map((_, i) => (
+                      <span key={i} className="text-amber-400 text-lg">★</span>
+                    ))}
+                  </div>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-5">«{review.text}»</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-lg">
+                        {review.emoji}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-gray-900">{review.name}</p>
+                        <p className="text-xs text-gray-400">{review.date}</p>
+                      </div>
+                    </div>
+                    <Icon name="Quote" size={20} className="text-orange-200" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-20 mb-4">
+            <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 p-10 md:p-14">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+              <div className="relative text-center">
+                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Готовы начать ремонт?</h2>
+                <p className="text-white/90 text-lg mb-8 max-w-xl mx-auto">Создайте дизайн-проект с ИИ бесплатно или рассчитайте стоимость работ в калькуляторе</p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <Button size="lg" onClick={() => navigate(user ? "/designer" : "/login?redirect=/designer")} className="bg-white text-orange-600 hover:bg-gray-100 rounded-full px-8 shadow-xl text-base font-semibold">
+                    🎨 Создать дизайн-проект
+                  </Button>
+                  <Button size="lg" variant="outline" onClick={() => navigate("/calculator")} className="border-2 border-white/50 text-white hover:bg-white/20 rounded-full px-8 text-base font-semibold bg-transparent">
+                    📋 Рассчитать смету
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
 
