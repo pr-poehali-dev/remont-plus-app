@@ -41,7 +41,7 @@ const emptyForm: AddressFormData = {
   label: "",
 };
 
-export default function AddressForm({ userId }: { userId: number }) {
+export default function AddressForm({ userId, projectId }: { userId: number; projectId?: number | null }) {
   const { toast } = useToast();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,9 @@ export default function AddressForm({ userId }: { userId: number }) {
   const loadAddresses = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}?user_id=${userId}`);
+      let url = `${API_URL}?user_id=${userId}`;
+      if (projectId) url += `&project_id=${projectId}`;
+      const res = await fetch(url);
       const data = await res.json();
       setAddresses(data.addresses || []);
     } catch {
@@ -61,11 +63,11 @@ export default function AddressForm({ userId }: { userId: number }) {
     } finally {
       setLoading(false);
     }
-  }, [userId, toast]);
+  }, [userId, projectId, toast]);
 
   useEffect(() => {
     if (userId) loadAddresses();
-  }, [userId, loadAddresses]);
+  }, [userId, projectId, loadAddresses]);
 
   const handleSave = async () => {
     if (!form.region || !form.city || !form.street || !form.house) {
@@ -77,6 +79,7 @@ export default function AddressForm({ userId }: { userId: number }) {
     try {
       const method = editingId ? "PUT" : "POST";
       const body: Record<string, unknown> = { ...form, user_id: userId, is_default: true };
+      if (projectId) body.project_id = projectId;
       if (editingId) body.id = editingId;
 
       const res = await fetch(API_URL, {

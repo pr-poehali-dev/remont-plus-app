@@ -38,12 +38,21 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return resp(400, {'error': 'user_id обязателен'})
 
-        cur.execute(
-            f"""SELECT id, user_id, region, city, street, house, apartment,
-                       postal_code, is_default, label, created_at, updated_at
-                FROM {S}user_addresses WHERE user_id = %s ORDER BY is_default DESC, id DESC""",
-            (int(user_id),)
-        )
+        project_id = query.get('project_id')
+        if project_id:
+            cur.execute(
+                f"""SELECT id, user_id, region, city, street, house, apartment,
+                           postal_code, is_default, label, created_at, updated_at, project_id
+                    FROM {S}user_addresses WHERE user_id = %s AND project_id = %s ORDER BY id DESC""",
+                (int(user_id), int(project_id))
+            )
+        else:
+            cur.execute(
+                f"""SELECT id, user_id, region, city, street, house, apartment,
+                           postal_code, is_default, label, created_at, updated_at, project_id
+                    FROM {S}user_addresses WHERE user_id = %s ORDER BY is_default DESC, id DESC""",
+                (int(user_id),)
+            )
         rows = cur.fetchall()
         addresses = []
         for r in rows:
@@ -51,7 +60,7 @@ def handler(event: dict, context) -> dict:
                 'id': r[0], 'user_id': r[1], 'region': r[2], 'city': r[3],
                 'street': r[4], 'house': r[5], 'apartment': r[6],
                 'postal_code': r[7], 'is_default': r[8], 'label': r[9],
-                'created_at': r[10], 'updated_at': r[11]
+                'created_at': r[10], 'updated_at': r[11], 'project_id': r[12]
             })
         cur.close()
         conn.close()
@@ -74,6 +83,7 @@ def handler(event: dict, context) -> dict:
         postal_code = (body.get('postal_code') or '').strip()
         is_default = body.get('is_default', True)
         label = (body.get('label') or '').strip()
+        project_id = body.get('project_id')
 
         if not region or not city or not street or not house:
             cur.close()
@@ -85,9 +95,9 @@ def handler(event: dict, context) -> dict:
 
         cur.execute(
             f"""INSERT INTO {S}user_addresses
-                (user_id, region, city, street, house, apartment, postal_code, is_default, label)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
-            (int(user_id), region, city, street, house, apartment, postal_code, is_default, label)
+                (user_id, region, city, street, house, apartment, postal_code, is_default, label, project_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
+            (int(user_id), region, city, street, house, apartment, postal_code, is_default, label, int(project_id) if project_id else None)
         )
         new_id = cur.fetchone()[0]
         conn.commit()
@@ -119,15 +129,17 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return resp(400, {'error': 'Заполните область, город, улицу и дом'})
 
+        project_id = body.get('project_id')
+
         if is_default:
             cur.execute(f"UPDATE {S}user_addresses SET is_default = FALSE WHERE user_id = %s", (int(user_id),))
 
         cur.execute(
             f"""UPDATE {S}user_addresses
                 SET region=%s, city=%s, street=%s, house=%s, apartment=%s,
-                    postal_code=%s, is_default=%s, label=%s, updated_at=CURRENT_TIMESTAMP
+                    postal_code=%s, is_default=%s, label=%s, project_id=%s, updated_at=CURRENT_TIMESTAMP
                 WHERE id=%s AND user_id=%s""",
-            (region, city, street, house, apartment, postal_code, is_default, label, int(address_id), int(user_id))
+            (region, city, street, house, apartment, postal_code, is_default, label, int(project_id) if project_id else None, int(address_id), int(user_id))
         )
         conn.commit()
         cur.close()

@@ -473,7 +473,7 @@ export default function Designer() {
                 <Icon name="MapPin" className="h-5 w-5 text-primary" />
                 Адрес объекта
               </h3>
-              <AddressForm userId={1} />
+              <AddressForm userId={1} projectId={projectId} />
             </Card>
 
             <Button variant="outline" className="w-full" onClick={() => navigate("/calculator")}>
