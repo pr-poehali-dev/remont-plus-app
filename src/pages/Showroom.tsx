@@ -97,6 +97,115 @@ const showroomItems: ShowroomItem[] = [
 const rooms = ["Все", "Ванная", "Кухня", "Гостиная", "Спальня"];
 const styles = ["Все", "Современная классика", "Минимализм", "Современный", "Скандинавский", "Лофт"];
 
+const exampleImages = [
+  { src: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/f88f632e-0c35-4529-a23f-f52566284ed5.jpg", label: "Общий вид" },
+  { src: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/16e555dc-a476-40ff-ae5c-7b157607113c.jpg", label: "Планировка" },
+  { src: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/c2d40848-a52f-4fd5-bc91-c6e2d603725a.jpg", label: "Чертёж" },
+  { src: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/68e0468f-b3f7-474f-a153-ea618b47d70e.jpg", label: "Гостиная" },
+  { src: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/9b6b4808-eab8-41d8-9ef9-f9a11604c813.jpg", label: "Спальня" },
+  { src: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/0b93d17c-d851-49a1-82a4-8bbe1339a747.jpg", label: "Кухня" },
+];
+
+function ExampleProjectCard({ navigate }: { navigate: (path: string) => void }) {
+  const [activeImg, setActiveImg] = useState(0);
+  const [lightbox, setLightbox] = useState<number | null>(null);
+
+  return (
+    <>
+      <Card className="mb-8 overflow-hidden border-primary/30">
+        <div className="flex flex-col lg:flex-row">
+          <div className="lg:w-1/2 relative">
+            <div className="aspect-[4/3] overflow-hidden cursor-pointer" onClick={() => setLightbox(activeImg)}>
+              <img
+                src={exampleImages[activeImg].src}
+                alt={exampleImages[activeImg].label}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+            <div className="absolute top-3 left-3">
+              <Badge className="bg-primary text-white border-0">{exampleImages[activeImg].label}</Badge>
+            </div>
+            <div className="absolute bottom-3 right-3">
+              <Badge className="bg-black/60 text-white border-0 backdrop-blur-sm cursor-pointer" onClick={() => setLightbox(activeImg)}>
+                <Icon name="ZoomIn" className="h-3 w-3 mr-1" />
+                Увеличить
+              </Badge>
+            </div>
+            <div className="flex gap-1.5 p-3 overflow-x-auto bg-white">
+              {exampleImages.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImg(idx)}
+                  className={`w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${activeImg === idx ? "border-primary ring-1 ring-primary/30" : "border-transparent opacity-70 hover:opacity-100"}`}
+                >
+                  <img src={img.src} alt={img.label} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="p-6 lg:w-1/2 flex flex-col justify-center bg-gradient-to-r from-primary/5 to-transparent">
+            <div className="flex items-center gap-2 mb-3">
+              <Badge className="bg-primary/10 text-primary border-0 font-medium">Пример проекта</Badge>
+              <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">7/7 этапов</Badge>
+            </div>
+            <h3 className="text-xl font-bold mb-2">Двухкомнатная квартира на Пресне</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Полный дизайн-проект в современном стиле: планировка, визуализации, чертежи, подбор материалов и декор. Посмотрите, как выглядит готовый результат работы конструктора.
+            </p>
+            <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+              <span className="flex items-center gap-1"><Icon name="Ruler" className="h-3.5 w-3.5" /> 65 м²</span>
+              <span className="flex items-center gap-1"><Icon name="DoorOpen" className="h-3.5 w-3.5" /> 3 комнаты</span>
+              <span className="flex items-center gap-1"><Icon name="Palette" className="h-3.5 w-3.5" /> Современный</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 mb-5 text-center">
+              <div className="p-2.5 bg-white rounded-lg border">
+                <Icon name="LayoutDashboard" className="h-5 w-5 text-primary mx-auto mb-1" />
+                <span className="text-xs text-gray-600">Планировка</span>
+              </div>
+              <div className="p-2.5 bg-white rounded-lg border">
+                <Icon name="Ruler" className="h-5 w-5 text-primary mx-auto mb-1" />
+                <span className="text-xs text-gray-600">Чертежи</span>
+              </div>
+              <div className="p-2.5 bg-white rounded-lg border">
+                <Icon name="Eye" className="h-5 w-5 text-primary mx-auto mb-1" />
+                <span className="text-xs text-gray-600">Визуализации</span>
+              </div>
+            </div>
+            <Button className="w-fit" onClick={() => navigate("/designer/planning?project=4")}>
+              <Icon name="Eye" className="mr-2 h-4 w-4" />
+              Открыть проект
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {lightbox !== null && (
+        <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center" onClick={() => setLightbox(null)}>
+          <button className="absolute top-4 right-4 text-white/80 hover:text-white z-10" onClick={() => setLightbox(null)}>
+            <Icon name="X" className="h-8 w-8" />
+          </button>
+          <button
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-10"
+            onClick={(e) => { e.stopPropagation(); setLightbox((lightbox - 1 + exampleImages.length) % exampleImages.length); }}
+          >
+            <Icon name="ChevronLeft" className="h-10 w-10" />
+          </button>
+          <button
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-10"
+            onClick={(e) => { e.stopPropagation(); setLightbox((lightbox + 1) % exampleImages.length); }}
+          >
+            <Icon name="ChevronRight" className="h-10 w-10" />
+          </button>
+          <div className="max-w-5xl max-h-[90vh] px-12" onClick={(e) => e.stopPropagation()}>
+            <img src={exampleImages[lightbox].src} alt={exampleImages[lightbox].label} className="max-w-full max-h-[85vh] object-contain rounded-lg" />
+            <p className="text-white text-center mt-3 text-sm">{exampleImages[lightbox].label} — {lightbox + 1} / {exampleImages.length}</p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function Showroom() {
   const navigate = useNavigate();
   const [selectedRoom, setSelectedRoom] = useState("Все");
@@ -189,39 +298,7 @@ export default function Showroom() {
           ))}
         </div>
 
-        <Card
-          className="mb-8 overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 border-primary/30"
-          onClick={() => navigate("/designer/planning?project=4")}
-        >
-          <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/3 aspect-video md:aspect-auto overflow-hidden">
-              <img
-                src="https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/f88f632e-0c35-4529-a23f-f52566284ed5.jpg"
-                alt="Двухкомнатная квартира на Пресне"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-6 md:w-2/3 flex flex-col justify-center bg-gradient-to-r from-primary/5 to-transparent">
-              <div className="flex items-center gap-2 mb-2">
-                <Badge className="bg-primary/10 text-primary border-0 font-medium">Пример проекта</Badge>
-                <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">7/7 этапов</Badge>
-              </div>
-              <h3 className="text-xl font-bold mb-2">Двухкомнатная квартира на Пресне</h3>
-              <p className="text-sm text-gray-600 mb-3">
-                Полный дизайн-проект в современном стиле: планировка, визуализации, чертежи, подбор материалов и декор. Посмотрите, как выглядит готовый результат работы конструктора.
-              </p>
-              <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                <span className="flex items-center gap-1"><Icon name="Ruler" className="h-3.5 w-3.5" /> 65 м²</span>
-                <span className="flex items-center gap-1"><Icon name="DoorOpen" className="h-3.5 w-3.5" /> 3 комнаты</span>
-                <span className="flex items-center gap-1"><Icon name="Palette" className="h-3.5 w-3.5" /> Современный</span>
-              </div>
-              <Button size="sm" className="w-fit">
-                <Icon name="Eye" className="mr-2 h-4 w-4" />
-                Открыть проект
-              </Button>
-            </div>
-          </div>
-        </Card>
+        <ExampleProjectCard navigate={navigate} />
 
         <p className="text-gray-500 mb-6">Найдено решений: {filtered.length}</p>
 
