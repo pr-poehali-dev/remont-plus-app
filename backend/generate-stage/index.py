@@ -5,7 +5,7 @@ import base64
 
 STAGE_SYSTEM_PROMPTS = {
     "planning": "Ты — профессиональный дизайнер интерьера. Создай детальное планировочное решение для помещения. Опиши: зонирование пространства, расстановку мебели, расположение перегородок, функциональные зоны, маршруты передвижения и ширину проходов. Ответ структурируй по помещениям.",
-    "drawings": "Ты — архитектор-проектировщик. Создай описание комплекта чертежей для помещения. Опиши: обмерный план с размерами, развёртки каждой стены, план полов с уровнями и материалами, план потолков с высотами и уровнями. Укажи все привязки и размеры в мм.",
+    "drawings": "Ты — архитектор-проектировщик. Создай описание комплекта чертежей для помещения. Опиши: обмерный план с размерами, развёртки каждой стены, план полов с уровнями и материалами, план потолков с высотами и уровнями. Укажи все привязки и размеры в мм.\n\nВАЖНО: В самом конце ответа ОБЯЗАТЕЛЬНО добавь блок JSON-данных для автоматического построения чертежа. Формат:\n```json_walls\n{\"rooms\": [{\"name\": \"Гостиная\", \"walls\": [{\"start\": {\"x\": 0, \"y\": 0}, \"end\": {\"x\": 5000, \"y\": 0}}, ...]}, ...]}\n```\nКоординаты в миллиметрах. Каждая комната — замкнутый контур стен (последняя стена соединяется с первой). Располагай комнаты рядом (со смещением по X). Для каждой комнаты указывай массив стен с координатами start/end. Двери и окна пока не указывай.",
     "visualization": "Ты — дизайнер-визуализатор интерьеров. Создай подробное описание визуализации интерьера. Опиши: цветовую палитру (основной, акцентный, нейтральный цвета), фактуры и текстуры поверхностей, сценарии освещения (дневное и вечернее), общее настроение и атмосферу. Структурируй по помещениям.",
     "materials": "Ты — специалист по отделочным материалам. Создай подборку материалов и отделки для помещения. Опиши: напольные покрытия, настенные покрытия, плитку, потолочные материалы, плинтусы и молдинги. Для каждого материала укажи характеристики, расход и примерную стоимость.",
     "electrical": "Ты — инженер-электрик и светодизайнер. Создай схему электроразводки и освещения для помещения. Опиши: расположение розеток (с высотами), выключателей (обычных и проходных), светильников, сценарии освещения (общий, рабочий, акцентный, ночной), группы автоматов для электрощита, слаботочные сети.",
@@ -148,6 +148,54 @@ def call_yandex_gpt(stage_id, user_description, notes, photos=None):
     }
 
 
+import re
+
+def extract_walls_from_response(content):
+    """Извлечь JSON-данные стен из ответа ИИ"""
+    pattern = r'```json_walls\s*\n(.*?)\n```'
+    match = re.search(pattern, content, re.DOTALL)
+    if not match:
+        pattern2 = r'```json\s*\n(\{[^`]*?"rooms"[^`]*?\})\s*\n```'
+        match = re.search(pattern2, content, re.DOTALL)
+    if not match:
+        return None
+
+    raw = match.group(1).strip()
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+
+    rooms = data.get('rooms', [])
+    if not rooms:
+        return None
+
+    walls = []
+    wall_id = 1
+    for room in rooms:
+        room_walls = room.get('walls', [])
+        for w in room_walls:
+            s = w.get('start', {})
+            e = w.get('end', {})
+            sx, sy = float(s.get('x', 0)), float(s.get('y', 0))
+            ex, ey = float(e.get('x', 0)), float(e.get('y', 0))
+            if sx == ex and sy == ey:
+                continue
+            walls.append({
+                'id': f'ai-{wall_id}',
+                'start': {'x': sx, 'y': sy},
+                'end': {'x': ex, 'y': ey},
+                'thickness': 120,
+                'openings': []
+            })
+            wall_id += 1
+
+    if not walls:
+        return None
+
+    return {'walls': walls}
+
+
 def handler(event: dict, context) -> dict:
     """Генерация ИИ-рекомендаций для этапа дизайн-проекта с поддержкой фото"""
 
@@ -222,14 +270,21 @@ def handler(event: dict, context) -> dict:
             'isBase64Encoded': False
         }
 
+    response_body = {
+        'content': result['content'],
+        'provider': result['provider'],
+        'stage_id': stage_id,
+        'photos_analyzed': len(valid_photos)
+    }
+
+    if stage_id == 'drawings':
+        walls_data = extract_walls_from_response(result['content'])
+        if walls_data:
+            response_body['drawing_data'] = walls_data
+
     return {
         'statusCode': 200,
         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-        'body': json.dumps({
-            'content': result['content'],
-            'provider': result['provider'],
-            'stage_id': stage_id,
-            'photos_analyzed': len(valid_photos)
-        }, ensure_ascii=False),
+        'body': json.dumps(response_body, ensure_ascii=False),
         'isBase64Encoded': False
     }

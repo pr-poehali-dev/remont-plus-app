@@ -100,6 +100,7 @@ def save_stage(body):
     ai_result = body.get('ai_result', '').replace("'", "''") if body.get('ai_result') else None
     ai_provider = body.get('ai_provider', '')
     checklist_state = json.dumps(body.get('checklist_state', []))
+    drawing_data = body.get('drawing_data')
     status = body.get('status', 'in_progress')
 
     if not project_id or not stage_id:
@@ -109,18 +110,20 @@ def save_stage(body):
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
     ai_result_sql = f"'{ai_result}'" if ai_result else "NULL"
+    drawing_data_sql = f"'{json.dumps(drawing_data).replace(chr(39), chr(39)+chr(39))}'::jsonb" if drawing_data is not None else "NULL"
 
     cur.execute(
         f"INSERT INTO {SCHEMA}.design_stage_results "
-        f"(project_id, stage_id, user_description, notes, ai_result, ai_provider, checklist_state, status) "
+        f"(project_id, stage_id, user_description, notes, ai_result, ai_provider, checklist_state, drawing_data, status) "
         f"VALUES ({project_id}, '{stage_id}', '{user_description}', '{notes}', "
-        f"{ai_result_sql}, '{ai_provider}', '{checklist_state}'::jsonb, '{status}') "
+        f"{ai_result_sql}, '{ai_provider}', '{checklist_state}'::jsonb, {drawing_data_sql}, '{status}') "
         f"ON CONFLICT (project_id, stage_id) DO UPDATE SET "
         f"user_description = '{user_description}', "
         f"notes = '{notes}', "
         f"ai_result = {ai_result_sql}, "
         f"ai_provider = '{ai_provider}', "
         f"checklist_state = '{checklist_state}'::jsonb, "
+        f"drawing_data = {drawing_data_sql}, "
         f"status = '{status}', "
         f"updated_at = CURRENT_TIMESTAMP "
         f"RETURNING *"

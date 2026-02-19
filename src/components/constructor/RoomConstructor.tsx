@@ -23,9 +23,16 @@ export default function RoomConstructor({
   const containerRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<CanvasEngine | null>(null);
 
+  const initialDataRef = useRef<string>("");
+  const needsFitRef = useRef(false);
   useEffect(() => {
-    if (initialData) {
-      dispatch({ type: 'LOAD_DATA', walls: initialData.walls, rooms: initialData.rooms });
+    if (initialData && initialData.walls.length > 0) {
+      const key = JSON.stringify(initialData.walls.map(w => ({ s: w.start, e: w.end })));
+      if (key !== initialDataRef.current) {
+        initialDataRef.current = key;
+        dispatch({ type: 'LOAD_DATA', walls: initialData.walls, rooms: initialData.rooms });
+        needsFitRef.current = true;
+      }
     }
   }, [initialData]);
 
@@ -40,11 +47,20 @@ export default function RoomConstructor({
     handleToolChange,
     handleZoomIn,
     handleZoomOut,
-    handleFitView,
+    handleFitView: fitView,
     handleAddPreset,
     handleExportPDF,
     getCursorClass,
   } = useConstructorInput(state, dispatch, canvasRef, engineRef);
+
+  useEffect(() => {
+    if (needsFitRef.current && state.walls.length > 0) {
+      needsFitRef.current = false;
+      setTimeout(() => fitView(), 100);
+    }
+  }, [state.walls, fitView]);
+
+  const handleFitView = fitView;
 
   return (
     <div className={`flex flex-col h-[calc(100vh-200px)] min-h-[500px] bg-[#1e1e2e] rounded-lg overflow-hidden border border-[#3a3a5c] ${className || ''}`}>

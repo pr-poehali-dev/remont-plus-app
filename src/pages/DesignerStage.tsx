@@ -3,8 +3,9 @@ import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import RoomConstructor from "@/components/constructor/RoomConstructor";
+import type { Wall } from "@/components/constructor/types";
 
 const GENERATE_URL = "https://functions.poehali.dev/746aa569-de80-47ab-978b-595df0f02c43";
 const PROJECTS_URL = "https://functions.poehali.dev/638dfd86-50f0-4ec4-a850-6feb9fa7797e";
@@ -114,6 +115,8 @@ export default function DesignerStage() {
   const [isLoadingStage, setIsLoadingStage] = useState(true);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [photos, setPhotos] = useState<Array<{ data: string; type: string; preview: string }>>([]);
+  const [drawingData, setDrawingData] = useState<{ walls: Wall[] } | null>(null);
+  const drawingSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -126,6 +129,7 @@ export default function DesignerStage() {
     setGenerationHistory([]);
     setSaveStatus("idle");
     setPhotos([]);
+    setDrawingData(null);
 
     if (projectId && stageId) {
       loadStageData();
@@ -151,6 +155,9 @@ export default function DesignerStage() {
         if (stageData.ai_result) {
           setGenerationHistory([{ content: stageData.ai_result, timestamp: "загружено" }]);
         }
+        if (stageData.drawing_data && stageData.drawing_data.walls) {
+          setDrawingData({ walls: stageData.drawing_data.walls });
+        }
       }
     } catch (e) {
       console.error("Error loading stage:", e);
@@ -159,7 +166,7 @@ export default function DesignerStage() {
     }
   };
 
-  const saveStage = useCallback(async (overrides?: { ai_result?: string; ai_provider?: string; checklist?: Set<number>; desc?: string; stageNotes?: string }) => {
+  const saveStage = useCallback(async (overrides?: { ai_result?: string; ai_provider?: string; checklist?: Set<number>; desc?: string; stageNotes?: string; drawing?: { walls: Wall[] } | null }) => {
     if (!projectId || !stageId) return;
     setSaveStatus("saving");
     const checkArr = Array.from(overrides?.checklist ?? checkedItems);
@@ -167,32 +174,52 @@ export default function DesignerStage() {
     const currentDesc = overrides?.desc ?? userDescription;
     const status = currentAi ? (checkArr.length === (config?.checklistItems.length || 0) ? "completed" : "in_progress") : (checkArr.length > 0 || currentDesc.trim() ? "in_progress" : "not_started");
 
+    const payload: Record<string, unknown> = {
+      action: "save_stage",
+      project_id: parseInt(projectId),
+      stage_id: stageId,
+      user_description: currentDesc,
+      notes: overrides?.stageNotes ?? notes,
+      ai_result: currentAi,
+      ai_provider: overrides?.ai_provider ?? aiProvider,
+      checklist_state: checkArr,
+      status,
+    };
+
+    const drawingToSave = overrides?.drawing !== undefined ? overrides.drawing : drawingData;
+    if (drawingToSave) {
+      payload.drawing_data = drawingToSave;
+    }
+
     try {
       await fetch(PROJECTS_URL, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "save_stage",
-          project_id: parseInt(projectId),
-          stage_id: stageId,
-          user_description: currentDesc,
-          notes: overrides?.stageNotes ?? notes,
-          ai_result: currentAi,
-          ai_provider: overrides?.ai_provider ?? aiProvider,
-          checklist_state: checkArr,
-          status,
-        }),
+        body: JSON.stringify(payload),
       });
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch {
       setSaveStatus("idle");
     }
-  }, [projectId, stageId, checkedItems, aiResult, aiProvider, userDescription, notes, config]);
+  }, [projectId, stageId, checkedItems, aiResult, aiProvider, userDescription, notes, config, drawingData]);
 
   const debouncedSave = useCallback((overrides?: Parameters<typeof saveStage>[0]) => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => saveStage(overrides), 1500);
+  }, [saveStage]);
+
+  const constructorInitialData = useMemo(() => {
+    if (!drawingData || !drawingData.walls || drawingData.walls.length === 0) return undefined;
+    return { walls: drawingData.walls, rooms: [] as never[] };
+  }, [drawingData]);
+
+  const handleDrawingSave = useCallback((data: { walls: Wall[]; rooms: never[] }) => {
+    setDrawingData({ walls: data.walls });
+    if (drawingSaveTimerRef.current) clearTimeout(drawingSaveTimerRef.current);
+    drawingSaveTimerRef.current = setTimeout(() => {
+      saveStage({ drawing: { walls: data.walls } });
+    }, 2000);
   }, [saveStage]);
 
   if (!config) {
@@ -262,7 +289,15 @@ export default function DesignerStage() {
       setAiResult(data.content);
       setAiProvider(data.provider);
       setGenerationHistory((prev) => [...prev, { content: data.content, timestamp: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) }]);
-      saveStage({ ai_result: data.content, ai_provider: data.provider });
+
+      const saveOverrides: { ai_result: string; ai_provider: string; drawing?: { walls: Wall[] } } = { ai_result: data.content, ai_provider: data.provider };
+
+      if (data.drawing_data && data.drawing_data.walls && data.drawing_data.walls.length > 0) {
+        setDrawingData({ walls: data.drawing_data.walls });
+        saveOverrides.drawing = { walls: data.drawing_data.walls };
+      }
+
+      saveStage(saveOverrides);
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     } catch (e: unknown) {
       setAiResult(`Ошибка: ${e instanceof Error ? e.message : "Неизвестная ошибка"}. Попробуйте ещё раз.`);
@@ -338,7 +373,11 @@ export default function DesignerStage() {
       <div className="container mx-auto px-4 py-6">
         {stageId === "drawings" && (
           <div className="mb-6">
-            <RoomConstructor className="h-[calc(100vh-220px)] min-h-[600px]" />
+            <RoomConstructor
+              className="h-[calc(100vh-220px)] min-h-[600px]"
+              initialData={constructorInitialData}
+              onSave={handleDrawingSave}
+            />
           </div>
         )}
         <div className="grid lg:grid-cols-3 gap-6">
