@@ -189,6 +189,40 @@ export default function Showroom() {
           ))}
         </div>
 
+        <Card
+          className="mb-8 overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 border-primary/30"
+          onClick={() => navigate("/designer/planning?project=4")}
+        >
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-1/3 aspect-video md:aspect-auto overflow-hidden">
+              <img
+                src="https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/f88f632e-0c35-4529-a23f-f52566284ed5.jpg"
+                alt="Двухкомнатная квартира на Пресне"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="p-6 md:w-2/3 flex flex-col justify-center bg-gradient-to-r from-primary/5 to-transparent">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-primary/10 text-primary border-0 font-medium">Пример проекта</Badge>
+                <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">7/7 этапов</Badge>
+              </div>
+              <h3 className="text-xl font-bold mb-2">Двухкомнатная квартира на Пресне</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Полный дизайн-проект в современном стиле: планировка, визуализации, чертежи, подбор материалов и декор. Посмотрите, как выглядит готовый результат работы конструктора.
+              </p>
+              <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                <span className="flex items-center gap-1"><Icon name="Ruler" className="h-3.5 w-3.5" /> 65 м²</span>
+                <span className="flex items-center gap-1"><Icon name="DoorOpen" className="h-3.5 w-3.5" /> 3 комнаты</span>
+                <span className="flex items-center gap-1"><Icon name="Palette" className="h-3.5 w-3.5" /> Современный</span>
+              </div>
+              <Button size="sm" className="w-fit">
+                <Icon name="Eye" className="mr-2 h-4 w-4" />
+                Открыть проект
+              </Button>
+            </div>
+          </div>
+        </Card>
+
         <p className="text-gray-500 mb-6">Найдено решений: {filtered.length}</p>
 
         {filtered.length === 0 ? (

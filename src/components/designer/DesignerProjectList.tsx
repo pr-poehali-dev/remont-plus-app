@@ -55,45 +55,8 @@ export default function DesignerProjectList({
           </Button>
         </div>
 
-        <Card
-          className="p-5 mb-6 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 border-primary/30 bg-gradient-to-r from-primary/5 to-transparent"
-          onClick={() => onOpenProject(4)}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                <img
-                  src="https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/f88f632e-0c35-4529-a23f-f52566284ed5.jpg"
-                  alt="Демо-проект"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">Двухкомнатная квартира на Пресне</h3>
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Пример</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-500">
-                  <span>Современный</span>
-                  <span>·</span>
-                  <span>65 м²</span>
-                  <span>·</span>
-                  <span>3 комн.</span>
-                  <span>·</span>
-                  <span className="text-green-600 font-medium">7/7 этапов</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-primary">
-              <span className="text-sm font-medium hidden sm:block">Посмотреть</span>
-              <Icon name="ChevronRight" className="h-5 w-5" />
-            </div>
-          </div>
-        </Card>
-
-        <h3 className="text-sm font-medium text-gray-500 mb-3">Ваши проекты</h3>
         <div className="space-y-3">
-          {savedProjects.filter((p) => p.id !== 4).map((p) => (
+          {savedProjects.map((p) => (
             <Card
               key={p.id}
               className="p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5"
