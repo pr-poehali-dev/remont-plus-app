@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useState, useRef, useEffect, useCallback } from "react";
+import RoomConstructor from "@/components/constructor/RoomConstructor";
 
 const GENERATE_URL = "https://functions.poehali.dev/746aa569-de80-47ab-978b-595df0f02c43";
 const PROJECTS_URL = "https://functions.poehali.dev/638dfd86-50f0-4ec4-a850-6feb9fa7797e";
@@ -335,6 +336,11 @@ export default function DesignerStage() {
       </header>
 
       <div className="container mx-auto px-4 py-6">
+        {stageId === "drawings" && (
+          <div className="mb-6">
+            <RoomConstructor className="h-[calc(100vh-220px)] min-h-[600px]" />
+          </div>
+        )}
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <Card className="p-6">
