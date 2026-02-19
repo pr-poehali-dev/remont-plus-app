@@ -286,3 +286,133 @@ export function calculateEstimate(walls: Wall[], ceilingHeightMM: number): Estim
 export function formatPrice(n: number): string {
   return n.toLocaleString('ru-RU', { maximumFractionDigits: 0 });
 }
+
+export function exportEstimatePDF(estimate: Estimate, ceilingHeightMM: number): void {
+  const date = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  const categoryRows = estimate.categories.map((cat) => {
+    const itemRows = cat.items.map((item) => `
+      <tr class="item-row">
+        <td class="item-name">${item.name}</td>
+        <td class="center">${item.quantity}</td>
+        <td class="center">${item.unit}</td>
+        <td class="right">${formatPrice(item.pricePerUnit)} ₽</td>
+        <td class="right total-cell">${formatPrice(item.total)} ₽</td>
+      </tr>`).join('');
+
+    return `
+      <tr class="cat-header">
+        <td colspan="4">${cat.title}</td>
+        <td class="right">${formatPrice(cat.subtotal)} ₽</td>
+      </tr>
+      ${itemRows}`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Смета материалов — АВАНГАРД</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Arial', sans-serif; font-size: 11px; color: #1a1a1a; background: #fff; padding: 24px 32px; }
+
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 3px solid #1a1a6e; padding-bottom: 16px; }
+    .logo { font-size: 22px; font-weight: 900; letter-spacing: 2px; color: #1a1a6e; }
+    .logo span { color: #e84040; }
+    .company-info { font-size: 10px; color: #555; text-align: right; line-height: 1.6; }
+
+    h1 { font-size: 16px; font-weight: bold; margin-bottom: 4px; color: #1a1a1a; }
+    .doc-meta { font-size: 10px; color: #777; margin-bottom: 20px; }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+    .summary-box { border: 1px solid #ddd; border-radius: 4px; padding: 10px; }
+    .summary-box .val { font-size: 15px; font-weight: bold; color: #1a1a6e; }
+    .summary-box .lbl { font-size: 9px; color: #888; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th { background: #1a1a6e; color: #fff; padding: 7px 8px; text-align: left; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+    th.center, td.center { text-align: center; }
+    th.right, td.right { text-align: right; }
+    td { padding: 5px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+    .cat-header td { background: #f0f4ff; font-weight: bold; font-size: 11px; color: #1a1a6e; padding: 7px 8px; border-top: 2px solid #c8d4f8; border-bottom: 1px solid #c8d4f8; }
+    .item-row td { color: #333; }
+    .item-name { max-width: 240px; }
+    .total-cell { font-weight: 600; color: #1a1a1a; }
+
+    .grand-total { background: #1a1a6e; color: #fff; border-radius: 6px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .grand-total .label { font-size: 13px; font-weight: bold; letter-spacing: 1px; }
+    .grand-total .amount { font-size: 22px; font-weight: 900; }
+
+    .note { font-size: 9px; color: #888; margin-bottom: 20px; line-height: 1.5; }
+    .footer { border-top: 1px solid #ddd; padding-top: 12px; display: flex; justify-content: space-between; font-size: 9px; color: #aaa; }
+
+    @media print {
+      body { padding: 10px 20px; }
+      @page { margin: 15mm; size: A4; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="logo">АВА<span>Н</span>ГАРД</div>
+      <div style="font-size:9px;color:#888;margin-top:3px;">Профессиональный ремонт и строительство</div>
+    </div>
+    <div class="company-info">
+      <div><strong>ООО «АВАНГАРД»</strong></div>
+      <div>info@avangard-ai.ru</div>
+      <div>Документ сформирован: ${date}</div>
+    </div>
+  </div>
+
+  <h1>Смета на материалы</h1>
+  <div class="doc-meta">Высота потолка: ${(ceilingHeightMM / 1000).toFixed(2)} м &nbsp;|&nbsp; Цены ориентировочные, с запасом 10%</div>
+
+  <div class="summary-grid">
+    <div class="summary-box"><div class="val">${estimate.floorArea} м²</div><div class="lbl">Площадь пола</div></div>
+    <div class="summary-box"><div class="val">${estimate.wallArea} м²</div><div class="lbl">Площадь стен</div></div>
+    <div class="summary-box"><div class="val">${estimate.doorsCount} шт.</div><div class="lbl">Дверей</div></div>
+    <div class="summary-box"><div class="val">${estimate.windowsCount} шт.</div><div class="lbl">Окон</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Наименование</th>
+        <th class="center">Кол-во</th>
+        <th class="center">Ед.</th>
+        <th class="right">Цена</th>
+        <th class="right">Сумма</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${categoryRows}
+    </tbody>
+  </table>
+
+  <div class="grand-total">
+    <div class="label">ИТОГО МАТЕРИАЛЫ</div>
+    <div class="amount">${formatPrice(estimate.grandTotal)} ₽</div>
+  </div>
+
+  <div class="note">
+    * Стоимость рассчитана автоматически на основании введённых размеров помещения. Цены носят ориентировочный характер
+    и могут отличаться в зависимости от выбранных материалов, поставщиков и региона. В стоимость не включена работа
+    по монтажу. Для точного расчёта обратитесь к менеджеру компании АВАНГАРД.
+  </div>
+
+  <div class="footer">
+    <span>АВАНГАРД — Профессиональный ремонт и строительство</span>
+    <span>info@avangard-ai.ru</span>
+  </div>
+
+  <script>window.onload = () => { window.print(); }</script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank', 'width=900,height=700');
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+}

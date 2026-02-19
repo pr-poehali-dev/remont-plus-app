@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { Wall } from './types';
 import { wallLength, formatDimension } from './canvasEngine';
-import { calculateEstimate, formatPrice } from './materialsEstimate';
+import { calculateEstimate, formatPrice, exportEstimatePDF } from './materialsEstimate';
 import { Label, PropertyRow } from './sidebarShared';
 
 interface ProjectSummaryProps {
@@ -173,6 +174,16 @@ export default function ProjectSummary({
                   С учётом запаса 10%. Цены ориентировочные.
                 </p>
               </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => exportEstimatePDF(estimate, ceilingHeight)}
+                className="w-full h-8 text-xs text-[#4ade80] hover:bg-[#4ade80]/10 hover:text-[#4ade80] border border-[#4ade80]/30"
+              >
+                <Icon name="FileDown" size={14} className="mr-1.5" />
+                Скачать смету PDF
+              </Button>
             </div>
           )}
         </div>
