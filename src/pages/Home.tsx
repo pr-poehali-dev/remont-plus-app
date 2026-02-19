@@ -165,9 +165,13 @@ export default function Home() {
               <span className="text-2xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">АВАНГАРД</span>
             </div>
             <div className="flex items-center gap-3">
-              <a href="tel:89277486868" className="hidden sm:flex items-center gap-2 text-sm text-gray-500 hover:text-orange-500 transition-colors mr-2">
+              <a href="tel:89277486868" className="hidden sm:flex items-center gap-2 text-sm text-gray-500 hover:text-orange-500 transition-colors">
                 <Icon name="Phone" className="h-4 w-4" />
                 <span className="font-medium">8 (927) 748-68-68</span>
+              </a>
+              <a href="mailto:info@avangard-ai.ru" className="hidden md:flex items-center gap-2 text-sm text-gray-500 hover:text-orange-500 transition-colors mr-2">
+                <Icon name="Mail" className="h-4 w-4" />
+                <span className="font-medium">info@avangard-ai.ru</span>
               </a>
               {user ? (
                 <>
