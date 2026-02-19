@@ -90,6 +90,7 @@ export type ConstructorAction =
   | { type: 'REDO' }
   | { type: 'PUSH_HISTORY' }
   | { type: 'ADD_OPENING'; wallId: string; opening: Opening }
+  | { type: 'UPDATE_OPENING'; wallId: string; openingId: string; updates: Partial<Opening> }
   | { type: 'DELETE_OPENING'; wallId: string; openingId: string }
   | { type: 'ADD_MEASURE_POINT'; point: Point }
   | { type: 'CLEAR_MEASURE' }

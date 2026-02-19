@@ -143,6 +143,21 @@ export function constructorReducer(
         ),
       };
     }
+    case 'UPDATE_OPENING': {
+      return {
+        ...state,
+        walls: state.walls.map((w) =>
+          w.id === action.wallId
+            ? {
+                ...w,
+                openings: w.openings.map((o) =>
+                  o.id === action.openingId ? { ...o, ...action.updates } : o
+                ),
+              }
+            : w
+        ),
+      };
+    }
     case 'DELETE_OPENING': {
       return {
         ...state,

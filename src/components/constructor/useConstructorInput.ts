@@ -28,6 +28,9 @@ export function useConstructorInput(
   const isDraggingRef = useRef(false);
   const dragWallIdRef = useRef<string | null>(null);
   const dragOffsetRef = useRef<Point>({ x: 0, y: 0 });
+  const isDraggingOpeningRef = useRef(false);
+  const dragOpeningWallIdRef = useRef<string | null>(null);
+  const dragOpeningIdRef = useRef<string | null>(null);
 
   const getCanvasPos = useCallback((e: React.MouseEvent): { x: number; y: number } => {
     const canvas = canvasRef.current;
@@ -48,6 +51,30 @@ export function useConstructorInput(
         }
       }
       return closest;
+    },
+    [state.walls]
+  );
+
+  const findOpeningNear = useCallback(
+    (worldPoint: Point, threshold: number = 200): { wall: Wall; opening: Opening } | null => {
+      let best: { wall: Wall; opening: Opening; dist: number } | null = null;
+      for (const wall of state.walls) {
+        const wdx = wall.end.x - wall.start.x;
+        const wdy = wall.end.y - wall.start.y;
+        const wLen = Math.sqrt(wdx * wdx + wdy * wdy);
+        if (wLen < 1) continue;
+        for (const op of wall.openings) {
+          const cx = wall.start.x + wdx * op.position;
+          const cy = wall.start.y + wdy * op.position;
+          const dx = worldPoint.x - cx;
+          const dy = worldPoint.y - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < threshold && (!best || dist < best.dist)) {
+            best = { wall, opening: op, dist };
+          }
+        }
+      }
+      return best ? { wall: best.wall, opening: best.opening } : null;
     },
     [state.walls]
   );
@@ -102,6 +129,14 @@ export function useConstructorInput(
 
       switch (state.tool) {
         case 'select': {
+          const openingHit = findOpeningNear(worldPoint, 250);
+          if (openingHit) {
+            dispatch({ type: 'SELECT', id: openingHit.wall.id });
+            isDraggingOpeningRef.current = true;
+            dragOpeningWallIdRef.current = openingHit.wall.id;
+            dragOpeningIdRef.current = openingHit.opening.id;
+            break;
+          }
           const wall = findWallNear(worldPoint);
           if (wall) {
             dispatch({ type: 'SELECT', id: wall.id });
@@ -190,7 +225,7 @@ export function useConstructorInput(
         }
       }
     },
-    [state.tool, state.viewState, state.isDrawing, state.drawingPoints, state.walls, state.snapToGrid, state.gridSize, state.shiftHeld, state.wallThickness, getCanvasPos, findWallNear]
+    [state.tool, state.viewState, state.isDrawing, state.drawingPoints, state.walls, state.snapToGrid, state.gridSize, state.shiftHeld, state.wallThickness, getCanvasPos, findWallNear, findOpeningNear]
   );
 
   const handleMouseMove = useCallback(
@@ -212,6 +247,21 @@ export function useConstructorInput(
             offsetY: panStartRef.current.oy + dy,
           },
         });
+        return;
+      }
+
+      if (isDraggingOpeningRef.current && dragOpeningWallIdRef.current && dragOpeningIdRef.current && state.tool === 'select') {
+        const wall = state.walls.find((w) => w.id === dragOpeningWallIdRef.current);
+        if (wall) {
+          const newPos = positionOnWall(worldPoint, wall);
+          const clamped = Math.max(0.05, Math.min(0.95, newPos));
+          dispatch({
+            type: 'UPDATE_OPENING',
+            wallId: wall.id,
+            openingId: dragOpeningIdRef.current,
+            updates: { position: clamped },
+          });
+        }
         return;
       }
 
@@ -248,6 +298,14 @@ export function useConstructorInput(
     (e: React.MouseEvent) => {
       if (isPanningRef.current) {
         isPanningRef.current = false;
+        return;
+      }
+
+      if (isDraggingOpeningRef.current) {
+        isDraggingOpeningRef.current = false;
+        dragOpeningWallIdRef.current = null;
+        dragOpeningIdRef.current = null;
+        dispatch({ type: 'PUSH_HISTORY' });
         return;
       }
 

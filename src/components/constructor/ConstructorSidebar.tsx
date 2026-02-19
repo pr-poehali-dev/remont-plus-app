@@ -13,6 +13,7 @@ interface SidebarProps {
   wallThickness: number;
   onWallThicknessChange: (thickness: number) => void;
   onAddOpening: (wallId: string, opening: Opening) => void;
+  onUpdateOpening: (wallId: string, openingId: string, updates: Partial<Opening>) => void;
   onDeleteOpening: (wallId: string, openingId: string) => void;
   onDeleteWall: (wallId: string) => void;
   onSelect: (id: string | null) => void;
@@ -43,6 +44,7 @@ export default function ConstructorSidebar({
   wallThickness,
   onWallThicknessChange,
   onAddOpening,
+  onUpdateOpening,
   onDeleteOpening,
   onDeleteWall,
   onSelect,
@@ -188,26 +190,51 @@ export default function ConstructorSidebar({
                 <p className="text-xs text-gray-500 italic">Нет проёмов</p>
               )}
               {selectedWall.openings.map((op) => (
-                <div
-                  key={op.id}
-                  className="flex items-center justify-between bg-[#1e1e2e] rounded-md px-3 py-2"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon
-                      name={op.type === 'door' ? 'DoorOpen' : 'AppWindow'}
-                      fallback="Square"
-                      size={14}
-                      className={op.type === 'door' ? 'text-[#4ade80]' : 'text-[#60a5fa]'}
-                    />
-                    <span className="text-xs text-gray-300">{op.type === 'door' ? 'Дверь' : 'Окно'}</span>
-                    <span className="text-[10px] text-gray-500 font-mono">{op.width} мм</span>
+                <div key={op.id} className="bg-[#1e1e2e] rounded-md px-3 py-2 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Icon
+                        name={op.type === 'door' ? 'DoorOpen' : 'AppWindow'}
+                        fallback="Square"
+                        size={14}
+                        className={op.type === 'door' ? 'text-[#4ade80]' : 'text-[#60a5fa]'}
+                      />
+                      <span className="text-xs text-gray-300">{op.type === 'door' ? 'Дверь' : 'Окно'}</span>
+                    </div>
+                    <button
+                      onClick={() => onDeleteOpening(selectedWall.id, op.id)}
+                      className="text-gray-500 hover:text-red-400 transition-colors"
+                    >
+                      <Icon name="X" size={14} />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => onDeleteOpening(selectedWall.id, op.id)}
-                    className="text-gray-500 hover:text-red-400 transition-colors"
-                  >
-                    <Icon name="X" size={14} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-500 w-12">Ширина</span>
+                    <Input
+                      type="number"
+                      value={op.width}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value);
+                        if (v >= 400 && v <= 3000) onUpdateOpening(selectedWall.id, op.id, { width: v });
+                      }}
+                      className="h-6 bg-[#252536] border-[#3a3a5c] text-white text-xs font-mono w-20"
+                    />
+                    <span className="text-[10px] text-gray-500">мм</span>
+                  </div>
+                  {op.type === 'door' && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-gray-500 w-12">Откр.</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onUpdateOpening(selectedWall.id, op.id, { direction: op.direction === 'left' ? 'right' : 'left' })}
+                        className="h-6 text-[10px] text-gray-300 px-2"
+                      >
+                        <Icon name={op.direction === 'left' ? 'ArrowLeftToLine' : 'ArrowRightToLine'} fallback="ArrowRight" size={12} className="mr-1" />
+                        {op.direction === 'left' ? 'Влево' : 'Вправо'}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
 

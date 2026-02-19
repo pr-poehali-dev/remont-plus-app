@@ -111,6 +111,10 @@ export default function RoomConstructor({
             dispatch({ type: 'ADD_OPENING', wallId, opening });
             dispatch({ type: 'PUSH_HISTORY' });
           }}
+          onUpdateOpening={(wallId, openingId, updates) => {
+            dispatch({ type: 'UPDATE_OPENING', wallId, openingId, updates });
+            dispatch({ type: 'PUSH_HISTORY' });
+          }}
           onDeleteOpening={(wallId, openingId) => {
             dispatch({ type: 'DELETE_OPENING', wallId, openingId });
             dispatch({ type: 'PUSH_HISTORY' });

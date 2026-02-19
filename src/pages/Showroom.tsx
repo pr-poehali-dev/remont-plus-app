@@ -4,8 +4,7 @@ import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate } from "react-router-dom";
-import { showroomItems, roomFilters, styleFilters, exampleProjects } from "@/components/showroom/showroomData";
-import ExampleProjectCard from "@/components/showroom/ExampleProjectCard";
+import { showroomItems, roomFilters, styleFilters } from "@/components/showroom/showroomData";
 import ShowroomItemCard from "@/components/showroom/ShowroomItemCard";
 
 export default function Showroom() {
@@ -97,16 +96,6 @@ export default function Showroom() {
             >
               {style}
             </Button>
-          ))}
-        </div>
-
-        <div className="space-y-6 mb-8">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Icon name="FolderOpen" className="h-5 w-5 text-primary" />
-            Примеры дизайн-проектов
-          </h2>
-          {exampleProjects.map((project) => (
-            <ExampleProjectCard key={project.id} project={project} navigate={navigate} />
           ))}
         </div>
 
