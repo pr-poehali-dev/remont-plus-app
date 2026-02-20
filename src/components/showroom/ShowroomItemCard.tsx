@@ -1,92 +1,58 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import { type ShowroomItem } from "./showroomData";
 
 interface ShowroomItemCardProps {
   item: ShowroomItem;
-  isExpanded: boolean;
-  onToggle: () => void;
-  onNavigate: (path: string) => void;
+  onClick: () => void;
 }
 
-export default function ShowroomItemCard({ item, isExpanded, onToggle, onNavigate }: ShowroomItemCardProps) {
+export default function ShowroomItemCard({ item, onClick }: ShowroomItemCardProps) {
+  const heightClass =
+    item.aspectRatio === "tall"
+      ? "aspect-[3/4]"
+      : item.aspectRatio === "wide"
+        ? "aspect-[4/3]"
+        : "aspect-square";
+
   return (
-    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
-      <div className="relative aspect-square overflow-hidden">
+    <div
+      className="relative group cursor-pointer overflow-hidden rounded-2xl"
+      onClick={onClick}
+    >
+      <div className={`${heightClass} w-full relative overflow-hidden`}>
         <img
           src={item.image}
           alt={item.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          loading="lazy"
         />
-        <div className="absolute top-3 left-3 flex gap-2">
-          <Badge className="bg-black/60 text-white border-0 backdrop-blur-sm">
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm">
             {item.room}
-          </Badge>
-          <Badge className="bg-white/80 text-gray-800 border-0 backdrop-blur-sm">
+          </span>
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-black/50 text-white backdrop-blur-sm">
             {item.style}
-          </Badge>
-        </div>
-        <div className="absolute bottom-3 right-3">
-          <Badge variant="secondary" className="backdrop-blur-sm">
-            <Icon name="Maximize2" className="h-3 w-3 mr-1" />
-            {item.area}
-          </Badge>
-        </div>
-      </div>
-
-      <div className="p-5">
-        <h3 className="font-bold text-lg mb-2">{item.title}</h3>
-        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{item.description}</p>
-
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {item.features.map((f) => (
-            <Badge key={f} variant="outline" className="text-xs">
-              {f}
-            </Badge>
-          ))}
+          </span>
         </div>
 
-        {isExpanded && (
-          <div className="mb-4 p-4 bg-gray-50 rounded-lg space-y-3 animate-in fade-in duration-300">
-            <div>
-              <span className="text-xs font-medium text-gray-500 uppercase">Материалы</span>
-              <div className="flex flex-wrap gap-1.5 mt-1">
-                {item.materials.map((m) => (
-                  <Badge key={m} variant="secondary" className="text-xs">
-                    {m}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Дизайнер</span>
-              <span className="font-medium">{item.designer}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Площадь</span>
-              <span className="font-medium">{item.area}</span>
-            </div>
-            <Button className="w-full mt-2" onClick={() => onNavigate("/ai-chat")}>
-              <Icon name="Sparkles" className="h-4 w-4 mr-2" />
-              Хочу такой проект
-            </Button>
+        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+          <p className="text-white font-semibold text-base leading-tight mb-1">{item.title}</p>
+          <p className="text-white/80 text-xs line-clamp-2 mb-3">{item.description}</p>
+          <div className="flex items-center justify-between">
+            <span className="text-white/70 text-xs flex items-center gap-1">
+              <Icon name="Maximize2" size={12} />
+              {item.area}
+            </span>
+            <span className="text-xs px-3 py-1.5 rounded-full bg-white text-gray-900 font-medium flex items-center gap-1.5 hover:bg-gray-100 transition-colors">
+              <Icon name="Sparkles" size={12} />
+              Хочу такой
+            </span>
           </div>
-        )}
-
-        <Button
-          variant="ghost"
-          className="w-full"
-          onClick={onToggle}
-        >
-          {isExpanded ? (
-            <>Свернуть <Icon name="ChevronUp" className="h-4 w-4 ml-2" /></>
-          ) : (
-            <>Подробнее <Icon name="ChevronDown" className="h-4 w-4 ml-2" /></>
-          )}
-        </Button>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }
