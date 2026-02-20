@@ -32,8 +32,8 @@ const sections = [
     icon: "Hammer",
     gradient: "from-blue-400 via-indigo-400 to-violet-400",
     glow: "group-hover:shadow-blue-300/50",
-    path: "/profile",
-    requireAuth: true,
+    path: "/masters",
+    requireAuth: false,
   },
   {
     id: "catalog",
