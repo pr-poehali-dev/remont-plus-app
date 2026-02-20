@@ -148,14 +148,23 @@ export default function Prices() {
           <span className="text-gray-700">Прайс-лист</span>
         </div>
 
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">
-            Прайс-лист на работы
-          </h1>
-          <p className="text-gray-500">
-            Актуальные цены на все виды ремонтных и строительных работ с учётом
-            региона
-          </p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+              Прайс-лист на работы
+            </h1>
+            <p className="text-gray-500">
+              Актуальные цены на все виды ремонтных и строительных работ с учётом
+              региона
+            </p>
+          </div>
+          <Button
+            onClick={() => navigate("/calculator")}
+            className="bg-orange-500 hover:bg-orange-600 text-white shrink-0 h-11 px-5"
+          >
+            <Icon name="Calculator" size={16} className="mr-2" />
+            Рассчитать смету
+          </Button>
         </div>
 
         <div className="grid md:grid-cols-3 gap-4 mb-6">
