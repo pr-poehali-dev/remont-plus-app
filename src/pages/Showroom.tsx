@@ -4,11 +4,13 @@ import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import {
   showroomItems,
+  exampleProjects,
   roomFilters,
   styleFilters,
   type ShowroomItem,
 } from "@/components/showroom/showroomData";
 import ShowroomItemCard from "@/components/showroom/ShowroomItemCard";
+import ExampleProjectCard from "@/components/showroom/ExampleProjectCard";
 
 const INITIAL_COUNT = 12;
 const LOAD_MORE_COUNT = 8;
@@ -179,6 +181,38 @@ export default function Showroom() {
             )}
           </>
         )}
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 border-t border-gray-200">
+        <div className="mb-10">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Кейсы</p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight mb-3">
+            Полные проекты
+          </h2>
+          <p className="text-gray-500 max-w-xl">
+            Посмотрите готовые дизайн-проекты целиком — от планировки до финальных визуализаций по каждой комнате.
+          </p>
+        </div>
+        <div className="flex flex-col gap-8">
+          {exampleProjects.map((project) => (
+            <ExampleProjectCard key={project.id} project={project} navigate={navigate} />
+          ))}
+        </div>
+
+        <div className="mt-12 rounded-2xl bg-gray-900 px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 className="text-white text-xl font-bold mb-1">Хотите такой проект для себя?</h3>
+            <p className="text-gray-400 text-sm">Расскажите нам о своём пространстве — дизайнер подберёт решение</p>
+          </div>
+          <Button
+            size="lg"
+            className="bg-white text-gray-900 hover:bg-gray-100 shrink-0"
+            onClick={() => navigate("/ai-chat")}
+          >
+            <Icon name="Sparkles" size={18} className="mr-2" />
+            Создать свой проект
+          </Button>
+        </div>
       </div>
 
       {lightbox && (
