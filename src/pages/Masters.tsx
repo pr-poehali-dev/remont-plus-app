@@ -64,6 +64,67 @@ interface Master {
   description?: string;
 }
 
+const DEMO_MASTERS: Master[] = [
+  {
+    id: 1,
+    full_name: "Алексей Петров",
+    location: "Москва",
+    experience_years: 8,
+    specializations: ["Укладка плитки", "Сантехника", "Электрика"],
+    business_status: "ip",
+    has_tools: true,
+    verified: true,
+    rating: 4.9,
+    reviews: 47,
+    guarantee_period: "1y",
+    guarantee_description: "Гарантия на все виды работ 1 год. Бесплатное устранение дефектов.",
+    payment_methods: ["card", "transfer"],
+    certificates: ["Электрик 3-й разряд", "Сантехника (допуск)"],
+    portfolio_links: [],
+    phone: "+7 (999) 123-45-67",
+    telegram: "@alexey_master",
+    description: "Выполняю комплексный ремонт квартир под ключ. Работаю аккуратно, сдаю в срок.",
+  },
+  {
+    id: 2,
+    full_name: "Дмитрий Козлов",
+    location: "Санкт-Петербург",
+    experience_years: 12,
+    specializations: ["Отделка стен", "Покраска", "Шпаклёвка"],
+    business_status: "self_employed",
+    has_tools: true,
+    verified: true,
+    rating: 4.7,
+    reviews: 83,
+    guarantee_period: "6m",
+    guarantee_description: "Гарантия на отделочные работы 6 месяцев.",
+    payment_methods: ["cash", "card"],
+    certificates: [],
+    portfolio_links: [],
+    phone: "+7 (911) 456-78-90",
+    telegram: "@dmitry_otdelka",
+    description: "Специализируюсь на чистовой отделке. Работаю с любыми материалами.",
+  },
+  {
+    id: 3,
+    full_name: "Сергей Волков",
+    location: "Самара",
+    experience_years: 5,
+    specializations: ["Монтаж гипсокартона", "Натяжные потолки"],
+    business_status: "individual",
+    has_tools: true,
+    verified: false,
+    rating: 4.5,
+    reviews: 21,
+    guarantee_period: "3m",
+    payment_methods: ["cash"],
+    certificates: [],
+    portfolio_links: [],
+    phone: "+7 (925) 789-01-23",
+    description: "Быстро и качественно монтирую конструкции из ГКЛ и натяжные потолки.",
+  },
+];
+
 function MasterCard({ master }: { master: Master }) {
   const [expanded, setExpanded] = useState(false);
   const initials = master.full_name
@@ -248,7 +309,11 @@ export default function Masters() {
       body: JSON.stringify({ action: "get_masters_list" }),
     })
       .then((r) => r.json())
-      .then((data) => setMasters(data.masters || []))
+      .then((data) => {
+        const list: Master[] = data.masters || [];
+        setMasters(list.length > 0 ? list : DEMO_MASTERS);
+      })
+      .catch(() => setMasters(DEMO_MASTERS))
       .finally(() => setLoading(false));
   }, [completed]);
 
