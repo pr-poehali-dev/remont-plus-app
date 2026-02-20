@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import MasterQuestionnaire from "@/components/master/MasterQuestionnaire";
+import AgencyContractPanel from "@/components/master/AgencyContractPanel";
 
 const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
 
@@ -378,11 +379,14 @@ export default function Masters() {
             >
               <Icon name="ArrowLeft" size={16} /> Назад к каталогу
             </button>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Анкета мастера</h1>
-            <p className="text-gray-500 mt-1">Заполните данные, чтобы начать получать заказы</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Личный кабинет мастера</h1>
+            <p className="text-gray-500 mt-1">Заполните анкету и подпишите агентский договор</p>
           </div>
         </div>
-        <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+          <AgencyContractPanel
+            user={user}
+          />
           <MasterQuestionnaire
             userId={user.id}
             userName={user.name}
