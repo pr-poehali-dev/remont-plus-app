@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import MasterQuestionnaire from "@/components/master/MasterQuestionnaire";
 import AgencyContractPanel from "@/components/master/AgencyContractPanel";
+import PaymentHistoryPanel from "@/components/master/PaymentHistoryPanel";
 
 const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
 
@@ -299,6 +300,7 @@ export default function Masters() {
   const [sort, setSort] = useState("rating");
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [contractorId, setContractorId] = useState<number | null>(null);
 
   const stored = localStorage.getItem("avangard_user");
   const user: User | null = stored ? JSON.parse(stored) : null;
@@ -327,6 +329,17 @@ export default function Masters() {
       navigate("/dashboard");
       return;
     }
+    // Загружаем contractor_id для истории выплат
+    fetch(AUTH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "get_master_profile", user_id: user.id }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.profile?.id) setContractorId(data.profile.id);
+      })
+      .catch(() => {});
     setShowQuestionnaire(true);
   };
 
@@ -387,6 +400,9 @@ export default function Masters() {
           <AgencyContractPanel
             user={user}
           />
+          {contractorId && (
+            <PaymentHistoryPanel contractorId={contractorId} />
+          )}
           <MasterQuestionnaire
             userId={user.id}
             userName={user.name}

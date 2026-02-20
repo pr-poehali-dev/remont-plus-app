@@ -386,6 +386,64 @@ def handler(event: dict, context) -> dict:
             'body': json.dumps({'success': True, 'id': record_id, 'profile_completed': profile_completed}, ensure_ascii=False)
         }
 
+    elif action == 'get_transactions':
+        contractor_id = body.get('contractor_id')
+        if not contractor_id:
+            cursor.close(); conn.close()
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'contractor_id обязателен'}, ensure_ascii=False)}
+        cursor.execute("""
+            SELECT id, contract_amount, commission_pct, commission_amount, payout_amount,
+                   customer_name, work_description, status, paid_at, payout_at, created_at
+            FROM agent_transactions
+            WHERE contractor_id = %s
+            ORDER BY created_at DESC
+            LIMIT 50
+        """, (int(contractor_id),))
+        rows = cursor.fetchall()
+        cursor.close(); conn.close()
+        txns = []
+        for r in rows:
+            txns.append({
+                'id': r[0],
+                'contract_amount': float(r[1]),
+                'commission_pct': float(r[2]),
+                'commission_amount': float(r[3]),
+                'payout_amount': float(r[4]),
+                'customer_name': r[5] or '',
+                'work_description': r[6] or '',
+                'status': r[7],
+                'paid_at': r[8].isoformat() if r[8] else None,
+                'payout_at': r[9].isoformat() if r[9] else None,
+                'created_at': r[10].isoformat() if r[10] else None,
+            })
+        return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'transactions': txns}, ensure_ascii=False)}
+
+    elif action == 'create_transaction':
+        contractor_id = body.get('contractor_id')
+        contract_amount = body.get('contract_amount')
+        customer_name = (body.get('customer_name') or '').strip()
+        work_description = (body.get('work_description') or '').strip()
+        if not contractor_id or not contract_amount:
+            cursor.close(); conn.close()
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'contractor_id и contract_amount обязательны'}, ensure_ascii=False)}
+        amount = float(contract_amount)
+        commission_pct = 5.0
+        commission_amount = round(amount * commission_pct / 100, 2)
+        payout_amount = round(amount - commission_amount, 2)
+        cursor.execute("""
+            INSERT INTO agent_transactions
+                (contractor_id, contract_amount, commission_pct, commission_amount, payout_amount, customer_name, work_description, status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending')
+            RETURNING id, created_at
+        """, (int(contractor_id), amount, commission_pct, commission_amount, payout_amount, customer_name, work_description))
+        row = cursor.fetchone()
+        conn.commit(); cursor.close(); conn.close()
+        return {'statusCode': 200, 'headers': headers, 'body': json.dumps({
+            'success': True, 'id': row[0],
+            'commission_amount': commission_amount,
+            'payout_amount': payout_amount,
+        }, ensure_ascii=False)}
+
     cursor.close()
     conn.close()
     return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Invalid action'})}

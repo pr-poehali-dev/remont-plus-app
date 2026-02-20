@@ -96,6 +96,19 @@
         "masters": []
       },
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get transactions - missing contractor_id",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "get_transactions"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
     }
   ]
 }
