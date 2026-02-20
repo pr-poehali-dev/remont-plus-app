@@ -325,11 +325,7 @@ export default function Masters() {
       navigate("/login");
       return;
     }
-    if (user.user_type !== "contractor") {
-      navigate("/dashboard");
-      return;
-    }
-    // Загружаем contractor_id для истории выплат
+    // Загружаем contractor_id для истории выплат (если профиль уже есть)
     fetch(AUTH_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
