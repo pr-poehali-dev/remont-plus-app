@@ -16,7 +16,7 @@ const sections = [
   {
     id: "customer",
     title: "ДИЗАЙН-ПРОЕКТ",
-    description: "Создайте дизайн-проект с помощью ИИ, рассчитайте смету и найдите мастеров",
+    description: "Визуализируйте будущий интерьер с помощью ИИ, составьте смету и подберите специалиста",
     emoji: "🎨",
     icon: "Palette",
     gradient: "from-amber-400 via-orange-400 to-rose-400",
@@ -27,7 +27,7 @@ const sections = [
   {
     id: "contractor",
     title: "МАСТЕР",
-    description: "Находите заказы на ремонт, управляйте проектами и получайте клиентов",
+    description: "Принимайте заказы, ведите объекты и развивайте клиентскую базу на одной платформе",
     emoji: "🔨",
     icon: "Hammer",
     gradient: "from-blue-400 via-indigo-400 to-violet-400",
@@ -38,7 +38,7 @@ const sections = [
   {
     id: "catalog",
     title: "КАТАЛОГ",
-    description: "Строительные материалы и товары от проверенных поставщиков",
+    description: "Стройматериалы и отделочные товары от надёжных поставщиков с доставкой на объект",
     emoji: "🏗️",
     icon: "Store",
     gradient: "from-emerald-400 via-teal-400 to-cyan-400",
@@ -49,7 +49,7 @@ const sections = [
   {
     id: "showroom",
     title: "ШОУРУМ",
-    description: "Готовые дизайнерские решения для ванных, кухонь, гостиных и спален",
+    description: "Вдохновляйтесь готовыми концепциями для ванной, кухни, гостиной и спальни",
     emoji: "✨",
     icon: "Sparkles",
     gradient: "from-violet-400 via-purple-400 to-fuchsia-400",
@@ -60,7 +60,7 @@ const sections = [
   {
     id: "prices",
     title: "БЮДЖЕТ",
-    description: "Цены на все виды работ: отделка, сантехника, электрика, двери, окна",
+    description: "Прозрачные расценки на отделку, сантехнику, электрику, монтаж дверей и окон",
     emoji: "📋",
     icon: "ClipboardList",
     gradient: "from-rose-400 via-pink-400 to-red-400",
@@ -71,7 +71,7 @@ const sections = [
   {
     id: "lemanapro",
     title: "ЛЕМАНАПРО",
-    description: "Каталог товаров для ремонта от ЛеманаПро — Самара",
+    description: "Широкий ассортимент товаров для обустройства и обновления жилья от ЛеманаПро",
     emoji: "🛒",
     icon: "ShoppingCart",
     gradient: "from-green-400 via-lime-400 to-emerald-400",
@@ -244,7 +244,7 @@ export default function Home() {
               <p className="text-white/50 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
                 {user
                   ? `${user.name}, выберите раздел для работы`
-                  : "ИИ-дизайнер, проверенные мастера и полный контроль каждого этапа ремонта"}
+                  : "Умный ИИ-дизайнер, аттестованные мастера и прозрачный контроль на каждом этапе — от эскиза до сдачи объекта"}
               </p>
             </div>
 
@@ -305,10 +305,10 @@ export default function Home() {
           <section className="mt-0">
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
-                <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Наши работы</span>
+                <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Реализованные объекты</span>
               </h2>
-              <p className="text-gray-500 text-lg">Примеры завершённых проектов в {region.city}</p>
-              <p className="text-gray-400 text-sm mt-1">Двигайте ползунок, чтобы увидеть результат</p>
+              <p className="text-gray-500 text-lg">Завершённые проекты отделки в {region.city}</p>
+              <p className="text-gray-400 text-sm mt-1">Потяните ползунок, чтобы сравнить «до» и «после»</p>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {[
@@ -351,15 +351,38 @@ export default function Home() {
           <section className="mt-20">
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
-                <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Отзывы клиентов</span>
+                <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Почему выбирают АВАНГАРД</span>
               </h2>
-              <p className="text-gray-500 text-lg">Что говорят о нас</p>
+              <p className="text-gray-500 text-lg max-w-2xl mx-auto">Мы объединяем технологии искусственного интеллекта и опыт живых специалистов, чтобы ваш ремонт прошёл без стресса и непредвиденных расходов.</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { icon: "Bot", title: "ИИ-дизайнер бесплатно", text: "Создайте трёхмерную визуализацию квартиры за несколько минут. Подберите стиль, цветовую гамму и расстановку мебели ещё до начала отделки.", color: "text-amber-500" },
+                { icon: "ShieldCheck", title: "Только проверенные мастера", text: "Все специалисты в базе прошли верификацию: портфолио, отзывы прошлых заказчиков и оценка по завершении каждого объекта.", color: "text-blue-500" },
+                { icon: "Calculator", title: "Смета онлайн за 2 минуты", text: "Укажите площадь и вид работ — калькулятор рассчитает ориентировочную стоимость с учётом актуальных цен на материалы.", color: "text-emerald-500" },
+                { icon: "ClipboardCheck", title: "Контроль на каждом шаге", text: "Следите за ходом ремонта через личный кабинет: фотоотчёты, этапы сдачи-приёмки и история платежей в одном месте.", color: "text-violet-500" },
+              ].map((item, idx) => (
+                <div key={idx} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300">
+                  <Icon name={item.icon} size={32} className={`${item.color} mb-4`} />
+                  <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-20">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
+                <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Мнения наших заказчиков</span>
+              </h2>
+              <p className="text-gray-500 text-lg">Реальные истории людей, которые уже обновили своё жильё</p>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { name: "Анна К.", text: "Сделали ремонт ванной за 2 недели. Плитка уложена идеально, швы ровные. Мастера аккуратные, после себя всё убрали. Рекомендую!", rating: 5, date: "Январь 2026", emoji: "👩" },
-                { name: "Дмитрий П.", text: "Заказывал ремонт кухни под ключ. Дизайн-проект помог сразу понять, как будет выглядеть результат. Уложились в бюджет и сроки.", rating: 5, date: "Декабрь 2025", emoji: "👨" },
-                { name: "Елена М.", text: "Очень удобный калькулятор — сразу видно стоимость работ. Мастер приехал вовремя, работа выполнена качественно. Спасибо!", rating: 5, date: "Февраль 2026", emoji: "👩" },
+                { name: "Анна К.", text: "Обновили ванную всего за две недели. Плитка уложена безупречно, швы ровные, затирка аккуратная. Бригада убрала за собой весь строительный мусор. Однозначно советую!", rating: 5, date: "Январь 2026", emoji: "👩" },
+                { name: "Дмитрий П.", text: "Заказывал комплексную отделку кухни-гостиной. Трёхмерная визуализация интерьера помогла заранее увидеть итог и избежать лишних правок. В итоге — точно в смете и графике.", rating: 5, date: "Декабрь 2025", emoji: "👨" },
+                { name: "Елена М.", text: "Онлайн-калькулятор сразу показал приблизительную стоимость по видам работ — никаких неожиданностей. Специалист явился в условленное время, сделал всё аккуратно и чисто.", rating: 5, date: "Февраль 2026", emoji: "👩" },
               ].map((review, idx) => (
                 <div key={idx} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center gap-1 mb-4">
@@ -390,8 +413,8 @@ export default function Home() {
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
               <div className="relative text-center">
-                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Готовы начать ремонт?</h2>
-                <p className="text-white/90 text-lg mb-8 max-w-xl mx-auto">Создайте дизайн-проект с ИИ бесплатно или рассчитайте стоимость работ в калькуляторе</p>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Хватит откладывать — начнём?</h2>
+                <p className="text-white/90 text-lg mb-8 max-w-xl mx-auto">Набросайте концепцию интерьера с помощью ИИ или узнайте предварительную стоимость отделки прямо сейчас — это бесплатно.</p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Button size="lg" onClick={() => navigate(user ? "/designer" : "/login?redirect=/designer")} className="bg-white text-orange-600 hover:bg-gray-100 rounded-full px-8 shadow-xl text-base font-semibold">
                     🎨 Создать дизайн-проект
