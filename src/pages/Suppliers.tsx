@@ -7,6 +7,55 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+function ProductGallery({ product }: { product: { image_url: string | null; name: string; specifications: Record<string, unknown> } }) {
+  const photos: string[] = Array.isArray(product.specifications?.photos)
+    ? (product.specifications.photos as string[])
+    : product.image_url
+    ? [product.image_url]
+    : [];
+  const [idx, setIdx] = useState(0);
+  if (photos.length === 0) {
+    return (
+      <div className="aspect-video bg-gray-100 flex items-center justify-center">
+        <Icon name="Package" className="h-16 w-16 text-gray-400" />
+      </div>
+    );
+  }
+  return (
+    <div className="relative aspect-video bg-gray-100 overflow-hidden group" itemProp="image">
+      <img src={photos[idx]} alt={product.name} className="w-full h-full object-cover" />
+      {photos.length > 1 && (
+        <>
+          <button
+            onClick={() => setIdx((i) => (i - 1 + photos.length) % photos.length)}
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <Icon name="ChevronLeft" size={16} className="text-white" />
+          </button>
+          <button
+            onClick={() => setIdx((i) => (i + 1) % photos.length)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <Icon name="ChevronRight" size={16} className="text-white" />
+          </button>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {photos.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIdx(i)}
+                className={`w-1.5 h-1.5 rounded-full transition-colors ${i === idx ? "bg-white" : "bg-white/50"}`}
+              />
+            ))}
+          </div>
+          <div className="absolute top-2 right-2 bg-black/40 text-white text-xs rounded-full px-2 py-0.5">
+            {idx + 1}/{photos.length}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 interface Product {
   id: number;
   name: string;
@@ -22,7 +71,7 @@ interface Product {
   delivery_cost: number;
   delivery_days: number;
   floor_lifting_cost: number;
-  specifications: Record<string, string>;
+  specifications: Record<string, unknown>;
   rating: number;
   review_count: number;
   supplier: {
@@ -111,7 +160,7 @@ export default function Suppliers() {
 
   const filteredProducts = areaFilter
     ? products.filter((p) => {
-        const area = parseFloat(p.specifications?.['площадь_м2'] || '0');
+        const area = parseFloat(String(p.specifications?.['площадь_м2'] || '0'));
         if (!area) return true;
         const [min, max] = areaFilter.split('-').map(Number);
         return area >= min && area <= max;
@@ -282,18 +331,7 @@ export default function Suppliers() {
                       </div>
                     )}
 
-                    <div className="aspect-video bg-gray-200 flex items-center justify-center" itemProp="image">
-                      {product.image_url ? (
-                        <img 
-                          src={product.image_url} 
-                          alt={product.name}
-                          itemProp="image"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Icon name="Package" className="h-16 w-16 text-gray-400" />
-                      )}
-                    </div>
+                    <ProductGallery product={product} />
                     
                     <div className="p-4">
                       <div className="flex items-start justify-between mb-2">
@@ -332,7 +370,7 @@ export default function Suppliers() {
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           <Badge variant="secondary" className="text-xs">
                             <Icon name="Maximize2" className="h-3 w-3 mr-1" />
-                            до {product.specifications['площадь_м2']} м²
+                            до {String(product.specifications['площадь_м2'])} м²
                           </Badge>
                           {product.specifications?.['тип_компрессора'] && (
                             <Badge variant={product.specifications['тип_компрессора'] === 'инвертор' ? 'default' : 'outline'} className="text-xs">
@@ -343,6 +381,20 @@ export default function Suppliers() {
                             <Badge variant="outline" className="text-xs">
                               <Icon name="Wifi" className="h-3 w-3 mr-1" />
                               Wi-Fi
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                      {product.specifications?.['installation'] && (
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          <Badge variant="secondary" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                            <Icon name="Wrench" className="h-3 w-3 mr-1" />
+                            {String(product.specifications['installation'])}
+                          </Badge>
+                          {product.specifications?.['warranty'] && (
+                            <Badge variant="outline" className="text-xs">
+                              <Icon name="ShieldCheck" className="h-3 w-3 mr-1" />
+                              Гарантия {String(product.specifications['warranty'])}
                             </Badge>
                           )}
                         </div>
@@ -410,10 +462,10 @@ export default function Suppliers() {
                               Характеристики
                             </summary>
                             <div className="space-y-1 text-gray-600">
-                              {Object.entries(product.specifications).map(([key, value]) => (
+                              {Object.entries(product.specifications).filter(([key]) => key !== 'photos' && key !== 'source_url').map(([key, value]) => (
                                 <div key={key} className="flex justify-between">
                                   <span itemProp="name">{key}:</span>
-                                  <span className="font-medium" itemProp="value">{value}</span>
+                                  <span className="font-medium" itemProp="value">{String(value)}</span>
                                 </div>
                               ))}
                             </div>
