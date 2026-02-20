@@ -23,7 +23,9 @@ import Showroom from "./pages/Showroom";
 import LemanaProCatalog from "./pages/LemanaProCatalog";
 import Prices from "./pages/Prices";
 import Masters from "./pages/Masters";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
+import CookieBanner from "./components/CookieBanner";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,7 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <CookieBanner />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -53,6 +56,7 @@ const App = () => {
             <Route path="/lemanapro" element={<LemanaProCatalog />} />
             <Route path="/prices" element={<Prices />} />
             <Route path="/masters" element={<Masters />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="/auth/yandex/callback" element={<YandexCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

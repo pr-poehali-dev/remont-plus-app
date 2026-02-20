@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Icon from "@/components/ui/icon";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useState } from "react";
 
 const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
@@ -23,6 +23,7 @@ export default function Register() {
   const [formData, setFormData] = useState({ email: "", password: "", name: "", phone: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,7 +164,24 @@ export default function Register() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mt-0.5 accent-orange-500"
+                  required
+                />
+                <span className="text-sm text-gray-600">
+                  Я согласен(а) с{" "}
+                  <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">
+                    Политикой конфиденциальности
+                  </Link>{" "}
+                  и даю согласие на обработку персональных данных в соответствии с ФЗ-152
+                </span>
+              </label>
+
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading || !agreed}>
                 {isLoading ? (
                   <><div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />Регистрация...</>
                 ) : (

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,7 @@ const AUTH_API_URL = 'https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3
 
 interface RegistrationFormProps {
   onClose: () => void;
-  onSuccess: (user: any) => void;
+  onSuccess: (user: unknown) => void;
 }
 
 export const RegistrationForm = ({ onClose, onSuccess }: RegistrationFormProps) => {
@@ -27,6 +28,7 @@ export const RegistrationForm = ({ onClose, onSuccess }: RegistrationFormProps) 
   });
   const [smsCode, setSmsCode] = useState('');
   const [devCode, setDevCode] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const { toast } = useToast();
 
   const formatPhone = (value: string) => {
@@ -213,7 +215,16 @@ export const RegistrationForm = ({ onClose, onSuccess }: RegistrationFormProps) 
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full h-12 text-base" disabled={isLoading}>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 accent-orange-500" required />
+                    <span className="text-xs text-gray-500">
+                      Согласен(а) с{' '}
+                      <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">Политикой конфиденциальности</Link>{' '}
+                      и обработкой персональных данных (ФЗ-152)
+                    </span>
+                  </label>
+
+                  <Button type="submit" className="w-full h-12 text-base" disabled={isLoading || !agreed}>
                     {isLoading ? (
                       <>
                         <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
@@ -305,7 +316,16 @@ export const RegistrationForm = ({ onClose, onSuccess }: RegistrationFormProps) 
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full h-12 text-base" disabled={isLoading}>
+                  <label className="flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 accent-orange-500" required />
+                    <span className="text-xs text-gray-500">
+                      Согласен(а) с{' '}
+                      <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">Политикой конфиденциальности</Link>{' '}
+                      и обработкой персональных данных (ФЗ-152)
+                    </span>
+                  </label>
+
+                  <Button type="submit" className="w-full h-12 text-base" disabled={isLoading || !agreed}>
                     {isLoading ? (
                       <>
                         <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
