@@ -12,6 +12,7 @@ const SPECIALIZATIONS = [
   "Сантехника", "Гипсокартон", "Поклейка обоев", "Стяжка пола",
   "Ламинат/паркет", "Натяжные потолки", "Демонтаж", "Кладка",
   "Утепление", "Фасадные работы", "Кровля", "Столярные работы",
+  "Дизайн интерьера", "Мебель на заказ", "Металлоконструкции", "Сварочные работы",
 ];
 
 const PAYMENT_METHODS = [
@@ -35,10 +36,23 @@ const BUSINESS_STATUSES = [
   { id: "individual", label: "Физлицо" },
 ];
 
+const GUARANTEE_PERIODS = [
+  { id: "none", label: "Без гарантии" },
+  { id: "3m", label: "3 месяца" },
+  { id: "6m", label: "6 месяцев" },
+  { id: "1y", label: "1 год" },
+  { id: "2y", label: "2 года" },
+  { id: "3y", label: "3 года" },
+];
+
 interface MasterProfile {
   full_name: string;
   phone: string;
   email: string;
+  telegram: string;
+  whatsapp: string;
+  instagram: string;
+  website: string;
   citizenship: string;
   experience_years: number | null;
   specializations: string[];
@@ -54,14 +68,18 @@ interface MasterProfile {
   business_status: string;
   description: string;
   location: string;
+  guarantee_period: string;
+  guarantee_description: string;
 }
 
 const emptyProfile: MasterProfile = {
-  full_name: "", phone: "", email: "", citizenship: "", experience_years: null,
+  full_name: "", phone: "", email: "", telegram: "", whatsapp: "",
+  instagram: "", website: "", citizenship: "", experience_years: null,
   specializations: [], has_tools: false, work_style: "both",
   technologies_knowledge: "", certificates: [], portfolio_photos: [],
   portfolio_links: [], payment_methods: [], payment_schedule: "",
   discount_info: "", business_status: "", description: "", location: "",
+  guarantee_period: "", guarantee_description: "",
 };
 
 interface Props {
@@ -128,10 +146,10 @@ export default function MasterQuestionnaire({ userId, userName, userPhone, userE
   };
 
   const steps = [
-    { title: "Основные данные", icon: "User" },
-    { title: "Профессиональные навыки", icon: "Wrench" },
-    { title: "Портфолио и сертификаты", icon: "Award" },
-    { title: "Условия оплаты", icon: "CreditCard" },
+    { title: "Контакты", icon: "User" },
+    { title: "Специализация", icon: "Wrench" },
+    { title: "Портфолио", icon: "Award" },
+    { title: "Гарантии и оплата", icon: "ShieldCheck" },
   ];
 
   const canNext = () => {
@@ -168,41 +186,71 @@ export default function MasterQuestionnaire({ userId, userName, userPhone, userE
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8">
+
+        {/* ШАГ 0: Контактная информация */}
         {step === 0 && (
           <div className="space-y-5">
             <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Icon name="User" size={22} className="text-orange-500" /> Основные данные
+              <Icon name="User" size={22} className="text-orange-500" /> Контактная информация
             </h3>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">ФИО *</label>
               <Input value={profile.full_name} onChange={(e) => update("full_name", e.target.value)} placeholder="Иванов Иван Иванович" />
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Телефон *</label>
                 <Input value={profile.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+7 (999) 123-45-67" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Почта</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <Input type="email" value={profile.email} onChange={(e) => update("email", e.target.value)} placeholder="master@email.com" />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Telegram</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+                  <Input className="pl-7" value={profile.telegram} onChange={(e) => update("telegram", e.target.value)} placeholder="username" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
+                <Input value={profile.whatsapp} onChange={(e) => update("whatsapp", e.target.value)} placeholder="+7 (999) 123-45-67" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+                  <Input className="pl-7" value={profile.instagram} onChange={(e) => update("instagram", e.target.value)} placeholder="profile" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Сайт</label>
+                <Input value={profile.website} onChange={(e) => update("website", e.target.value)} placeholder="https://..." />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Город / регион</label>
+                <Input value={profile.location} onChange={(e) => update("location", e.target.value)} placeholder="Москва" />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Гражданство</label>
                 <Input value={profile.citizenship} onChange={(e) => update("citizenship", e.target.value)} placeholder="РФ" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Опыт работы (лет)</label>
-                <Input type="number" min={0} max={50} value={profile.experience_years ?? ""} onChange={(e) => update("experience_years", e.target.value ? parseInt(e.target.value) : null)} placeholder="5" />
-              </div>
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Город / регион</label>
-              <Input value={profile.location} onChange={(e) => update("location", e.target.value)} placeholder="Москва" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Правовой статус</label>
               <div className="grid grid-cols-2 gap-2">
                 {BUSINESS_STATUSES.map((bs) => (
                   <button
@@ -219,11 +267,44 @@ export default function MasterQuestionnaire({ userId, userName, userPhone, userE
           </div>
         )}
 
+        {/* ШАГ 1: Специализация и опыт */}
         {step === 1 && (
           <div className="space-y-5">
             <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Icon name="Wrench" size={22} className="text-orange-500" /> Профессиональные навыки
+              <Icon name="Wrench" size={22} className="text-orange-500" /> Специализация и опыт
             </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Опыт работы (лет)</label>
+                <Input
+                  type="number" min={0} max={50}
+                  value={profile.experience_years ?? ""}
+                  onChange={(e) => update("experience_years", e.target.value ? parseInt(e.target.value) : null)}
+                  placeholder="5"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Формат работы</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "solo", label: "Сам" },
+                    { id: "team", label: "Команда" },
+                    { id: "both", label: "Оба" },
+                  ].map((ws) => (
+                    <button
+                      key={ws.id}
+                      onClick={() => update("work_style", ws.id)}
+                      className={`px-3 py-2.5 rounded-lg border text-sm font-medium transition-all
+                        ${profile.work_style === ws.id ? "bg-orange-500 text-white border-orange-500" : "bg-white text-gray-700 border-gray-200 hover:border-orange-300"}`}
+                    >
+                      {ws.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Специализация * (выберите все подходящие)</label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -240,6 +321,7 @@ export default function MasterQuestionnaire({ userId, userName, userPhone, userE
                 ))}
               </div>
             </div>
+
             <div className="flex items-center gap-3 p-4 rounded-lg border border-gray-200">
               <Checkbox
                 id="has_tools"
@@ -250,25 +332,7 @@ export default function MasterQuestionnaire({ userId, userName, userPhone, userE
                 Есть свой инструмент и оборудование
               </label>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Формат работы</label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: "solo", label: "Самостоятельно" },
-                  { id: "team", label: "В команде" },
-                  { id: "both", label: "Оба варианта" },
-                ].map((ws) => (
-                  <button
-                    key={ws.id}
-                    onClick={() => update("work_style", ws.id)}
-                    className={`px-3 py-2.5 rounded-lg border text-sm font-medium transition-all
-                      ${profile.work_style === ws.id ? "bg-orange-500 text-white border-orange-500" : "bg-white text-gray-700 border-gray-200 hover:border-orange-300"}`}
-                  >
-                    {ws.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Знание технологий и материалов</label>
               <Textarea
@@ -290,6 +354,7 @@ export default function MasterQuestionnaire({ userId, userName, userPhone, userE
           </div>
         )}
 
+        {/* ШАГ 2: Портфолио и сертификаты */}
         {step === 2 && (
           <div className="space-y-5">
             <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -390,12 +455,40 @@ export default function MasterQuestionnaire({ userId, userName, userPhone, userE
           </div>
         )}
 
+        {/* ШАГ 3: Гарантии и условия оплаты */}
         {step === 3 && (
           <div className="space-y-5">
             <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Icon name="CreditCard" size={22} className="text-orange-500" /> Условия оплаты
+              <Icon name="ShieldCheck" size={22} className="text-orange-500" /> Гарантии и условия оплаты
             </h3>
+
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Гарантийный период</label>
+              <div className="grid grid-cols-3 gap-2">
+                {GUARANTEE_PERIODS.map((gp) => (
+                  <button
+                    key={gp.id}
+                    onClick={() => update("guarantee_period", profile.guarantee_period === gp.id ? "" : gp.id)}
+                    className={`px-3 py-2.5 rounded-lg border text-sm font-medium transition-all
+                      ${profile.guarantee_period === gp.id ? "bg-orange-500 text-white border-orange-500" : "bg-white text-gray-700 border-gray-200 hover:border-orange-300"}`}
+                  >
+                    {gp.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Условия гарантии</label>
+              <Textarea
+                value={profile.guarantee_description}
+                onChange={(e) => update("guarantee_description", e.target.value)}
+                placeholder="Опишите, на что распространяется гарантия и каковы условия её применения..."
+                rows={3}
+              />
+            </div>
+
+            <div className="border-t border-gray-100 pt-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">Форма расчёта (можно несколько)</label>
               <div className="grid grid-cols-2 gap-2">
                 {PAYMENT_METHODS.map((pm) => (
@@ -411,6 +504,7 @@ export default function MasterQuestionnaire({ userId, userName, userPhone, userE
                 ))}
               </div>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">График платежей</label>
               <div className="grid grid-cols-2 gap-2">
@@ -426,6 +520,7 @@ export default function MasterQuestionnaire({ userId, userName, userPhone, userE
                 ))}
               </div>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Скидки и специальные условия</label>
               <Textarea
