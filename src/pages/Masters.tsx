@@ -401,7 +401,11 @@ export default function Masters() {
             user={user}
           />
           {contractorId && (
-            <PaymentHistoryPanel contractorId={contractorId} />
+            <PaymentHistoryPanel
+              contractorId={contractorId}
+              masterName={user.name}
+              masterEmail={user.email}
+            />
           )}
           <MasterQuestionnaire
             userId={user.id}

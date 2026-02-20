@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 
 const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
+const NOTIFY_URL = "https://functions.poehali.dev/a8b87e78-89d1-48d8-ba76-8da2e0df32a3";
 
 interface Transaction {
   id: number;
@@ -22,6 +23,8 @@ interface Transaction {
 
 interface Props {
   contractorId: number;
+  masterName?: string;
+  masterEmail?: string;
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
@@ -41,11 +44,12 @@ function fmtDate(iso: string | null) {
   return new Date(iso).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function PaymentHistoryPanel({ contractorId }: Props) {
+export default function PaymentHistoryPanel({ contractorId, masterName = "", masterEmail = "" }: Props) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [notifying, setNotifying] = useState<number | null>(null);
 
   const [form, setForm] = useState({
     contract_amount: "",
@@ -92,6 +96,30 @@ export default function PaymentHistoryPanel({ contractorId }: Props) {
       await load();
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleMarkPaid = async (t: Transaction) => {
+    setNotifying(t.id);
+    try {
+      await fetch(NOTIFY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "notify_payment_received",
+          transaction_id: t.id,
+          master_email: masterEmail,
+          master_name: masterName,
+          customer_name: t.customer_name,
+          contract_amount: t.contract_amount,
+          commission_amount: t.commission_amount,
+          payout_amount: t.payout_amount,
+          work_description: t.work_description,
+        }),
+      });
+      await load();
+    } finally {
+      setNotifying(null);
     }
   };
 
@@ -232,6 +260,24 @@ export default function PaymentHistoryPanel({ contractorId }: Props) {
                       <p className="text-sm font-bold text-green-600">= {fmt(t.payout_amount)}</p>
                     </div>
                   </div>
+                  {t.status === "pending" && (
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleMarkPaid(t)}
+                        disabled={notifying === t.id}
+                        className="bg-green-500 hover:bg-green-600 text-white text-xs h-8"
+                      >
+                        <Icon name={notifying === t.id ? "Loader2" : "CheckCircle"} size={13} className={`mr-1.5 ${notifying === t.id ? "animate-spin" : ""}`} />
+                        {notifying === t.id ? "Отправляю..." : "Заказчик оплатил"}
+                      </Button>
+                      {masterEmail && (
+                        <span className="text-xs text-gray-400">
+                          → уведомление на {masterEmail}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
