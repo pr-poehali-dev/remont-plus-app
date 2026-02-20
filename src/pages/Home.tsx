@@ -59,7 +59,7 @@ const sections = [
   },
   {
     id: "prices",
-    title: "ПРАЙС-ЛИСТ",
+    title: "БЮДЖЕТ",
     description: "Цены на все виды работ: отделка, сантехника, электрика, двери, окна",
     emoji: "📋",
     icon: "ClipboardList",

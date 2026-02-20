@@ -155,7 +155,7 @@ export default function Calculator() {
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" className="hidden sm:flex" onClick={() => navigate("/prices")}>
                 <Icon name="ClipboardList" className="mr-2 h-4 w-4" />
-                Прайс-лист
+                Бюджет
               </Button>
               <Button onClick={() => setShowExportDialog(true)}>
                 <Icon name="Download" className="mr-2 h-4 w-4" />

@@ -91,7 +91,7 @@ export default function EstimateTab({
           <Icon name="ClipboardList" className="mx-auto h-12 w-12 text-gray-300 mb-4" />
           <p className="text-gray-500 mb-1">Смета пока пуста</p>
           <p className="text-sm text-gray-400 mb-4">
-            Добавьте работы из прайс-листа для расчёта стоимости
+            Добавьте работы из бюджета для расчёта стоимости
           </p>
           <Button onClick={() => setShowPricePicker(true)} variant="outline">
             <Icon name="Plus" className="mr-2 h-4 w-4" />
