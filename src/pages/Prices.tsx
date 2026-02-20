@@ -145,13 +145,13 @@ export default function Prices() {
             Главная
           </span>
           <Icon name="ChevronRight" size={14} />
-          <span className="text-gray-700">Бюджет</span>
+          <span className="text-gray-700">Прайс-лист</span>
         </div>
 
         <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              Бюджет
+              Прайс-лист на работы
             </h1>
             <p className="text-gray-500">
               Актуальные цены на все виды ремонтных и строительных работ с учётом

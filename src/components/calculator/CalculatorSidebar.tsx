@@ -136,7 +136,7 @@ export default function CalculatorSidebar({
             onClick={() => navigate("/prices")}
           >
             <Icon name="ClipboardList" className="mr-2 h-4 w-4" />
-            Открыть бюджет
+            Открыть полный прайс-лист
           </Button>
         </div>
       </Card>
