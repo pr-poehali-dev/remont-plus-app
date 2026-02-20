@@ -72,8 +72,8 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
             onClick={() => onConfirm({ customer, contractor, address })}
           >
-            <Icon name="Download" size={15} className="mr-2" />
-            Скачать PDF
+            <Icon name="Printer" size={15} className="mr-2" />
+            Открыть смету
           </Button>
         </div>
       </div>

@@ -6,7 +6,7 @@ import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { getEstimateItems, type EstimateSavedItem } from "@/lib/lemanapro-data";
-import { exportEstimatePdf } from "@/lib/export-pdf";
+
 import EstimateTab from "@/components/calculator/EstimateTab";
 import LemanaProTab from "@/components/calculator/LemanaProTab";
 import ContractorsTab from "@/components/calculator/ContractorsTab";
@@ -237,9 +237,26 @@ export default function Calculator() {
       {showExportDialog && (
         <ExportDialog
           onCancel={() => setShowExportDialog(false)}
-          onConfirm={(parties) => {
-            exportEstimatePdf(items, lemanaItems, materialSurcharge, parties);
+          onConfirm={({ customer, contractor, address }) => {
             setShowExportDialog(false);
+            const docNum = Date.now().toString().slice(-6);
+            const date = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
+            navigate("/estimate/print", {
+              state: {
+                items,
+                lemanaItems,
+                materialSurcharge,
+                customer,
+                contractor,
+                address,
+                totalMaterials,
+                totalWorks,
+                adjustedWorks,
+                grandTotal,
+                docNum,
+                date,
+              },
+            });
           }}
         />
       )}
