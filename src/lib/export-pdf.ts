@@ -7,15 +7,26 @@ const fmt = (n: number) => n.toLocaleString("ru-RU") + " руб.";
 const today = () => new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
 const docNum = () => `${Date.now().toString().slice(-6)}`;
 
+export interface EstimateParties {
+  customer?: string;
+  contractor?: string;
+  address?: string;
+}
+
 export function exportEstimatePdf(
   items: EstimateItem[],
   lemanaItems: EstimateSavedItem[],
-  materialSurcharge = 0
+  materialSurcharge = 0,
+  parties: EstimateParties = {}
 ) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = 210;
   const L = 14;
   const R = W - 14;
+
+  const customerLine = parties.customer ? `Заказчик: ${parties.customer}` : "Заказчик: ________________________________________________";
+  const contractorLine = parties.contractor ? `Подрядчик: ${parties.contractor}` : "Подрядчик: _______________________________________________";
+  const addressLine = parties.address ? `Адрес объекта: ${parties.address}` : "Адрес объекта: __________________________________________";
 
   // ── Шапка документа ──────────────────────────────────────────────────────
   doc.setDrawColor(200, 200, 200);
@@ -35,9 +46,9 @@ export function exportEstimatePdf(
   // Реквизиты — заказчик и подрядчик
   doc.setFontSize(8.5);
   doc.setTextColor(60, 60, 60);
-  doc.text("Заказчик: ________________________________________________", L, 30);
-  doc.text("Подрядчик: _______________________________________________", L, 37);
-  doc.text("Адрес объекта: __________________________________________", L + 108, 30);
+  doc.text(customerLine, L, 30);
+  doc.text(contractorLine, L, 37);
+  doc.text(addressLine, L + 108, 30);
   doc.text(`Дата составления: ${today()} г.`, L + 108, 37);
 
   let y = 50;
@@ -248,8 +259,10 @@ export function exportEstimatePdf(
   doc.setFontSize(8.5);
   doc.setTextColor(60, 60, 60);
 
-  doc.text("ФИО: _________________________________", col1, y);
-  doc.text("ФИО: _________________________________", col2, y);
+  const customerName = parties.customer ? `ФИО: ${parties.customer}` : "ФИО: _________________________________";
+  const contractorName = parties.contractor ? `ФИО: ${parties.contractor}` : "ФИО: _________________________________";
+  doc.text(customerName, col1, y);
+  doc.text(contractorName, col2, y);
   y += 7;
 
   doc.text("Подпись: _____________________________", col1, y);

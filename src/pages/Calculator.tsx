@@ -11,6 +11,7 @@ import EstimateTab from "@/components/calculator/EstimateTab";
 import LemanaProTab from "@/components/calculator/LemanaProTab";
 import ContractorsTab from "@/components/calculator/ContractorsTab";
 import CalculatorSidebar from "@/components/calculator/CalculatorSidebar";
+import ExportDialog from "@/components/calculator/ExportDialog";
 
 const SERVICE_PRICES_URL = "https://functions.poehali.dev/4dae7ba0-b573-436a-b4c6-d3b0abf69fce";
 
@@ -56,6 +57,7 @@ export default function Calculator() {
     return localStorage.getItem("avangard_calc_region") || "moscow";
   });
   const [loading, setLoading] = useState(true);
+  const [showExportDialog, setShowExportDialog] = useState(false);
 
   useEffect(() => {
     setLemanaItems(getEstimateItems());
@@ -154,7 +156,7 @@ export default function Calculator() {
                 <Icon name="ClipboardList" className="mr-2 h-4 w-4" />
                 Прайс-лист
               </Button>
-              <Button onClick={() => exportEstimatePdf(items, lemanaItems)}>
+              <Button onClick={() => setShowExportDialog(true)}>
                 <Icon name="Download" className="mr-2 h-4 w-4" />
                 Скачать PDF
               </Button>
@@ -222,7 +224,7 @@ export default function Calculator() {
 
           <CalculatorSidebar
             lemanaItemsCount={lemanaItems.length}
-            onExportPdf={() => exportEstimatePdf(items, lemanaItems, materialSurcharge)}
+            onExportPdf={() => setShowExportDialog(true)}
             regions={regions}
             selectedRegion={selectedRegion}
             onRegionChange={setSelectedRegion}
@@ -231,6 +233,16 @@ export default function Calculator() {
           />
         </div>
       </div>
+
+      {showExportDialog && (
+        <ExportDialog
+          onCancel={() => setShowExportDialog(false)}
+          onConfirm={(parties) => {
+            exportEstimatePdf(items, lemanaItems, materialSurcharge, parties);
+            setShowExportDialog(false);
+          }}
+        />
+      )}
     </div>
   );
 }
