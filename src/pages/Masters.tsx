@@ -1,11 +1,25 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Icon from "@/components/ui/icon";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import MasterQuestionnaire from "@/components/master/MasterQuestionnaire";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  user_type: string;
+}
 
 const GUARANTEE_LABELS: Record<string, string> = {
   none: "Без гарантии",
@@ -23,338 +37,272 @@ const BUSINESS_LABELS: Record<string, string> = {
   individual: "Физлицо",
 };
 
-const PAYMENT_LABELS: Record<string, string> = {
-  cash: "Наличные",
-  card: "Карта",
-  transfer: "Перевод",
-  invoice: "По счёту",
-};
-
 interface Master {
   id: number;
   full_name: string;
   location: string;
-  experience_years: number | null;
+  experience_years: number;
   specializations: string[];
   business_status: string;
-  description: string;
-  guarantee_period: string;
-  guarantee_description: string;
-  payment_methods: string[];
-  payment_schedule: string;
-  certificates: string[];
-  portfolio_links: string[];
-  phone: string;
-  email: string;
-  telegram: string;
-  whatsapp: string;
-  instagram: string;
-  website: string;
   has_tools: boolean;
-  work_style: string;
   verified: boolean;
   rating: number;
   reviews: number;
+  guarantee_period: string;
+  guarantee_description?: string;
+  payment_methods: string[];
+  certificates: string[];
+  portfolio_links: string[];
+  phone?: string;
+  email?: string;
+  telegram?: string;
+  whatsapp?: string;
+  instagram?: string;
+  website?: string;
+  description?: string;
 }
 
 const MOCK_MASTERS: Master[] = [
   {
     id: 1,
-    full_name: "Сергей Иванов",
+    full_name: "Алексей Петров",
     location: "Москва",
-    experience_years: 12,
-    specializations: ["Штукатурка", "Покраска", "Гипсокартон", "Поклейка обоев"],
-    business_status: "self_employed",
-    description: "Профессиональный отделочник с 12-летним опытом. Работаю аккуратно, в срок. Использую только качественные материалы. Консультирую по выбору материалов бесплатно.",
-    guarantee_period: "1y",
-    guarantee_description: "Гарантия на все виды отделочных работ. При обнаружении дефектов — устраняю за свой счёт.",
-    payment_methods: ["cash", "card", "transfer"],
-    payment_schedule: "split",
-    certificates: ["Сертификат Knauf", "Курс по декоративной штукатурке"],
-    portfolio_links: ["https://vk.com/sergeivanov_master"],
-    phone: "+7 (916) 123-45-67",
-    email: "sergei@master.ru",
-    telegram: "sergeivanov",
-    whatsapp: "+79161234567",
-    instagram: "sergei_master",
-    website: "",
+    experience_years: 8,
+    specializations: ["Укладка плитки", "Сантехника", "Электрика"],
+    business_status: "ip",
     has_tools: true,
-    work_style: "solo",
     verified: true,
     rating: 4.9,
-    reviews: 87,
+    reviews: 47,
+    guarantee_period: "1y",
+    guarantee_description: "Гарантия на все виды работ 1 год. Бесплатное устранение дефектов.",
+    payment_methods: ["card", "transfer"],
+    certificates: ["Электрик 3-й разряд", "Сантехника (допуск)"],
+    portfolio_links: ["https://vk.com/alexey_master"],
+    phone: "+7 (999) 123-45-67",
+    telegram: "@alexey_master",
+    description: "Выполняю комплексный ремонт квартир под ключ. Работаю аккуратно, сдаю в срок.",
   },
   {
     id: 2,
-    full_name: "Команда «РемПроф»",
-    location: "Москва и МО",
-    experience_years: 8,
-    specializations: ["Укладка плитки", "Стяжка пола", "Ламинат/паркет", "Сантехника", "Электрика"],
-    business_status: "ip",
-    description: "Команда из 4 мастеров. Берёмся за полный цикл ремонта — от черновых работ до чистовой отделки. Работаем по договору, предоставляем смету.",
-    guarantee_period: "2y",
-    guarantee_description: "2 года на все виды работ. Договор с гарантийными обязательствами.",
-    payment_methods: ["card", "transfer", "invoice"],
-    payment_schedule: "staged",
-    certificates: ["ИП Петров А.В.", "Допуск СРО"],
-    portfolio_links: ["https://remprof.ru", "https://instagram.com/remprof_msk"],
-    phone: "+7 (499) 234-56-78",
-    email: "info@remprof.ru",
-    telegram: "remprof_msk",
-    whatsapp: "+74992345678",
-    instagram: "remprof_msk",
-    website: "https://remprof.ru",
+    full_name: "Дмитрий Козлов",
+    location: "Санкт-Петербург",
+    experience_years: 12,
+    specializations: ["Отделка стен", "Покраска", "Шпаклёвка"],
+    business_status: "self_employed",
     has_tools: true,
-    work_style: "team",
     verified: true,
-    rating: 4.8,
-    reviews: 134,
+    rating: 4.7,
+    reviews: 83,
+    guarantee_period: "6m",
+    guarantee_description: "Гарантия на отделочные работы 6 месяцев.",
+    payment_methods: ["cash", "card"],
+    certificates: [],
+    portfolio_links: [],
+    phone: "+7 (911) 456-78-90",
+    telegram: "@dmitry_otdelka",
+    description: "Специализируюсь на чистовой отделке. Работаю с любыми материалами.",
   },
   {
     id: 3,
-    full_name: "Алексей Чернов",
+    full_name: "Сергей Волков",
     location: "Москва",
     experience_years: 5,
-    specializations: ["Натяжные потолки", "Демонтаж", "Покраска"],
+    specializations: ["Монтаж гипсокартона", "Натяжные потолки"],
     business_status: "individual",
-    description: "Специализируюсь на натяжных потолках и сопутствующих работах. Быстро, качественно. Замер бесплатно.",
-    guarantee_period: "6m",
-    guarantee_description: "6 месяцев на монтаж натяжных потолков.",
-    payment_methods: ["cash", "transfer"],
-    payment_schedule: "prepay",
+    has_tools: false,
+    verified: false,
+    rating: 4.5,
+    reviews: 21,
+    guarantee_period: "3m",
+    payment_methods: ["cash"],
     certificates: [],
     portfolio_links: [],
-    phone: "+7 (926) 345-67-89",
-    email: "",
-    telegram: "alexey_ceiling",
-    whatsapp: "+79263456789",
-    instagram: "",
-    website: "",
-    has_tools: true,
-    work_style: "solo",
-    verified: false,
-    rating: 4.6,
-    reviews: 32,
+    phone: "+7 (925) 789-01-23",
+    description: "Быстро и качественно монтирую конструкции из ГКЛ и натяжные потолки.",
   },
 ];
 
 function MasterCard({ master }: { master: Master }) {
   const [expanded, setExpanded] = useState(false);
-  const initials = master.full_name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const initials = master.full_name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="p-6">
-        <div className="flex gap-5">
-          {/* Аватар */}
-          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-md">
-            {initials}
-          </div>
-
-          {/* Основная информация */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-lg font-bold text-gray-900">{master.full_name}</h3>
-                  {master.verified && (
-                    <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
-                      <Icon name="ShieldCheck" size={12} /> Проверен
-                    </span>
-                  )}
-                  {master.business_status && (
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                      {BUSINESS_LABELS[master.business_status] ?? master.business_status}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-3 mt-1 text-sm text-gray-500 flex-wrap">
-                  <span className="flex items-center gap-1">
-                    <Icon name="Star" size={14} className="fill-yellow-400 text-yellow-400" />
-                    <span className="font-semibold text-gray-700">{master.rating}</span>
-                    <span>({master.reviews} отз.)</span>
-                  </span>
-                  {master.experience_years && (
-                    <span className="flex items-center gap-1">
-                      <Icon name="Briefcase" size={13} />
-                      Опыт {master.experience_years} {master.experience_years === 1 ? "год" : master.experience_years < 5 ? "года" : "лет"}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Icon name="MapPin" size={13} />
-                    {master.location}
-                  </span>
-                </div>
-              </div>
-
-              {/* Гарантия */}
-              {master.guarantee_period && master.guarantee_period !== "none" && (
-                <div className="flex-shrink-0 text-center bg-orange-50 border border-orange-100 rounded-xl px-3 py-2">
-                  <Icon name="ShieldCheck" size={16} className="text-orange-500 mx-auto mb-0.5" />
-                  <p className="text-xs font-semibold text-orange-700">{GUARANTEE_LABELS[master.guarantee_period]}</p>
-                  <p className="text-xs text-orange-500">гарантия</p>
-                </div>
-              )}
-            </div>
-
-            {/* Специализации */}
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {master.specializations.map((spec) => (
-                <Badge key={spec} variant="secondary" className="text-xs">{spec}</Badge>
-              ))}
-            </div>
-
-            {/* Описание */}
-            <p className="text-sm text-gray-600 line-clamp-2 mb-3">{master.description}</p>
-
-            {/* Нижняя строка */}
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
-                {master.has_tools && (
-                  <span className="flex items-center gap-1"><Icon name="Wrench" size={12} /> Свой инструмент</span>
-                )}
-                {master.payment_methods.length > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Icon name="CreditCard" size={12} />
-                    {master.payment_methods.map((m) => PAYMENT_LABELS[m]).join(", ")}
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={() => setExpanded(!expanded)}
-                className="text-xs text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1"
-              >
-                {expanded ? "Скрыть" : "Подробнее"}
-                <Icon name={expanded ? "ChevronUp" : "ChevronDown"} size={14} />
-              </button>
-            </div>
-          </div>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
+          {initials}
         </div>
-
-        {/* Развёрнутый блок */}
-        {expanded && (
-          <div className="mt-5 pt-5 border-t border-gray-100 space-y-4">
-            {/* Контакты */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                <Icon name="Phone" size={14} className="text-orange-500" /> Контакты
-              </h4>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {master.phone && (
-                  <a href={`tel:${master.phone}`} className="flex items-center gap-2 text-sm text-gray-700 hover:text-orange-600 transition-colors">
-                    <Icon name="Phone" size={14} className="text-gray-400" /> {master.phone}
-                  </a>
-                )}
-                {master.email && (
-                  <a href={`mailto:${master.email}`} className="flex items-center gap-2 text-sm text-gray-700 hover:text-orange-600 transition-colors">
-                    <Icon name="Mail" size={14} className="text-gray-400" /> {master.email}
-                  </a>
-                )}
-                {master.telegram && (
-                  <a href={`https://t.me/${master.telegram}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 transition-colors">
-                    <Icon name="Send" size={14} /> @{master.telegram}
-                  </a>
-                )}
-                {master.whatsapp && (
-                  <a href={`https://wa.me/${master.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700 transition-colors">
-                    <Icon name="MessageCircle" size={14} /> WhatsApp
-                  </a>
-                )}
-                {master.instagram && (
-                  <a href={`https://instagram.com/${master.instagram}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-pink-600 hover:text-pink-700 transition-colors">
-                    <Icon name="Camera" size={14} /> @{master.instagram}
-                  </a>
-                )}
-                {master.website && (
-                  <a href={master.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-gray-700 hover:text-orange-600 transition-colors">
-                    <Icon name="Globe" size={14} className="text-gray-400" /> Сайт
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Гарантии */}
-            {master.guarantee_description && (
-              <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
-                  <Icon name="ShieldCheck" size={14} className="text-orange-500" /> Условия гарантии
-                </h4>
-                <p className="text-sm text-gray-600">{master.guarantee_description}</p>
-              </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-gray-900">{master.full_name}</span>
+            {master.verified && (
+              <Icon name="BadgeCheck" size={16} className="text-blue-500" />
             )}
-
-            {/* Портфолио */}
-            {master.portfolio_links.length > 0 && (
-              <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                  <Icon name="Award" size={14} className="text-orange-500" /> Портфолио
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {master.portfolio_links.map((link, i) => (
-                    <a
-                      key={i}
-                      href={link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 transition-colors"
-                    >
-                      <Icon name="Link" size={13} /> Смотреть работы
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Сертификаты */}
-            {master.certificates.length > 0 && (
-              <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-                  <Icon name="FileText" size={14} className="text-orange-500" /> Сертификаты
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {master.certificates.map((cert, i) => (
-                    <span key={i} className="flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200">
-                      <Icon name="CheckCircle" size={12} className="text-green-500" /> {cert}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+            <Badge variant="secondary" className="text-xs">
+              {BUSINESS_LABELS[master.business_status] || master.business_status}
+            </Badge>
           </div>
-        )}
-
-        {/* Кнопки действий */}
-        <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
-          {master.phone && (
-            <a href={`tel:${master.phone}`} className="flex-1">
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 gap-2">
-                <Icon name="Phone" size={16} /> Позвонить
-              </Button>
-            </a>
+          <div className="flex items-center gap-3 mt-1 text-sm text-gray-500 flex-wrap">
+            <span className="flex items-center gap-1">
+              <Icon name="Star" size={14} className="text-yellow-400 fill-yellow-400" />
+              {master.rating} ({master.reviews} отзывов)
+            </span>
+            <span className="flex items-center gap-1">
+              <Icon name="Briefcase" size={14} />
+              {master.experience_years} лет
+            </span>
+            <span className="flex items-center gap-1">
+              <Icon name="MapPin" size={14} />
+              {master.location}
+            </span>
+          </div>
+          {master.guarantee_period && master.guarantee_period !== "none" && (
+            <div className="mt-2">
+              <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
+                Гарантия: {GUARANTEE_LABELS[master.guarantee_period]}
+              </Badge>
+            </div>
           )}
-          {master.telegram && (
-            <a href={`https://t.me/${master.telegram}`} target="_blank" rel="noreferrer" className="flex-1">
-              <Button variant="outline" className="w-full gap-2">
-                <Icon name="Send" size={16} /> Telegram
-              </Button>
-            </a>
+          <div className="flex flex-wrap gap-1 mt-2">
+            {master.specializations.map((s) => (
+              <Badge key={s} variant="outline" className="text-xs">
+                {s}
+              </Badge>
+            ))}
+          </div>
+          {master.description && (
+            <p className="text-sm text-gray-500 mt-2 line-clamp-2">{master.description}</p>
           )}
-          <Button variant="outline" size="icon">
-            <Icon name="Heart" size={16} />
-          </Button>
         </div>
       </div>
-    </Card>
+
+      <div className="flex items-center gap-2 mt-4 flex-wrap">
+        {master.phone && (
+          <a href={`tel:${master.phone}`}>
+            <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white text-xs">
+              <Icon name="Phone" size={13} className="mr-1" /> Позвонить
+            </Button>
+          </a>
+        )}
+        {master.telegram && (
+          <a href={`https://t.me/${master.telegram.replace("@", "")}`} target="_blank" rel="noreferrer">
+            <Button size="sm" variant="outline" className="text-xs">
+              <Icon name="Send" size={13} className="mr-1" /> Telegram
+            </Button>
+          </a>
+        )}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="ml-auto text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1"
+        >
+          {expanded ? "Свернуть" : "Подробнее"}
+          <Icon name={expanded ? "ChevronUp" : "ChevronDown"} size={14} />
+        </button>
+      </div>
+
+      {expanded && (
+        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Контакты</p>
+            <div className="space-y-1 text-sm text-gray-600">
+              {master.phone && (
+                <a href={`tel:${master.phone}`} className="flex items-center gap-2 hover:text-orange-500">
+                  <Icon name="Phone" size={14} /> {master.phone}
+                </a>
+              )}
+              {master.email && (
+                <a href={`mailto:${master.email}`} className="flex items-center gap-2 hover:text-orange-500">
+                  <Icon name="Mail" size={14} /> {master.email}
+                </a>
+              )}
+              {master.telegram && (
+                <a href={`https://t.me/${master.telegram.replace("@", "")}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-500">
+                  <Icon name="Send" size={14} /> {master.telegram}
+                </a>
+              )}
+              {master.whatsapp && (
+                <a href={`https://wa.me/${master.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-500">
+                  <Icon name="MessageCircle" size={14} /> {master.whatsapp}
+                </a>
+              )}
+              {master.instagram && (
+                <span className="flex items-center gap-2">
+                  <Icon name="Instagram" size={14} /> {master.instagram}
+                </span>
+              )}
+              {master.website && (
+                <a href={master.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-500">
+                  <Icon name="Globe" size={14} /> {master.website}
+                </a>
+              )}
+            </div>
+          </div>
+          {master.guarantee_description && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Условия гарантии</p>
+              <p className="text-sm text-gray-600">{master.guarantee_description}</p>
+            </div>
+          )}
+          {master.certificates.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Сертификаты</p>
+              <ul className="space-y-1">
+                {master.certificates.map((c) => (
+                  <li key={c} className="flex items-center gap-2 text-sm text-gray-600">
+                    <Icon name="Award" size={14} className="text-orange-400" /> {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {master.portfolio_links.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Портфолио</p>
+              <ul className="space-y-1">
+                {master.portfolio_links.map((link) => (
+                  <li key={link}>
+                    <a href={link} target="_blank" rel="noreferrer" className="text-sm text-orange-500 hover:underline flex items-center gap-1">
+                      <Icon name="ExternalLink" size={13} /> {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
 export default function Masters() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("rating");
+  const [sort, setSort] = useState("rating");
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [completed, setCompleted] = useState(false);
+
+  const stored = localStorage.getItem("avangard_user");
+  const user: User | null = stored ? JSON.parse(stored) : null;
+
+  const handleBecomeMaster = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (user.user_type !== "contractor") {
+      navigate("/dashboard");
+      return;
+    }
+    setShowQuestionnaire(true);
+  };
 
   const filtered = MOCK_MASTERS.filter((m) => {
-    if (!search) return true;
     const q = search.toLowerCase();
     return (
       m.full_name.toLowerCase().includes(q) ||
@@ -362,48 +310,101 @@ export default function Masters() {
       m.location.toLowerCase().includes(q)
     );
   }).sort((a, b) => {
-    if (sortBy === "rating") return b.rating - a.rating;
-    if (sortBy === "experience") return (b.experience_years ?? 0) - (a.experience_years ?? 0);
-    if (sortBy === "reviews") return b.reviews - a.reviews;
+    if (sort === "rating") return b.rating - a.rating;
+    if (sort === "experience") return b.experience_years - a.experience_years;
+    if (sort === "reviews") return b.reviews - a.reviews;
     return 0;
   });
 
+  if (completed) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 text-center max-w-md">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Icon name="CheckCircle" size={40} className="text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Анкета заполнена!</h2>
+          <p className="text-gray-500 mb-6">
+            Ваш профиль мастера сохранён. Теперь вы будете появляться в каталоге.
+          </p>
+          <Button
+            onClick={() => { setCompleted(false); setShowQuestionnaire(false); }}
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+          >
+            Вернуться к каталогу
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (showQuestionnaire && user) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white border-b border-gray-100">
+          <div className="max-w-3xl mx-auto px-4 py-6">
+            <button
+              onClick={() => setShowQuestionnaire(false)}
+              className="text-gray-400 hover:text-gray-600 mb-4 flex items-center gap-1 text-sm"
+            >
+              <Icon name="ArrowLeft" size={16} /> Назад к каталогу
+            </button>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Анкета мастера</h1>
+            <p className="text-gray-500 mt-1">Заполните данные, чтобы начать получать заказы</p>
+          </div>
+        </div>
+        <div className="max-w-3xl mx-auto px-4 py-8">
+          <MasterQuestionnaire
+            userId={user.id}
+            userName={user.name}
+            userPhone={user.phone}
+            userEmail={user.email}
+            onComplete={() => setCompleted(true)}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-                <Icon name="ArrowLeft" size={20} />
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Мастера</h1>
-                <p className="text-sm text-gray-500">Проверенные специалисты по ремонту</p>
-              </div>
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-gray-400 hover:text-gray-600 mb-4 flex items-center gap-1 text-sm"
+          >
+            <Icon name="ArrowLeft" size={16} /> Назад
+          </button>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Мастера</h1>
+              <p className="text-gray-500 mt-1">Проверенные специалисты по ремонту</p>
             </div>
-            <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => navigate("/register")}>
+            <Button
+              onClick={handleBecomeMaster}
+              className="bg-orange-500 hover:bg-orange-600 text-white shrink-0"
+            >
               <Icon name="UserPlus" size={16} className="mr-2" />
               Стать мастером
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Поиск и сортировка */}
-        <div className="flex gap-3 mb-6">
-          <div className="relative flex-1">
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        <div className="flex gap-3 mb-6 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
             <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <Input
-              className="pl-9"
               placeholder="Поиск по имени, специализации, городу..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
             />
           </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-48">
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger className="w-44">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -414,21 +415,20 @@ export default function Masters() {
           </Select>
         </div>
 
-        {/* Счётчик */}
-        <p className="text-sm text-gray-500 mb-4">Найдено: {filtered.length} мастеров</p>
+        <p className="text-sm text-gray-400 mb-4">Найдено: {filtered.length}</p>
 
-        {/* Список карточек */}
-        <div className="space-y-4">
-          {filtered.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
-              <Icon name="SearchX" size={48} className="mx-auto mb-3 opacity-40" />
-              <p className="text-lg font-medium">Мастера не найдены</p>
-              <p className="text-sm">Попробуйте изменить запрос</p>
-            </div>
-          ) : (
-            filtered.map((master) => <MasterCard key={master.id} master={master} />)
-          )}
-        </div>
+        {filtered.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">
+            <Icon name="UserX" size={40} className="mx-auto mb-3 opacity-40" />
+            <p>Мастера не найдены</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filtered.map((master) => (
+              <MasterCard key={master.id} master={master} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
