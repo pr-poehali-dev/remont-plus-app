@@ -83,6 +83,19 @@
         "error": "User not found"
       },
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get masters list",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "get_masters_list"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "masters": []
+      },
+      "bodyMatcher": "partial"
     }
   ]
 }

@@ -267,6 +267,36 @@ def handler(event: dict, context) -> dict:
         }
         return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'profile': profile, 'exists': True}, ensure_ascii=False)}
 
+    elif action == 'get_masters_list':
+        cursor.execute("""
+            SELECT id, full_name, phone, email, telegram, whatsapp, instagram, website,
+                   location, experience_years, specializations, business_status,
+                   has_tools, verified, rating, reviews_count, guarantee_period,
+                   guarantee_description, payment_methods, certificates, portfolio_links,
+                   description
+            FROM contractors
+            WHERE profile_completed = true
+            ORDER BY rating DESC, reviews_count DESC
+        """)
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        masters = []
+        for r in rows:
+            masters.append({
+                'id': r[0], 'full_name': r[1] or '', 'phone': r[2] or '',
+                'email': r[3] or '', 'telegram': r[4] or '', 'whatsapp': r[5] or '',
+                'instagram': r[6] or '', 'website': r[7] or '',
+                'location': r[8] or '', 'experience_years': r[9] or 0,
+                'specializations': r[10] or [], 'business_status': r[11] or '',
+                'has_tools': r[12] or False, 'verified': r[13] or False,
+                'rating': float(r[14]) if r[14] else 0.0, 'reviews': r[15] or 0,
+                'guarantee_period': r[16] or 'none', 'guarantee_description': r[17] or '',
+                'payment_methods': r[18] or [], 'certificates': r[19] or [],
+                'portfolio_links': r[20] or [], 'description': r[21] or '',
+            })
+        return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'masters': masters}, ensure_ascii=False)}
+
     elif action == 'save_master_profile':
         user_id = body.get('user_id')
         if not user_id:
@@ -278,6 +308,10 @@ def handler(event: dict, context) -> dict:
         full_name = (data.get('full_name') or '').strip()
         phone = (data.get('phone') or '').strip()
         email = (data.get('email') or '').strip()
+        telegram = (data.get('telegram') or '').strip()
+        whatsapp = (data.get('whatsapp') or '').strip()
+        instagram = (data.get('instagram') or '').strip()
+        website = (data.get('website') or '').strip()
         citizenship = (data.get('citizenship') or '').strip()
         experience_years = data.get('experience_years')
         specializations = data.get('specializations') or []
@@ -294,6 +328,8 @@ def handler(event: dict, context) -> dict:
         description = (data.get('description') or '').strip()
         location = (data.get('location') or '').strip()
         company_name = (data.get('company_name') or full_name).strip()
+        guarantee_period = data.get('guarantee_period') or 'none'
+        guarantee_description = (data.get('guarantee_description') or '').strip()
 
         profile_completed = bool(full_name and phone and specializations)
 
@@ -304,36 +340,40 @@ def handler(event: dict, context) -> dict:
             cursor.execute("""
                 UPDATE contractors SET
                     company_name=%s, full_name=%s, phone=%s, email=%s,
+                    telegram=%s, whatsapp=%s, instagram=%s, website=%s,
                     citizenship=%s, experience_years=%s, specializations=%s,
                     has_tools=%s, work_style=%s, technologies_knowledge=%s,
                     certificates=%s, portfolio_photos=%s, portfolio_links=%s,
                     payment_methods=%s, payment_schedule=%s, discount_info=%s,
                     business_status=%s, profile_completed=%s, description=%s,
-                    location=%s, updated_at=NOW()
+                    location=%s, guarantee_period=%s, guarantee_description=%s,
+                    updated_at=NOW()
                 WHERE user_id=%s RETURNING id
-            """, (company_name, full_name, phone, email, citizenship,
-                  experience_years, specializations, has_tools, work_style,
-                  technologies_knowledge, certificates, portfolio_photos,
-                  portfolio_links, payment_methods, payment_schedule,
+            """, (company_name, full_name, phone, email, telegram, whatsapp,
+                  instagram, website, citizenship, experience_years, specializations,
+                  has_tools, work_style, technologies_knowledge, certificates,
+                  portfolio_photos, portfolio_links, payment_methods, payment_schedule,
                   discount_info, business_status, profile_completed,
-                  description, location, int(user_id)))
+                  description, location, guarantee_period, guarantee_description,
+                  int(user_id)))
         else:
             cursor.execute("""
                 INSERT INTO contractors (
-                    user_id, company_name, full_name, phone, email, citizenship,
-                    experience_years, specializations, has_tools, work_style,
+                    user_id, company_name, full_name, phone, email,
+                    telegram, whatsapp, instagram, website,
+                    citizenship, experience_years, specializations, has_tools, work_style,
                     technologies_knowledge, certificates, portfolio_photos,
                     portfolio_links, payment_methods, payment_schedule,
                     discount_info, business_status, profile_completed,
-                    description, location
-                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    description, location, guarantee_period, guarantee_description
+                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 RETURNING id
-            """, (int(user_id), company_name, full_name, phone, email, citizenship,
-                  experience_years, specializations, has_tools, work_style,
-                  technologies_knowledge, certificates, portfolio_photos,
-                  portfolio_links, payment_methods, payment_schedule,
-                  discount_info, business_status, profile_completed,
-                  description, location))
+            """, (int(user_id), company_name, full_name, phone, email, telegram,
+                  whatsapp, instagram, website, citizenship, experience_years,
+                  specializations, has_tools, work_style, technologies_knowledge,
+                  certificates, portfolio_photos, portfolio_links, payment_methods,
+                  payment_schedule, discount_info, business_status, profile_completed,
+                  description, location, guarantee_period, guarantee_description))
 
         record_id = cursor.fetchone()[0]
         conn.commit()

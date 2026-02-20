@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import MasterQuestionnaire from "@/components/master/MasterQuestionnaire";
+
+const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
 
 interface User {
   id: number;
@@ -62,67 +64,6 @@ interface Master {
   description?: string;
 }
 
-const MOCK_MASTERS: Master[] = [
-  {
-    id: 1,
-    full_name: "Алексей Петров",
-    location: "Москва",
-    experience_years: 8,
-    specializations: ["Укладка плитки", "Сантехника", "Электрика"],
-    business_status: "ip",
-    has_tools: true,
-    verified: true,
-    rating: 4.9,
-    reviews: 47,
-    guarantee_period: "1y",
-    guarantee_description: "Гарантия на все виды работ 1 год. Бесплатное устранение дефектов.",
-    payment_methods: ["card", "transfer"],
-    certificates: ["Электрик 3-й разряд", "Сантехника (допуск)"],
-    portfolio_links: ["https://vk.com/alexey_master"],
-    phone: "+7 (999) 123-45-67",
-    telegram: "@alexey_master",
-    description: "Выполняю комплексный ремонт квартир под ключ. Работаю аккуратно, сдаю в срок.",
-  },
-  {
-    id: 2,
-    full_name: "Дмитрий Козлов",
-    location: "Санкт-Петербург",
-    experience_years: 12,
-    specializations: ["Отделка стен", "Покраска", "Шпаклёвка"],
-    business_status: "self_employed",
-    has_tools: true,
-    verified: true,
-    rating: 4.7,
-    reviews: 83,
-    guarantee_period: "6m",
-    guarantee_description: "Гарантия на отделочные работы 6 месяцев.",
-    payment_methods: ["cash", "card"],
-    certificates: [],
-    portfolio_links: [],
-    phone: "+7 (911) 456-78-90",
-    telegram: "@dmitry_otdelka",
-    description: "Специализируюсь на чистовой отделке. Работаю с любыми материалами.",
-  },
-  {
-    id: 3,
-    full_name: "Сергей Волков",
-    location: "Москва",
-    experience_years: 5,
-    specializations: ["Монтаж гипсокартона", "Натяжные потолки"],
-    business_status: "individual",
-    has_tools: false,
-    verified: false,
-    rating: 4.5,
-    reviews: 21,
-    guarantee_period: "3m",
-    payment_methods: ["cash"],
-    certificates: [],
-    portfolio_links: [],
-    phone: "+7 (925) 789-01-23",
-    description: "Быстро и качественно монтирую конструкции из ГКЛ и натяжные потолки.",
-  },
-];
-
 function MasterCard({ master }: { master: Master }) {
   const [expanded, setExpanded] = useState(false);
   const initials = master.full_name
@@ -143,23 +84,31 @@ function MasterCard({ master }: { master: Master }) {
             {master.verified && (
               <Icon name="BadgeCheck" size={16} className="text-blue-500" />
             )}
-            <Badge variant="secondary" className="text-xs">
-              {BUSINESS_LABELS[master.business_status] || master.business_status}
-            </Badge>
+            {master.business_status && (
+              <Badge variant="secondary" className="text-xs">
+                {BUSINESS_LABELS[master.business_status] || master.business_status}
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-3 mt-1 text-sm text-gray-500 flex-wrap">
-            <span className="flex items-center gap-1">
-              <Icon name="Star" size={14} className="text-yellow-400 fill-yellow-400" />
-              {master.rating} ({master.reviews} отзывов)
-            </span>
-            <span className="flex items-center gap-1">
-              <Icon name="Briefcase" size={14} />
-              {master.experience_years} лет
-            </span>
-            <span className="flex items-center gap-1">
-              <Icon name="MapPin" size={14} />
-              {master.location}
-            </span>
+            {master.rating > 0 && (
+              <span className="flex items-center gap-1">
+                <Icon name="Star" size={14} className="text-yellow-400 fill-yellow-400" />
+                {master.rating.toFixed(1)} ({master.reviews} отзывов)
+              </span>
+            )}
+            {master.experience_years > 0 && (
+              <span className="flex items-center gap-1">
+                <Icon name="Briefcase" size={14} />
+                {master.experience_years} лет
+              </span>
+            )}
+            {master.location && (
+              <span className="flex items-center gap-1">
+                <Icon name="MapPin" size={14} />
+                {master.location}
+              </span>
+            )}
           </div>
           {master.guarantee_period && master.guarantee_period !== "none" && (
             <div className="mt-2">
@@ -248,7 +197,7 @@ function MasterCard({ master }: { master: Master }) {
               <p className="text-sm text-gray-600">{master.guarantee_description}</p>
             </div>
           )}
-          {master.certificates.length > 0 && (
+          {master.certificates && master.certificates.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Сертификаты</p>
               <ul className="space-y-1">
@@ -260,7 +209,7 @@ function MasterCard({ master }: { master: Master }) {
               </ul>
             </div>
           )}
-          {master.portfolio_links.length > 0 && (
+          {master.portfolio_links && master.portfolio_links.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Портфолио</p>
               <ul className="space-y-1">
@@ -282,6 +231,8 @@ function MasterCard({ master }: { master: Master }) {
 
 export default function Masters() {
   const navigate = useNavigate();
+  const [masters, setMasters] = useState<Master[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("rating");
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
@@ -289,6 +240,17 @@ export default function Masters() {
 
   const stored = localStorage.getItem("avangard_user");
   const user: User | null = stored ? JSON.parse(stored) : null;
+
+  useEffect(() => {
+    fetch(AUTH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "get_masters_list" }),
+    })
+      .then((r) => r.json())
+      .then((data) => setMasters(data.masters || []))
+      .finally(() => setLoading(false));
+  }, [completed]);
 
   const handleBecomeMaster = () => {
     if (!user) {
@@ -302,19 +264,21 @@ export default function Masters() {
     setShowQuestionnaire(true);
   };
 
-  const filtered = MOCK_MASTERS.filter((m) => {
-    const q = search.toLowerCase();
-    return (
-      m.full_name.toLowerCase().includes(q) ||
-      m.specializations.some((s) => s.toLowerCase().includes(q)) ||
-      m.location.toLowerCase().includes(q)
-    );
-  }).sort((a, b) => {
-    if (sort === "rating") return b.rating - a.rating;
-    if (sort === "experience") return b.experience_years - a.experience_years;
-    if (sort === "reviews") return b.reviews - a.reviews;
-    return 0;
-  });
+  const filtered = masters
+    .filter((m) => {
+      const q = search.toLowerCase();
+      return (
+        m.full_name.toLowerCase().includes(q) ||
+        (m.specializations || []).some((s) => s.toLowerCase().includes(q)) ||
+        (m.location || "").toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      if (sort === "rating") return b.rating - a.rating;
+      if (sort === "experience") return b.experience_years - a.experience_years;
+      if (sort === "reviews") return b.reviews - a.reviews;
+      return 0;
+    });
 
   if (completed) {
     return (
@@ -415,19 +379,30 @@ export default function Masters() {
           </Select>
         </div>
 
-        <p className="text-sm text-gray-400 mb-4">Найдено: {filtered.length}</p>
-
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-gray-400">
+            <Icon name="Loader2" size={32} className="animate-spin mr-3" />
+            Загружаем мастеров...
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <Icon name="UserX" size={40} className="mx-auto mb-3 opacity-40" />
-            <p>Мастера не найдены</p>
+            <p className="font-medium">
+              {masters.length === 0 ? "Мастера ещё не зарегистрированы" : "Мастера не найдены"}
+            </p>
+            {masters.length === 0 && (
+              <p className="text-sm mt-1">Станьте первым мастером в каталоге!</p>
+            )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {filtered.map((master) => (
-              <MasterCard key={master.id} master={master} />
-            ))}
-          </div>
+          <>
+            <p className="text-sm text-gray-400 mb-4">Найдено: {filtered.length}</p>
+            <div className="space-y-4">
+              {filtered.map((master) => (
+                <MasterCard key={master.id} master={master} />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
