@@ -14,6 +14,7 @@ import ContractorsTab from "@/components/calculator/ContractorsTab";
 import DocsTab from "@/components/calculator/DocsTab";
 import CalculatorSidebar from "@/components/calculator/CalculatorSidebar";
 import ExportDialog from "@/components/calculator/ExportDialog";
+import TemplatesDialog from "@/components/calculator/TemplatesDialog";
 
 const SERVICE_PRICES_URL = "https://functions.poehali.dev/4dae7ba0-b573-436a-b4c6-d3b0abf69fce";
 
@@ -68,6 +69,7 @@ export default function Calculator() {
   });
   const [loading, setLoading] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
     setLemanaItems(getEstimateItems());
@@ -166,6 +168,10 @@ export default function Calculator() {
                 <Icon name="ClipboardList" className="mr-2 h-4 w-4" />
                 Прайс-лист
               </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowTemplates(true)}>
+                <Icon name="LayoutTemplate" className="mr-2 h-4 w-4" />
+                Шаблоны
+              </Button>
               <Button onClick={() => setShowExportDialog(true)}>
                 <Icon name="Download" className="mr-2 h-4 w-4" />
                 Скачать PDF
@@ -260,6 +266,13 @@ export default function Calculator() {
           />
         </div>
       </div>
+
+      <TemplatesDialog
+        open={showTemplates}
+        onClose={() => setShowTemplates(false)}
+        currentItems={items}
+        onApply={(newItems) => setItems(newItems)}
+      />
 
       {showExportDialog && (
         <ExportDialog
