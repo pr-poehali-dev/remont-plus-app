@@ -96,46 +96,6 @@ def payment_received_html(master_name: str, customer_name: str, contract_amount:
 """
 
 
-def contract_signed_html(master_name: str, master_email: str,
-                          contract_num: str, contract_date: str) -> str:
-    return f"""
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px;">
-  <div style="max-width: 560px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-    <div style="background: linear-gradient(135deg, #f59e0b, #f97316); padding: 28px 32px;">
-      <h1 style="color: #fff; margin: 0; font-size: 20px;">📄 Агентский договор подписан</h1>
-      <p style="color: rgba(255,255,255,0.85); margin: 6px 0 0; font-size: 14px;">Авангард · Подтверждение подписания</p>
-    </div>
-    <div style="padding: 28px 32px;">
-      <p style="color: #333; font-size: 15px; margin: 0 0 16px;">Здравствуйте, <strong>{master_name}</strong>!</p>
-      <p style="color: #555; font-size: 14px; margin: 0 0 20px;">
-        Вы успешно подписали агентский договор с Авангард. Теперь все расчёты с заказчиками проходят через нашу платформу.
-      </p>
-      <div style="background: #fff7ed; border-left: 3px solid #f59e0b; border-radius: 6px; padding: 14px 18px; margin-bottom: 20px;">
-        <p style="color: #78350f; font-size: 13px; margin: 0 0 8px;"><strong>Условия договора:</strong></p>
-        <ul style="color: #92400e; font-size: 13px; margin: 0; padding-left: 18px; line-height: 1.8;">
-          <li>Комиссия Авангард — <strong>5%</strong> от суммы каждого договора</li>
-          <li>Выплата мастеру — <strong>95%</strong> в течение 3 рабочих дней после оплаты</li>
-          <li>Срок договора — 1 год с автопролонгацией</li>
-        </ul>
-      </div>
-      <p style="color: #888; font-size: 12px; margin: 0;">
-        Договор № {contract_num} · Дата: {contract_date}
-      </p>
-    </div>
-    <div style="background: #f9fafb; padding: 16px 32px; text-align: center;">
-      <p style="color: #bbb; font-size: 11px; margin: 0;">
-        Авангард · avangard-ai.ru · Это автоматическое уведомление, отвечать на него не нужно.
-      </p>
-    </div>
-  </div>
-</body>
-</html>
-"""
-
-
 def handler(event: dict, context) -> dict:
     """Email-уведомления мастерам: подписание договора и получение оплаты"""
 
@@ -154,20 +114,7 @@ def handler(event: dict, context) -> dict:
     body = json.loads(event.get('body') or '{}')
     action = body.get('action')
 
-    if action == 'notify_contract_signed':
-        master_name = body.get('master_name', '')
-        master_email = body.get('master_email', '')
-        contract_num = body.get('contract_num', '')
-        contract_date = body.get('contract_date', '')
-
-        if not master_email:
-            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'master_email обязателен'}, ensure_ascii=False)}
-
-        html = contract_signed_html(master_name, master_email, contract_num, contract_date)
-        ok = send_email(master_email, f'Агентский договор № {contract_num} подписан — Авангард', html)
-        return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'success': ok, 'sent': ok}, ensure_ascii=False)}
-
-    elif action == 'notify_payment_received':
+    if action == 'notify_payment_received':
         transaction_id = body.get('transaction_id')
         master_email = body.get('master_email', '')
         master_name = body.get('master_name', '')
