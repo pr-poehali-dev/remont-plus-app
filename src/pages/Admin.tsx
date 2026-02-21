@@ -10,10 +10,12 @@ import AdminProductsTab, { type Product } from "@/components/admin/AdminProducts
 import AdminStatsTab from "@/components/admin/AdminStatsTab";
 import AdminPortfolioTab, { type PortfolioItem } from "@/components/admin/AdminPortfolioTab";
 import AdminReviewsTab, { type ReviewItem } from "@/components/admin/AdminReviewsTab";
+import AdminShowroomTab, { type ShowroomItemDB } from "@/components/admin/AdminShowroomTab";
 
 const SUPPLIERS_URL = 'https://functions.poehali.dev/735f02a5-eb3f-4e4b-b378-7564c92b8e00';
 const MATERIALS_URL = 'https://functions.poehali.dev/dd454a25-9f55-4cfb-9e59-736a4a1256fd';
 const ADMIN_API = 'https://functions.poehali.dev/874af9cd-edd6-471e-b6d4-e68c828e6dca';
+const SHOWROOM_URL = 'https://functions.poehali.dev/00d5617d-4889-4550-bc82-d94492e380ba';
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ export default function Admin() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [showroomItems, setShowroomItems] = useState<ShowroomItemDB[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +38,20 @@ export default function Admin() {
     loadMaterials();
     loadPortfolio();
     loadReviews();
+    loadShowroom();
   }, []);
+
+  const loadShowroom = async () => {
+    try {
+      const res = await fetch(SHOWROOM_URL);
+      if (res.ok) {
+        const data = await res.json();
+        setShowroomItems(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error loading showroom:', error);
+    }
+  };
 
   const loadProducts = async () => {
     setIsLoading(true);
@@ -118,8 +134,13 @@ export default function Admin() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="portfolio" className="space-y-6">
+        <Tabs defaultValue="showroom" className="space-y-6">
           <TabsList className="flex-wrap h-auto gap-1">
+            <TabsTrigger value="showroom" className="gap-1.5">
+              <Icon name="Layers" className="h-4 w-4" />
+              Шоурум
+              {showroomItems.length > 0 && <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 h-4">{showroomItems.length}</Badge>}
+            </TabsTrigger>
             <TabsTrigger value="portfolio" className="gap-1.5">
               <Icon name="Image" className="h-4 w-4" />
               Портфолио
@@ -143,6 +164,10 @@ export default function Admin() {
               Статистика
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="showroom">
+            <AdminShowroomTab items={showroomItems} onReload={loadShowroom} />
+          </TabsContent>
 
           <TabsContent value="portfolio">
             <AdminPortfolioTab items={portfolio} onReload={loadPortfolio} />

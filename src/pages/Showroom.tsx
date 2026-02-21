@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import {
-  showroomItems,
   exampleProjects,
   roomFilters,
   styleFilters,
@@ -12,6 +11,25 @@ import {
 import ShowroomItemCard from "@/components/showroom/ShowroomItemCard";
 import ExampleProjectCard from "@/components/showroom/ExampleProjectCard";
 import { useMeta } from "@/hooks/useMeta";
+
+const SHOWROOM_URL = "https://functions.poehali.dev/00d5617d-4889-4550-bc82-d94492e380ba";
+
+function dbItemToShowroom(item: Record<string, unknown>): ShowroomItem {
+  return {
+    id: item.id as number,
+    title: item.title as string,
+    description: item.description as string,
+    room: item.room as string,
+    style: item.style as string,
+    area: item.area as string,
+    materials: (item.materials as string[]) || [],
+    image: item.image as string,
+    designer: item.designer as string,
+    features: (item.features as string[]) || [],
+    aspectRatio: (item.aspect_ratio as "tall" | "wide" | "square") || "square",
+    color: item.color as string,
+  };
+}
 
 const INITIAL_COUNT = 12;
 const LOAD_MORE_COUNT = 8;
@@ -28,7 +46,20 @@ export default function Showroom() {
   const [selectedStyle, setSelectedStyle] = useState("Все");
   const [lightbox, setLightbox] = useState<ShowroomItem | null>(null);
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+  const [showroomItems, setShowroomItems] = useState<ShowroomItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const lightboxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch(SHOWROOM_URL)
+      .then((r) => r.json())
+      .then((data) => {
+        const items = Array.isArray(data) ? data.map(dbItemToShowroom) : [];
+        setShowroomItems(items);
+      })
+      .catch(() => setShowroomItems([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = showroomItems.filter((item) => {
     if (selectedRoom !== "Все" && item.room !== selectedRoom) return false;
@@ -149,7 +180,12 @@ export default function Showroom() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-24">
+            <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-gray-900 animate-spin mx-auto mb-4" />
+            <p className="text-gray-400 text-sm">Загружаю проекты...</p>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-24">
             <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
               <Icon name="Image" size={28} className="text-gray-400" />

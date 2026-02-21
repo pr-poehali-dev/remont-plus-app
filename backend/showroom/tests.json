@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "GET all showroom items",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": "string",
+      "bodyMatcher": "partial"
+    }
+  ]
+}
