@@ -22,7 +22,67 @@ interface TemplatesDialogProps {
   open: boolean;
   onClose: () => void;
   currentItems: EstimateItem[];
-  onApply: (items: EstimateItem[]) => void;
+  onApply: (items: EstimateItem[], mode: "replace" | "append") => void;
+}
+
+interface PendingTemplate {
+  name: string;
+  items: EstimateItem[];
+}
+
+function ApplyModePrompt({
+  pending,
+  hasExisting,
+  onReplace,
+  onAppend,
+  onCancel,
+}: {
+  pending: PendingTemplate;
+  hasExisting: boolean;
+  onReplace: () => void;
+  onAppend: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="mt-4 border border-primary/20 rounded-xl p-4 bg-primary/5 space-y-3">
+      <div className="flex items-center gap-2">
+        <Icon name="LayoutTemplate" size={16} className="text-primary" />
+        <span className="font-semibold text-sm">Применить «{pending.name}»</span>
+        <Badge variant="outline" className="text-[10px]">{pending.items.length} позиций</Badge>
+      </div>
+      {hasExisting ? (
+        <>
+          <p className="text-xs text-gray-500">В смете уже есть позиции. Как применить шаблон?</p>
+          <div className="flex gap-2">
+            <Button size="sm" className="flex-1" onClick={onAppend}>
+              <Icon name="Plus" size={14} className="mr-1.5" />
+              Добавить к текущей
+            </Button>
+            <Button size="sm" variant="outline" className="flex-1 border-red-200 text-red-600 hover:bg-red-50" onClick={onReplace}>
+              <Icon name="RefreshCw" size={14} className="mr-1.5" />
+              Заменить смету
+            </Button>
+            <Button size="sm" variant="ghost" className="px-2" onClick={onCancel}>
+              <Icon name="X" size={14} />
+            </Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-xs text-gray-500">Смета пуста — шаблон будет загружен сразу.</p>
+          <div className="flex gap-2">
+            <Button size="sm" className="flex-1" onClick={onReplace}>
+              <Icon name="CheckCircle" size={14} className="mr-1.5" />
+              Загрузить шаблон
+            </Button>
+            <Button size="sm" variant="ghost" className="px-2" onClick={onCancel}>
+              <Icon name="X" size={14} />
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -51,23 +111,31 @@ export default function TemplatesDialog({ open, onClose, currentItems, onApply }
   const [saveDesc, setSaveDesc] = useState("");
   const [customTemplates, setCustomTemplates] = useState<SavedTemplate[]>(getCustomTemplates);
   const [saved, setSaved] = useState(false);
+  const [pending, setPending] = useState<PendingTemplate | null>(null);
 
-  const handleApplyPreset = (templateItems: typeof PRESET_TEMPLATES[0]["items"]) => {
-    const newItems: EstimateItem[] = templateItems.map((item) => ({
+  const toEstimateItems = (raw: { category: string; name: string; unit: string; quantity: number; price: number }[]): EstimateItem[] =>
+    raw.map((item) => ({
       ...item,
       id: `tpl-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       total: item.price * item.quantity,
     }));
-    onApply(newItems);
-    onClose();
+
+  const handleApplyPreset = (tplName: string, templateItems: typeof PRESET_TEMPLATES[0]["items"]) => {
+    setPending({ name: tplName, items: toEstimateItems(templateItems) });
   };
 
-  const handleApplyCustom = (items: EstimateItem[]) => {
+  const handleApplyCustom = (tplName: string, items: EstimateItem[]) => {
     const newItems = items.map((item) => ({
       ...item,
       id: `tpl-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     }));
-    onApply(newItems);
+    setPending({ name: tplName, items: newItems });
+  };
+
+  const commitApply = (mode: "replace" | "append") => {
+    if (!pending) return;
+    onApply(pending.items, mode);
+    setPending(null);
     onClose();
   };
 
@@ -149,7 +217,7 @@ export default function TemplatesDialog({ open, onClose, currentItems, onApply }
                           size="sm"
                           variant="outline"
                           className="shrink-0 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleApplyPreset(tpl.items)}
+                          onClick={() => handleApplyPreset(tpl.name, tpl.items)}
                         >
                           Применить
                         </Button>
@@ -194,7 +262,7 @@ export default function TemplatesDialog({ open, onClose, currentItems, onApply }
                           size="sm"
                           variant="outline"
                           className="h-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleApplyCustom(tpl.items)}
+                          onClick={() => handleApplyCustom(tpl.name, tpl.items)}
                         >
                           Применить
                         </Button>
@@ -258,6 +326,15 @@ export default function TemplatesDialog({ open, onClose, currentItems, onApply }
                 </>
               )}
             </div>
+          )}
+          {pending && (
+            <ApplyModePrompt
+              pending={pending}
+              hasExisting={currentItems.length > 0}
+              onReplace={() => commitApply("replace")}
+              onAppend={() => commitApply("append")}
+              onCancel={() => setPending(null)}
+            />
           )}
         </div>
       </DialogContent>

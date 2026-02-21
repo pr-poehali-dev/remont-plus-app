@@ -271,7 +271,9 @@ export default function Calculator() {
         open={showTemplates}
         onClose={() => setShowTemplates(false)}
         currentItems={items}
-        onApply={(newItems) => setItems(newItems)}
+        onApply={(newItems, mode) =>
+          setItems(mode === "append" ? [...items, ...newItems] : newItems)
+        }
       />
 
       {showExportDialog && (
