@@ -427,9 +427,17 @@ def handler(event: dict, context) -> dict:
             cursor.close(); conn.close()
             return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'contractor_id и contract_amount обязательны'}, ensure_ascii=False)}
         amount = float(contract_amount)
-        commission_pct = 5.0
+        # Считаем сколько завершённых заказов у мастера
+        cursor.execute(
+            "SELECT COUNT(*) FROM agent_transactions WHERE contractor_id = %s AND status = 'completed'",
+            (int(contractor_id),)
+        )
+        completed_count = cursor.fetchone()[0]
+        # Первые 3 заказа — 0% комиссии (бонус лояльности), далее стандартные 5%
+        commission_pct = 0.0 if completed_count < 3 else 5.0
         commission_amount = round(amount * commission_pct / 100, 2)
         payout_amount = round(amount - commission_amount, 2)
+        is_bonus = commission_pct == 0.0
         cursor.execute("""
             INSERT INTO agent_transactions
                 (contractor_id, contract_amount, commission_pct, commission_amount, payout_amount, customer_name, work_description, status)
@@ -440,8 +448,11 @@ def handler(event: dict, context) -> dict:
         conn.commit(); cursor.close(); conn.close()
         return {'statusCode': 200, 'headers': headers, 'body': json.dumps({
             'success': True, 'id': row[0],
+            'commission_pct': commission_pct,
             'commission_amount': commission_amount,
             'payout_amount': payout_amount,
+            'is_bonus': is_bonus,
+            'completed_orders': completed_count,
         }, ensure_ascii=False)}
 
     cursor.close()

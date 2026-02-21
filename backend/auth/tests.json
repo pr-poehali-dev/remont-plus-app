@@ -109,6 +109,27 @@
         "error": "string"
       },
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create transaction - bonus 0% for new master",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "create_transaction",
+        "contractor_id": 9999,
+        "contract_amount": 100000,
+        "customer_name": "Тест Заказчик",
+        "work_description": "Тестовые работы"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "is_bonus": true,
+        "commission_pct": 0.0,
+        "commission_amount": 0.0,
+        "payout_amount": 100000.0
+      },
+      "bodyMatcher": "partial"
     }
   ]
 }

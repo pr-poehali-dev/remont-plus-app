@@ -135,6 +135,10 @@ export default function PaymentHistoryPanel({ contractorId, masterName = "", mas
     .filter((t) => t.status === "completed")
     .reduce((s, t) => s + t.commission_amount, 0);
 
+  const completedCount = transactions.filter((t) => t.status === "completed").length;
+  const bonusOrdersLeft = Math.max(0, 3 - completedCount);
+  const isBonus = bonusOrdersLeft > 0;
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
@@ -173,6 +177,21 @@ export default function PaymentHistoryPanel({ contractorId, masterName = "", mas
         </div>
       </div>
 
+      {/* Бонус лояльности */}
+      {isBonus && (
+        <div className="mx-4 mt-4 mb-0 bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-start gap-3">
+          <Icon name="BadgePercent" size={18} className="text-green-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-green-700">
+              Бонус новичка — 0% комиссии!
+            </p>
+            <p className="text-xs text-green-600 mt-0.5">
+              Осталось льготных заказов: <strong>{bonusOrdersLeft} из 3</strong>. После них — стандартные 5%.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Форма добавления */}
       {showAddForm && (
         <div className="p-5 bg-orange-50 border-b border-orange-100">
@@ -187,9 +206,15 @@ export default function PaymentHistoryPanel({ contractorId, masterName = "", mas
                 onChange={(e) => setForm({ ...form, contract_amount: e.target.value })}
               />
               {form.contract_amount && !isNaN(Number(form.contract_amount)) && Number(form.contract_amount) > 0 && (
-                <p className="text-xs text-orange-600 mt-1">
-                  Комиссия 5%: {fmt(Number(form.contract_amount) * 0.05)} · Вам: {fmt(Number(form.contract_amount) * 0.95)}
-                </p>
+                isBonus ? (
+                  <p className="text-xs text-green-600 mt-1 font-medium">
+                    🎉 Бонус: комиссия 0% · Вам: {fmt(Number(form.contract_amount))}
+                  </p>
+                ) : (
+                  <p className="text-xs text-orange-600 mt-1">
+                    Комиссия 5%: {fmt(Number(form.contract_amount) * 0.05)} · Вам: {fmt(Number(form.contract_amount) * 0.95)}
+                  </p>
+                )
               )}
             </div>
             <div>
