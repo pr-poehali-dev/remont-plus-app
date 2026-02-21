@@ -18,5 +18,19 @@
       "expectedBody": { "error": "string" },
       "bodyMatcher": "partial"
     }
+    ,{
+      "name": "lead_tariff returns 200",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "lead_tariff",
+        "name": "Иван Иванов",
+        "phone": "+7 900 000-00-00",
+        "comment": "Хочу узнать про PRO тариф"
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "success": true },
+      "bodyMatcher": "partial"
+    }
   ]
 }

@@ -1,11 +1,22 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
 import PricingPlans from "@/components/prices/PricingPlans";
 
+const NOTIFY_URL = "https://functions.poehali.dev/a8b87e78-89d1-48d8-ba76-8da2e0df32a3";
+
 export default function Tariffs() {
   const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [comment, setComment] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
   useMeta({
     title: "Цены на услуги — дизайн-проект и смета",
@@ -13,6 +24,30 @@ export default function Tariffs() {
     keywords: "цены дизайн-проект, стоимость сметы ремонта, тарифы дизайн интерьера, B2B автоматизация проектов",
     canonical: "/tariffs",
   });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !phone.trim()) return;
+    setSending(true);
+    setError("");
+    try {
+      await fetch(NOTIFY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "lead_tariff",
+          name: name.trim(),
+          phone: phone.trim(),
+          comment: comment.trim(),
+        }),
+      });
+      setSent(true);
+    } catch {
+      setError("Не удалось отправить заявку. Попробуйте позже или позвоните нам.");
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -61,7 +96,91 @@ export default function Tariffs() {
 
         <PricingPlans />
 
-        <div className="mt-4 text-center">
+        {/* Форма заявки */}
+        <div className="mt-8 mb-6 grid md:grid-cols-2 gap-8 items-start">
+          <div>
+            <h2 className="text-xl font-bold mb-2">Остались вопросы?</h2>
+            <p className="text-gray-500 mb-4">
+              Оставьте заявку — мы перезвоним, ответим на все вопросы и подберём подходящий тариф.
+            </p>
+            <ul className="space-y-3 text-sm text-gray-600">
+              <li className="flex items-center gap-2">
+                <Icon name="Clock" size={16} className="text-primary shrink-0" />
+                Перезваниваем в течение 15 минут
+              </li>
+              <li className="flex items-center gap-2">
+                <Icon name="ShieldCheck" size={16} className="text-primary shrink-0" />
+                Бесплатная консультация без обязательств
+              </li>
+              <li className="flex items-center gap-2">
+                <Icon name="Phone" size={16} className="text-primary shrink-0" />
+                8 (927) 748-68-68
+              </li>
+            </ul>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            {sent ? (
+              <div className="text-center py-6">
+                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                  <Icon name="CheckCircle" size={28} className="text-green-500" />
+                </div>
+                <h3 className="font-bold text-lg mb-1">Заявка отправлена!</h3>
+                <p className="text-gray-500 text-sm">Мы перезвоним вам в ближайшее время</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Ваше имя *</label>
+                  <Input
+                    placeholder="Иван Иванов"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Телефон *</label>
+                  <Input
+                    placeholder="+7 (___) ___-__-__"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                    type="tel"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">Комментарий</label>
+                  <Textarea
+                    placeholder="Расскажите о вашей задаче..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+                {error && (
+                  <p className="text-sm text-red-500">{error}</p>
+                )}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={sending || !name.trim() || !phone.trim()}
+                >
+                  {sending ? (
+                    <><Icon name="Loader2" size={16} className="mr-2 animate-spin" />Отправляем...</>
+                  ) : (
+                    <><Icon name="Send" size={16} className="mr-2" />Отправить заявку</>
+                  )}
+                </Button>
+                <p className="text-xs text-gray-400 text-center">
+                  Нажимая кнопку, вы соглашаетесь с обработкой персональных данных
+                </p>
+              </form>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-2 text-center">
           <p className="text-sm text-gray-400 mb-3">Нужен прайс на строительные работы?</p>
           <Button variant="outline" onClick={() => navigate("/prices")}>
             <Icon name="ClipboardList" size={16} className="mr-2" />
