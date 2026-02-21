@@ -15,6 +15,9 @@ interface PrintData {
   totalWorks: number;
   adjustedWorks: number;
   grandTotal: number;
+  deliveryCost?: number;
+  deliveryFloor?: number;
+  deliveryHasElevator?: boolean;
   docNum: string;
   date: string;
 }
@@ -51,7 +54,8 @@ export default function EstimatePrint() {
   }
 
   const { items, lemanaItems, materialSurcharge, customer, contractor, address,
-    totalMaterials, adjustedWorks, grandTotal, docNum, date } = data;
+    totalMaterials, adjustedWorks, grandTotal, deliveryCost = 0, deliveryFloor, deliveryHasElevator, docNum, date } = data;
+  const totalWithDelivery = grandTotal + deliveryCost;
 
   const lemanaTotal = lemanaItems.reduce((s, i) => {
     const rounded = roundUpToPackaging(i.quantity, i.packaging || 1);
@@ -176,7 +180,13 @@ export default function EstimatePrint() {
                   <span className="val">+{fmt(materialSurcharge)}</span>
                 </div>
               )}
-              <div className="row bold"><span>ИТОГО ПО СМЕТЕ:</span><span className="val">{fmt(grandTotal)}</span></div>
+              {deliveryCost > 0 && (
+                <div className="row">
+                  <span>Доставка и подъём на {deliveryFloor} эт. ({deliveryHasElevator ? "с лифтом" : "без лифта"}):</span>
+                  <span className="val">+{fmt(deliveryCost)}</span>
+                </div>
+              )}
+              <div className="row bold"><span>ИТОГО ПО СМЕТЕ:</span><span className="val">{fmt(totalWithDelivery)}</span></div>
             </div>
           </section>
         )}
@@ -185,7 +195,7 @@ export default function EstimatePrint() {
         {lemanaItems.length > 0 && (
           <section>
             <h2 style={{ borderBottomColor: "#22c55e" }}>
-              {items.length > 0 ? "2." : "1."} Материалы (ЛеманаПро, г. Самара)
+              {items.length > 0 ? "2." : "1."} Материалы (ЛеманаПро)
             </h2>
             <table>
               <thead>
