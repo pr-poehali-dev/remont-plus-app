@@ -105,7 +105,7 @@ export default function AgencyContractPanel({ user }: Props) {
                   {[
                     { icon: "Percent", text: "Комиссия Авангард — 5% от суммы каждого договора" },
                     { icon: "Wallet", text: "Вам выплачивается 95% в течение 3 рабочих дней после оплаты заказчиком" },
-                    { icon: "Calendar", text: "Срок договора — 1 год с автоматической пролонгацией" },
+                    { icon: "Calendar", text: "Договор бессрочный — действует до момента расторжения" },
                     { icon: "ShieldCheck", text: "Авангард гарантирует сохранность средств и своевременные выплаты" },
                   ].map((item) => (
                     <div key={item.icon} className="flex items-start gap-2.5">
