@@ -157,7 +157,7 @@ export default function AgencyContractPanel({ user }: Props) {
           <Icon name="FileSignature" size={22} className="text-white" />
           <div>
             <h2 className="text-white font-bold text-lg">Агентский договор</h2>
-            <p className="text-orange-100 text-xs">Действует до 01.06.2026 · Подписывается один раз</p>
+            <p className="text-orange-100 text-xs">Подписывается один раз — действует бессрочно</p>
           </div>
           {signed && (
             <div className="ml-auto flex items-center gap-2 bg-white/20 rounded-full px-3 py-1">
@@ -261,7 +261,7 @@ export default function AgencyContractPanel({ user }: Props) {
                   Мастер: {user.name} · Комиссия: 5% от суммы договора
                 </p>
                 <p className="text-xs text-gray-400">
-                  Договор № {contractNum} · Срок: до 01.06.2026
+                  Договор № {contractNum} · Бессрочный
                 </p>
               </div>
               <Button variant="outline" onClick={handlePrint} className="shrink-0">
