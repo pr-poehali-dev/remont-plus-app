@@ -69,6 +69,17 @@ const sections = [
     requireAuth: false,
   },
   {
+    id: "prices",
+    title: "БЮДЖЕТ",
+    description: "Прозрачные расценки на отделку, сантехнику, электрику, монтаж дверей и окон",
+    emoji: "📋",
+    icon: "ClipboardList",
+    gradient: "from-orange-400 via-amber-400 to-yellow-400",
+    glow: "group-hover:shadow-amber-300/50",
+    path: "/prices",
+    requireAuth: false,
+  },
+  {
     id: "lemanapro",
     title: "ЛЕМАНАПРО",
     description: "Широкий ассортимент товаров для обустройства и обновления жилья от ЛеманаПро",
@@ -245,7 +256,7 @@ export default function Home() {
             </div>
 
             {/* Sections — one row of 6 */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 animate-slide-up">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 animate-slide-up">
               {sections.map((section, idx) => (
                 <div
                   key={section.id}
