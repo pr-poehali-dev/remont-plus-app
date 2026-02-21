@@ -157,7 +157,7 @@ export default function AgencyContractPanel({ user }: Props) {
           <Icon name="FileSignature" size={22} className="text-white" />
           <div>
             <h2 className="text-white font-bold text-lg">Агентский договор</h2>
-            <p className="text-orange-100 text-xs">Подписывается один раз — действует бессрочно</p>
+            <p className="text-orange-100 text-xs">Действует до 01.06.2026 · Подписывается один раз</p>
           </div>
           {signed && (
             <div className="ml-auto flex items-center gap-2 bg-white/20 rounded-full px-3 py-1">
@@ -188,6 +188,22 @@ export default function AgencyContractPanel({ user }: Props) {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Блок лояльности */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+            {[
+              { icon: "BadgePercent", title: "0% комиссии", desc: "на первые 3 заказа", color: "text-green-600", bg: "bg-green-50" },
+              { icon: "Star", title: "Приоритет", desc: "в выдаче каталога", color: "text-amber-600", bg: "bg-amber-50" },
+              { icon: "Headphones", title: "Поддержка", desc: "личный менеджер", color: "text-blue-600", bg: "bg-blue-50" },
+              { icon: "FileText", title: "Документы", desc: "сметы и акты", color: "text-purple-600", bg: "bg-purple-50" },
+            ].map((item) => (
+              <div key={item.title} className={`${item.bg} rounded-xl p-3 text-center`}>
+                <Icon name={item.icon} size={20} className={`${item.color} mx-auto mb-1`} />
+                <p className={`text-xs font-bold ${item.color}`}>{item.title}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+              </div>
+            ))}
           </div>
 
           {!signed ? (
@@ -245,7 +261,7 @@ export default function AgencyContractPanel({ user }: Props) {
                   Мастер: {user.name} · Комиссия: 5% от суммы договора
                 </p>
                 <p className="text-xs text-gray-400">
-                  Договор № {contractNum} · Срок: 1 год с автопролонгацией
+                  Договор № {contractNum} · Срок: до 01.06.2026
                 </p>
               </div>
               <Button variant="outline" onClick={handlePrint} className="shrink-0">
