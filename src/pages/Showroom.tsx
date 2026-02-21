@@ -11,6 +11,7 @@ import {
 } from "@/components/showroom/showroomData";
 import ShowroomItemCard from "@/components/showroom/ShowroomItemCard";
 import ExampleProjectCard from "@/components/showroom/ExampleProjectCard";
+import { useMeta } from "@/hooks/useMeta";
 
 const INITIAL_COUNT = 12;
 const LOAD_MORE_COUNT = 8;
