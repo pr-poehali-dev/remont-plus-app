@@ -6,7 +6,25 @@ export interface EstimateTemplate {
   description: string;
   icon: string;
   category: "bathroom" | "kitchen" | "room" | "full" | "custom";
+  baseArea?: number;
   items: Omit<EstimateItem, "id" | "total">[];
+}
+
+// Единицы измерения, которые масштабируются пропорционально площади
+const SCALABLE_UNITS = new Set(["м²", "пм", "т.ч"]);
+
+export function scaleTemplateItems(
+  items: Omit<EstimateItem, "id" | "total">[],
+  baseArea: number,
+  targetArea: number
+): Omit<EstimateItem, "id" | "total">[] {
+  const ratio = targetArea / baseArea;
+  return items.map((item) => ({
+    ...item,
+    quantity: SCALABLE_UNITS.has(item.unit)
+      ? Math.round(item.quantity * ratio)
+      : item.quantity,
+  }));
 }
 
 export const PRESET_TEMPLATES: EstimateTemplate[] = [
@@ -121,6 +139,7 @@ export const PRESET_TEMPLATES: EstimateTemplate[] = [
     description: "Комплексный ремонт 2-комнатной квартиры ~55 м²: всё необходимое без излишеств",
     icon: "Home",
     category: "full",
+    baseArea: 55,
     items: [
       { category: "Работы", name: "Демонтажные работы", unit: "м²", quantity: 55, price: 350 },
       { category: "Работы", name: "Штукатурка стен", unit: "м²", quantity: 180, price: 450 },
@@ -145,6 +164,7 @@ export const PRESET_TEMPLATES: EstimateTemplate[] = [
     description: "Полный ремонт 2-комнатной квартиры ~55 м² с натяжными потолками и тёплым полом",
     icon: "Building2",
     category: "full",
+    baseArea: 55,
     items: [
       { category: "Работы", name: "Демонтажные работы", unit: "м²", quantity: 55, price: 400 },
       { category: "Работы", name: "Штукатурка стен", unit: "м²", quantity: 180, price: 500 },

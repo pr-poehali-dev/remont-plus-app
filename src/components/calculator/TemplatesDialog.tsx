@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import {
   PRESET_TEMPLATES,
+  scaleTemplateItems,
   getCustomTemplates,
   saveCustomTemplate,
   deleteCustomTemplate,
@@ -112,6 +113,7 @@ export default function TemplatesDialog({ open, onClose, currentItems, onApply }
   const [customTemplates, setCustomTemplates] = useState<SavedTemplate[]>(getCustomTemplates);
   const [saved, setSaved] = useState(false);
   const [pending, setPending] = useState<PendingTemplate | null>(null);
+  const [areaInputs, setAreaInputs] = useState<Record<string, string>>({});
 
   const toEstimateItems = (raw: { category: string; name: string; unit: string; quantity: number; price: number }[]): EstimateItem[] =>
     raw.map((item) => ({
@@ -120,8 +122,15 @@ export default function TemplatesDialog({ open, onClose, currentItems, onApply }
       total: item.price * item.quantity,
     }));
 
-  const handleApplyPreset = (tplName: string, templateItems: typeof PRESET_TEMPLATES[0]["items"]) => {
-    setPending({ name: tplName, items: toEstimateItems(templateItems) });
+  const handleApplyPreset = (tpl: typeof PRESET_TEMPLATES[0]) => {
+    let sourceItems = tpl.items;
+    if (tpl.baseArea) {
+      const userArea = parseFloat(areaInputs[tpl.id] || "");
+      if (userArea > 0 && userArea !== tpl.baseArea) {
+        sourceItems = scaleTemplateItems(tpl.items, tpl.baseArea, userArea);
+      }
+    }
+    setPending({ name: tpl.name, items: toEstimateItems(sourceItems) });
   };
 
   const handleApplyCustom = (tplName: string, items: EstimateItem[]) => {
@@ -153,9 +162,6 @@ export default function TemplatesDialog({ open, onClose, currentItems, onApply }
     deleteCustomTemplate(id);
     setCustomTemplates(getCustomTemplates());
   };
-
-  const presetTotal = (items: typeof PRESET_TEMPLATES[0]["items"]) =>
-    items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -195,34 +201,69 @@ export default function TemplatesDialog({ open, onClose, currentItems, onApply }
                 <div key={cat}>
                   <p className="text-xs font-semibold text-gray-400 uppercase mb-2 mt-3">{CATEGORY_LABELS[cat]}</p>
                   <div className="space-y-2">
-                    {PRESET_TEMPLATES.filter((t) => t.category === cat).map((tpl) => (
-                      <div key={tpl.id} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-primary/30 hover:bg-primary/5 transition-colors group">
-                        <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-                          <Icon name={tpl.icon} size={18} className="text-gray-500 group-hover:text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-sm">{tpl.name}</span>
-                            <Badge className={`text-[10px] px-1.5 py-0 ${CATEGORY_COLORS[tpl.category]}`}>
-                              {CATEGORY_LABELS[tpl.category]}
-                            </Badge>
+                    {PRESET_TEMPLATES.filter((t) => t.category === cat).map((tpl) => {
+                      const userArea = parseFloat(areaInputs[tpl.id] || "");
+                      const effectiveArea = userArea > 0 ? userArea : tpl.baseArea;
+                      const scaledItems = tpl.baseArea && effectiveArea && effectiveArea !== tpl.baseArea
+                        ? scaleTemplateItems(tpl.items, tpl.baseArea, effectiveArea)
+                        : tpl.items;
+                      const total = scaledItems.reduce((s, i) => s + i.price * i.quantity, 0);
+                      return (
+                        <div key={tpl.id} className="rounded-xl border border-gray-100 hover:border-primary/30 hover:bg-primary/5 transition-colors group">
+                          <div className="flex items-start gap-3 p-3">
+                            <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                              <Icon name={tpl.icon} size={18} className="text-gray-500 group-hover:text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-semibold text-sm">{tpl.name}</span>
+                                <Badge className={`text-[10px] px-1.5 py-0 ${CATEGORY_COLORS[tpl.category]}`}>
+                                  {CATEGORY_LABELS[tpl.category]}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-gray-400 mt-0.5">{tpl.description}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {tpl.items.length} позиций · от{" "}
+                                <span className="font-semibold text-gray-700">{fmt(total)} ₽</span>
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="shrink-0 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => handleApplyPreset(tpl)}
+                            >
+                              Применить
+                            </Button>
                           </div>
-                          <p className="text-xs text-gray-400 mt-0.5">{tpl.description}</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {tpl.items.length} позиций · от{" "}
-                            <span className="font-semibold text-gray-700">{fmt(presetTotal(tpl.items))} ₽</span>
-                          </p>
+                          {tpl.baseArea && (
+                            <div className="px-3 pb-3 flex items-center gap-2">
+                              <Icon name="Ruler" size={14} className="text-gray-400 shrink-0" />
+                              <span className="text-xs text-gray-500 shrink-0">Площадь квартиры:</span>
+                              <div className="relative w-28">
+                                <Input
+                                  type="number"
+                                  min={10}
+                                  max={500}
+                                  placeholder={String(tpl.baseArea)}
+                                  value={areaInputs[tpl.id] || ""}
+                                  onChange={(e) =>
+                                    setAreaInputs((prev) => ({ ...prev, [tpl.id]: e.target.value }))
+                                  }
+                                  className="h-7 text-sm pr-8"
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">м²</span>
+                              </div>
+                              {userArea > 0 && userArea !== tpl.baseArea && (
+                                <span className="text-xs text-primary font-medium">
+                                  Пересчитано под {userArea} м²
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="shrink-0 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleApplyPreset(tpl.name, tpl.items)}
-                        >
-                          Применить
-                        </Button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ))}
