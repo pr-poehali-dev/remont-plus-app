@@ -2,6 +2,7 @@ import json
 import os
 import psycopg2
 import psycopg2.extras
+import urllib.request
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 't_p46588937_remont_plus_app')
 CORS_HEADERS = {
@@ -67,8 +68,58 @@ def list_projects(session_id):
     return resp(200, {'projects': [dict(p) for p in projects]})
 
 
-def create_project(body):
+def check_subscription_limit(user_id: int, resource: str) -> dict:
+    """Проверить лимит через БД напрямую"""
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("""
+        SELECT s.id, s.plan_code, s.projects_used, s.visualizations_used, s.revisions_used,
+               p.max_projects, p.max_visualizations, p.max_revisions, p.is_unlimited, p.name as plan_name
+        FROM user_subscriptions s
+        JOIN user_plans p ON p.code = s.plan_code
+        WHERE s.user_id = %s AND s.status = 'active'
+          AND (s.expires_at IS NULL OR s.expires_at > NOW())
+        ORDER BY s.created_at DESC LIMIT 1
+    """, (user_id,))
+    sub = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not sub:
+        return {'allowed': False, 'reason': 'no_subscription'}
+    sub = dict(sub)
+    if sub['is_unlimited']:
+        return {'allowed': True, 'sub_id': sub['id']}
+    used_col = f'{resource}s_used'
+    max_col = f'max_{resource}s'
+    if sub[used_col] >= sub[max_col]:
+        return {'allowed': False, 'reason': f'{resource}s_limit', 'plan_name': sub['plan_name'], 'max': sub[max_col]}
+    return {'allowed': True, 'sub_id': sub['id']}
+
+
+def consume_subscription(sub_id: int, resource: str):
+    """Списать единицу использования"""
+    conn = get_conn()
+    cur = conn.cursor()
+    col = f'{resource}s_used'
+    cur.execute(f"UPDATE user_subscriptions SET {col} = {col} + 1, updated_at = NOW() WHERE id = %s", (sub_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def create_project(body, user_id: int = None):
     """Создать новый проект"""
+    # Проверка лимита подписки
+    if user_id:
+        check = check_subscription_limit(user_id, 'project')
+        if not check['allowed']:
+            if check['reason'] == 'no_subscription':
+                return resp(403, {'error': 'limit_exceeded', 'reason': 'no_subscription',
+                                  'message': 'Для создания проекта необходима подписка'})
+            return resp(403, {'error': 'limit_exceeded', 'reason': check['reason'],
+                              'message': f'Лимит проектов исчерпан. Тариф «{check["plan_name"]}» — до {check["max"]} проектов.',
+                              'plan_name': check.get('plan_name'), 'max': check.get('max')})
+
     name = body.get('name', 'Мой дизайн-проект')
     style = body.get('style', 'modern')
     room_count = int(body.get('room_count', 2))
@@ -84,9 +135,14 @@ def create_project(body):
     )
     project = cur.fetchone()
     conn.commit()
-
     cur.close()
     conn.close()
+
+    # Списываем использование
+    if user_id:
+        check = check_subscription_limit(user_id, 'project')
+        if check.get('sub_id'):
+            consume_subscription(check['sub_id'], 'project')
 
     return resp(201, {'project': dict(project)})
 
@@ -153,6 +209,10 @@ def handler(event: dict, context) -> dict:
     raw_body = event.get('body') or '{}'
     body = json.loads(raw_body) if raw_body else {}
 
+    headers = event.get('headers') or {}
+    user_id_str = headers.get('X-User-Id') or body.get('user_id') or params.get('user_id')
+    user_id = int(user_id_str) if user_id_str else None
+
     action = params.get('action', body.get('action', ''))
     project_id = params.get('project_id', body.get('project_id', ''))
 
@@ -164,7 +224,7 @@ def handler(event: dict, context) -> dict:
     if method == 'POST':
         if action == 'save_stage':
             return save_stage(body)
-        return create_project(body)
+        return create_project(body, user_id=user_id)
 
     if method == 'PUT':
         return save_stage(body)

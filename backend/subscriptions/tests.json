@@ -1,0 +1,26 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET без user_id — 400",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "GET несуществующий пользователь — нет подписки",
+      "method": "GET",
+      "path": "/?user_id=999999",
+      "expectedStatus": 200,
+      "expectedBody": {"subscription": null},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

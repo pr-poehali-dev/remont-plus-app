@@ -6,9 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
+import { useSubscription } from "@/hooks/useSubscription";
+import SubscriptionStatus from "@/components/SubscriptionStatus";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
+  const userId: number | null = storedUser?.id ?? null;
+  const { subscription, loading: subLoading } = useSubscription(userId);
 
   const projects = [
     {
@@ -82,6 +87,10 @@ export default function Dashboard() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Добро пожаловать, Иван!</h1>
           <p className="text-gray-600">Управляйте своими проектами и следите за прогрессом</p>
+        </div>
+
+        <div className="mb-6">
+          <SubscriptionStatus subscription={subscription} loading={subLoading} />
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">

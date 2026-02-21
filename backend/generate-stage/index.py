@@ -248,6 +248,48 @@ def handler(event: dict, context) -> dict:
     notes = body.get('notes', '')
     photos = body.get('photos', [])
 
+    # Проверка лимита визуализаций
+    headers_in = event.get('headers') or {}
+    user_id_str = headers_in.get('X-User-Id') or body.get('user_id')
+    if user_id_str:
+        user_id = int(user_id_str)
+        import psycopg2
+        import psycopg2.extras
+        conn = psycopg2.connect(os.environ['DATABASE_URL'])
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("""
+            SELECT s.id, s.visualizations_used, p.max_visualizations, p.is_unlimited, p.name as plan_name
+            FROM user_subscriptions s
+            JOIN user_plans p ON p.code = s.plan_code
+            WHERE s.user_id = %s AND s.status = 'active'
+              AND (s.expires_at IS NULL OR s.expires_at > NOW())
+            ORDER BY s.created_at DESC LIMIT 1
+        """, (user_id,))
+        sub = cur.fetchone()
+        if sub:
+            sub = dict(sub)
+            if not sub['is_unlimited'] and sub['visualizations_used'] >= sub['max_visualizations']:
+                cur.close()
+                conn.close()
+                return {
+                    'statusCode': 403,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'error': 'limit_exceeded',
+                        'reason': 'visualizations_limit',
+                        'message': f'Лимит визуализаций исчерпан. Тариф «{sub["plan_name"]}» — до {sub["max_visualizations"]} генераций.',
+                        'plan_name': sub['plan_name'],
+                        'max': sub['max_visualizations'],
+                    }, ensure_ascii=False),
+                    'isBase64Encoded': False
+                }
+            # Списываем
+            if sub:
+                cur.execute("UPDATE user_subscriptions SET visualizations_used = visualizations_used + 1, updated_at = NOW() WHERE id = %s", (sub['id'],))
+                conn.commit()
+        cur.close()
+        conn.close()
+
     if not stage_id or not description:
         return {
             'statusCode': 400,
