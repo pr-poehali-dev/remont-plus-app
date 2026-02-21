@@ -118,16 +118,16 @@ function detectRegionFromTimezone(): string {
       "Asia/Krasnoyarsk": "krasnoyarsk",
       "Asia/Tyumen": "tyumen",
     };
-    return tzMap[tz] || "samara";
+    return tzMap[tz] || "other";
   } catch {
-    return "samara";
+    return "other";
   }
 }
 
 export default function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [region, setRegion] = useState<RegionData>(REGIONS.samara);
+  const [region, setRegion] = useState<RegionData>(REGIONS.other);
 
   useEffect(() => {
     const saved = localStorage.getItem("avangard_user");
@@ -136,7 +136,7 @@ export default function Home() {
     }
     const savedRegion = localStorage.getItem("avangard_calc_region");
     const code = savedRegion || detectRegionFromTimezone();
-    setRegion(REGIONS[code] || REGIONS.samara);
+    setRegion(REGIONS[code] || REGIONS.other);
   }, []);
 
   const handleLogout = () => {
@@ -182,10 +182,6 @@ export default function Home() {
                 <span className="text-2xl font-bold tracking-tight text-white">АВАНГАРД</span>
               </div>
               <div className="flex items-center gap-3">
-                <a href="tel:89277486868" className="hidden sm:flex items-center gap-2 text-sm text-white/50 hover:text-white/90 transition-colors">
-                  <Icon name="Phone" className="h-4 w-4" />
-                  <span className="font-medium">8 (927) 748-68-68</span>
-                </a>
                 <a href="mailto:info@avangard-ai.ru" className="hidden md:flex items-center gap-2 text-sm text-white/50 hover:text-white/90 transition-colors mr-2">
                   <Icon name="Mail" className="h-4 w-4" />
                   <span className="font-medium">info@avangard-ai.ru</span>
