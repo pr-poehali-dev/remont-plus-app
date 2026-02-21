@@ -278,7 +278,7 @@ export const showroomItems: ShowroomItem[] = [
     title: "Ваби-саби спальня",
     description: "Спальня в стиле wabi-sabi с матрасом Vispring Signatory, бельгийским льном Libeco и светильником Flos IC Light",
     room: "Спальня",
-    style: "Минимализм",
+    style: "Japandi",
     area: "20 м²",
     materials: ["Матрас Vispring Signatory", "Постельное бельё Libeco Belgian linen", "Светильник Flos IC Light", "Паркет Barlinek дуб ёлочка", "Травертиновые столешницы"],
     image: `${CDN}/c889585e-72b6-4f9a-a33b-9911d7b85475.jpg`,
