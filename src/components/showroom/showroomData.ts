@@ -362,7 +362,7 @@ export const showroomItems: ShowroomItem[] = [
     title: "Дзен-гостиная",
     description: "Гостиная в стиле японди с диваном Muuto Rest, столиком Ethnicraft и светильником Akari Исаму Ногути",
     room: "Гостиная",
-    style: "Минимализм",
+    style: "Japandi",
     area: "28 м²",
     materials: ["Диван Muuto Rest (тёмно-зелёная шерсть)", "Столик Ethnicraft тик", "Светильник Akari Isamu Noguchi (рисовая бумага)", "Ширма shoji", "Бетонный пол"],
     image: `${CDN}/a493762c-b14e-4a4c-b7f3-b10c6c8a1403.jpg`,
@@ -472,7 +472,7 @@ export const showroomItems: ShowroomItem[] = [
 ];
 
 export const roomFilters = ["Все", "Ванная", "Кухня", "Гостиная", "Спальня", "Детская"];
-export const styleFilters = ["Все", "Современная классика", "Минимализм", "Современный", "Скандинавский", "Лофт"];
+export const styleFilters = ["Все", "Современная классика", "Минимализм", "Japandi", "Эко", "Современный", "Скандинавский", "Лофт"];
 
 export const exampleProjects: ExampleProject[] = [
   {
