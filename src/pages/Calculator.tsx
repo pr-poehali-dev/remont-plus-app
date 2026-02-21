@@ -71,6 +71,10 @@ export default function Calculator() {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
 
+  const [deliveryFloor, setDeliveryFloor] = useState<number>(1);
+  const [deliveryHasElevator, setDeliveryHasElevator] = useState<boolean>(true);
+  const [deliveryEnabled, setDeliveryEnabled] = useState<boolean>(false);
+
   useEffect(() => {
     setLemanaItems(getEstimateItems());
     const saved = localStorage.getItem("avangard_calc_items");
@@ -137,6 +141,16 @@ export default function Calculator() {
     : 0;
   const adjustedWorks = totalWorks + materialSurcharge;
   const grandTotal = totalMaterials + adjustedWorks;
+
+  // Расчёт доставки и подъёма материалов
+  // Базовая доставка + подъём: за каждый этаж выше 1-го
+  const DELIVERY_BASE = 3500; // базовая стоимость доставки
+  const LIFT_PER_FLOOR_ELEVATOR = 300;   // с лифтом: за этаж выше 1-го
+  const LIFT_PER_FLOOR_NO_ELEVATOR = 700; // без лифта: за этаж выше 1-го
+  const floorsAboveFirst = Math.max(0, deliveryFloor - 1);
+  const liftCost = floorsAboveFirst * (deliveryHasElevator ? LIFT_PER_FLOOR_ELEVATOR : LIFT_PER_FLOOR_NO_ELEVATOR);
+  const deliveryCost = deliveryEnabled ? DELIVERY_BASE + liftCost : 0;
+  const totalWithDelivery = grandTotal + deliveryCost;
 
   const contractors = [
     { name: "СтройЭксперт", rating: 4.8, reviews: 127, price: Math.round(grandTotal * 1.0), experience: "12 лет" },
@@ -218,6 +232,7 @@ export default function Calculator() {
                     adjustedWorks={adjustedWorks}
                     materialSurcharge={materialSurcharge}
                     grandTotal={grandTotal}
+                    deliveryCost={deliveryCost}
                     priceCatalog={priceCatalog}
                     loading={loading}
                     onAddFromPriceList={addFromPriceList}
@@ -261,8 +276,15 @@ export default function Calculator() {
             regions={regions}
             selectedRegion={selectedRegion}
             onRegionChange={setSelectedRegion}
-            grandTotal={grandTotal}
+            grandTotal={totalWithDelivery}
             materialSurcharge={materialSurcharge}
+            deliveryEnabled={deliveryEnabled}
+            deliveryFloor={deliveryFloor}
+            deliveryHasElevator={deliveryHasElevator}
+            deliveryCost={deliveryCost}
+            onDeliveryEnabledChange={setDeliveryEnabled}
+            onDeliveryFloorChange={setDeliveryFloor}
+            onDeliveryElevatorChange={setDeliveryHasElevator}
           />
         </div>
       </div>

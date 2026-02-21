@@ -36,6 +36,7 @@ interface EstimateTabProps {
   onAddItem: (item: EstimateItem) => void;
   regionName?: string;
   selectedRegion?: string;
+  deliveryCost?: number;
 }
 
 export default function EstimateTab({
@@ -53,6 +54,7 @@ export default function EstimateTab({
   onAddItem,
   regionName,
   selectedRegion,
+  deliveryCost = 0,
 }: EstimateTabProps) {
   const [showPricePicker, setShowPricePicker] = useState(false);
   const [pickerSearch, setPickerSearch] = useState("");
@@ -210,7 +212,7 @@ export default function EstimateTab({
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Общая стоимость</p>
-              <p className="text-3xl font-bold text-purple-600">{fmt(grandTotal)} ₽</p>
+              <p className="text-3xl font-bold text-purple-600">{fmt(grandTotal + deliveryCost)} ₽</p>
               {regionName && (
                 <p className="text-xs text-gray-400 mt-1">
                   {regionName}
@@ -218,6 +220,15 @@ export default function EstimateTab({
               )}
             </div>
           </div>
+          {deliveryCost > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between text-sm">
+              <span className="flex items-center gap-1.5 text-gray-600">
+                <Icon name="Truck" className="h-4 w-4 text-orange-500" />
+                Доставка и подъём материалов
+              </span>
+              <span className="font-semibold text-orange-600">+{fmt(deliveryCost)} ₽</span>
+            </div>
+          )}
           {materialSurcharge > 0 && (
             <div className="mt-4 pt-4 border-t border-gray-200">
               <p className="text-xs text-gray-500 flex items-center gap-1.5">

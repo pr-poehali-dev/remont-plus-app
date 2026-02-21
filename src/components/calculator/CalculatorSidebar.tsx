@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import type { Region } from "@/pages/Calculator";
@@ -20,6 +21,13 @@ interface CalculatorSidebarProps {
   onRegionChange: (code: string) => void;
   grandTotal: number;
   materialSurcharge: number;
+  deliveryEnabled: boolean;
+  deliveryFloor: number;
+  deliveryHasElevator: boolean;
+  deliveryCost: number;
+  onDeliveryEnabledChange: (v: boolean) => void;
+  onDeliveryFloorChange: (v: number) => void;
+  onDeliveryElevatorChange: (v: boolean) => void;
 }
 
 export default function CalculatorSidebar({
@@ -30,6 +38,13 @@ export default function CalculatorSidebar({
   onRegionChange,
   grandTotal,
   materialSurcharge,
+  deliveryEnabled,
+  deliveryFloor,
+  deliveryHasElevator,
+  deliveryCost,
+  onDeliveryEnabledChange,
+  onDeliveryFloorChange,
+  onDeliveryElevatorChange,
 }: CalculatorSidebarProps) {
   const navigate = useNavigate();
 
@@ -63,6 +78,85 @@ export default function CalculatorSidebar({
 
 
         </div>
+      </Card>
+
+      <Card className="p-6">
+        <button
+          className="flex items-center justify-between w-full"
+          onClick={() => onDeliveryEnabledChange(!deliveryEnabled)}
+        >
+          <h3 className="font-semibold flex items-center gap-2">
+            <Icon name="Truck" className="h-5 w-5 text-orange-500" />
+            Доставка и подъём
+          </h3>
+          <div className={`w-10 h-6 rounded-full transition-colors relative ${deliveryEnabled ? "bg-primary" : "bg-gray-200"}`}>
+            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${deliveryEnabled ? "translate-x-5" : "translate-x-1"}`} />
+          </div>
+        </button>
+
+        {deliveryEnabled && (
+          <div className="mt-4 space-y-4">
+            <div>
+              <Label className="text-sm">Этаж</Label>
+              <div className="flex items-center gap-2 mt-1.5">
+                <button
+                  className="w-8 h-8 rounded-lg border flex items-center justify-center text-gray-500 hover:border-primary hover:text-primary transition-colors"
+                  onClick={() => onDeliveryFloorChange(Math.max(1, deliveryFloor - 1))}
+                >−</button>
+                <Input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={deliveryFloor}
+                  onChange={(e) => onDeliveryFloorChange(Math.max(1, Number(e.target.value) || 1))}
+                  className="w-16 text-center h-8"
+                />
+                <button
+                  className="w-8 h-8 rounded-lg border flex items-center justify-center text-gray-500 hover:border-primary hover:text-primary transition-colors"
+                  onClick={() => onDeliveryFloorChange(Math.min(50, deliveryFloor + 1))}
+                >+</button>
+                <span className="text-sm text-gray-500">этаж</span>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-sm mb-2 block">Лифт в доме</Label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onDeliveryElevatorChange(true)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm font-medium transition-colors ${deliveryHasElevator ? "border-primary bg-primary/10 text-primary" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}
+                >
+                  <Icon name="ArrowUpSquare" size={15} />
+                  С лифтом
+                </button>
+                <button
+                  onClick={() => onDeliveryElevatorChange(false)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border text-sm font-medium transition-colors ${!deliveryHasElevator ? "border-primary bg-primary/10 text-primary" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}
+                >
+                  <Icon name="Footprints" size={15} />
+                  Без лифта
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-orange-50 rounded-lg p-3 space-y-1 text-sm">
+              <div className="flex justify-between text-gray-600">
+                <span>Базовая доставка</span>
+                <span>3 500 ₽</span>
+              </div>
+              {deliveryFloor > 1 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>Подъём на {deliveryFloor} эт. {deliveryHasElevator ? "(лифт)" : "(пешком)"}</span>
+                  <span>+{fmt(deliveryCost - 3500)} ₽</span>
+                </div>
+              )}
+              <div className="flex justify-between font-semibold text-orange-700 border-t border-orange-200 pt-1 mt-1">
+                <span>Итого доставка</span>
+                <span>{fmt(deliveryCost)} ₽</span>
+              </div>
+            </div>
+          </div>
+        )}
       </Card>
 
       {grandTotal > 0 && (
