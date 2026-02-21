@@ -182,8 +182,8 @@ export default function Calculator() {
                 <Icon name="ClipboardList" className="mr-2 h-4 w-4" />
                 Прайс-лист
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowTemplates(true)}>
-                <Icon name="LayoutTemplate" className="mr-2 h-4 w-4" />
+              <Button variant="outline" size="sm" onClick={() => setShowTemplates(true)} disabled={loading}>
+                <Icon name={loading ? "Loader2" : "LayoutTemplate"} className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                 Шаблоны
               </Button>
               <Button onClick={() => setShowExportDialog(true)}>

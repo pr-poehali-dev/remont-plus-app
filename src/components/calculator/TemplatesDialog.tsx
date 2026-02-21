@@ -210,6 +210,12 @@ export default function TemplatesDialog({ open, onClose, currentItems, priceCata
           ))}
         </div>
 
+        {priceCatalog.length === 0 && tab === "presets" && (
+          <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <Icon name="AlertCircle" size={13} className="shrink-0" />
+            Цены загружаются — дождитесь загрузки прайса для точных цифр
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto space-y-3 pr-1">
           {tab === "presets" && (
             <>
