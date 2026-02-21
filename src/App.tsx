@@ -27,7 +27,6 @@ import Masters from "./pages/Masters";
 import Privacy from "./pages/Privacy";
 import EstimatePrint from "./pages/EstimatePrint";
 import DocsPrint from "./pages/DocsPrint";
-import AgencyContract from "./pages/AgencyContract";
 import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
@@ -64,7 +63,6 @@ const App = () => {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/estimate/print" element={<EstimatePrint />} />
             <Route path="/docs/print" element={<DocsPrint />} />
-            <Route path="/agency/contract" element={<AgencyContract />} />
             <Route path="/auth/yandex/callback" element={<YandexCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
