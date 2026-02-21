@@ -20,6 +20,7 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import YandexCallback from "./pages/YandexCallback";
 import Showroom from "./pages/Showroom";
+import Tariffs from "./pages/Tariffs";
 import LemanaProCatalog from "./pages/LemanaProCatalog";
 import Prices from "./pages/Prices";
 import Masters from "./pages/Masters";
@@ -56,6 +57,7 @@ const App = () => {
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/showroom" element={<Showroom />} />
+            <Route path="/tariffs" element={<Tariffs />} />
             <Route path="/lemanapro" element={<LemanaProCatalog />} />
             <Route path="/prices" element={<Prices />} />
             <Route path="/masters" element={<Masters />} />

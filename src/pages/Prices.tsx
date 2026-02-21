@@ -4,7 +4,6 @@ import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
 import { type Region, type Category, type PriceCategory } from "@/components/prices/PricesTypes";
-import PricingPlans from "@/components/prices/PricingPlans";
 import PriceListTable from "@/components/prices/PriceListTable";
 
 const API_URL =
@@ -125,8 +124,6 @@ export default function Prices() {
             Рассчитать смету
           </Button>
         </div>
-
-        <PricingPlans />
 
         <PriceListTable
           regions={regions}
