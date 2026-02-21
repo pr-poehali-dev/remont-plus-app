@@ -1,11 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { type Subscription } from "@/hooks/useSubscription";
+import ActivatePlanModal from "@/components/ActivatePlanModal";
 
 interface Props {
   subscription: Subscription | null;
   loading: boolean;
+  userId?: number | null;
+  onActivated?: () => void;
 }
 
 function LimitBar({ used, max, label }: { used: number; max: number; label: string }) {
@@ -31,8 +35,13 @@ function LimitBar({ used, max, label }: { used: number; max: number; label: stri
   );
 }
 
-export default function SubscriptionStatus({ subscription, loading }: Props) {
+export default function SubscriptionStatus({ subscription, loading, userId, onActivated }: Props) {
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleActivated = () => {
+    onActivated?.();
+  };
 
   if (loading) {
     return (
@@ -46,21 +55,34 @@ export default function SubscriptionStatus({ subscription, loading }: Props) {
 
   if (!subscription) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-4">
-        <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-            <Icon name="Zap" size={18} className="text-blue-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 text-sm mb-0.5">Нет активной подписки</p>
-            <p className="text-xs text-gray-500 mb-3">Выберите тариф для создания дизайн-проектов</p>
-            <Button size="sm" className="h-8 text-xs" onClick={() => navigate("/tariffs")}>
-              <Icon name="BadgePercent" size={13} className="mr-1.5" />
-              Выбрать тариф
-            </Button>
+      <>
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+              <Icon name="Zap" size={18} className="text-blue-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 text-sm mb-0.5">Нет активной подписки</p>
+              <p className="text-xs text-gray-500 mb-3">Выберите тариф для создания дизайн-проектов</p>
+              <div className="flex gap-2">
+                <Button size="sm" className="h-8 text-xs" onClick={() => setModalOpen(true)}>
+                  <Icon name="Zap" size={13} className="mr-1.5" />
+                  Активировать тариф
+                </Button>
+                <Button size="sm" variant="ghost" className="h-8 text-xs text-gray-500" onClick={() => navigate("/tariffs")}>
+                  Подробнее о тарифах
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+        <ActivatePlanModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          userId={userId ?? null}
+          onActivated={handleActivated}
+        />
+      </>
     );
   }
 
@@ -80,43 +102,68 @@ export default function SubscriptionStatus({ subscription, loading }: Props) {
   const dotClass = dotColors[subscription.plan_code] || "bg-gray-400";
 
   return (
-    <div className={`bg-gradient-to-br ${colorClass} rounded-2xl border p-4`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className={`w-2.5 h-2.5 rounded-full ${dotClass}`} />
-          <span className="font-bold text-sm">{subscription.plan_name}</span>
-          {subscription.is_monthly && (
-            <span className="text-xs text-gray-400">/ мес</span>
-          )}
+    <>
+      <div className={`bg-gradient-to-br ${colorClass} rounded-2xl border p-4`}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className={`w-2.5 h-2.5 rounded-full ${dotClass}`} />
+            <span className="font-bold text-sm">{subscription.plan_name}</span>
+            {subscription.is_monthly && (
+              <span className="text-xs text-gray-400">/ мес</span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+            >
+              Сменить тариф
+            </button>
+          </div>
         </div>
-        <button
-          onClick={() => navigate("/tariffs")}
-          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          Сменить →
-        </button>
+
+        {subscription.is_unlimited ? (
+          <div className="flex items-center gap-2 text-sm text-green-700">
+            <Icon name="Infinity" size={16} />
+            <span className="font-medium">Без ограничений</span>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            <LimitBar used={subscription.projects_used} max={subscription.max_projects} label="Проекты" />
+            <LimitBar used={subscription.visualizations_used} max={subscription.max_visualizations} label="Визуализации ИИ" />
+            {subscription.max_revisions > 0 && (
+              <LimitBar used={subscription.revisions_used} max={subscription.max_revisions} label="Правки" />
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between mt-3">
+          {subscription.expires_at ? (
+            <p className="text-xs text-gray-400">
+              Действует до {new Date(subscription.expires_at).toLocaleDateString("ru-RU")}
+            </p>
+          ) : (
+            <span />
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs px-3"
+            onClick={() => setModalOpen(true)}
+          >
+            <Icon name="Zap" size={12} className="mr-1" />
+            Активировать тариф
+          </Button>
+        </div>
       </div>
 
-      {subscription.is_unlimited ? (
-        <div className="flex items-center gap-2 text-sm text-green-700">
-          <Icon name="Infinity" size={16} />
-          <span className="font-medium">Без ограничений</span>
-        </div>
-      ) : (
-        <div className="space-y-2.5">
-          <LimitBar used={subscription.projects_used} max={subscription.max_projects} label="Проекты" />
-          <LimitBar used={subscription.visualizations_used} max={subscription.max_visualizations} label="Визуализации ИИ" />
-          {subscription.max_revisions > 0 && (
-            <LimitBar used={subscription.revisions_used} max={subscription.max_revisions} label="Правки" />
-          )}
-        </div>
-      )}
-
-      {subscription.expires_at && (
-        <p className="text-xs text-gray-400 mt-3">
-          Действует до {new Date(subscription.expires_at).toLocaleDateString("ru-RU")}
-        </p>
-      )}
-    </div>
+      <ActivatePlanModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        userId={userId ?? null}
+        currentPlanCode={subscription.plan_code}
+        onActivated={handleActivated}
+      />
+    </>
   );
 }

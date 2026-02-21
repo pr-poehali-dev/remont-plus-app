@@ -13,7 +13,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
   const userId: number | null = storedUser?.id ?? null;
-  const { subscription, loading: subLoading } = useSubscription(userId);
+  const { subscription, loading: subLoading, reload } = useSubscription(userId);
 
   const projects = [
     {
@@ -90,7 +90,12 @@ export default function Dashboard() {
         </div>
 
         <div className="mb-6">
-          <SubscriptionStatus subscription={subscription} loading={subLoading} />
+          <SubscriptionStatus
+            subscription={subscription}
+            loading={subLoading}
+            userId={userId}
+            onActivated={reload}
+          />
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
