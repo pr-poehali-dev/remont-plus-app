@@ -49,7 +49,7 @@ export default function StageInputForm({
         <div className="space-y-4">
           <div>
             <label className="text-sm font-semibold mb-2 block flex items-center gap-2">
-              <Icon name="FileText" className="h-4 w-4 text-primary" />Opишите ваше помещение
+              <Icon name="FileText" className="h-4 w-4 text-primary" />Опишите ваше помещение
             </label>
             <p className="text-xs text-gray-500 mb-2">{config.aiPromptHint}</p>
             <textarea className="w-full min-h-[100px] px-3 py-2 border rounded-lg text-sm resize-y focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors" placeholder="Например: Квартира 60 м2, 2 комнаты, для семьи из 3 человек..." value={userDescription} onChange={(e) => onDescChange(e.target.value)} />
