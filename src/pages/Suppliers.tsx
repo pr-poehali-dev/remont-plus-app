@@ -6,6 +6,7 @@ import Icon from "@/components/ui/icon";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useMeta } from "@/hooks/useMeta";
 
 function ProductGallery({ product }: { product: { image_url: string | null; name: string; specifications: Record<string, unknown> } }) {
   const photos: string[] = Array.isArray(product.specifications?.photos)
@@ -83,6 +84,12 @@ interface Product {
 }
 
 export default function Suppliers() {
+  useMeta({
+    title: "Поставщики строительных и отделочных материалов",
+    description: "Каталог проверенных поставщиков строительных материалов в Самаре. Сравните цены на плитку, краску, ламинат, обои и другие отделочные материалы.",
+    keywords: "поставщики стройматериалов Самара, отделочные материалы, строительные материалы каталог, купить стройматериалы",
+    canonical: "/suppliers",
+  });
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);

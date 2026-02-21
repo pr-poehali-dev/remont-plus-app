@@ -16,6 +16,12 @@ const INITIAL_COUNT = 12;
 const LOAD_MORE_COUNT = 8;
 
 export default function Showroom() {
+  useMeta({
+    title: "Шоурум — готовые дизайн-проекты интерьеров",
+    description: "Галерея реализованных проектов ремонта и дизайна квартир в Самаре. Вдохновляйтесь готовыми решениями и выбирайте стиль для своего дома.",
+    keywords: "шоурум интерьеров, готовые дизайн-проекты, фото ремонта квартир Самара, портфолио дизайн интерьера",
+    canonical: "/showroom",
+  });
   const navigate = useNavigate();
   const [selectedRoom, setSelectedRoom] = useState("Все");
   const [selectedStyle, setSelectedStyle] = useState("Все");
