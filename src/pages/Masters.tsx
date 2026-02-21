@@ -2,296 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { useMeta } from "@/hooks/useMeta";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import MasterQuestionnaire from "@/components/master/MasterQuestionnaire";
-import AgencyContractPanel from "@/components/master/AgencyContractPanel";
-import PaymentHistoryPanel from "@/components/master/PaymentHistoryPanel";
-
-const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  phone?: string;
-  user_type: string;
-}
-
-const GUARANTEE_LABELS: Record<string, string> = {
-  none: "Без гарантии",
-  "3m": "3 месяца",
-  "6m": "6 месяцев",
-  "1y": "1 год",
-  "2y": "2 года",
-  "3y": "3 года",
-};
-
-const BUSINESS_LABELS: Record<string, string> = {
-  self_employed: "Самозанятый",
-  ip: "ИП",
-  ooo: "ООО",
-  individual: "Физлицо",
-};
-
-interface Master {
-  id: number;
-  full_name: string;
-  location: string;
-  experience_years: number;
-  specializations: string[];
-  business_status: string;
-  has_tools: boolean;
-  verified: boolean;
-  rating: number;
-  reviews: number;
-  guarantee_period: string;
-  guarantee_description?: string;
-  payment_methods: string[];
-  certificates: string[];
-  portfolio_links: string[];
-  phone?: string;
-  email?: string;
-  telegram?: string;
-  whatsapp?: string;
-  instagram?: string;
-  website?: string;
-  description?: string;
-}
-
-const DEMO_MASTERS: Master[] = [
-  {
-    id: 1,
-    full_name: "Алексей Петров",
-    location: "Москва",
-    experience_years: 8,
-    specializations: ["Укладка плитки", "Сантехника", "Электрика"],
-    business_status: "ip",
-    has_tools: true,
-    verified: true,
-    rating: 4.9,
-    reviews: 47,
-    guarantee_period: "1y",
-    guarantee_description: "Гарантия на все виды работ 1 год. Бесплатное устранение дефектов.",
-    payment_methods: ["card", "transfer"],
-    certificates: ["Электрик 3-й разряд", "Сантехника (допуск)"],
-    portfolio_links: [],
-    phone: "+7 (999) 123-45-67",
-    telegram: "@alexey_master",
-    description: "Выполняю комплексный ремонт квартир под ключ. Работаю аккуратно, сдаю в срок.",
-  },
-  {
-    id: 2,
-    full_name: "Дмитрий Козлов",
-    location: "Санкт-Петербург",
-    experience_years: 12,
-    specializations: ["Отделка стен", "Покраска", "Шпаклёвка"],
-    business_status: "self_employed",
-    has_tools: true,
-    verified: true,
-    rating: 4.7,
-    reviews: 83,
-    guarantee_period: "6m",
-    guarantee_description: "Гарантия на отделочные работы 6 месяцев.",
-    payment_methods: ["cash", "card"],
-    certificates: [],
-    portfolio_links: [],
-    phone: "+7 (911) 456-78-90",
-    telegram: "@dmitry_otdelka",
-    description: "Специализируюсь на чистовой отделке. Работаю с любыми материалами.",
-  },
-  {
-    id: 3,
-    full_name: "Сергей Волков",
-    location: "Самара",
-    experience_years: 5,
-    specializations: ["Монтаж гипсокартона", "Натяжные потолки"],
-    business_status: "individual",
-    has_tools: true,
-    verified: false,
-    rating: 4.5,
-    reviews: 21,
-    guarantee_period: "3m",
-    payment_methods: ["cash"],
-    certificates: [],
-    portfolio_links: [],
-    phone: "+7 (925) 789-01-23",
-    description: "Быстро и качественно монтирую конструкции из ГКЛ и натяжные потолки.",
-  },
-];
-
-function MasterCard({ master }: { master: Master }) {
-  const [expanded, setExpanded] = useState(false);
-  const initials = master.full_name
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("");
-
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
-          {initials}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-gray-900">{master.full_name}</span>
-            {master.verified && (
-              <Icon name="BadgeCheck" size={16} className="text-blue-500" />
-            )}
-            {master.business_status && (
-              <Badge variant="secondary" className="text-xs">
-                {BUSINESS_LABELS[master.business_status] || master.business_status}
-              </Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-3 mt-1 text-sm text-gray-500 flex-wrap">
-            {master.rating > 0 && (
-              <span className="flex items-center gap-1">
-                <Icon name="Star" size={14} className="text-yellow-400 fill-yellow-400" />
-                {master.rating.toFixed(1)} ({master.reviews} отзывов)
-              </span>
-            )}
-            {master.experience_years > 0 && (
-              <span className="flex items-center gap-1">
-                <Icon name="Briefcase" size={14} />
-                {master.experience_years} лет
-              </span>
-            )}
-            {master.location && (
-              <span className="flex items-center gap-1">
-                <Icon name="MapPin" size={14} />
-                {master.location}
-              </span>
-            )}
-          </div>
-          {master.guarantee_period && master.guarantee_period !== "none" && (
-            <div className="mt-2">
-              <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
-                Гарантия: {GUARANTEE_LABELS[master.guarantee_period]}
-              </Badge>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-1 mt-2">
-            {master.specializations.map((s) => (
-              <Badge key={s} variant="outline" className="text-xs">
-                {s}
-              </Badge>
-            ))}
-          </div>
-          {master.description && (
-            <p className="text-sm text-gray-500 mt-2 line-clamp-2">{master.description}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 mt-4 flex-wrap">
-        {master.phone && (
-          <a href={`tel:${master.phone}`}>
-            <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white text-xs">
-              <Icon name="Phone" size={13} className="mr-1" /> Позвонить
-            </Button>
-          </a>
-        )}
-        {master.telegram && (
-          <a href={`https://t.me/${master.telegram.replace("@", "")}`} target="_blank" rel="noreferrer">
-            <Button size="sm" variant="outline" className="text-xs">
-              <Icon name="Send" size={13} className="mr-1" /> Telegram
-            </Button>
-          </a>
-        )}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="ml-auto text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1"
-        >
-          {expanded ? "Свернуть" : "Подробнее"}
-          <Icon name={expanded ? "ChevronUp" : "ChevronDown"} size={14} />
-        </button>
-      </div>
-
-      {expanded && (
-        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-          <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Контакты</p>
-            <div className="space-y-1 text-sm text-gray-600">
-              {master.phone && (
-                <a href={`tel:${master.phone}`} className="flex items-center gap-2 hover:text-orange-500">
-                  <Icon name="Phone" size={14} /> {master.phone}
-                </a>
-              )}
-              {master.email && (
-                <a href={`mailto:${master.email}`} className="flex items-center gap-2 hover:text-orange-500">
-                  <Icon name="Mail" size={14} /> {master.email}
-                </a>
-              )}
-              {master.telegram && (
-                <a href={`https://t.me/${master.telegram.replace("@", "")}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-500">
-                  <Icon name="Send" size={14} /> {master.telegram}
-                </a>
-              )}
-              {master.whatsapp && (
-                <a href={`https://wa.me/${master.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-500">
-                  <Icon name="MessageCircle" size={14} /> {master.whatsapp}
-                </a>
-              )}
-              {master.instagram && (
-                <span className="flex items-center gap-2">
-                  <Icon name="Instagram" size={14} /> {master.instagram}
-                </span>
-              )}
-              {master.website && (
-                <a href={master.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-500">
-                  <Icon name="Globe" size={14} /> {master.website}
-                </a>
-              )}
-            </div>
-          </div>
-          {master.guarantee_description && (
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Условия гарантии</p>
-              <p className="text-sm text-gray-600">{master.guarantee_description}</p>
-            </div>
-          )}
-          {master.certificates && master.certificates.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Сертификаты</p>
-              <ul className="space-y-1">
-                {master.certificates.map((c) => (
-                  <li key={c} className="flex items-center gap-2 text-sm text-gray-600">
-                    <Icon name="Award" size={14} className="text-orange-400" /> {c}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {master.portfolio_links && master.portfolio_links.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Портфолио</p>
-              <ul className="space-y-1">
-                {master.portfolio_links.map((link) => (
-                  <li key={link}>
-                    <a href={link} target="_blank" rel="noreferrer" className="text-sm text-orange-500 hover:underline flex items-center gap-1">
-                      <Icon name="ExternalLink" size={13} /> {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+import { AUTH_URL, DEMO_MASTERS, Master, User } from "@/components/master/masterTypes";
+import MasterCard from "@/components/master/MasterCard";
+import MastersFilters from "@/components/master/MastersFilters";
+import MasterCabinet from "@/components/master/MasterCabinet";
 
 export default function Masters() {
   const navigate = useNavigate();
@@ -334,7 +49,6 @@ export default function Masters() {
       navigate("/login");
       return;
     }
-    // Загружаем contractor_id для истории выплат (если профиль уже есть)
     fetch(AUTH_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -388,39 +102,12 @@ export default function Masters() {
 
   if (showQuestionnaire && user) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b border-gray-100">
-          <div className="max-w-3xl mx-auto px-4 py-6">
-            <button
-              onClick={() => setShowQuestionnaire(false)}
-              className="text-gray-400 hover:text-gray-600 mb-4 flex items-center gap-1 text-sm"
-            >
-              <Icon name="ArrowLeft" size={16} /> Назад к каталогу
-            </button>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Личный кабинет мастера</h1>
-            <p className="text-gray-500 mt-1">Заполните анкету и подпишите агентский договор</p>
-          </div>
-        </div>
-        <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-          <AgencyContractPanel
-            user={user}
-          />
-          {contractorId && (
-            <PaymentHistoryPanel
-              contractorId={contractorId}
-              masterName={user.name}
-              masterEmail={user.email}
-            />
-          )}
-          <MasterQuestionnaire
-            userId={user.id}
-            userName={user.name}
-            userPhone={user.phone}
-            userEmail={user.email}
-            onComplete={() => setCompleted(true)}
-          />
-        </div>
-      </div>
+      <MasterCabinet
+        user={user}
+        contractorId={contractorId}
+        onBack={() => setShowQuestionnaire(false)}
+        onComplete={() => setCompleted(true)}
+      />
     );
   }
 
@@ -451,27 +138,12 @@ export default function Masters() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="flex gap-3 mb-6 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
-            <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <Input
-              placeholder="Поиск по имени, специализации, городу..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Select value={sort} onValueChange={setSort}>
-            <SelectTrigger className="w-44">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="rating">По рейтингу</SelectItem>
-              <SelectItem value="experience">По опыту</SelectItem>
-              <SelectItem value="reviews">По отзывам</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <MastersFilters
+          search={search}
+          sort={sort}
+          onSearchChange={setSearch}
+          onSortChange={setSort}
+        />
 
         {loading ? (
           <div className="flex items-center justify-center py-16 text-gray-400">
