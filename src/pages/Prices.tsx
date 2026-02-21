@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
+import { useMeta } from "@/hooks/useMeta";
 
 const API_URL =
   "https://functions.poehali.dev/4dae7ba0-b573-436a-b4c6-d3b0abf69fce";
@@ -55,6 +56,14 @@ interface PriceCategory {
 
 export default function Prices() {
   const navigate = useNavigate();
+
+  useMeta({
+    title: "Прайс-лист на ремонтные работы",
+    description: "Актуальные цены на все виды ремонта и отделки: штукатурка, укладка плитки, монтаж гипсокартона, электрика, сантехника. Цены по регионам с разбивкой по категориям.",
+    keywords: "прайс-лист ремонт квартиры, цены на отделку, стоимость ремонтных работ, расценки мастеров Самара, прайс строительные работы",
+    canonical: "/prices",
+  });
+
   const [regions, setRegions] = useState<Region[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [prices, setPrices] = useState<PriceCategory[]>([]);

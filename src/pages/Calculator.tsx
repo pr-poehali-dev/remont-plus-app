@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
+import { useMeta } from "@/hooks/useMeta";
 import { getEstimateItems, type EstimateSavedItem } from "@/lib/lemanapro-data";
 
 import EstimateTab from "@/components/calculator/EstimateTab";
@@ -50,6 +51,14 @@ export interface Region {
 
 export default function Calculator() {
   const navigate = useNavigate();
+
+  useMeta({
+    title: "Калькулятор стоимости ремонта",
+    description: "Рассчитайте стоимость ремонта квартиры онлайн. Калькулятор учитывает актуальные цены на работы и материалы по вашему региону — получите смету за 2 минуты.",
+    keywords: "калькулятор стоимости ремонта, смета на ремонт онлайн, рассчитать ремонт квартиры, стоимость отделки, смета Самара",
+    canonical: "/calculator",
+  });
+
   const [items, setItems] = useState<EstimateItem[]>([]);
   const [lemanaItems, setLemanaItems] = useState<EstimateSavedItem[]>([]);
   const [priceCatalog, setPriceCatalog] = useState<PriceCategory[]>([]);

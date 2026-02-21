@@ -8,10 +8,18 @@ import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useMeta } from "@/hooks/useMeta";
 
 export default function Catalog() {
   const navigate = useNavigate();
   const [userType, setUserType] = useState<"contractors" | "suppliers">("contractors");
+
+  useMeta({
+    title: "Каталог мастеров и поставщиков",
+    description: "База проверенных мастеров-отделочников и поставщиков строительных материалов в Самаре. Рейтинги, отзывы, портфолио — выберите специалиста для своего ремонта.",
+    keywords: "мастера по ремонту Самара, найти отделочника, строительные бригады, поставщики материалов, проверенные мастера ремонт",
+    canonical: "/catalog",
+  });
 
   const contractors = [
     {

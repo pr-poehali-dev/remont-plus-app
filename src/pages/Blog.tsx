@@ -4,9 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
+import { useMeta } from "@/hooks/useMeta";
 
 export default function Blog() {
   const navigate = useNavigate();
+
+  useMeta({
+    title: "База знаний — советы по ремонту и дизайну",
+    description: "Статьи и руководства от профессионалов: как выбрать материалы, контролировать бюджет, избежать ошибок при ремонте квартиры. Полезный контент для заказчиков.",
+    keywords: "советы по ремонту квартиры, статьи о дизайне интерьера, как сделать ремонт, выбор материалов для ремонта, блог о строительстве",
+    canonical: "/blog",
+  });
 
   const articles = [
     {

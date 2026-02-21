@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useMeta } from "@/hooks/useMeta";
 import {
   Select,
   SelectContent,
@@ -294,6 +295,14 @@ function MasterCard({ master }: { master: Master }) {
 
 export default function Masters() {
   const navigate = useNavigate();
+
+  useMeta({
+    title: "Мастера по ремонту — найти специалиста",
+    description: "Каталог мастеров-отделочников в Самаре: укладка плитки, покраска, гипсокартон, натяжные потолки. Реальные отзывы, портфолио, гарантии. Свяжитесь напрямую.",
+    keywords: "мастера по ремонту Самара, отделочники, найти мастера плитка, ремонт квартиры специалист, бригада ремонт",
+    canonical: "/masters",
+  });
+
   const [masters, setMasters] = useState<Master[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
