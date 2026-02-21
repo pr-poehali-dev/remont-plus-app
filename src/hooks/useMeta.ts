@@ -35,7 +35,7 @@ export function useMeta({ title, description, keywords, canonical, ogImage }: Me
     setCanonical(url);
 
     return () => {
-      document.title = `${SITE_NAME} — ремонт квартир под ключ с ИИ-дизайнером | Самара`;
+      document.title = `${SITE_NAME} — ремонт квартир под ключ с ИИ-дизайнером`;
     };
   }, [title, description, keywords, canonical, ogImage]);
 }
