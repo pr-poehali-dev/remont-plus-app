@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Icon from "@/components/ui/icon";
 
-const PAYMENTS_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
+const YK_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
 
 const PLANS = [
   {
@@ -93,15 +93,21 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
     setError(null);
     setSelectedPlan(plan);
 
+    const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
+    const userEmail = storedUser?.email || `user${userId}@avangard-ai.ru`;
+
     try {
-      const res = await fetch(PAYMENTS_URL, {
+      const res = await fetch(YK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "create",
-          user_id: userId,
-          plan_code: plan.code,
+          amount: plan.price,
+          user_email: userEmail,
+          user_name: storedUser?.name || "",
+          description: `Тариф ${plan.name}`,
           return_url: window.location.origin + "/dashboard?payment=success",
+          cart_items: [{ id: plan.code, name: `Тариф ${plan.name}`, price: plan.price, quantity: 1 }],
+          metadata: { user_id: String(userId), plan_code: plan.code },
         }),
       });
       const data = await res.json();
@@ -116,25 +122,16 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
       const win = window.open(data.payment_url, "_blank", "width=800,height=700");
       setPaymentWindow(win);
 
+      const SUBS_URL = "https://functions.poehali.dev/52ea78ee-5f41-4904-b547-d60063d9da0a";
       pollRef.current = setInterval(async () => {
         try {
-          const r = await fetch(PAYMENTS_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "check", payment_id: data.payment_id }),
-          });
+          const r = await fetch(`${SUBS_URL}?user_id=${userId}`);
           const d = await r.json();
-
-          if (d.status === "succeeded") {
+          if (d.subscription?.plan_code === plan.code) {
             stopPolling();
             win?.close();
             setStep("success");
             onActivated();
-          } else if (d.status === "canceled") {
-            stopPolling();
-            win?.close();
-            setStep("error");
-            setError("Платёж отменён. Попробуйте снова.");
           }
         } catch {
           // продолжаем поллинг при сетевых ошибках

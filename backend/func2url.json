@@ -1,4 +1,6 @@
 {
+  "yookassa-yookassa": "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91",
+  "yookassa-yookassa-webhook": "https://functions.poehali.dev/f1999a3d-e0be-4b7c-a8fe-17d1918460ab",
   "payments": "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9",
   "subscriptions": "https://functions.poehali.dev/52ea78ee-5f41-4904-b547-d60063d9da0a",
   "showroom": "https://functions.poehali.dev/00d5617d-4889-4550-bc82-d94492e380ba",
