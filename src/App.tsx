@@ -29,6 +29,7 @@ import DocsPrint from "./pages/DocsPrint";
 import AgencyContract from "./pages/AgencyContract";
 import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
+import ChatWidget from "./components/ChatWidget";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
           <CookieBanner />
+          <ChatWidget />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
