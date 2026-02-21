@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import Icon from "@/components/ui/icon";
 import type { EstimateItem, PriceCategory, PriceItem } from "@/pages/Calculator";
+import MaterialSuggest from "@/components/calculator/MaterialSuggest";
 
 interface EstimateTabProps {
   items: EstimateItem[];
@@ -34,6 +35,7 @@ interface EstimateTabProps {
   onUpdateItem: (id: string, updates: Partial<EstimateItem>) => void;
   onAddItem: (item: EstimateItem) => void;
   regionName?: string;
+  selectedRegion?: string;
 }
 
 export default function EstimateTab({
@@ -48,7 +50,9 @@ export default function EstimateTab({
   onAddFromPriceList,
   onRemoveItem,
   onUpdateItem,
+  onAddItem,
   regionName,
+  selectedRegion,
 }: EstimateTabProps) {
   const [showPricePicker, setShowPricePicker] = useState(false);
   const [pickerSearch, setPickerSearch] = useState("");
@@ -113,61 +117,74 @@ export default function EstimateTab({
             </TableHeader>
             <TableBody>
               {items.map((item, idx) => (
-                <TableRow key={item.id} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/30"}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={item.category === "Работы" ? "default" : "secondary"}
-                        className="text-[10px] px-1.5 py-0 shrink-0"
+                <>
+                  <TableRow key={item.id} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/30"}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={item.category === "Работы" ? "default" : "secondary"}
+                          className="text-[10px] px-1.5 py-0 shrink-0"
+                        >
+                          {item.category === "Работы" ? "Работа" : "Материал"}
+                        </Badge>
+                        <span className="font-medium text-sm">{item.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center text-gray-500 text-sm">
+                      {item.unit}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {editingId === item.id ? (
+                        <Input
+                          type="number"
+                          min={1}
+                          value={item.quantity}
+                          onChange={(e) =>
+                            onUpdateItem(item.id, { quantity: Number(e.target.value) || 1 })
+                          }
+                          onBlur={() => setEditingId(null)}
+                          onKeyDown={(e) => e.key === "Enter" && setEditingId(null)}
+                          className="w-20 h-8 text-center mx-auto"
+                          autoFocus
+                        />
+                      ) : (
+                        <span
+                          className="cursor-pointer hover:text-primary font-medium"
+                          onClick={() => setEditingId(item.id)}
+                        >
+                          {item.quantity}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right text-sm">
+                      {fmt(item.price)} ₽
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      {fmt(item.total)} ₽
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onRemoveItem(item.id)}
                       >
-                        {item.category === "Работы" ? "Работа" : "Материал"}
-                      </Badge>
-                      <span className="font-medium text-sm">{item.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center text-gray-500 text-sm">
-                    {item.unit}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {editingId === item.id ? (
-                      <Input
-                        type="number"
-                        min={1}
-                        value={item.quantity}
-                        onChange={(e) =>
-                          onUpdateItem(item.id, { quantity: Number(e.target.value) || 1 })
-                        }
-                        onBlur={() => setEditingId(null)}
-                        onKeyDown={(e) => e.key === "Enter" && setEditingId(null)}
-                        className="w-20 h-8 text-center mx-auto"
-                        autoFocus
-                      />
-                    ) : (
-                      <span
-                        className="cursor-pointer hover:text-primary font-medium"
-                        onClick={() => setEditingId(item.id)}
-                      >
-                        {item.quantity}
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right text-sm">
-                    {fmt(item.price)} ₽
-                  </TableCell>
-                  <TableCell className="text-right font-semibold">
-                    {fmt(item.total)} ₽
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => onRemoveItem(item.id)}
-                    >
-                      <Icon name="X" className="h-4 w-4 text-gray-400 hover:text-red-500" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                        <Icon name="X" className="h-4 w-4 text-gray-400 hover:text-red-500" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                  {item.category === "Работы" && (
+                    <TableRow key={`mat-${item.id}`} className="border-0">
+                      <TableCell colSpan={6} className="py-0 pb-2">
+                        <MaterialSuggest
+                          workItem={item}
+                          region={selectedRegion}
+                          onAddMaterial={onAddItem}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               ))}
             </TableBody>
           </Table>

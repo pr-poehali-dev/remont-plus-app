@@ -219,6 +219,7 @@ export default function Calculator() {
                     onUpdateItem={updateItem}
                     onAddItem={addItem}
                     regionName={currentRegion?.name}
+                    selectedRegion={selectedRegion}
                   />
                 </TabsContent>
 
