@@ -1,0 +1,5 @@
+UPDATE showroom_items SET image = 'https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/6dbf4685-59b7-4666-9d02-3ef305108704.jpg' WHERE id = 1;
+UPDATE showroom_items SET image = 'https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/a9d541b6-57b5-466c-9e73-9e4388b2c464.jpg' WHERE id = 2;
+UPDATE showroom_items SET image = 'https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/d4862da5-a3a6-4bef-b1a9-286fc32c583a.jpg' WHERE id = 3;
+UPDATE showroom_items SET image = 'https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/5f3ddb90-3f8b-4341-a5b8-271770822496.jpg' WHERE id = 4;
+UPDATE showroom_items SET image = 'https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/3255f3b4-b11c-4c44-b63d-7a11f6fe066b.jpg' WHERE id = 5;
