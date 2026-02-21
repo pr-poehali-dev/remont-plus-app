@@ -17,12 +17,13 @@ import {
   deleteCustomTemplate,
   type SavedTemplate,
 } from "@/lib/estimate-templates";
-import type { EstimateItem } from "@/pages/Calculator";
+import type { EstimateItem, PriceCategory } from "@/pages/Calculator";
 
 interface TemplatesDialogProps {
   open: boolean;
   onClose: () => void;
   currentItems: EstimateItem[];
+  priceCatalog?: PriceCategory[];
   onApply: (items: EstimateItem[], mode: "replace" | "append") => void;
 }
 
@@ -106,7 +107,16 @@ const fmt = (n: number) => new Intl.NumberFormat("ru-RU").format(n);
 
 type Tab = "presets" | "custom" | "save";
 
-export default function TemplatesDialog({ open, onClose, currentItems, onApply }: TemplatesDialogProps) {
+function resolvePrice(name: string, fallbackPrice: number, priceCatalog: PriceCategory[]): number {
+  for (const cat of priceCatalog) {
+    for (const item of cat.items) {
+      if (item.name.toLowerCase() === name.toLowerCase()) return item.price;
+    }
+  }
+  return fallbackPrice;
+}
+
+export default function TemplatesDialog({ open, onClose, currentItems, priceCatalog = [], onApply }: TemplatesDialogProps) {
   const [tab, setTab] = useState<Tab>("presets");
   const [saveName, setSaveName] = useState("");
   const [saveDesc, setSaveDesc] = useState("");
@@ -116,11 +126,17 @@ export default function TemplatesDialog({ open, onClose, currentItems, onApply }
   const [areaInputs, setAreaInputs] = useState<Record<string, string>>({});
 
   const toEstimateItems = (raw: { category: string; name: string; unit: string; quantity: number; price: number }[]): EstimateItem[] =>
-    raw.map((item) => ({
-      ...item,
-      id: `tpl-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      total: item.price * item.quantity,
-    }));
+    raw.map((item) => {
+      const price = item.category === "Работы"
+        ? resolvePrice(item.name, item.price, priceCatalog)
+        : item.price;
+      return {
+        ...item,
+        price,
+        id: `tpl-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        total: price * item.quantity,
+      };
+    });
 
   const handleApplyPreset = (tpl: typeof PRESET_TEMPLATES[0]) => {
     let sourceItems = tpl.items;
@@ -207,7 +223,10 @@ export default function TemplatesDialog({ open, onClose, currentItems, onApply }
                       const scaledItems = tpl.baseArea && effectiveArea && effectiveArea !== tpl.baseArea
                         ? scaleTemplateItems(tpl.items, tpl.baseArea, effectiveArea)
                         : tpl.items;
-                      const total = scaledItems.reduce((s, i) => s + i.price * i.quantity, 0);
+                      const total = scaledItems.reduce((s, i) => {
+                        const p = i.category === "Работы" ? resolvePrice(i.name, i.price, priceCatalog) : i.price;
+                        return s + p * i.quantity;
+                      }, 0);
                       return (
                         <div key={tpl.id} className="rounded-xl border border-gray-100 hover:border-primary/30 hover:bg-primary/5 transition-colors group">
                           <div className="flex items-start gap-3 p-3">
