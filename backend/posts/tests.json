@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "GET posts list",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": { "categories": [] },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "GET posts with admin flag",
+      "method": "GET",
+      "path": "/?admin=1",
+      "expectedStatus": 200,
+      "expectedBody": { "categories": [] },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

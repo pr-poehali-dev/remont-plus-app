@@ -1,92 +1,211 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
+
+const POSTS_URL = "https://functions.poehali.dev/60baa083-841b-461e-9edb-8460b28e7076";
+
+const TYPE_LABELS: Record<string, string> = {
+  article: "Статья",
+  news: "Новость",
+  promo: "Акция",
+  tip: "Совет",
+};
+
+const TYPE_COLORS: Record<string, string> = {
+  article: "bg-blue-100 text-blue-700 border-blue-200",
+  news: "bg-green-100 text-green-700 border-green-200",
+  promo: "bg-orange-100 text-orange-700 border-orange-200",
+  tip: "bg-purple-100 text-purple-700 border-purple-200",
+};
+
+interface Post {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  category: string;
+  type: string;
+  image_url: string | null;
+  read_time: number;
+  is_pinned: boolean;
+  views: number;
+  created_at: string;
+}
+
+interface PostDetail extends Post {
+  content: string;
+}
 
 export default function Blog() {
   const navigate = useNavigate();
 
   useMeta({
-    title: "База знаний — советы по ремонту и дизайну",
-    description: "Статьи и руководства от профессионалов: как выбрать материалы, контролировать бюджет, избежать ошибок при ремонте квартиры. Полезный контент для заказчиков.",
-    keywords: "советы по ремонту квартиры, статьи о дизайне интерьера, как сделать ремонт, выбор материалов для ремонта, блог о строительстве",
+    title: "Блог — новости, статьи и акции",
+    description: "Новости строительной отрасли, полезные статьи о ремонте, акции и специальные предложения от студии АВАНГАРД.",
+    keywords: "новости ремонт, статьи о строительстве, акции на окна, советы по ремонту квартиры",
     canonical: "/blog",
   });
 
-  const articles = [
-    {
-      id: 1,
-      title: "10 ошибок при ремонте квартиры, которые стоят дорого",
-      excerpt: "Узнайте, какие распространённые ошибки допускают при ремонте и как их избежать",
-      category: "Советы",
-      readTime: "8 мин",
-      image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/4efef414-51c8-4b1b-84da-7c9dc8b09fbd.jpg",
-      date: "1 февраля 2026"
-    },
-    {
-      id: 2,
-      title: "Как выбрать правильный стиль интерьера",
-      excerpt: "Гид по современным стилям интерьера: от минимализма до эклектики",
-      category: "Дизайн",
-      readTime: "12 мин",
-      image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/3a24d615-0a8e-4158-8a11-f1219a4ff77f.jpg",
-      date: "30 января 2026"
-    },
-    {
-      id: 3,
-      title: "Расчёт бюджета на ремонт: полное руководство",
-      excerpt: "Пошаговая инструкция по планированию бюджета и избежанию скрытых расходов",
-      category: "Финансы",
-      readTime: "10 мин",
-      image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/4efef414-51c8-4b1b-84da-7c9dc8b09fbd.jpg",
-      date: "28 января 2026"
-    },
-    {
-      id: 4,
-      title: "Материалы для ремонта: что выбрать в 2026 году",
-      excerpt: "Обзор современных материалов для отделки и их характеристик",
-      category: "Материалы",
-      readTime: "15 мин",
-      image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/3a24d615-0a8e-4158-8a11-f1219a4ff77f.jpg",
-      date: "25 января 2026"
-    }
-  ];
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState("");
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [selectedPost, setSelectedPost] = useState<PostDetail | null>(null);
+  const [postLoading, setPostLoading] = useState(false);
 
-  const categories = ["Все статьи", "Советы", "Дизайн", "Финансы", "Материалы", "Технологии"];
+  useEffect(() => {
+    loadPosts();
+  }, [category, search]);
+
+  const loadPosts = async () => {
+    setLoading(true);
+    const params = new URLSearchParams({ limit: "30" });
+    if (category) params.set("category", category);
+    if (search) params.set("q", search);
+    const res = await fetch(`${POSTS_URL}?${params}`);
+    if (res.ok) {
+      const data = await res.json();
+      setPosts(data.posts || []);
+      setCategories(data.categories || []);
+    }
+    setLoading(false);
+  };
+
+  const openPost = async (post: Post) => {
+    setPostLoading(true);
+    setSelectedPost({ ...post, content: "" });
+    const res = await fetch(`${POSTS_URL}?id=${post.id}`);
+    if (res.ok) {
+      const data = await res.json();
+      setSelectedPost(data);
+      // счётчик просмотров
+      fetch(`${POSTS_URL}/view?id=${post.id}`, { method: "POST" }).catch(() => {});
+    }
+    setPostLoading(false);
+  };
+
+  const handleSearch = () => setSearch(searchInput);
+
+  const pinned = posts.filter(p => p.is_pinned);
+  const regular = posts.filter(p => !p.is_pinned);
+
+  if (selectedPost) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white border-b sticky top-0 z-10">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => setSelectedPost(null)}>
+                <Icon name="ArrowLeft" className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <button onClick={() => setSelectedPost(null)} className="hover:text-gray-900 transition-colors">
+                  Блог
+                </button>
+                <Icon name="ChevronRight" size={14} />
+                <span className="text-gray-900 font-medium truncate max-w-xs">{selectedPost.title}</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="container mx-auto px-4 py-8 max-w-3xl">
+          {selectedPost.image_url && (
+            <div className="aspect-video overflow-hidden rounded-xl mb-6">
+              <img src={selectedPost.image_url} alt={selectedPost.title} className="w-full h-full object-cover" />
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${TYPE_COLORS[selectedPost.type] || TYPE_COLORS.article}`}>
+              {TYPE_LABELS[selectedPost.type] || selectedPost.type}
+            </span>
+            <Badge variant="secondary">{selectedPost.category}</Badge>
+            {selectedPost.is_pinned && (
+              <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
+                <Icon name="Pin" size={10} className="mr-1" />
+                Закреплено
+              </Badge>
+            )}
+          </div>
+
+          <h1 className="text-3xl font-bold mb-4">{selectedPost.title}</h1>
+
+          <div className="flex items-center gap-4 text-sm text-gray-500 mb-6 pb-6 border-b">
+            <span>{new Date(selectedPost.created_at).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" })}</span>
+            <span className="flex items-center gap-1">
+              <Icon name="Clock" size={13} />
+              {selectedPost.read_time} мин чтения
+            </span>
+            <span className="flex items-center gap-1">
+              <Icon name="Eye" size={13} />
+              {selectedPost.views} просмотров
+            </span>
+          </div>
+
+          {postLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-4 w-4/5" />
+            </div>
+          ) : selectedPost.content ? (
+            <div
+              className="prose prose-gray max-w-none"
+              dangerouslySetInnerHTML={{ __html: selectedPost.content }}
+            />
+          ) : (
+            <p className="text-gray-600 text-lg leading-relaxed">{selectedPost.excerpt}</p>
+          )}
+
+          <div className="mt-8 pt-6 border-t">
+            <Button onClick={() => setSelectedPost(null)} variant="outline">
+              <Icon name="ArrowLeft" size={15} className="mr-2" />
+              Назад к блогу
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
-                <Icon name="ArrowLeft" className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold">База знаний</h1>
-                <p className="text-sm text-gray-600">Советы и руководства по ремонту</p>
-              </div>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+              <Icon name="ArrowLeft" className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold">Блог</h1>
+              <p className="text-sm text-gray-500">Новости, статьи и акции</p>
             </div>
           </div>
         </div>
       </header>
 
-      <section className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
+      <section className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-12">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">Всё о ремонте в одном месте</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Статьи, советы и руководства от профессионалов
-          </p>
-          <div className="max-w-2xl mx-auto flex gap-2">
-            <Input 
-              placeholder="Поиск статей..." 
+          <h2 className="text-3xl font-bold mb-3">Всё о ремонте и строительстве</h2>
+          <p className="text-lg mb-6 opacity-90">Статьи, новости отрасли и акции</p>
+          <div className="max-w-xl mx-auto flex gap-2">
+            <Input
+              placeholder="Поиск публикаций..."
               className="bg-white text-gray-900"
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSearch()}
             />
-            <Button variant="secondary" size="lg">
+            <Button variant="secondary" size="lg" onClick={handleSearch}>
               <Icon name="Search" className="h-5 w-5" />
             </Button>
           </div>
@@ -94,111 +213,174 @@ export default function Blog() {
       </section>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
-          {categories.map((category) => (
+        {/* Фильтр по категориям */}
+        {categories.length > 0 && (
+          <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
             <Button
-              key={category}
-              variant={category === "Все статьи" ? "default" : "outline"}
+              size="sm"
+              variant={category === "" ? "default" : "outline"}
+              onClick={() => setCategory("")}
               className="whitespace-nowrap"
             >
-              {category}
+              Все статьи
             </Button>
-          ))}
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 mb-12">
-          {articles.map((article) => (
-            <Card key={article.id} className="overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow">
-              <div className="aspect-video overflow-hidden">
-                <img 
-                  src={article.image}
-                  alt={article.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <Badge variant="secondary">{article.category}</Badge>
-                  <span className="text-sm text-gray-600 flex items-center gap-1">
-                    <Icon name="Clock" className="h-3 w-3" />
-                    {article.readTime}
-                  </span>
-                </div>
-                <h3 className="text-xl font-semibold mb-2 group-hover:text-purple-600 transition-colors">
-                  {article.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  {article.excerpt}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">{article.date}</span>
-                  <Button variant="link" className="p-0">
-                    Читать далее →
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100">
-            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
-              <Icon name="Lightbulb" className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">Нужна консультация?</h3>
-            <p className="text-sm text-gray-700 mb-4">
-              Задайте вопрос ИИ-консультанту и получите ответ в режиме реального времени
-            </p>
-            <Button className="w-full" onClick={() => navigate('/ai-chat')}>
-              Начать чат
-            </Button>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100">
-            <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
-              <Icon name="Palette" className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">Создать проект</h3>
-            <p className="text-sm text-gray-700 mb-4">
-              Используйте конструктор для создания уникального дизайн-проекта
-            </p>
-            <Button className="w-full" onClick={() => navigate('/designer')}>
-              Конструктор
-            </Button>
-          </Card>
-
-          <Card className="p-6 bg-gradient-to-br from-green-50 to-green-100">
-            <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-4">
-              <Icon name="Calculator" className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">Рассчитать смету</h3>
-            <p className="text-sm text-gray-700 mb-4">
-              Получите детальный расчёт стоимости материалов и работ
-            </p>
-            <Button className="w-full" onClick={() => navigate('/calculator')}>
-              Калькулятор
-            </Button>
-          </Card>
-        </div>
-
-        <Card className="p-8 text-center bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-          <Icon name="Mail" className="h-12 w-12 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Подпишитесь на рассылку</h2>
-          <p className="mb-6 opacity-90">
-            Получайте новые статьи и советы по ремонту прямо на почту
-          </p>
-          <div className="max-w-md mx-auto flex gap-2">
-            <Input 
-              placeholder="Ваш email" 
-              className="bg-white text-gray-900"
-            />
-            <Button variant="secondary" size="lg">
-              Подписаться
-            </Button>
+            {categories.map(c => (
+              <Button
+                key={c}
+                size="sm"
+                variant={category === c ? "default" : "outline"}
+                onClick={() => setCategory(c === category ? "" : c)}
+                className="whitespace-nowrap"
+              >
+                {c}
+              </Button>
+            ))}
           </div>
-        </Card>
+        )}
+
+        {loading ? (
+          <div className="grid md:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map(i => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="aspect-video" />
+                <div className="p-6 space-y-3">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-4 w-4/5" />
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-20 text-gray-400">
+            <Icon name="FileSearch" size={40} className="mx-auto mb-4 opacity-30" />
+            <p className="text-lg">Публикаций не найдено</p>
+            {(search || category) && (
+              <Button variant="outline" className="mt-4" onClick={() => { setSearch(""); setSearchInput(""); setCategory(""); }}>
+                Сбросить фильтры
+              </Button>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* Закреплённые посты */}
+            {pinned.length > 0 && !search && !category && (
+              <div className="mb-8">
+                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <Icon name="Pin" size={14} />
+                  Закреплённые
+                </h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {pinned.map(post => (
+                    <PostCard key={post.id} post={post} onClick={() => openPost(post)} featured />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Остальные посты */}
+            {regular.length > 0 && (
+              <>
+                {pinned.length > 0 && !search && !category && (
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Все публикации</h3>
+                )}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {regular.map(post => (
+                    <PostCard key={post.id} post={post} onClick={() => openPost(post)} />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {pinned.length > 0 && regular.length === 0 && (search || category) && (
+              <div className="grid md:grid-cols-2 gap-6">
+                {pinned.map(post => (
+                  <PostCard key={post.id} post={post} onClick={() => openPost(post)} featured />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Блок CTA */}
+        <div className="grid md:grid-cols-3 gap-6 mt-12 mb-8">
+          <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mb-3">
+              <Icon name="Lightbulb" className="h-5 w-5 text-white" />
+            </div>
+            <h3 className="font-semibold mb-1">Нужна консультация?</h3>
+            <p className="text-sm text-gray-600 mb-3">Задайте вопрос ИИ-консультанту</p>
+            <Button className="w-full" size="sm" onClick={() => navigate("/ai-chat")}>Начать чат</Button>
+          </Card>
+          <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100">
+            <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center mb-3">
+              <Icon name="Calculator" className="h-5 w-5 text-white" />
+            </div>
+            <h3 className="font-semibold mb-1">Рассчитать смету</h3>
+            <p className="text-sm text-gray-600 mb-3">Детальный расчёт стоимости</p>
+            <Button className="w-full" size="sm" onClick={() => navigate("/calculator")}>Калькулятор</Button>
+          </Card>
+          <Card className="p-6 bg-gradient-to-br from-green-50 to-green-100">
+            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center mb-3">
+              <Icon name="AppWindow" className="h-5 w-5 text-white" />
+            </div>
+            <h3 className="font-semibold mb-1">Расчёт окон</h3>
+            <p className="text-sm text-gray-600 mb-3">ПВХ и алюминиевые конструкции</p>
+            <Button className="w-full" size="sm" onClick={() => navigate("/windows")}>Рассчитать</Button>
+          </Card>
+        </div>
       </div>
     </div>
+  );
+}
+
+function PostCard({ post, onClick, featured }: { post: Post; onClick: () => void; featured?: boolean }) {
+  return (
+    <Card
+      className={`overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow ${featured ? "border-purple-200" : ""}`}
+      onClick={onClick}
+    >
+      {post.image_url ? (
+        <div className="aspect-video overflow-hidden">
+          <img
+            src={post.image_url}
+            alt={post.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
+      ) : (
+        <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+          <Icon name="FileText" size={32} className="text-gray-300" />
+        </div>
+      )}
+      <div className="p-5">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${TYPE_COLORS[post.type] || TYPE_COLORS.article}`}>
+            {TYPE_LABELS[post.type] || post.type}
+          </span>
+          <Badge variant="secondary" className="text-xs">{post.category}</Badge>
+          {post.is_pinned && (
+            <Icon name="Pin" size={12} className="text-yellow-500" />
+          )}
+        </div>
+        <h3 className="font-semibold text-base mb-1.5 group-hover:text-purple-600 transition-colors line-clamp-2">
+          {post.title}
+        </h3>
+        <p className="text-gray-500 text-sm mb-3 line-clamp-2">{post.excerpt}</p>
+        <div className="flex items-center justify-between text-xs text-gray-400">
+          <span>{new Date(post.created_at).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}</span>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1">
+              <Icon name="Clock" size={11} />
+              {post.read_time} мин
+            </span>
+            <span className="flex items-center gap-1">
+              <Icon name="Eye" size={11} />
+              {post.views}
+            </span>
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 }
