@@ -11,7 +11,6 @@ import { useSubscription } from "@/hooks/useSubscription";
 
 import EstimateTab from "@/components/calculator/EstimateTab";
 import LemanaProTab from "@/components/calculator/LemanaProTab";
-import ContractorsTab from "@/components/calculator/ContractorsTab";
 import DocsTab from "@/components/calculator/DocsTab";
 import CalculatorSidebar from "@/components/calculator/CalculatorSidebar";
 import ExportDialog from "@/components/calculator/ExportDialog";
@@ -175,12 +174,6 @@ export default function Calculator() {
   const deliveryCost = deliveryEnabled ? DELIVERY_BASE + liftCost : 0;
   const totalWithDelivery = grandTotal + deliveryCost;
 
-  const contractors = [
-    { name: "СтройЭксперт", rating: 4.8, reviews: 127, price: Math.round(grandTotal * 1.0), experience: "12 лет" },
-    { name: "РемонтПро", rating: 4.6, reviews: 89, price: Math.round(grandTotal * 1.15), experience: "8 лет" },
-    { name: "МастерДом", rating: 4.9, reviews: 234, price: Math.round(grandTotal * 0.95), experience: "15 лет" },
-  ];
-
   const currentRegion = regions.find(r => r.code === selectedRegion);
 
   return (
@@ -230,7 +223,7 @@ export default function Calculator() {
           <div className="lg:col-span-2">
             <Card className="p-6 mb-6">
               <Tabs defaultValue="estimate">
-                <TabsList className="grid w-full grid-cols-5">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="estimate">
                     Смета
                     {items.length > 0 && (
@@ -251,7 +244,6 @@ export default function Calculator() {
                       </Badge>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="contractors">Мастера</TabsTrigger>
                   <TabsTrigger value="docs">
                     <Icon name="FileText" size={13} className="mr-1" />
                     Документы
@@ -287,10 +279,6 @@ export default function Calculator() {
                     lemanaItems={lemanaItems}
                     setLemanaItems={setLemanaItems}
                   />
-                </TabsContent>
-
-                <TabsContent value="contractors" className="mt-6 space-y-4">
-                  <ContractorsTab contractors={contractors} />
                 </TabsContent>
 
                 <TabsContent value="docs" className="mt-6">
