@@ -149,6 +149,34 @@ export default function Prices() {
           </Button>
         </div>
 
+        {/* Banner */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 p-6 md:p-8 mb-8">
+          <div className="absolute -right-8 -top-8 w-48 h-48 bg-white/10 rounded-full" />
+          <div className="absolute -right-2 bottom-0 w-28 h-28 bg-white/10 rounded-full" />
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="text-white">
+              <div className="inline-flex items-center gap-1.5 bg-white/20 text-white/90 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                <Icon name="Sparkles" size={12} />
+                Бесплатно — навсегда
+              </div>
+              <h2 className="text-xl md:text-2xl font-extrabold mb-1 leading-snug">
+                Смотришь цены — уже можешь считать смету
+              </h2>
+              <p className="text-white/85 text-sm md:text-base max-w-md">
+                Выбери нужные работы из прайса и получи готовую смету с итогом. Без звонков, без менеджеров — сразу документ.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate("/calculator")}
+              size="lg"
+              className="bg-white text-orange-600 hover:bg-orange-50 font-bold rounded-xl shrink-0 shadow-lg shadow-orange-700/20 px-7"
+            >
+              <Icon name="FileText" size={17} className="mr-2" />
+              Составить смету
+            </Button>
+          </div>
+        </div>
+
         <PriceListTable
           regions={regions}
           categories={categories}
