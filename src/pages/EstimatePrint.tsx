@@ -461,6 +461,31 @@ export default function EstimatePrint() {
         : `Смета № С-${data.docNum} от ${data.date}`;
       setTimeout(() => window.print(), 400);
     }
+
+    // Защита от скриншотов
+    const blockKey = (e: KeyboardEvent) => {
+      // PrintScreen, Ctrl+P, Ctrl+Shift+S, Win+PrintScreen
+      if (
+        e.key === "PrintScreen" ||
+        (e.ctrlKey && e.key === "p") ||
+        (e.ctrlKey && e.shiftKey && e.key === "s") ||
+        (e.metaKey && e.shiftKey && ["3", "4", "5"].includes(e.key))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    const showOverlay = () => {
+      const el = document.getElementById("screenshot-block");
+      if (el) { el.style.display = "flex"; setTimeout(() => { el.style.display = "none"; }, 2000); }
+    };
+
+    document.addEventListener("keyup", (e) => { if (e.key === "PrintScreen") showOverlay(); });
+    document.addEventListener("keydown", blockKey);
+    return () => {
+      document.removeEventListener("keydown", blockKey);
+    };
   }, [data]);
 
   if (!data) {
@@ -473,7 +498,26 @@ export default function EstimatePrint() {
 
   return (
     <>
-      <style>{COMMON_STYLES}</style>
+      <style>{COMMON_STYLES + `
+        #screenshot-block {
+          display: none; position: fixed; inset: 0; z-index: 9999;
+          background: rgba(0,0,0,0.92); color: #fff;
+          flex-direction: column; align-items: center; justify-content: center;
+          font-family: Arial, sans-serif; font-size: 18px; text-align: center; gap: 12px;
+        }
+        body { -webkit-user-select: none; user-select: none; }
+        @media print { #screenshot-block { display: none !important; } }
+      `}</style>
+
+      {/* Оверлей при попытке скриншота */}
+      <div id="screenshot-block">
+        <div style={{ fontSize: 48 }}>🚫</div>
+        <div style={{ fontWeight: 700 }}>Скриншот заблокирован</div>
+        <div style={{ fontSize: 13, opacity: 0.7, maxWidth: 300 }}>
+          Для сохранения документа используйте кнопку «Распечатать / PDF»
+        </div>
+      </div>
+
       {data.docType === "kp" ? <KpView data={data} /> : <SmetaView data={data} />}
     </>
   );

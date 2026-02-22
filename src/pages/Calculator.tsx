@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { useMeta } from "@/hooks/useMeta";
 import { getEstimateItems, type EstimateSavedItem } from "@/lib/lemanapro-data";
+import { useSubscription } from "@/hooks/useSubscription";
 
 import EstimateTab from "@/components/calculator/EstimateTab";
 import LemanaProTab from "@/components/calculator/LemanaProTab";
@@ -15,6 +16,7 @@ import DocsTab from "@/components/calculator/DocsTab";
 import CalculatorSidebar from "@/components/calculator/CalculatorSidebar";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import TemplatesDialog from "@/components/calculator/TemplatesDialog";
+import PaywallModal from "@/components/calculator/PaywallModal";
 
 const SERVICE_PRICES_URL = "https://functions.poehali.dev/4dae7ba0-b573-436a-b4c6-d3b0abf69fce";
 
@@ -70,6 +72,12 @@ export default function Calculator() {
   const [loading, setLoading] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
+  const userId: number | null = storedUser?.id ?? null;
+  const { subscription, reload: reloadSub } = useSubscription(userId);
+  const hasPaidPlan = !!subscription && subscription.status === "active";
 
   const [deliveryFloor, setDeliveryFloor] = useState<number>(1);
   const [deliveryHasElevator, setDeliveryHasElevator] = useState<boolean>(true);
@@ -186,8 +194,8 @@ export default function Calculator() {
                 <Icon name={loading ? "Loader2" : "LayoutTemplate"} className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                 Шаблоны
               </Button>
-              <Button onClick={() => setShowExportDialog(true)}>
-                <Icon name="Download" className="mr-2 h-4 w-4" />
+              <Button onClick={() => hasPaidPlan ? setShowExportDialog(true) : setShowPaywall(true)}>
+                <Icon name={hasPaidPlan ? "Download" : "Lock"} className="mr-2 h-4 w-4" />
                 Скачать PDF
               </Button>
             </div>
@@ -336,6 +344,17 @@ export default function Calculator() {
                 date,
               },
             });
+          }}
+        />
+      )}
+
+      {showPaywall && (
+        <PaywallModal
+          onClose={() => setShowPaywall(false)}
+          onSuccess={() => {
+            setShowPaywall(false);
+            reloadSub();
+            setShowExportDialog(true);
           }}
         />
       )}
