@@ -17,6 +17,17 @@ import CalculatorSidebar from "@/components/calculator/CalculatorSidebar";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import TemplatesDialog from "@/components/calculator/TemplatesDialog";
 import PaywallModal from "@/components/calculator/PaywallModal";
+import CalcTour from "@/components/calculator/CalcTour";
+
+const FREE_PRINTS_KEY = "calc_free_prints_used";
+const FREE_PRINTS_LIMIT = 3;
+
+function getFreePrintsUsed(): number {
+  return parseInt(localStorage.getItem(FREE_PRINTS_KEY) || "0", 10);
+}
+function incrementFreePrints() {
+  localStorage.setItem(FREE_PRINTS_KEY, String(getFreePrintsUsed() + 1));
+}
 
 const SERVICE_PRICES_URL = "https://functions.poehali.dev/4dae7ba0-b573-436a-b4c6-d3b0abf69fce";
 
@@ -78,6 +89,9 @@ export default function Calculator() {
   const userId: number | null = storedUser?.id ?? null;
   const { subscription, reload: reloadSub } = useSubscription(userId);
   const hasPaidPlan = !!subscription && subscription.status === "active";
+  const freePrintsUsed = getFreePrintsUsed();
+  const hasFreePrints = freePrintsUsed < FREE_PRINTS_LIMIT;
+  const canExport = hasPaidPlan || hasFreePrints;
 
   const [deliveryFloor, setDeliveryFloor] = useState<number>(1);
   const [deliveryHasElevator, setDeliveryHasElevator] = useState<boolean>(true);
@@ -194,10 +208,17 @@ export default function Calculator() {
                 <Icon name={loading ? "Loader2" : "LayoutTemplate"} className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                 Шаблоны
               </Button>
-              <Button onClick={() => hasPaidPlan ? setShowExportDialog(true) : setShowPaywall(true)}>
-                <Icon name={hasPaidPlan ? "Download" : "Lock"} className="mr-2 h-4 w-4" />
-                Скачать PDF
-              </Button>
+              <div className="relative">
+                <Button onClick={() => canExport ? setShowExportDialog(true) : setShowPaywall(true)}>
+                  <Icon name={canExport ? "Download" : "Lock"} className="mr-2 h-4 w-4" />
+                  Скачать PDF
+                </Button>
+                {!hasPaidPlan && hasFreePrints && (
+                  <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+                    {FREE_PRINTS_LIMIT - freePrintsUsed}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -312,6 +333,7 @@ export default function Calculator() {
           onCancel={() => setShowExportDialog(false)}
           onConfirm={({ customer, contractor, address, phone, email, validDays, docType, inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount }) => {
             setShowExportDialog(false);
+            if (!hasPaidPlan) incrementFreePrints();
             const docNum = Date.now().toString().slice(-6);
             const date = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
             navigate("/estimate/print", {
@@ -358,6 +380,8 @@ export default function Calculator() {
           }}
         />
       )}
+
+      <CalcTour />
     </div>
   );
 }

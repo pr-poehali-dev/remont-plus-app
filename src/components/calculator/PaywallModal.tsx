@@ -98,8 +98,8 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Доступно после оплаты тарифа</h2>
-            <p className="text-sm text-gray-500 mt-1">Выберите план и получите доступ к печати и скачиванию документов</p>
+            <h2 className="text-xl font-bold text-gray-900">Бесплатный лимит исчерпан</h2>
+            <p className="text-sm text-gray-500 mt-1">Вы использовали 3 бесплатные сметы. Подключите тариф для неограниченной работы.</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-4">
             <Icon name="X" size={20} />
