@@ -4,6 +4,30 @@ import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+const POSTS_URL = "https://functions.poehali.dev/60baa083-841b-461e-9edb-8460b28e7076";
+
+const POST_TYPE_COLORS: Record<string, string> = {
+  article: "bg-blue-100 text-blue-700",
+  news: "bg-green-100 text-green-700",
+  promo: "bg-orange-100 text-orange-700",
+  tip: "bg-purple-100 text-purple-700",
+};
+const POST_TYPE_LABELS: Record<string, string> = {
+  article: "Статья", news: "Новость", promo: "Акция", tip: "Совет",
+};
+
+interface LatestPost {
+  id: number;
+  title: string;
+  excerpt: string;
+  category: string;
+  type: string;
+  image_url: string | null;
+  read_time: number;
+  is_pinned: boolean;
+  created_at: string;
+}
+
 interface User {
   id: number;
   name: string;
@@ -150,12 +174,18 @@ export default function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [region, setRegion] = useState<RegionData>(REGIONS.other);
+  const [latestPosts, setLatestPosts] = useState<LatestPost[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem("avangard_user");
     if (saved) {
       try { setUser(JSON.parse(saved)); } catch { /* ignore */ }
     }
+    fetch(`${POSTS_URL}?limit=3`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.posts) setLatestPosts(d.posts); })
+      .catch(() => {});
+
     const savedRegion = localStorage.getItem("avangard_calc_region");
     const code = savedRegion || detectRegionFromTimezone();
     setRegion(REGIONS[code] || REGIONS.other);
@@ -425,6 +455,70 @@ export default function Home() {
               ))}
             </div>
           </section>
+
+          {latestPosts.length > 0 && (
+            <section className="mt-20">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
+                  <span className="bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">Последние публикации</span>
+                </h2>
+                <p className="text-gray-500 text-lg">Новости, советы и акции от нашей команды</p>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6">
+                {latestPosts.map(post => (
+                  <div
+                    key={post.id}
+                    onClick={() => navigate("/blog")}
+                    className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer group"
+                  >
+                    {post.image_url ? (
+                      <div className="aspect-video overflow-hidden">
+                        <img
+                          src={post.image_url}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-video bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+                        <Icon name="FileText" size={36} className="text-gray-200" />
+                      </div>
+                    )}
+                    <div className="p-5">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${POST_TYPE_COLORS[post.type] || POST_TYPE_COLORS.article}`}>
+                          {POST_TYPE_LABELS[post.type] || post.type}
+                        </span>
+                        <span className="text-xs text-gray-400">{post.category}</span>
+                        {post.is_pinned && <Icon name="Pin" size={11} className="text-yellow-400" />}
+                      </div>
+                      <h3 className="font-semibold text-base mb-2 group-hover:text-orange-500 transition-colors line-clamp-2 text-gray-900">
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-500 text-sm line-clamp-2 mb-3">{post.excerpt}</p>
+                      <div className="flex items-center justify-between text-xs text-gray-400">
+                        <span>{new Date(post.created_at).toLocaleDateString("ru-RU", { day: "numeric", month: "long" })}</span>
+                        <span className="flex items-center gap-1">
+                          <Icon name="Clock" size={11} />
+                          {post.read_time} мин
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="text-center mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/blog")}
+                  className="rounded-full px-8 border-gray-200 hover:border-orange-300 hover:text-orange-600"
+                >
+                  Все публикации
+                  <Icon name="ArrowRight" size={15} className="ml-2" />
+                </Button>
+              </div>
+            </section>
+          )}
 
           <section className="mt-20 mb-4">
             <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 p-10 md:p-14">
