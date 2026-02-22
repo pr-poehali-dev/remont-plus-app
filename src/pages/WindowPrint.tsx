@@ -71,82 +71,166 @@ function fmt(n: number) {
   return n.toLocaleString("ru-RU");
 }
 
-// SVG-схема окна по типу и размерам
-function WindowScheme({ cfg, width = 140, height = 110 }: { cfg: WindowConfig; width?: number; height?: number }) {
-  const pad = 8;
-  const frameW = width - pad * 2;
-  const frameH = height - pad * 2;
+// SVG-схема окна — DIN-стиль с размерными линиями
+function WindowScheme({ cfg, idx }: { cfg: WindowConfig; idx: number }) {
   const ct = CONSTRUCTION_TYPES.find(c => c.value === cfg.constructionType);
   const sashes = ct?.sashes ?? 1;
-
-  // Размерные подписи
-  const wMm = cfg.width;
-  const hMm = cfg.height;
-
   const openings = cfg.openingTypes;
 
-  const sashW = frameW / sashes;
+  // Размеры SVG-холста
+  const LEFT_OFF = 32;   // место для вертикального размера
+  const BOT_OFF  = 28;   // место для горизонтального размера
+  const TOP_OFF  = 8;
+  const RIGHT_OFF = 8;
 
-  // Стрелка открывания (треугольник)
-  const openSymbol = (x: number, y: number, w: number, h: number, openType: string) => {
-    if (openType === "fixed") return null;
-    // Линия откидывания — диагональ снизу вверх
-    const cx = x + w / 2;
-    const cy = y + h / 2;
-    if (openType === "tilt") {
-      return <line x1={x + 2} y1={y + h - 2} x2={cx} y2={y + 4} stroke="#555" strokeWidth={0.8} strokeDasharray="3,2" />;
+  const FRAME_W = 160;
+  const FRAME_H = 130;
+  const svgW = LEFT_OFF + FRAME_W + RIGHT_OFF;
+  const svgH = TOP_OFF + FRAME_H + BOT_OFF;
+
+  const fx = LEFT_OFF;   // frame x
+  const fy = TOP_OFF;    // frame y
+  const FRAME_T = 6;     // толщина рамы
+
+  const sashW = FRAME_W / sashes;
+
+  // Символ открывания по DIN: линии из угла к центру/середине
+  const openSymbol = (sx: number, sy: number, sw: number, sh: number, ot: string, si: number) => {
+    const cx = sx + sw / 2;
+    const cy = sy + sh / 2;
+    const hingeX = sx + 4; // петли слева
+
+    if (ot === "fixed") {
+      // крест (глухая)
+      return (
+        <g stroke="#aaa" strokeWidth={0.7} strokeDasharray="4,3">
+          <line x1={sx + 2} y1={sy + 2} x2={sx + sw - 2} y2={sy + sh - 2} />
+          <line x1={sx + sw - 2} y1={sy + 2} x2={sx + 2} y2={sy + sh - 2} />
+        </g>
+      );
     }
-    if (openType === "swing") {
-      return <line x1={x + 2} y1={y + 2} x2={cx} y2={cy} stroke="#555" strokeWidth={0.8} strokeDasharray="3,2" />;
+    if (ot === "tilt") {
+      // откидная: линии из нижних углов к верхнему центру
+      return (
+        <g stroke="#333" strokeWidth={0.9}>
+          <line x1={sx + 2} y1={sy + sh - 2} x2={cx} y2={sy + 2} />
+          <line x1={sx + sw - 2} y1={sy + sh - 2} x2={cx} y2={sy + 2} />
+          {/* ось вращения снизу */}
+          <line x1={sx + 4} y1={sy + sh - 3} x2={sx + sw - 4} y2={sy + sh - 3} strokeWidth={1.5} />
+        </g>
+      );
     }
-    // tilt_swing: обе диагонали
+    if (ot === "swing") {
+      // поворотная: линии из правых углов к левому центру (петли слева)
+      return (
+        <g stroke="#333" strokeWidth={0.9}>
+          <line x1={sx + sw - 2} y1={sy + 2} x2={hingeX} y2={cy} />
+          <line x1={sx + sw - 2} y1={sy + sh - 2} x2={hingeX} y2={cy} />
+          {/* петли */}
+          <line x1={sx + 3} y1={sy + sh * 0.25} x2={sx + 3} y2={sy + sh * 0.35} strokeWidth={2} stroke="#555" />
+          <line x1={sx + 3} y1={sy + sh * 0.65} x2={sx + 3} y2={sy + sh * 0.75} strokeWidth={2} stroke="#555" />
+        </g>
+      );
+    }
+    // tilt_swing (поворотно-откидная): стандартный DIN символ
     return (
-      <>
-        <line x1={x + 2} y1={y + h - 2} x2={cx} y2={y + 4} stroke="#555" strokeWidth={0.8} strokeDasharray="3,2" />
-        <line x1={x + 2} y1={y + 2} x2={cx} y2={cy} stroke="#555" strokeWidth={0.8} strokeDasharray="3,2" />
-      </>
+      <g stroke="#333" strokeWidth={0.9}>
+        {/* поворот — из правых углов к левому центру */}
+        <line x1={sx + sw - 2} y1={sy + 2} x2={hingeX} y2={cy} />
+        <line x1={sx + sw - 2} y1={sy + sh - 2} x2={hingeX} y2={cy} />
+        {/* откид — из нижних углов к верхнему центру */}
+        <line x1={sx + 4} y1={sy + sh - 2} x2={cx} y2={sy + 2} strokeDasharray="4,2" />
+        <line x1={sx + sw - 4} y1={sy + sh - 2} x2={cx} y2={sy + 2} strokeDasharray="4,2" />
+        {/* петли */}
+        <line x1={sx + 3} y1={sy + sh * 0.25} x2={sx + 3} y2={sy + sh * 0.35} strokeWidth={2} stroke="#555" />
+        <line x1={sx + 3} y1={sy + sh * 0.65} x2={sx + 3} y2={sy + sh * 0.75} strokeWidth={2} stroke="#555" />
+      </g>
     );
   };
 
+  const dimId = `dim-${idx}`;
+
   return (
-    <svg width={width + 40} height={height + 30} xmlns="http://www.w3.org/2000/svg" style={{ fontFamily: "Arial, sans-serif" }}>
-      {/* Рамка */}
-      <rect x={pad + 20} y={pad} width={frameW} height={frameH} fill="none" stroke="#000" strokeWidth={2.5} />
+    <svg width={svgW} height={svgH} xmlns="http://www.w3.org/2000/svg" style={{ fontFamily: "Arial, sans-serif", overflow: "visible" }}>
+      <defs>
+        <marker id={`arr-${idx}`} markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <polygon points="0 0, 6 3, 0 6" fill="#444" />
+        </marker>
+        <marker id={`arrL-${idx}`} markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto-start-reverse">
+          <polygon points="0 0, 6 3, 0 6" fill="#444" />
+        </marker>
+      </defs>
+
+      {/* Внешняя рама (толстая) */}
+      <rect x={fx} y={fy} width={FRAME_W} height={FRAME_H} fill="#f0f4f8" stroke="#1a1a1a" strokeWidth={3} />
+
+      {/* Внутренний контур рамы */}
+      <rect x={fx + FRAME_T} y={fy + FRAME_T} width={FRAME_W - FRAME_T * 2} height={FRAME_H - FRAME_T * 2} fill="none" stroke="#555" strokeWidth={0.8} />
 
       {/* Подоконник */}
-      <rect x={pad + 16} y={pad + frameH} width={frameW + 8} height={5} fill="#ccc" stroke="#999" strokeWidth={0.5} />
+      <rect x={fx - 4} y={fy + FRAME_H} width={FRAME_W + 8} height={6} fill="#ccc" stroke="#888" strokeWidth={0.7} rx={1} />
 
       {/* Створки */}
       {Array.from({ length: sashes }).map((_, i) => {
-        const sx = pad + 20 + i * sashW + 4;
-        const sy = pad + 4;
-        const sw = sashW - 8;
-        const sh = frameH - 8;
+        const sx = fx + FRAME_T + i * (sashW - FRAME_T * 2 / sashes) + (i > 0 ? FRAME_T * i * 2 / sashes : 0);
+        // упрощённо: равномерно делим внутреннее пространство
+        const innerW = FRAME_W - FRAME_T * 2;
+        const innerH = FRAME_H - FRAME_T * 2;
+        const sw_inner = innerW / sashes;
+        const isx = fx + FRAME_T + i * sw_inner;
+        const isy = fy + FRAME_T;
+        const sashPad = 4;
+        const glassx = isx + sashPad;
+        const glassy = isy + sashPad;
+        const glassW = sw_inner - sashPad * 2;
+        const glassH = innerH - sashPad * 2;
         const ot = openings[i] ?? "tilt_swing";
+
         return (
           <g key={i}>
-            <rect x={sx} y={sy} width={sw} height={sh} fill={ot === "fixed" ? "#e8f0fe" : "#dbeafe"} stroke="#555" strokeWidth={1} />
-            {openSymbol(sx, sy, sw, sh, ot)}
+            {/* Рамка створки */}
+            <rect x={isx} y={isy} width={sw_inner} height={innerH} fill="none" stroke="#666" strokeWidth={1.2} />
+            {/* Стекло */}
+            <rect x={glassx} y={glassy} width={glassW} height={glassH}
+              fill={ot === "fixed" ? "#dce8f5" : "#c8dff5"}
+              stroke="#99b8d0" strokeWidth={0.5} opacity={0.8}
+            />
+            {/* Символ открывания */}
+            {openSymbol(glassx, glassy, glassW, glassH, ot, i)}
           </g>
         );
       })}
 
-      {/* Размер — ширина (снизу) */}
-      <line x1={pad + 20} y1={pad + frameH + 16} x2={pad + 20 + frameW} y2={pad + frameH + 16} stroke="#333" strokeWidth={0.8} markerEnd="url(#arrow)" markerStart="url(#arrowR)" />
-      <text x={pad + 20 + frameW / 2} y={pad + frameH + 26} textAnchor="middle" fontSize={8} fill="#333">{wMm} мм</text>
+      {/* Размерная линия — ширина (снизу) */}
+      <line
+        x1={fx} y1={fy + FRAME_H + 16}
+        x2={fx + FRAME_W} y2={fy + FRAME_H + 16}
+        stroke="#444" strokeWidth={0.8}
+        markerEnd={`url(#arr-${idx})`} markerStart={`url(#arrL-${idx})`}
+      />
+      {/* засечки */}
+      <line x1={fx} y1={fy + FRAME_H + 12} x2={fx} y2={fy + FRAME_H + 20} stroke="#444" strokeWidth={0.8} />
+      <line x1={fx + FRAME_W} y1={fy + FRAME_H + 12} x2={fx + FRAME_W} y2={fy + FRAME_H + 20} stroke="#444" strokeWidth={0.8} />
+      <text x={fx + FRAME_W / 2} y={fy + FRAME_H + 26} textAnchor="middle" fontSize={9} fill="#222" fontWeight="bold">
+        {cfg.width} мм
+      </text>
 
-      {/* Размер — высота (справа) */}
-      <line x1={pad + 20 + frameW + 8} y1={pad} x2={pad + 20 + frameW + 8} y2={pad + frameH} stroke="#333" strokeWidth={0.8} />
-      <text x={pad + 20 + frameW + 16} y={pad + frameH / 2} textAnchor="start" fontSize={8} fill="#333" dominantBaseline="middle">{hMm}</text>
-
-      <defs>
-        <marker id="arrow" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
-          <polygon points="0 0, 5 2.5, 0 5" fill="#333" />
-        </marker>
-        <marker id="arrowR" markerWidth="5" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
-          <polygon points="0 0, 5 2.5, 0 5" fill="#333" />
-        </marker>
-      </defs>
+      {/* Размерная линия — высота (слева) */}
+      <line
+        x1={fx - 18} y1={fy}
+        x2={fx - 18} y2={fy + FRAME_H}
+        stroke="#444" strokeWidth={0.8}
+        markerEnd={`url(#arr-${idx})`} markerStart={`url(#arrL-${idx})`}
+      />
+      <line x1={fx - 22} y1={fy} x2={fx - 14} y2={fy} stroke="#444" strokeWidth={0.8} />
+      <line x1={fx - 22} y1={fy + FRAME_H} x2={fx - 14} y2={fy + FRAME_H} stroke="#444" strokeWidth={0.8} />
+      <text
+        x={fx - 26} y={fy + FRAME_H / 2}
+        textAnchor="middle" fontSize={9} fill="#222" fontWeight="bold"
+        transform={`rotate(-90, ${fx - 26}, ${fy + FRAME_H / 2})`}
+      >
+        {cfg.height} мм
+      </text>
     </svg>
   );
 }
@@ -163,7 +247,6 @@ function WindowCard({ cfg, idx, markupPct }: { cfg: WindowConfig; idx: number; m
   const openLabels = cfg.openingTypes.map(o => OPENING_TYPES.find(x => x.value === o)?.label ?? o);
 
   const baseUnit = markupPct > 0 ? Math.round(cfg.totalPrice / cfg.quantity / (1 + markupPct / 100)) : Math.round(cfg.totalPrice / cfg.quantity);
-  const markupUnit = Math.round(cfg.totalPrice / cfg.quantity) - baseUnit;
 
   return (
     <div className="window-block">
@@ -173,7 +256,7 @@ function WindowCard({ cfg, idx, markupPct }: { cfg: WindowConfig; idx: number; m
       </div>
       <div className="window-body">
         <div className="scheme-wrap">
-          <WindowScheme cfg={cfg} />
+          <WindowScheme cfg={cfg} idx={idx} />
           <p style={{ fontSize: 7.5, color: "#666", textAlign: "center" }}>Схема (не в масштабе)</p>
         </div>
         <div className="window-specs">

@@ -77,11 +77,17 @@ export default function Windows() {
     const date = now.toLocaleDateString("ru-RU");
     const docNum = String(now.getTime()).slice(-6);
 
+    // Если список пустой — добавляем текущую конфигурацию
+    const exportConfigs = configs.length > 0
+      ? configs
+      : [{ ...cfg, id: `win-${Date.now()}`, totalPrice: price }];
+    const exportTotal = exportConfigs.reduce((s, c) => s + c.totalPrice, 0);
+
     navigate("/windows/print", {
       state: {
-        configs,
+        configs: exportConfigs,
         markupPct,
-        totalSum,
+        totalSum: exportTotal,
         docNum,
         date,
         ...data,
@@ -118,7 +124,7 @@ export default function Windows() {
               </Button>
               <Button
                 size="sm"
-                disabled={configs.length === 0}
+                disabled={price === 0}
                 onClick={() => setShowExport(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
