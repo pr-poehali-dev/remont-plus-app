@@ -112,6 +112,35 @@ export default function Catalog() {
         </div>
       </header>
 
+      <div className="container mx-auto px-4 pt-6">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 to-purple-500 p-6 md:p-8 mb-6">
+          <div className="absolute -right-8 -top-8 w-48 h-48 bg-white/10 rounded-full" />
+          <div className="absolute -right-2 bottom-0 w-28 h-28 bg-white/10 rounded-full" />
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="text-white">
+              <div className="inline-flex items-center gap-1.5 bg-white/20 text-white/90 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                <Icon name="Zap" size={12} />
+                Работает сразу — без регистрации
+              </div>
+              <h2 className="text-xl md:text-2xl font-extrabold mb-1 leading-snug">
+                Нашли мастера? Уже знаете цену работ
+              </h2>
+              <p className="text-white/85 text-sm md:text-base max-w-md">
+                Наш калькулятор посчитает смету по актуальному прайсу — бесплатно и без переписки. Покажите мастеру готовый документ.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate('/calculator')}
+              size="lg"
+              className="bg-white text-purple-600 hover:bg-purple-50 font-bold rounded-xl shrink-0 shadow-lg shadow-purple-700/20 px-7"
+            >
+              <Icon name="Calculator" size={17} className="mr-2" />
+              Рассчитать смету
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 py-6">
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">

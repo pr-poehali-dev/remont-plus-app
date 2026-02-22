@@ -137,6 +137,35 @@ export default function Masters() {
         </div>
       </div>
 
+      <div className="max-w-4xl mx-auto px-4 pt-2 pb-0">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-500 p-6 md:p-8 mb-6">
+          <div className="absolute -right-8 -top-8 w-48 h-48 bg-white/10 rounded-full" />
+          <div className="absolute -right-2 bottom-0 w-28 h-28 bg-white/10 rounded-full" />
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="text-white">
+              <div className="inline-flex items-center gap-1.5 bg-white/20 text-white/90 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                <Icon name="FileCheck" size={12} />
+                Бесплатно — за 2 минуты
+              </div>
+              <h2 className="text-xl md:text-2xl font-extrabold mb-1 leading-snug">
+                Приходите к мастеру с готовой сметой
+              </h2>
+              <p className="text-white/85 text-sm md:text-base max-w-md">
+                Не торгуйтесь вслепую. Наш калькулятор считает стоимость работ по реальным расценкам — покажите документ, и цена будет честной.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate('/calculator')}
+              size="lg"
+              className="bg-white text-blue-600 hover:bg-blue-50 font-bold rounded-xl shrink-0 shadow-lg shadow-blue-700/20 px-7"
+            >
+              <Icon name="FileText" size={17} className="mr-2" />
+              Составить смету
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-4xl mx-auto px-4 py-6">
         <MastersFilters
           search={search}
