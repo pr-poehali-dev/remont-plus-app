@@ -15,6 +15,13 @@ interface PrintData {
   email?: string;
   validDays?: string;
   docType?: "smeta" | "kp";
+  inn?: string;
+  kpp?: string;
+  ogrn?: string;
+  legalAddress?: string;
+  bank?: string;
+  bik?: string;
+  checkingAccount?: string;
   totalMaterials: number;
   totalWorks: number;
   adjustedWorks: number;
@@ -291,9 +298,12 @@ function KpView({ data }: { data: PrintData }) {
   const {
     items, lemanaItems, materialSurcharge, customer, contractor, address,
     phone, email, validDays = "30",
+    inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount,
     totalMaterials, adjustedWorks, grandTotal, deliveryCost = 0,
     deliveryFloor, deliveryHasElevator, docNum, date,
   } = data;
+
+  const hasRequisites = inn || kpp || ogrn || legalAddress || bank || bik || checkingAccount;
 
   const totalWithDelivery = grandTotal + deliveryCost;
   const lemanaTotal = lemanaItems.reduce((s, i) => {
@@ -320,34 +330,44 @@ function KpView({ data }: { data: PrintData }) {
       <p className="doc-title">Коммерческое предложение</p>
       <p className="doc-subtitle">КП-{docNum} от {date} г.</p>
 
-      <table className="meta-table">
+      {/* Шапка: две колонки — адресат слева, исполнитель справа */}
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 14, fontSize: "9pt" }}>
         <tbody>
           <tr>
-            <td>Кому:</td>
-            <td>{customer || ""}</td>
+            <td style={{ width: "50%", verticalAlign: "top", paddingRight: 16 }}>
+              <div style={{ fontWeight: 700, textTransform: "uppercase", fontSize: "8pt", color: "#555", marginBottom: 4, letterSpacing: "0.4px" }}>Кому</div>
+              <div style={{ fontWeight: 700, fontSize: "10pt" }}>{customer || <span style={{ color: "#aaa" }}>_________________________</span>}</div>
+              {address && <div style={{ marginTop: 3, color: "#333" }}>Адрес объекта: {address}</div>}
+            </td>
+            <td style={{ width: "50%", verticalAlign: "top", borderLeft: "1.5px solid #000", paddingLeft: 16 }}>
+              <div style={{ fontWeight: 700, textTransform: "uppercase", fontSize: "8pt", color: "#555", marginBottom: 4, letterSpacing: "0.4px" }}>Исполнитель</div>
+              <div style={{ fontWeight: 700, fontSize: "10pt" }}>{contractor || <span style={{ color: "#aaa" }}>_________________________</span>}</div>
+              {phone && <div style={{ marginTop: 3, color: "#333" }}>Тел.: {phone}</div>}
+              {email && <div style={{ color: "#333" }}>Email: {email}</div>}
+              {legalAddress && <div style={{ color: "#333" }}>Адрес: {legalAddress}</div>}
+            </td>
           </tr>
-          <tr>
-            <td>От кого:</td>
-            <td>{contractor || ""}</td>
-          </tr>
-          {phone && (
-            <tr>
-              <td>Телефон:</td>
-              <td>{phone}</td>
-            </tr>
-          )}
-          {email && (
-            <tr>
-              <td>Email:</td>
-              <td>{email}</td>
-            </tr>
-          )}
-          {address && (
-            <tr>
-              <td>Адрес объекта:</td>
-              <td>{address}</td>
-            </tr>
-          )}
+        </tbody>
+      </table>
+
+      {/* Реквизиты */}
+      {hasRequisites && (
+        <div style={{ border: "1px solid #ccc", borderRadius: 2, padding: "7px 10px", marginBottom: 14, fontSize: "8pt", color: "#333" }}>
+          <div style={{ fontWeight: 700, textTransform: "uppercase", fontSize: "7.5pt", color: "#555", marginBottom: 5, letterSpacing: "0.4px" }}>Реквизиты исполнителя</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 24px" }}>
+            {inn && <div><strong>ИНН:</strong> {inn}</div>}
+            {kpp && <div><strong>КПП:</strong> {kpp}</div>}
+            {ogrn && <div><strong>ОГРН:</strong> {ogrn}</div>}
+            {bank && <div><strong>Банк:</strong> {bank}</div>}
+            {bik && <div><strong>БИК:</strong> {bik}</div>}
+            {checkingAccount && <div style={{ gridColumn: checkingAccount.length > 24 ? "span 2" : undefined }}><strong>Р/с:</strong> {checkingAccount}</div>}
+          </div>
+        </div>
+      )}
+
+      {/* Мета: дата и срок */}
+      <table className="meta-table" style={{ marginBottom: 14 }}>
+        <tbody>
           <tr>
             <td>Дата:</td>
             <td>{date} г.</td>

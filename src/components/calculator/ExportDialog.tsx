@@ -6,17 +6,49 @@ import Icon from "@/components/ui/icon";
 
 type DocType = "smeta" | "kp";
 
+export interface ExportConfirmData {
+  customer: string;
+  contractor: string;
+  address: string;
+  phone: string;
+  email: string;
+  validDays: string;
+  docType: DocType;
+  inn: string;
+  kpp: string;
+  ogrn: string;
+  legalAddress: string;
+  bank: string;
+  bik: string;
+  checkingAccount: string;
+}
+
 interface ExportDialogProps {
-  onConfirm: (data: {
-    customer: string;
-    contractor: string;
-    address: string;
-    phone: string;
-    email: string;
-    validDays: string;
-    docType: DocType;
-  }) => void;
+  onConfirm: (data: ExportConfirmData) => void;
   onCancel: () => void;
+}
+
+function Field({
+  id, label, hint, placeholder, value, onChange, type = "text", autoFocus,
+}: {
+  id: string; label: string; hint?: string; placeholder?: string;
+  value: string; onChange: (v: string) => void; type?: string; autoFocus?: boolean;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>
+        {label}{hint && <span className="text-gray-400 text-xs ml-1">{hint}</span>}
+      </Label>
+      <Input
+        id={id}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        type={type}
+        autoFocus={autoFocus}
+      />
+    </div>
+  );
 }
 
 export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps) {
@@ -27,6 +59,17 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [validDays, setValidDays] = useState("30");
+  const [inn, setInn] = useState("");
+  const [kpp, setKpp] = useState("");
+  const [ogrn, setOgrn] = useState("");
+  const [legalAddress, setLegalAddress] = useState("");
+  const [bank, setBank] = useState("");
+  const [bik, setBik] = useState("");
+  const [checkingAccount, setCheckingAccount] = useState("");
+
+  const handleConfirm = () => {
+    onConfirm({ customer, contractor, address, phone, email, validDays, docType, inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount });
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -41,14 +84,12 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
           </div>
         </div>
 
-        {/* Выбор типа документа */}
+        {/* Тип документа */}
         <div className="grid grid-cols-2 gap-2 mb-5 p-1 bg-gray-100 rounded-xl">
           <button
             onClick={() => setDocType("smeta")}
             className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              docType === "smeta"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+              docType === "smeta" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
             }`}
           >
             <Icon name="ClipboardList" size={15} />
@@ -57,9 +98,7 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
           <button
             onClick={() => setDocType("kp")}
             className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              docType === "kp"
-                ? "bg-white text-orange-600 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+              docType === "kp" ? "bg-white text-orange-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
             }`}
           >
             <Icon name="Handshake" size={15} />
@@ -70,95 +109,30 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
         <div className="space-y-4">
           {docType === "kp" ? (
             <>
-              <div className="space-y-1.5">
-                <Label htmlFor="customer">Кому адресовано <span className="text-gray-400 text-xs">(ФИО или организация)</span></Label>
-                <Input
-                  id="customer"
-                  placeholder="Иванов Иван Иванович"
-                  value={customer}
-                  onChange={(e) => setCustomer(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="contractor">От кого <span className="text-gray-400 text-xs">(подрядчик / компания)</span></Label>
-                <Input
-                  id="contractor"
-                  placeholder="ИП Петров П.П."
-                  value={contractor}
-                  onChange={(e) => setContractor(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="phone">Телефон для связи</Label>
-                <Input
-                  id="phone"
-                  placeholder="+7 (900) 000-00-00"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  placeholder="info@example.ru"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="address">Адрес объекта</Label>
-                <Input
-                  id="address"
-                  placeholder="г. Самара, ул. Ленина, д. 1, кв. 10"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="validDays">Срок действия КП (дней)</Label>
-                <Input
-                  id="validDays"
-                  placeholder="30"
-                  value={validDays}
-                  onChange={(e) => setValidDays(e.target.value)}
-                  type="number"
-                  min={1}
-                  max={365}
-                />
-              </div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Адресат</p>
+              <Field id="customer" label="Кому адресовано" hint="(ФИО или организация)" placeholder="Иванов Иван Иванович" value={customer} onChange={setCustomer} autoFocus />
+
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Исполнитель</p>
+              <Field id="contractor" label="Название компании / ФИО" hint="(подрядчик)" placeholder="ООО «Ремонт Плюс»" value={contractor} onChange={setContractor} />
+              <Field id="phone" label="Телефон" placeholder="+7 (900) 000-00-00" value={phone} onChange={setPhone} />
+              <Field id="email" label="Email" placeholder="info@example.ru" value={email} onChange={setEmail} />
+              <Field id="address" label="Адрес объекта" placeholder="г. Самара, ул. Ленина, д. 1, кв. 10" value={address} onChange={setAddress} />
+              <Field id="validDays" label="Срок действия КП (дней)" placeholder="30" value={validDays} onChange={setValidDays} type="number" />
+
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Реквизиты компании <span className="text-gray-400 normal-case font-normal">(необязательно)</span></p>
+              <Field id="inn" label="ИНН" placeholder="7701234567" value={inn} onChange={setInn} />
+              <Field id="kpp" label="КПП" placeholder="770101001" value={kpp} onChange={setKpp} />
+              <Field id="ogrn" label="ОГРН / ОГРНИП" placeholder="1027700132460" value={ogrn} onChange={setOgrn} />
+              <Field id="legalAddress" label="Юридический адрес" placeholder="г. Москва, ул. Примерная, д. 1" value={legalAddress} onChange={setLegalAddress} />
+              <Field id="bank" label="Банк" placeholder="ПАО Сбербанк" value={bank} onChange={setBank} />
+              <Field id="bik" label="БИК" placeholder="044525225" value={bik} onChange={setBik} />
+              <Field id="checkingAccount" label="Расчётный счёт" placeholder="40702810938000000001" value={checkingAccount} onChange={setCheckingAccount} />
             </>
           ) : (
             <>
-              <div className="space-y-1.5">
-                <Label htmlFor="customer">Заказчик <span className="text-gray-400 text-xs">(ФИО или название организации)</span></Label>
-                <Input
-                  id="customer"
-                  placeholder="Иванов Иван Иванович"
-                  value={customer}
-                  onChange={(e) => setCustomer(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="contractor">Подрядчик <span className="text-gray-400 text-xs">(ФИО или название организации)</span></Label>
-                <Input
-                  id="contractor"
-                  placeholder="ИП Петров П.П."
-                  value={contractor}
-                  onChange={(e) => setContractor(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="address">Адрес объекта</Label>
-                <Input
-                  id="address"
-                  placeholder="г. Самара, ул. Ленина, д. 1, кв. 10"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                />
-              </div>
+              <Field id="customer" label="Заказчик" hint="(ФИО или название организации)" placeholder="Иванов Иван Иванович" value={customer} onChange={setCustomer} autoFocus />
+              <Field id="contractor" label="Подрядчик" hint="(ФИО или название организации)" placeholder="ИП Петров П.П." value={contractor} onChange={setContractor} />
+              <Field id="address" label="Адрес объекта" placeholder="г. Самара, ул. Ленина, д. 1, кв. 10" value={address} onChange={setAddress} />
             </>
           )}
         </div>
@@ -173,7 +147,7 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
           </Button>
           <Button
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
-            onClick={() => onConfirm({ customer, contractor, address, phone, email, validDays, docType })}
+            onClick={handleConfirm}
           >
             <Icon name="Printer" size={15} className="mr-2" />
             Открыть документ
