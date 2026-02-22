@@ -108,12 +108,12 @@ export interface GlassCoating {
 
 export const GLASS_COATINGS: GlassCoating[] = [
   { id: "none",         name: "Без покрытия",         description: "Стандартное стекло",                  priceAdd: 0    },
-  { id: "energy_save",  name: "K-стекло (i-стекло)",  description: "Энергосберегающее покрытие",          priceAdd: 450  },
-  { id: "low_e",        name: "Low-E (мягкое)",        description: "Нейтральное, макс. светопропускание", priceAdd: 650  },
-  { id: "solar_ctrl",   name: "Солнцезащитное",        description: "Отражение тепла до 60%",              priceAdd: 800  },
-  { id: "self_clean",   name: "Самоочищающееся",       description: "Гидрофильное покрытие Pilkington",    priceAdd: 1200 },
-  { id: "decorative",   name: "Тонированное",          description: "Серый, бронза, синий",                priceAdd: 600  },
-  { id: "frosted",      name: "Матовое (сатин)",       description: "Пескоструйное или кислотное травление", priceAdd: 700  },
+  { id: "energy_save",  name: "K-стекло (i-стекло)",  description: "Энергосберегающее покрытие",          priceAdd: 585  },
+  { id: "low_e",        name: "Low-E (мягкое)",        description: "Нейтральное, макс. светопропускание", priceAdd: 845  },
+  { id: "solar_ctrl",   name: "Солнцезащитное",        description: "Отражение тепла до 60%",              priceAdd: 1040 },
+  { id: "self_clean",   name: "Самоочищающееся",       description: "Гидрофильное покрытие Pilkington",    priceAdd: 1560 },
+  { id: "decorative",   name: "Тонированное",          description: "Серый, бронза, синий",                priceAdd: 780  },
+  { id: "frosted",      name: "Матовое (сатин)",       description: "Пескоструйное или кислотное травление", priceAdd: 910  },
 ];
 
 // ─── Ламинирование профиля ───────────────────────────────────────────────────
@@ -127,13 +127,13 @@ export interface LaminationType {
 
 export const LAMINATION_TYPES: LaminationType[] = [
   { id: "none",         name: "Без ламинации (белый)",   description: "Стандартный белый профиль",           priceAdd: 0   },
-  { id: "golden_oak",   name: "Золотой дуб",             description: "Тиснение под дерево",                priceAdd: 280 },
-  { id: "dark_oak",     name: "Тёмный дуб",              description: "Тёмная текстура дерева",             priceAdd: 280 },
-  { id: "mahogany",     name: "Махагон",                 description: "Красно-коричневый дуб",               priceAdd: 280 },
-  { id: "antracite",    name: "Антрацит (RAL 7016)",     description: "Тёмно-серый, популярный цвет",        priceAdd: 350 },
-  { id: "black",        name: "Чёрный (RAL 9005)",       description: "Чёрный матовый профиль",              priceAdd: 350 },
-  { id: "silver",       name: "Серебристый металлик",    description: "Алюминий под металл",                 priceAdd: 320 },
-  { id: "ral_custom",   name: "RAL по запросу",          description: "Любой цвет каталога RAL",             priceAdd: 500 },
+  { id: "golden_oak",   name: "Золотой дуб",             description: "Тиснение под дерево",                priceAdd: 365 },
+  { id: "dark_oak",     name: "Тёмный дуб",              description: "Тёмная текстура дерева",             priceAdd: 365 },
+  { id: "mahogany",     name: "Махагон",                 description: "Красно-коричневый дуб",               priceAdd: 365 },
+  { id: "antracite",    name: "Антрацит (RAL 7016)",     description: "Тёмно-серый, популярный цвет",        priceAdd: 455 },
+  { id: "black",        name: "Чёрный (RAL 9005)",       description: "Чёрный матовый профиль",              priceAdd: 455 },
+  { id: "silver",       name: "Серебристый металлик",    description: "Алюминий под металл",                 priceAdd: 415 },
+  { id: "ral_custom",   name: "RAL по запросу",          description: "Любой цвет каталога RAL",             priceAdd: 650 },
 ];
 
 // ─── Фурнитура ───────────────────────────────────────────────────────────────
@@ -147,15 +147,15 @@ export interface Hardware {
 }
 
 export const HARDWARE_OPTIONS: Hardware[] = [
-  { id: "maco_multi",     brand: "MACO",    series: "Multi-Matic",    description: "Австрия, базовая",          pricePerSash: 1800 },
-  { id: "maco_smart",     brand: "MACO",    series: "Smart",          description: "Австрия, с микропроветр.",  pricePerSash: 2400 },
-  { id: "roto_nt",        brand: "ROTO",    series: "NT",             description: "Германия, стандарт",        pricePerSash: 2000 },
-  { id: "roto_ntdesign",  brand: "ROTO",    series: "NT Design",      description: "Германия, скрытая петля",   pricePerSash: 3200 },
-  { id: "winkhaus_av2",   brand: "Winkhaus", series: "activPilot",    description: "Германия, автоматика",      pricePerSash: 3800 },
-  { id: "siegenia_ti",    brand: "Siegenia", series: "TITAN AF",      description: "Германия, высокая нагрузка",pricePerSash: 2800 },
-  { id: "gretsch_mf",     brand: "G-U",      series: "Secural MF",    description: "Германия, антивзломная",    pricePerSash: 3500 },
-  { id: "futuruss_301",   brand: "Futuruss", series: "F-301",         description: "Россия, базовая",           pricePerSash: 1200 },
-  { id: "kale_basic",     brand: "Kale",     series: "Basic",         description: "Турция, эконом",            pricePerSash: 1000 },
+  { id: "maco_multi",     brand: "MACO",    series: "Multi-Matic",    description: "Австрия, базовая",          pricePerSash: 2340 },
+  { id: "maco_smart",     brand: "MACO",    series: "Smart",          description: "Австрия, с микропроветр.",  pricePerSash: 3120 },
+  { id: "roto_nt",        brand: "ROTO",    series: "NT",             description: "Германия, стандарт",        pricePerSash: 2600 },
+  { id: "roto_ntdesign",  brand: "ROTO",    series: "NT Design",      description: "Германия, скрытая петля",   pricePerSash: 4160 },
+  { id: "winkhaus_av2",   brand: "Winkhaus", series: "activPilot",    description: "Германия, автоматика",      pricePerSash: 4940 },
+  { id: "siegenia_ti",    brand: "Siegenia", series: "TITAN AF",      description: "Германия, высокая нагрузка",pricePerSash: 3640 },
+  { id: "gretsch_mf",     brand: "G-U",      series: "Secural MF",    description: "Германия, антивзломная",    pricePerSash: 4550 },
+  { id: "futuruss_301",   brand: "Futuruss", series: "F-301",         description: "Россия, базовая",           pricePerSash: 1560 },
+  { id: "kale_basic",     brand: "Kale",     series: "Basic",         description: "Турция, эконом",            pricePerSash: 1300 },
 ];
 
 // ─── Тип открывания ─────────────────────────────────────────────────────────
@@ -188,12 +188,12 @@ export interface WindowSill {
 
 export const WINDOW_SILLS: WindowSill[] = [
   { id: "none",           brand: "—",         material: "Без подоконника",       pricePerMeter: 0    },
-  { id: "pvc_white",      brand: "Danke",     material: "ПВХ белый",             pricePerMeter: 450  },
-  { id: "pvc_marble",     brand: "Danke",     material: "ПВХ под мрамор",        pricePerMeter: 520  },
-  { id: "werzalit",       brand: "Werzalit",  material: "Вержалит (дерево-пластик)", pricePerMeter: 900 },
-  { id: "mdf_oak",        brand: "Egger",     material: "МДФ дуб",               pricePerMeter: 1100 },
-  { id: "granite",        brand: "—",         material: "Натуральный камень",    pricePerMeter: 3500 },
-  { id: "marble",         brand: "—",         material: "Мрамор",                pricePerMeter: 5000 },
+  { id: "pvc_white",      brand: "Danke",     material: "ПВХ белый",             pricePerMeter: 585  },
+  { id: "pvc_marble",     brand: "Danke",     material: "ПВХ под мрамор",        pricePerMeter: 675  },
+  { id: "werzalit",       brand: "Werzalit",  material: "Вержалит (дерево-пластик)", pricePerMeter: 1170 },
+  { id: "mdf_oak",        brand: "Egger",     material: "МДФ дуб",               pricePerMeter: 1430 },
+  { id: "granite",        brand: "—",         material: "Натуральный камень",    pricePerMeter: 4550 },
+  { id: "marble",         brand: "—",         material: "Мрамор",                pricePerMeter: 6500 },
 ];
 
 // ─── Откос ───────────────────────────────────────────────────────────────────
@@ -206,10 +206,10 @@ export interface Slope {
 
 export const SLOPES: Slope[] = [
   { id: "none",         name: "Без откосов",              pricePerMeter: 0    },
-  { id: "pvc_white",    name: "ПВХ панель белая",         pricePerMeter: 380  },
-  { id: "pvc_marble",   name: "ПВХ панель под мрамор",    pricePerMeter: 450  },
-  { id: "gypsum",       name: "Штукатурные (гипс)",       pricePerMeter: 650  },
-  { id: "mdf",          name: "МДФ крашеный",             pricePerMeter: 850  },
+  { id: "pvc_white",    name: "ПВХ панель белая",         pricePerMeter: 495  },
+  { id: "pvc_marble",   name: "ПВХ панель под мрамор",    pricePerMeter: 585  },
+  { id: "gypsum",       name: "Штукатурные (гипс)",       pricePerMeter: 845  },
+  { id: "mdf",          name: "МДФ крашеный",             pricePerMeter: 1105 },
 ];
 
 // ─── Итоговая конструкция ────────────────────────────────────────────────────
@@ -238,9 +238,9 @@ export interface WindowConfig {
 // ─── Базовая цена за м² конструкции ─────────────────────────────────────────
 
 export const BASE_PRICE_PER_M2: Record<ProfileMaterial, number> = {
-  pvc:           12000,
-  aluminum:      9500,
-  aluminum_warm: 22000,
+  pvc:           15600,
+  aluminum:      12350,
+  aluminum_warm: 28600,
 };
 
-export const INSTALLATION_PRICE_PER_M2 = 1800;
+export const INSTALLATION_PRICE_PER_M2 = 2340;
