@@ -17,7 +17,6 @@ import ExportDialog from "@/components/calculator/ExportDialog";
 import TemplatesDialog from "@/components/calculator/TemplatesDialog";
 import PaywallModal from "@/components/calculator/PaywallModal";
 import CalcTour from "@/components/calculator/CalcTour";
-import WindowCalculatorTab from "@/components/calculator/windows/WindowCalculatorTab";
 
 const FREE_PRINTS_KEY = "calc_free_prints_used";
 const FREE_PRINTS_LIMIT = 3;
@@ -223,7 +222,7 @@ export default function Calculator() {
           <div className="lg:col-span-2">
             <Card className="p-6 mb-6">
               <Tabs defaultValue="estimate">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="estimate">
                     Смета
                     {items.length > 0 && (
@@ -231,10 +230,6 @@ export default function Calculator() {
                         {items.length}
                       </Badge>
                     )}
-                  </TabsTrigger>
-                  <TabsTrigger value="windows">
-                    <Icon name="AppWindow" size={13} className="mr-1" />
-                    Окна
                   </TabsTrigger>
                   <TabsTrigger value="lemanapro" className="relative">
                     ЛеманаПро
@@ -249,10 +244,6 @@ export default function Calculator() {
                     Документы
                   </TabsTrigger>
                 </TabsList>
-
-                <TabsContent value="windows" className="mt-6">
-                  <WindowCalculatorTab onAddToEstimate={addItem} />
-                </TabsContent>
 
                 <TabsContent value="estimate" className="mt-6">
                   <EstimateTab
