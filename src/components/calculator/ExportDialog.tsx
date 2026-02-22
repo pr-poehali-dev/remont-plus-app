@@ -51,23 +51,30 @@ function Field({
   );
 }
 
+const STORAGE_KEY = "kp_requisites";
+function loadSaved() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { return {}; }
+}
+
 export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps) {
+  const saved = loadSaved();
   const [docType, setDocType] = useState<DocType>("smeta");
   const [customer, setCustomer] = useState("");
-  const [contractor, setContractor] = useState("");
+  const [contractor, setContractor] = useState(saved.contractor ?? "");
   const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState(saved.phone ?? "");
+  const [email, setEmail] = useState(saved.email ?? "");
   const [validDays, setValidDays] = useState("30");
-  const [inn, setInn] = useState("");
-  const [kpp, setKpp] = useState("");
-  const [ogrn, setOgrn] = useState("");
-  const [legalAddress, setLegalAddress] = useState("");
-  const [bank, setBank] = useState("");
-  const [bik, setBik] = useState("");
-  const [checkingAccount, setCheckingAccount] = useState("");
+  const [inn, setInn] = useState(saved.inn ?? "");
+  const [kpp, setKpp] = useState(saved.kpp ?? "");
+  const [ogrn, setOgrn] = useState(saved.ogrn ?? "");
+  const [legalAddress, setLegalAddress] = useState(saved.legalAddress ?? "");
+  const [bank, setBank] = useState(saved.bank ?? "");
+  const [bik, setBik] = useState(saved.bik ?? "");
+  const [checkingAccount, setCheckingAccount] = useState(saved.checkingAccount ?? "");
 
   const handleConfirm = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ contractor, phone, email, inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount }));
     onConfirm({ customer, contractor, address, phone, email, validDays, docType, inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount });
   };
 
