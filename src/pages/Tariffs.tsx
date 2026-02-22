@@ -6,6 +6,25 @@ import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
 import PricingPlans from "@/components/prices/PricingPlans";
+import PageTour from "@/components/ui/PageTour";
+
+const TARIFFS_TOUR = [
+  {
+    title: "Тарифы для любых задач",
+    text: "Есть разовые планы для частных клиентов и ежемесячные — для строительных компаний и студий.",
+    icon: "Layers",
+  },
+  {
+    title: "Попробуйте бесплатно",
+    text: "Нажмите «Попробовать бесплатно» — вы получите 3 бесплатные сметы без регистрации и оплаты.",
+    icon: "Sparkles",
+  },
+  {
+    title: "Остались вопросы?",
+    text: "Оставьте заявку — мы перезвоним в течение 15 минут и подберём подходящий тариф.",
+    icon: "Phone",
+  },
+];
 
 const NOTIFY_URL = "https://functions.poehali.dev/a8b87e78-89d1-48d8-ba76-8da2e0df32a3";
 
@@ -192,6 +211,8 @@ export default function Tariffs() {
       <footer className="py-8 text-center text-xs text-gray-400 mt-8">
         АВАНГАРД &copy; {new Date().getFullYear()}
       </footer>
+
+      <PageTour tourKey="tariffs_tour_done" steps={TARIFFS_TOUR} delay={1200} />
     </div>
   );
 }

@@ -5,6 +5,30 @@ import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
 import { type Region, type Category, type PriceCategory } from "@/components/prices/PricesTypes";
 import PriceListTable from "@/components/prices/PriceListTable";
+import PageTour from "@/components/ui/PageTour";
+
+const PRICES_TOUR = [
+  {
+    title: "Прайс-лист по регионам",
+    text: "Цены автоматически меняются в зависимости от выбранного города. Выберите свой регион в фильтре.",
+    icon: "MapPin",
+  },
+  {
+    title: "Фильтр по категориям",
+    text: "Используйте фильтр категорий, чтобы быстро найти нужный вид работ — штукатурка, электрика, сантехника и др.",
+    icon: "LayoutList",
+  },
+  {
+    title: "Поиск по названию",
+    text: "Введите название работы в строку поиска — например «плитка» или «шпаклёвка» — и найдёте цену за секунды.",
+    icon: "Search",
+  },
+  {
+    title: "Перейдите к расчёту сметы",
+    text: "Нашли нужные работы? Нажмите «Рассчитать смету» и получите полный документ с итоговой стоимостью.",
+    icon: "Calculator",
+  },
+];
 
 const API_URL =
   "https://functions.poehali.dev/4dae7ba0-b573-436a-b4c6-d3b0abf69fce";
@@ -147,6 +171,8 @@ export default function Prices() {
       <footer className="py-8 text-center text-xs text-gray-400 mt-8">
         АВАНГАРД &copy; {new Date().getFullYear()}
       </footer>
+
+      <PageTour tourKey="prices_tour_done" steps={PRICES_TOUR} delay={1000} />
     </div>
   );
 }
