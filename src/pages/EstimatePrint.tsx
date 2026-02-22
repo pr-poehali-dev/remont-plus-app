@@ -413,13 +413,7 @@ function KpView({ data }: { data: PrintData }) {
         </ol>
       </div>
 
-      <div className="signatures">
-        <div className="sig-block">
-          <h3>Заказчик</h3>
-          <div className="sig-line">ФИО: {customer || <div className="line" />}</div>
-          <div className="sig-line">Подпись: <div className="line" /></div>
-          <div className="sig-line">Дата: <div className="line" /></div>
-        </div>
+      <div style={{ marginTop: 20, maxWidth: "50%" }}>
         <div className="sig-block">
           <h3>Исполнитель</h3>
           <div className="sig-line">ФИО: {contractor || <div className="line" />}</div>
