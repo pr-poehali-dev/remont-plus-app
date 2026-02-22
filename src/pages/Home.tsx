@@ -90,6 +90,17 @@ const sections = [
     path: "/lemanapro",
     requireAuth: false,
   },
+  {
+    id: "windows",
+    title: "ОКНА",
+    description: "Расчёт стоимости окон ПВХ и алюминиевых конструкций, смета и КП с чертежом",
+    emoji: "🪟",
+    icon: "AppWindow",
+    gradient: "from-sky-400 via-blue-400 to-indigo-400",
+    glow: "group-hover:shadow-sky-300/50",
+    path: "/windows",
+    requireAuth: false,
+  },
 ];
 
 interface RegionData {
@@ -256,7 +267,7 @@ export default function Home() {
             </div>
 
             {/* Sections — one row of 6 */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 animate-slide-up">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 animate-slide-up">
               {sections.map((section, idx) => (
                 <div
                   key={section.id}
