@@ -302,7 +302,7 @@ export default function Calculator() {
       {showExportDialog && (
         <ExportDialog
           onCancel={() => setShowExportDialog(false)}
-          onConfirm={({ customer, contractor, address }) => {
+          onConfirm={({ customer, contractor, address, phone, email, validDays, docType }) => {
             setShowExportDialog(false);
             const docNum = Date.now().toString().slice(-6);
             const date = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -314,6 +314,10 @@ export default function Calculator() {
                 customer,
                 contractor,
                 address,
+                phone,
+                email,
+                validDays,
+                docType,
                 totalMaterials,
                 totalWorks,
                 adjustedWorks,
