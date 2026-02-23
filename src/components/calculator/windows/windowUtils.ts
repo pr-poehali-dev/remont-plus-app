@@ -1,6 +1,6 @@
 import {
   PROFILE_SYSTEMS, GLASS_UNITS, GLASS_COATINGS, LAMINATION_TYPES,
-  HARDWARE_OPTIONS, WINDOW_SILLS, SLOPES, OPENING_TYPES,
+  HARDWARE_OPTIONS, WINDOW_SILLS, SLOPES, OPENING_TYPES, WINDOW_REGIONS,
   BASE_PRICE_PER_M2, INSTALLATION_PRICE_PER_M2,
 } from "./WindowTypes";
 import type { WindowConfig, ProfileMaterial, OpeningType } from "./WindowTypes";
@@ -24,6 +24,7 @@ export const DEFAULT_CONFIG: Omit<WindowConfig, "id" | "totalPrice"> = {
   glassUnitId: "2ch_4_10_4_10_4",
   glassCoatingId: "none",
   laminationId: "none",
+  laminationBothSides: false,
   hardwareId: "maco_multi",
   openingTypes: ["tilt_swing", "fixed"],
   windowSillId: "pvc_white",
@@ -31,6 +32,7 @@ export const DEFAULT_CONFIG: Omit<WindowConfig, "id" | "totalPrice"> = {
   slopeId: "pvc_white",
   slopePerimeter: 5,
   installationIncluded: true,
+  regionId: "moscow",
   note: "",
 };
 
@@ -61,7 +63,8 @@ export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">): number 
   price += (coating?.priceAdd ?? 0) * area;
 
   const perim = 2 * ((cfg.width + cfg.height) / 1000);
-  price += (lam?.priceAdd ?? 0) * perim;
+  const lamSides = cfg.laminationBothSides && lam && lam.id !== "none" ? 2 : 1;
+  price += (lam?.priceAdd ?? 0) * perim * lamSides;
 
   const openSashes = cfg.openingTypes.filter(o => o !== "fixed").length || 1;
   price += (hw?.pricePerSash ?? 0) * openSashes;
@@ -72,6 +75,9 @@ export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">): number 
   price += (slope?.pricePerMeter ?? 0) * cfg.slopePerimeter;
 
   if (cfg.installationIncluded) price += INSTALLATION_PRICE_PER_M2 * area;
+
+  const region = WINDOW_REGIONS.find(r => r.id === cfg.regionId);
+  price *= region?.priceCoeff ?? 1.0;
 
   return Math.round(price * cfg.quantity);
 }

@@ -10,7 +10,7 @@ import Icon from "@/components/ui/icon";
 import {
   CONSTRUCTION_TYPES, PROFILE_SYSTEMS, GLASS_UNITS, GLASS_COATINGS,
   LAMINATION_TYPES, HARDWARE_OPTIONS, OPENING_TYPES, WINDOW_SILLS, SLOPES,
-  INSTALLATION_PRICE_PER_M2,
+  INSTALLATION_PRICE_PER_M2, WINDOW_REGIONS,
 } from "./WindowTypes";
 import type { WindowConfig, ProfileMaterial, OpeningType } from "./WindowTypes";
 import { MAT_LABEL, fmt } from "./windowUtils";
@@ -206,6 +206,19 @@ export default function WindowConfigForm({
             </button>
           ))}
         </div>
+        {cfg.laminationId !== "none" && (
+          <div className="mt-3 pt-3 border-t flex items-center gap-3">
+            <Checkbox
+              id="lam-both"
+              checked={cfg.laminationBothSides}
+              onCheckedChange={v => onUpdate({ laminationBothSides: !!v })}
+            />
+            <Label htmlFor="lam-both" className="cursor-pointer text-xs">
+              <span className="font-medium">Ламинирование с двух сторон</span>
+              <span className="text-gray-400 ml-2">×2 к стоимости ламинации</span>
+            </Label>
+          </div>
+        )}
       </Card>
 
       {/* Фурнитура */}
@@ -276,6 +289,34 @@ export default function WindowConfigForm({
               value={cfg.slopePerimeter} onChange={e => onUpdate({ slopePerimeter: +e.target.value })} />
           </div>
         )}
+      </Card>
+
+      {/* Регион */}
+      <Card className="p-4">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+          <Icon name="MapPin" size={13} />
+          Регион
+        </p>
+        <Select value={cfg.regionId} onValueChange={v => onUpdate({ regionId: v })}>
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {WINDOW_REGIONS.map(r => (
+              <SelectItem key={r.id} value={r.id} className="text-sm">
+                <span>{r.name}</span>
+                {r.priceCoeff !== 1.0 && (
+                  <span className="ml-2 text-xs text-gray-400">
+                    {r.priceCoeff < 1 ? `−${Math.round((1 - r.priceCoeff) * 100)}%` : `+${Math.round((r.priceCoeff - 1) * 100)}%`}
+                  </span>
+                )}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-gray-400 mt-2">
+          Цены скорректированы с учётом регионального рынка
+        </p>
       </Card>
 
       {/* Монтаж */}

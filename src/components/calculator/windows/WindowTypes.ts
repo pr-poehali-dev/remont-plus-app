@@ -125,7 +125,15 @@ export interface LaminationType {
   priceAdd: number; // руб/пм профиля
 }
 
-export const LAMINATION_TYPES: LaminationType[] = [
+export interface LaminationOption {
+  id: string;
+  name: string;
+  description: string;
+  priceAdd: number;    // руб/пм — одна сторона
+  bothSides?: boolean; // признак двусторонней ламинации (задаётся отдельным флагом)
+}
+
+export const LAMINATION_TYPES: LaminationOption[] = [
   { id: "none",         name: "Без ламинации (белый)",   description: "Стандартный белый профиль",           priceAdd: 0   },
   { id: "golden_oak",   name: "Золотой дуб",             description: "Тиснение под дерево",                priceAdd: 365 },
   { id: "dark_oak",     name: "Тёмный дуб",              description: "Тёмная текстура дерева",             priceAdd: 365 },
@@ -134,6 +142,33 @@ export const LAMINATION_TYPES: LaminationType[] = [
   { id: "black",        name: "Чёрный (RAL 9005)",       description: "Чёрный матовый профиль",              priceAdd: 455 },
   { id: "silver",       name: "Серебристый металлик",    description: "Алюминий под металл",                 priceAdd: 415 },
   { id: "ral_custom",   name: "RAL по запросу",          description: "Любой цвет каталога RAL",             priceAdd: 650 },
+];
+
+// ─── Регионы ─────────────────────────────────────────────────────────────────
+
+export interface WindowRegion {
+  id: string;
+  name: string;
+  priceCoeff: number; // множитель к базовой цене
+}
+
+export const WINDOW_REGIONS: WindowRegion[] = [
+  { id: "moscow",       name: "Москва и МО",             priceCoeff: 1.0  },
+  { id: "spb",          name: "Санкт-Петербург и ЛО",    priceCoeff: 0.95 },
+  { id: "ekb",          name: "Екатеринбург",            priceCoeff: 0.85 },
+  { id: "novosibirsk",  name: "Новосибирск",             priceCoeff: 0.82 },
+  { id: "kazan",        name: "Казань",                  priceCoeff: 0.87 },
+  { id: "samara",       name: "Самара",                  priceCoeff: 0.84 },
+  { id: "nizhny",       name: "Нижний Новгород",         priceCoeff: 0.86 },
+  { id: "chelyabinsk",  name: "Челябинск",               priceCoeff: 0.80 },
+  { id: "krasnodar",    name: "Краснодар",               priceCoeff: 0.88 },
+  { id: "rostov",       name: "Ростов-на-Дону",          priceCoeff: 0.86 },
+  { id: "ufa",          name: "Уфа",                     priceCoeff: 0.83 },
+  { id: "perm",         name: "Пермь",                   priceCoeff: 0.83 },
+  { id: "voronezh",     name: "Воронеж",                 priceCoeff: 0.84 },
+  { id: "volgograd",    name: "Волгоград",               priceCoeff: 0.82 },
+  { id: "saratov",      name: "Саратов",                 priceCoeff: 0.81 },
+  { id: "other",        name: "Другой регион",           priceCoeff: 0.85 },
 ];
 
 // ─── Фурнитура ───────────────────────────────────────────────────────────────
@@ -224,6 +259,7 @@ export interface WindowConfig {
   glassUnitId: string;
   glassCoatingId: string;
   laminationId: string;
+  laminationBothSides: boolean; // ламинирование с двух сторон
   hardwareId: string;
   openingTypes: OpeningType[]; // для каждой створки
   windowSillId: string;
@@ -231,6 +267,7 @@ export interface WindowConfig {
   slopeId: string;
   slopePerimeter: number;    // пм
   installationIncluded: boolean;
+  regionId: string;
   note: string;
   totalPrice: number;
 }

@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
 import {
-  CONSTRUCTION_TYPES, PROFILE_SYSTEMS, GLASS_UNITS, LAMINATION_TYPES,
+  CONSTRUCTION_TYPES, PROFILE_SYSTEMS, GLASS_UNITS, LAMINATION_TYPES, WINDOW_REGIONS,
 } from "@/components/calculator/windows/WindowTypes";
 import type { WindowConfig, ProfileMaterial, OpeningType } from "@/components/calculator/windows/WindowTypes";
 import { calcPrice, DEFAULT_CONFIG, syncSashes, fmt } from "@/components/calculator/windows/windowUtils";
@@ -239,9 +239,16 @@ export default function Windows() {
                           <span>Ламинация</span>
                           <span className="font-medium text-gray-900">
                             {LAMINATION_TYPES.find(l => l.id === cfg.laminationId)?.name}
+                            {cfg.laminationBothSides && " (2 стороны)"}
                           </span>
                         </div>
                       )}
+                      <div className="flex justify-between">
+                        <span>Регион</span>
+                        <span className="font-medium text-gray-900">
+                          {WINDOW_REGIONS.find(r => r.id === cfg.regionId)?.name ?? cfg.regionId}
+                        </span>
+                      </div>
                       <div className="flex justify-between">
                         <span>Кол-во</span>
                         <span className="font-medium text-gray-900">{cfg.quantity} шт.</span>
