@@ -47,6 +47,59 @@ export default function Blog() {
     canonical: "/blog",
   });
 
+  useEffect(() => {
+    const faq = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Какие темы освещает блог АВАНГАРД?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Блог АВАНГАРД публикует статьи о ремонте квартир, дизайне интерьера, выборе материалов и отделки, советы по планировке, новости строительной отрасли и актуальные акции от партнёров."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Как выбрать стиль интерьера для квартиры?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Определитесь с предпочтениями: минимализм, скандинавский, лофт, классика или современный стиль. Учитывайте площадь, освещённость и бюджет. В блоге АВАНГАРД есть подробные гайды по каждому стилю с примерами и советами по выбору материалов."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Сколько времени занимает ремонт квартиры?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Косметический ремонт однокомнатной квартиры занимает 2–4 недели, капитальный — 2–4 месяца. Сроки зависят от объёма работ, площади и количества мастеров. Подробнее — в наших статьях о планировании ремонта."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Как сэкономить на ремонте без потери качества?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Составьте подробную смету заранее, используйте бесплатный калькулятор ремонта, выбирайте материалы средней ценовой категории, не экономьте на черновых работах. Читайте советы по экономии в нашем блоге."
+          }
+        }
+      ]
+    };
+
+    const id = "faq-jsonld-blog";
+    let el = document.getElementById(id) as HTMLScriptElement | null;
+    if (!el) {
+      el = document.createElement("script");
+      el.id = id;
+      el.type = "application/ld+json";
+      document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(faq);
+
+    return () => { document.getElementById(id)?.remove(); };
+  }, []);
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);

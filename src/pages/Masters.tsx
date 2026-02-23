@@ -18,6 +18,67 @@ export default function Masters() {
     canonical: "/masters",
   });
 
+  useEffect(() => {
+    const faq = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Как найти мастера по ремонту квартиры?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "На АВАНГАРД вы можете найти проверенных мастеров-отделочников по всей России. Выберите специализацию, регион, изучите портфолио и отзывы — затем свяжитесь напрямую без посредников."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Какие работы выполняют мастера на АВАНГАРД?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Мастера выполняют все виды отделочных работ: укладка плитки, стяжка полов, гипсокартон, покраска и штукатурка стен, натяжные потолки, монтаж напольных покрытий, электромонтаж и сантехника."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Есть ли гарантия на работы мастеров?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Все партнёры АВАНГАРД проходят верификацию. Мастера со значком «Проверенный партнёр» предоставляют гарантию на выполненные работы. Условия гарантии уточняйте напрямую у исполнителя."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "В каких городах работают мастера?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Мастера работают по всей России: Москва, Санкт-Петербург, Екатеринбург, Новосибирск, Краснодар, Казань, Нижний Новгород, Самара, Ростов-на-Дону, Тюмень, Челябинск и другие города."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Как стать мастером на АВАНГАРД?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Зарегистрируйтесь как партнёр на странице /partner, заполните профиль с портфолио и специализацией. После модерации (до 24 часов) начнёте получать заявки от клиентов."
+          }
+        }
+      ]
+    };
+
+    const id = "faq-jsonld-masters";
+    let el = document.getElementById(id) as HTMLScriptElement | null;
+    if (!el) {
+      el = document.createElement("script");
+      el.id = id;
+      el.type = "application/ld+json";
+      document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(faq);
+
+    return () => { document.getElementById(id)?.remove(); };
+  }, []);
+
   const [masters, setMasters] = useState<Master[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
