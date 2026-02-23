@@ -122,16 +122,13 @@ export default function HomeHero({ user, regionLabel, onLogout }: Props) {
     <div className="relative overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[#0f0f13]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gradient-to-b from-amber-500/20 via-orange-500/10 to-transparent rounded-full blur-3xl" />
-        <div className="absolute top-20 left-0 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl" />
-        <div className="absolute top-10 right-0 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 80px, rgba(255,255,255,0.5) 80px, rgba(255,255,255,0.5) 81px), repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(255,255,255,0.5) 80px, rgba(255,255,255,0.5) 81px)`,
-          }}
+        <img
+          src="https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/56c09419-7245-47bf-b531-99c4ca4a3bfd.jpg"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
       </div>
 
       {/* Header */}
