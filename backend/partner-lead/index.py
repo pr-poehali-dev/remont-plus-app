@@ -1,13 +1,105 @@
 """
 Приём и управление заявками от потенциальных партнёров платформы АВАНГАРД.
 GET (admin) — список всех заявок, PATCH (admin) — смена статуса, POST — создание заявки.
+При создании заявки отправляет email-уведомление администратору.
 """
 import json
 import os
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import psycopg2
 
 
 ADMIN_TOKEN = "admin2025"
+
+PARTNER_TYPE_LABELS = {
+    "contractor": "Бригада / мастер",
+    "supplier": "Поставщик материалов",
+    "windows": "Оконная компания",
+    "design": "Дизайн-студия",
+    "other": "Другое",
+}
+
+
+def send_partner_notification(company_name: str, contact_name: str, phone: str,
+                               email: str, partner_type: str, region: str,
+                               comment: str, lead_id: int) -> bool:
+    smtp_host = os.environ.get("SMTP_HOST", "")
+    smtp_port = int(os.environ.get("SMTP_PORT", "465"))
+    smtp_user = os.environ.get("SMTP_USER", "")
+    smtp_password = os.environ.get("SMTP_PASSWORD", "")
+
+    if not all([smtp_host, smtp_user, smtp_password]):
+        return False
+
+    admin_email = smtp_user
+    type_label = PARTNER_TYPE_LABELS.get(partner_type, partner_type)
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px;">
+  <div style="max-width: 560px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background: linear-gradient(135deg, #f59e0b, #f97316); padding: 28px 32px;">
+      <h1 style="color: #fff; margin: 0; font-size: 20px;">🤝 Новая заявка от партнёра</h1>
+      <p style="color: rgba(255,255,255,0.85); margin: 6px 0 0; font-size: 14px;">АВАНГАРД · Заявка №{lead_id}</p>
+    </div>
+    <div style="padding: 28px 32px;">
+      <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+        <tr>
+          <td style="color: #888; padding: 8px 0; width: 140px; vertical-align: top;">Компания</td>
+          <td style="color: #111; font-weight: 700; font-size: 16px;">{company_name}</td>
+        </tr>
+        <tr>
+          <td style="color: #888; padding: 8px 0;">Контакт</td>
+          <td style="color: #333; font-weight: 500;">{contact_name}</td>
+        </tr>
+        <tr>
+          <td style="color: #888; padding: 8px 0;">Телефон</td>
+          <td><a href="tel:{phone}" style="color: #2563eb; font-weight: 600; text-decoration: none;">{phone}</a></td>
+        </tr>
+        {"<tr><td style='color: #888; padding: 8px 0;'>Email</td><td><a href='mailto:" + email + "' style='color: #2563eb; text-decoration: none;'>" + email + "</a></td></tr>" if email else ""}
+        <tr>
+          <td style="color: #888; padding: 8px 0;">Тип партнёра</td>
+          <td style="color: #333;">
+            <span style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; border-radius: 6px; padding: 2px 10px; font-size: 13px; font-weight: 500;">{type_label}</span>
+          </td>
+        </tr>
+        {"<tr><td style='color: #888; padding: 8px 0;'>Регион</td><td style='color: #333;'>{}</td></tr>".format(region) if region else ""}
+        {"<tr><td style='color: #888; padding: 8px 0; vertical-align: top;'>Комментарий</td><td style='color: #555; background: #f9fafb; border-radius: 6px; padding: 8px 10px;'>{}</td></tr>".format(comment) if comment else ""}
+      </table>
+    </div>
+    <div style="padding: 0 32px 28px;">
+      <a href="https://avangard-ai.ru/admin" style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+        Открыть в админ-панели →
+      </a>
+    </div>
+    <div style="background: #f9fafb; padding: 16px 32px; text-align: center;">
+      <p style="color: #bbb; font-size: 11px; margin: 0;">АВАНГАРД · avangard-ai.ru · Автоматическое уведомление</p>
+    </div>
+  </div>
+</body>
+</html>"""
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"Новый партнёр: {company_name} · {type_label}"
+    msg["From"] = f"АВАНГАРД <{smtp_user}>"
+    msg["To"] = admin_email
+    msg.attach(MIMEText(html, "html", "utf-8"))
+
+    context = ssl.create_default_context()
+    if smtp_port == 465:
+        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_user, admin_email, msg.as_string())
+    else:
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls(context=context)
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_user, admin_email, msg.as_string())
+    return True
 
 
 def handler(event: dict, context) -> dict:
@@ -112,6 +204,13 @@ def handler(event: dict, context) -> dict:
         conn.commit()
         cur.close()
         conn.close()
+
+        try:
+            send_partner_notification(company_name, contact_name, phone, email,
+                                      partner_type, region, comment, lead_id)
+        except Exception:
+            pass
+
         return {"statusCode": 200, "headers": headers, "body": json.dumps({"ok": True, "id": lead_id, "message": "Заявка принята"})}
 
     return {"statusCode": 405, "headers": headers, "body": json.dumps({"error": "Method not allowed"})}
