@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Icon from "@/components/ui/icon";
 
 const POSTS_URL = "https://functions.poehali.dev/60baa083-841b-461e-9edb-8460b28e7076";
+const UPLOAD_URL = "https://functions.poehali.dev/dce2721d-b4ab-4c71-a4e9-236837177576";
 
 const POST_TYPES = [
   { value: "article", label: "Статья", color: "bg-blue-100 text-blue-700" },
@@ -62,6 +63,8 @@ export default function AdminBlogTab({ onReload }: Props) {
   const [form, setForm] = useState<typeof EMPTY>({ ...EMPTY });
   const [saving, setSaving] = useState(false);
   const [filterType, setFilterType] = useState<string>("all");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     load();
@@ -106,6 +109,32 @@ export default function AdminBlogTab({ onReload }: Props) {
   };
 
   const upd = (patch: Partial<typeof form>) => setForm(f => ({ ...f, ...patch }));
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(',')[1];
+      const res = await fetch(UPLOAD_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image: reader.result,
+          content_type: file.type,
+          filename: file.name,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        upd({ image_url: data.url });
+      }
+      setUploading(false);
+      void base64;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const save = async () => {
     if (!form.title.trim()) return;
@@ -231,13 +260,55 @@ export default function AdminBlogTab({ onReload }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>URL изображения</Label>
-              <Input
-                value={form.image_url || ""}
-                onChange={e => upd({ image_url: e.target.value || null })}
-                placeholder="https://..."
-                className="mt-1"
+              <Label>Изображение</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
               />
+              <div className="mt-1 space-y-2">
+                {form.image_url ? (
+                  <div className="relative rounded-lg overflow-hidden border aspect-video bg-muted">
+                    <img src={form.image_url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => upd({ image_url: null })}
+                      className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 hover:bg-black/80"
+                    >
+                      <Icon name="X" size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="w-full border-2 border-dashed border-muted-foreground/30 rounded-lg py-6 flex flex-col items-center gap-1.5 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+                  >
+                    {uploading ? (
+                      <Icon name="Loader2" size={22} className="animate-spin" />
+                    ) : (
+                      <Icon name="ImagePlus" size={22} />
+                    )}
+                    <span className="text-xs">{uploading ? "Загружаю..." : "Выбрать фото"}</span>
+                  </button>
+                )}
+                {form.image_url && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <Icon name="RefreshCw" size={14} className="mr-1" />
+                    Заменить фото
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label>Время чтения (мин)</Label>
