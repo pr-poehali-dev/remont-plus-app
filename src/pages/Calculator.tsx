@@ -29,6 +29,7 @@ function incrementFreePrints() {
 }
 
 const SERVICE_PRICES_URL = "https://functions.poehali.dev/4dae7ba0-b573-436a-b4c6-d3b0abf69fce";
+const ESTIMATES_URL = "https://functions.poehali.dev/2be69072-d4ba-493f-b89e-575fbbd70e8e";
 
 export interface EstimateItem {
   id: string;
@@ -171,6 +172,31 @@ export default function Calculator() {
     localStorage.setItem("avangard_calc_items", JSON.stringify(items));
   }, [items]);
 
+  const [savedToDb, setSavedToDb] = useState(false);
+  useEffect(() => {
+    if (!userId || items.length === 0) return;
+    setSavedToDb(false);
+    const timer = setTimeout(async () => {
+      const tm = items.filter(i => i.category === "Материалы").reduce((s, i) => s + i.total, 0);
+      const tw = items.filter(i => i.category === "Работы").reduce((s, i) => s + i.total, 0);
+      const regionName = regions.find(r => r.code === selectedRegion)?.name || selectedRegion;
+      await fetch(ESTIMATES_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-User-Id": String(userId) },
+        body: JSON.stringify({
+          name: `Смета — ${regionName}`,
+          items,
+          total_materials: tm,
+          total_works: tw,
+          total: tm + tw,
+          region: selectedRegion,
+        }),
+      });
+      setSavedToDb(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [items, userId, selectedRegion, regions]);
+
   const loadPrices = useCallback(async () => {
     setLoading(true);
     const response = await fetch(`${SERVICE_PRICES_URL}?region=${selectedRegion}`);
@@ -249,8 +275,13 @@ export default function Calculator() {
               </Button>
               <div>
                 <h1 className="text-xl font-bold">Калькулятор стоимости</h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 flex items-center gap-1.5">
                   {currentRegion ? currentRegion.name : "Загрузка..."}
+                  {userId && items.length > 0 && (
+                    <span className={`text-xs ${savedToDb ? "text-green-500" : "text-gray-400"}`}>
+                      · {savedToDb ? "сохранено" : "сохраняем..."}
+                    </span>
+                  )}
                   {" · "}{items.length} позиций
                 </p>
               </div>

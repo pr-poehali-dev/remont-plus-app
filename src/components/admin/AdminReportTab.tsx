@@ -44,6 +44,20 @@ interface ProjectRow {
   stages_done: number;
 }
 
+interface EstimateRow {
+  id: number;
+  name: string;
+  total_materials: number;
+  total_works: number;
+  total: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  user_name: string | null;
+  user_phone: string | null;
+  items_count: number;
+}
+
 interface DayCount {
   date: string;
   count: number;
@@ -53,6 +67,7 @@ interface ReportData {
   summary: Summary;
   users: UserRow[];
   projects: ProjectRow[];
+  estimates: EstimateRow[];
   registrations_by_day: DayCount[];
   projects_by_day: DayCount[];
 }
@@ -81,6 +96,10 @@ function fmtDate(dt: string | null) {
   return new Date(dt).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+function fmtPrice(n: number) {
+  return n.toLocaleString("ru-RU") + " ₽";
+}
+
 function exportCSV(data: ReportData) {
   const rows: string[] = [];
 
@@ -89,6 +108,8 @@ function exportCSV(data: ReportData) {
   rows.push("Клиентов;" + data.summary.customers);
   rows.push("Мастеров;" + data.summary.contractors);
   rows.push("Дизайн-проектов всего;" + data.summary.total_projects);
+  rows.push("Смет составлено;" + data.summary.total_estimates);
+  rows.push("Средняя сумма сметы;" + data.summary.avg_estimate);
   rows.push("Заявок партнёров;" + data.summary.total_partner_leads);
   rows.push("Новых заявок партнёров;" + data.summary.new_partner_leads);
   rows.push("AI-чатов;" + data.summary.total_chats);
@@ -106,6 +127,13 @@ function exportCSV(data: ReportData) {
   data.projects.forEach(p => {
     rows.push([p.id, p.name, STYLE_LABELS[p.style] || p.style, p.total_area || "", p.room_count, p.stages_done, p.user_name || "Аноним", p.user_phone || "", fmtDate(p.created_at)].join(";"));
   });
+  rows.push("");
+
+  rows.push("=== СМЕТЫ ===");
+  rows.push("ID;Название;Материалы;Работы;Итого;Позиций;Пользователь;Телефон;Дата");
+  (data.estimates || []).forEach(e => {
+    rows.push([e.id, e.name, e.total_materials, e.total_works, e.total, e.items_count, e.user_name || "Аноним", e.user_phone || "", fmtDate(e.created_at)].join(";"));
+  });
 
   const blob = new Blob(["\uFEFF" + rows.join("\n")], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -119,7 +147,7 @@ function exportCSV(data: ReportData) {
 export default function AdminReportTab() {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState<"summary" | "users" | "projects">("summary");
+  const [tab, setTab] = useState<"summary" | "users" | "projects" | "estimates">("summary");
 
   async function load() {
     setLoading(true);
@@ -183,17 +211,27 @@ export default function AdminReportTab() {
           <div className="text-3xl font-bold">{summary.total_chats}</div>
           <div className="text-xs text-gray-400 mt-1">этапов в проектах: {summary.total_stages}</div>
         </Card>
+        <Card className="p-4">
+          <div className="text-xs text-gray-500 mb-1">Сметы</div>
+          <div className="text-3xl font-bold">{summary.total_estimates ?? 0}</div>
+          {(summary.avg_estimate ?? 0) > 0 && (
+            <div className="text-xs text-gray-400 mt-1">средняя: {fmtPrice(summary.avg_estimate)}</div>
+          )}
+        </Card>
       </div>
 
       {/* Переключатель таблиц */}
       <div className="flex gap-2 border-b pb-2">
-        {(["summary", "users", "projects"] as const).map(t => (
+        {(["summary", "users", "projects", "estimates"] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${tab === t ? "bg-primary text-white" : "text-gray-500 hover:bg-gray-100"}`}
           >
-            {t === "summary" ? "Активность" : t === "users" ? `Пользователи (${data.users.length})` : `Проекты (${data.projects.length})`}
+            {t === "summary" ? "Активность"
+              : t === "users" ? `Пользователи (${data.users.length})`
+              : t === "projects" ? `Проекты (${data.projects.length})`
+              : `Сметы (${(data.estimates || []).length})`}
           </button>
         ))}
       </div>
@@ -315,6 +353,48 @@ export default function AdminReportTab() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Таблица смет */}
+      {tab === "estimates" && (
+        <div className="overflow-x-auto">
+          {(data.estimates || []).length === 0 ? (
+            <p className="text-sm text-gray-400 py-8 text-center">Сметы ещё не сохранялись. Они появятся после того, как авторизованный пользователь добавит позиции в калькуляторе.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-gray-500">
+                  <th className="pb-2 pr-4">Название</th>
+                  <th className="pb-2 pr-4">Материалы</th>
+                  <th className="pb-2 pr-4">Работы</th>
+                  <th className="pb-2 pr-4">Итого</th>
+                  <th className="pb-2 pr-4">Позиций</th>
+                  <th className="pb-2 pr-4">Пользователь</th>
+                  <th className="pb-2">Дата</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data.estimates || []).map(e => (
+                  <tr key={e.id} className="border-b hover:bg-gray-50">
+                    <td className="py-2 pr-4 font-medium max-w-[180px] truncate">{e.name}</td>
+                    <td className="py-2 pr-4 text-gray-600">{fmtPrice(e.total_materials)}</td>
+                    <td className="py-2 pr-4 text-gray-600">{fmtPrice(e.total_works)}</td>
+                    <td className="py-2 pr-4 font-semibold">{fmtPrice(e.total)}</td>
+                    <td className="py-2 pr-4 text-center text-gray-500">{e.items_count}</td>
+                    <td className="py-2 pr-4 text-gray-600">
+                      {e.user_name ? (
+                        <span>{e.user_name}<br /><span className="text-xs text-gray-400">{e.user_phone}</span></span>
+                      ) : (
+                        <span className="text-gray-400">Аноним</span>
+                      )}
+                    </td>
+                    <td className="py-2 text-gray-500">{fmtDate(e.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
     </div>

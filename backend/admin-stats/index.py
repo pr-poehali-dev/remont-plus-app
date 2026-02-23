@@ -303,6 +303,38 @@ def handler(event: dict, context) -> dict:
                     {'date': str(r[0]), 'count': r[1]} for r in cursor.fetchall()
                 ]
 
+                # --- Сметы ---
+                cursor.execute("SELECT COUNT(*) FROM estimates")
+                total_estimates = cursor.fetchone()[0]
+
+                cursor.execute("SELECT COALESCE(AVG(total), 0) FROM estimates WHERE total > 0")
+                avg_estimate = float(cursor.fetchone()[0])
+
+                cursor.execute("""
+                    SELECT e.id, e.name, e.total_materials, e.total_works, e.total,
+                           e.status, e.created_at, e.updated_at,
+                           u.name as user_name, u.phone as user_phone,
+                           (SELECT COUNT(*) FROM estimate_items ei WHERE ei.estimate_id = e.id) as items_count
+                    FROM estimates e
+                    LEFT JOIN users u ON u.id = e.user_id
+                    ORDER BY e.created_at DESC
+                    LIMIT 100
+                """)
+                est_rows = cursor.fetchall()
+                estimates_list = [
+                    {
+                        'id': r[0], 'name': r[1],
+                        'total_materials': float(r[2]) if r[2] else 0,
+                        'total_works': float(r[3]) if r[3] else 0,
+                        'total': float(r[4]) if r[4] else 0,
+                        'status': r[5],
+                        'created_at': r[6].isoformat() if r[6] else None,
+                        'updated_at': r[7].isoformat() if r[7] else None,
+                        'user_name': r[8], 'user_phone': r[9],
+                        'items_count': r[10],
+                    } for r in est_rows
+                ]
+
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
@@ -317,9 +349,12 @@ def handler(event: dict, context) -> dict:
                             'total_partner_leads': total_partner_leads,
                             'new_partner_leads': new_partner_leads,
                             'total_chats': total_chats,
+                            'total_estimates': total_estimates,
+                            'avg_estimate': round(avg_estimate),
                         },
                         'users': users_list,
                         'projects': projects_list,
+                        'estimates': estimates_list,
                         'registrations_by_day': registrations_by_day,
                         'projects_by_day': projects_by_day,
                     })
