@@ -1,7 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import { useMeta } from "@/hooks/useMeta";
 
 export default function Privacy() {
+  useMeta({
+    title: "Политика конфиденциальности",
+    description: "Политика конфиденциальности сервиса АВАНГАРД — условия обработки персональных данных пользователей.",
+    canonical: "/privacy",
+  });
+
   const navigate = useNavigate();
   const today = new Date().toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
 

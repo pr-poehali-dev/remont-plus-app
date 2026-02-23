@@ -4,8 +4,16 @@ import Icon from "@/components/ui/icon";
 import YandexGPTChat from "@/components/YandexGPTChat";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate } from "react-router-dom";
+import { useMeta } from "@/hooks/useMeta";
 
 export default function AIChat() {
+  useMeta({
+    title: "ИИ-консультант по ремонту и дизайну",
+    description: "Задайте вопрос ИИ-ассистенту по ремонту, дизайну интерьера, выбору материалов и расчёту стоимости. Бесплатно и без регистрации.",
+    keywords: "ИИ консультант ремонт, чат бот дизайн интерьера, вопрос про ремонт онлайн",
+    canonical: "/ai-chat",
+  });
+
   const navigate = useNavigate();
 
   return (

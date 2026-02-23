@@ -7,6 +7,7 @@ import DesignerSettings from "@/components/designer/DesignerSettings";
 import DesignerSidebar from "@/components/designer/DesignerSidebar";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useMeta } from "@/hooks/useMeta";
 
 const API_URL = "https://functions.poehali.dev/638dfd86-50f0-4ec4-a850-6feb9fa7797e";
 
@@ -37,6 +38,13 @@ interface StageResult {
 }
 
 export default function Designer() {
+  useMeta({
+    title: "ИИ Дизайнер интерьера — создайте дизайн-проект онлайн",
+    description: "Создайте полный дизайн-проект квартиры с помощью искусственного интеллекта: планировка, чертежи, визуализации, выбор материалов и смета.",
+    keywords: "дизайн-проект интерьера онлайн, ИИ дизайнер, планировка квартиры, визуализация интерьера",
+    canonical: "/designer",
+  });
+
   const navigate = useNavigate();
   const [projectId, setProjectId] = useState<number | null>(() => {
     const saved = localStorage.getItem("avangard_project_id");

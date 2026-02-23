@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMeta } from "@/hooks/useMeta";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,6 +50,13 @@ interface FormState {
 }
 
 export default function Partner() {
+  useMeta({
+    title: "Стать партнёром — мастера, поставщики, дизайнеры",
+    description: "Зарегистрируйтесь как партнёр АВАНГАРД: бригады, поставщики материалов, оконные компании и дизайн-студии. Получайте заявки от клиентов по всей России.",
+    keywords: "стать партнёром ремонт, регистрация мастер, поставщик стройматериалов, заявки на ремонт",
+    canonical: "/partner",
+  });
+
   const navigate = useNavigate();
   const [form, setForm] = useState<FormState>({
     company_name: "", contact_name: "", phone: "", email: "",

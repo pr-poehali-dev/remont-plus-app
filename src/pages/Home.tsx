@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useMeta } from "@/hooks/useMeta";
 import HomeHero from "@/components/home/HomeHero";
 import HomeHowItWorks from "@/components/home/HomeHowItWorks";
 import HomeProjects from "@/components/home/HomeProjects";
@@ -60,6 +61,13 @@ function detectRegionFromTimezone(): string {
 }
 
 export default function Home() {
+  useMeta({
+    title: "Дизайн-проект и расчёт стоимости ремонта онлайн",
+    description: "Создайте дизайн-проект интерьера и рассчитайте стоимость работ и материалов за минуты. Партнёры по всей России предложат лучшие условия. Бесплатно.",
+    keywords: "дизайн-проект онлайн, расчёт стоимости ремонта, калькулятор ремонта, смета на ремонт, ИИ дизайнер интерьера",
+    canonical: "/",
+  });
+
   const [user, setUser] = useState<User | null>(null);
   const [region, setRegion] = useState<RegionData>(REGIONS.other);
   const [latestPosts, setLatestPosts] = useState<LatestPost[]>([]);
