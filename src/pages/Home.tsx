@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import HomeHero from "@/components/home/HomeHero";
+import HomeHowItWorks from "@/components/home/HomeHowItWorks";
 import HomeProjects from "@/components/home/HomeProjects";
 import HomeLatestPosts, { type LatestPost } from "@/components/home/HomeLatestPosts";
 import HomeCTA from "@/components/home/HomeCTA";
@@ -87,6 +88,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-[#0f0f13]">
       <HomeHero user={user} regionLabel={region.label} onLogout={handleLogout} />
+      <HomeHowItWorks />
 
       <div className="bg-[#fafaf8] flex-1 px-4 py-16">
         <div className="w-full max-w-6xl mx-auto">
