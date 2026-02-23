@@ -14,7 +14,7 @@ const sections = [
   {
     id: "customer",
     title: "ДИЗАЙН-ПРОЕКТ",
-    description: "Визуализируйте будущий интерьер с помощью ИИ, составьте смету и подберите специалиста",
+    description: "Создайте дизайн-проект интерьера за минуты — стиль, планировка, цветовые решения",
     emoji: "🎨",
     icon: "Palette",
     gradient: "from-amber-400 via-orange-400 to-rose-400",
@@ -25,7 +25,7 @@ const sections = [
   {
     id: "contractor",
     title: "МАСТЕР",
-    description: "Принимайте заказы, ведите объекты и развивайте клиентскую базу на одной платформе",
+    description: "Партнёрам: размещайте предложения, получайте заявки и развивайте клиентскую базу",
     emoji: "🔨",
     icon: "Hammer",
     gradient: "from-blue-400 via-indigo-400 to-violet-400",
@@ -36,7 +36,7 @@ const sections = [
   {
     id: "catalog",
     title: "КАТАЛОГ",
-    description: "Стройматериалы и отделочные товары от надёжных поставщиков с доставкой на объект",
+    description: "Товары от партнёров-поставщиков по всей России — сравните цены и выберите лучшее",
     emoji: "🏗️",
     icon: "Store",
     gradient: "from-emerald-400 via-teal-400 to-cyan-400",
@@ -58,7 +58,7 @@ const sections = [
   {
     id: "tariffs",
     title: "ЦЕНЫ",
-    description: "Тарифы на дизайн-проект и смету — для частных клиентов и строительных компаний",
+    description: "Доступные тарифы на дизайн-проект и смету — для частных клиентов и компаний",
     emoji: "💎",
     icon: "BadgePercent",
     gradient: "from-rose-400 via-pink-400 to-red-400",
@@ -195,12 +195,12 @@ export default function HomeHero({ user, regionLabel, onLogout }: Props) {
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight tracking-tight">
               <span className="text-white">ДИЗАЙН-ПРОЕКТ</span>
               <br />
-              <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 bg-clip-text text-transparent">И РЕМОНТ ПОД КОНТРОЛЕМ</span>
+              <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 bg-clip-text text-transparent">И РАСЧЁТ СТОИМОСТИ ЗА МИНУТЫ</span>
             </h1>
             <p className="text-white/50 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
               {user
                 ? `${user.name}, выберите раздел для работы`
-                : "Умный ИИ-дизайнер, аттестованные мастера и прозрачный контроль на каждом этапе — от эскиза до сдачи объекта"}
+                : "Создайте дизайн-проект, рассчитайте стоимость работ и материалов — партнёры по всей России предложат лучшие условия"}
             </p>
           </div>
 
