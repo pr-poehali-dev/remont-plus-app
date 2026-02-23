@@ -123,12 +123,12 @@ export default function HomeHero({ user, regionLabel, onLogout }: Props) {
       {/* Animated background */}
       <div className="absolute inset-0">
         <img
-          src="https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/e60643d3-d326-4dc7-9f3f-01e39c3c9aa3.jpg"
+          src="https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/520fcd66-90d0-4649-93b8-f373fb09119d.jpg"
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
       </div>
 
       {/* Header */}
