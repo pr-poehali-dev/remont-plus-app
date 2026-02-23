@@ -30,6 +30,7 @@ import EstimatePrint from "./pages/EstimatePrint";
 import DocsPrint from "./pages/DocsPrint";
 import Windows from "./pages/Windows";
 import WindowPrint from "./pages/WindowPrint";
+import Partner from "./pages/Partner";
 import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
@@ -69,6 +70,7 @@ const App = () => {
             <Route path="/docs/print" element={<DocsPrint />} />
             <Route path="/windows" element={<Windows />} />
             <Route path="/windows/print" element={<WindowPrint />} />
+            <Route path="/partner" element={<Partner />} />
             <Route path="/auth/yandex/callback" element={<YandexCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

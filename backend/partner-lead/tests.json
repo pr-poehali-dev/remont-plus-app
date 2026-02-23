@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Успешная заявка партнёра",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "company_name": "СтройМастер ООО",
+        "contact_name": "Иван Петров",
+        "phone": "+7 900 123-45-67",
+        "email": "ivan@stroymaster.ru",
+        "partner_type": "contractor",
+        "region": "Москва",
+        "comment": "Специализируемся на отделочных работах"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"ok": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Ошибка — не заполнены обязательные поля",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "company_name": "",
+        "contact_name": "",
+        "phone": ""
+      },
+      "expectedStatus": 400,
+      "expectedBody": {"error": "Заполните обязательные поля: компания, имя, телефон, тип партнёра"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

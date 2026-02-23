@@ -60,7 +60,7 @@ export default function HomePartner() {
             </div>
             <Button
               size="lg"
-              onClick={() => navigate("/register?type=contractor")}
+              onClick={() => navigate("/partner")}
               className="shrink-0 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white border-0 rounded-2xl px-8 shadow-lg shadow-orange-200"
             >
               <Icon name="Handshake" size={18} className="mr-2" />
