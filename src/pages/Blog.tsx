@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
@@ -38,10 +37,6 @@ interface Post {
   created_at: string;
 }
 
-interface PostDetail extends Post {
-  content: string;
-}
-
 export default function Blog() {
   const navigate = useNavigate();
 
@@ -58,8 +53,6 @@ export default function Blog() {
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [selectedPost, setSelectedPost] = useState<PostDetail | null>(null);
-  const [postLoading, setPostLoading] = useState(false);
 
   useEffect(() => {
     loadPosts();
@@ -79,103 +72,12 @@ export default function Blog() {
     setLoading(false);
   };
 
-  const openPost = async (post: Post) => {
-    setPostLoading(true);
-    setSelectedPost({ ...post, content: "" });
-    const res = await fetch(`${POSTS_URL}?id=${post.id}`);
-    if (res.ok) {
-      const data = await res.json();
-      setSelectedPost(data);
-      // счётчик просмотров
-      fetch(`${POSTS_URL}/view?id=${post.id}`, { method: "POST" }).catch(() => {});
-    }
-    setPostLoading(false);
-  };
+  const openPost = (post: Post) => navigate(`/blog/${post.slug}`);
 
   const handleSearch = () => setSearch(searchInput);
 
   const pinned = posts.filter(p => p.is_pinned);
   const regular = posts.filter(p => !p.is_pinned);
-
-  if (selectedPost) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => setSelectedPost(null)}>
-                <Icon name="ArrowLeft" className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <button onClick={() => setSelectedPost(null)} className="hover:text-gray-900 transition-colors">
-                  Блог
-                </button>
-                <Icon name="ChevronRight" size={14} />
-                <span className="text-gray-900 font-medium truncate max-w-xs">{selectedPost.title}</span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
-          {selectedPost.image_url && (
-            <div className="aspect-video overflow-hidden rounded-xl mb-6">
-              <img src={selectedPost.image_url} alt={selectedPost.title} className="w-full h-full object-cover" />
-            </div>
-          )}
-
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${TYPE_COLORS[selectedPost.type] || TYPE_COLORS.article}`}>
-              {TYPE_LABELS[selectedPost.type] || selectedPost.type}
-            </span>
-            <Badge variant="secondary">{selectedPost.category}</Badge>
-            {selectedPost.is_pinned && (
-              <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
-                <Icon name="Pin" size={10} className="mr-1" />
-                Закреплено
-              </Badge>
-            )}
-          </div>
-
-          <h1 className="text-3xl font-bold mb-4">{selectedPost.title}</h1>
-
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-6 pb-6 border-b">
-            <span>{new Date(selectedPost.created_at).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" })}</span>
-            <span className="flex items-center gap-1">
-              <Icon name="Clock" size={13} />
-              {selectedPost.read_time} мин чтения
-            </span>
-            <span className="flex items-center gap-1">
-              <Icon name="Eye" size={13} />
-              {selectedPost.views} просмотров
-            </span>
-          </div>
-
-          {postLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-              <Skeleton className="h-4 w-4/5" />
-            </div>
-          ) : selectedPost.content ? (
-            <div
-              className="prose prose-gray max-w-none"
-              dangerouslySetInnerHTML={{ __html: selectedPost.content }}
-            />
-          ) : (
-            <p className="text-gray-600 text-lg leading-relaxed">{selectedPost.excerpt}</p>
-          )}
-
-          <div className="mt-8 pt-6 border-t">
-            <Button onClick={() => setSelectedPost(null)} variant="outline">
-              <Icon name="ArrowLeft" size={15} className="mr-2" />
-              Назад к блогу
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">

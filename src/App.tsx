@@ -14,6 +14,7 @@ import Calculator from "./pages/Calculator";
 import Catalog from "./pages/Catalog";
 import Dashboard from "./pages/Dashboard";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import Projects from "./pages/Projects";
 import Suppliers from "./pages/Suppliers";
 import Profile from "./pages/Profile";
@@ -53,6 +54,7 @@ const App = () => {
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/profile" element={<Profile />} />
