@@ -10,7 +10,7 @@ interface MetaOptions {
 
 const SITE_NAME = "АВАНГАРД";
 const BASE_URL = "https://avangard-ai.ru";
-const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
+const DEFAULT_IMAGE = "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/c8f07698-0776-4916-88a1-67ca37033500.jpg";
 
 export function useMeta({ title, description, keywords, canonical, ogImage }: MetaOptions) {
   useEffect(() => {
