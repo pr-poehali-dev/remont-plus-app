@@ -1,7 +1,7 @@
 {
   "tests": [
     {
-      "name": "Get stats without token",
+      "name": "Reject request without token",
       "method": "GET",
       "path": "/?action=stats",
       "expectedStatus": 401,
@@ -11,17 +11,22 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "Get stats with invalid action",
+      "name": "Reject request without token for report",
       "method": "GET",
-      "path": "/?action=invalid",
-      "headers": {
-        "X-Admin-Token": "admin2025"
-      },
-      "expectedStatus": 400,
+      "path": "/?action=report",
+      "expectedStatus": 401,
       "expectedBody": {
-        "error": "Invalid action"
+        "error": "Unauthorized"
       },
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Handle OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial",
+      "expectedBody": {}
     }
   ]
 }

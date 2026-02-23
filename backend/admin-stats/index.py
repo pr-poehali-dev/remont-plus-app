@@ -200,6 +200,131 @@ def handler(event: dict, context) -> dict:
                     })
                 }
             
+            elif action == 'report':
+                # Сводный отчёт: пользователи, дизайн-проекты, активность
+                date_from = event.get('queryStringParameters', {}).get('date_from')
+                date_to = event.get('queryStringParameters', {}).get('date_to')
+
+                # --- Сводные цифры ---
+                cursor.execute("SELECT COUNT(*) FROM users WHERE role != 'admin'")
+                total_users = cursor.fetchone()[0]
+
+                cursor.execute("SELECT COUNT(*) FROM users WHERE user_type = 'customer'")
+                customers = cursor.fetchone()[0]
+
+                cursor.execute("SELECT COUNT(*) FROM users WHERE user_type = 'contractor'")
+                contractors = cursor.fetchone()[0]
+
+                cursor.execute("SELECT COUNT(*) FROM design_projects")
+                total_projects = cursor.fetchone()[0]
+
+                cursor.execute("SELECT COUNT(*) FROM design_projects WHERE user_id IS NOT NULL")
+                auth_projects = cursor.fetchone()[0]
+
+                cursor.execute("SELECT COUNT(*) FROM design_stage_results")
+                total_stages = cursor.fetchone()[0]
+
+                cursor.execute("SELECT COUNT(*) FROM partner_leads")
+                total_partner_leads = cursor.fetchone()[0]
+
+                cursor.execute("SELECT COUNT(*) FROM partner_leads WHERE status = 'new'")
+                new_partner_leads = cursor.fetchone()[0]
+
+                cursor.execute("SELECT COUNT(*) FROM ai_chat_sessions")
+                total_chats = cursor.fetchone()[0]
+
+                # --- Пользователи ---
+                cursor.execute("""
+                    SELECT u.id, u.name, u.phone, u.email, u.user_type, u.role,
+                           u.created_at, u.last_login_at,
+                           COUNT(dp.id) as projects_count
+                    FROM users u
+                    LEFT JOIN design_projects dp ON dp.user_id = u.id
+                    WHERE u.role != 'admin'
+                    GROUP BY u.id
+                    ORDER BY u.created_at DESC
+                    LIMIT 100
+                """)
+                rows = cursor.fetchall()
+                users_list = [
+                    {
+                        'id': r[0], 'name': r[1], 'phone': r[2], 'email': r[3],
+                        'user_type': r[4], 'role': r[5],
+                        'created_at': r[6].isoformat() if r[6] else None,
+                        'last_login_at': r[7].isoformat() if r[7] else None,
+                        'projects_count': r[8]
+                    } for r in rows
+                ]
+
+                # --- Дизайн-проекты ---
+                cursor.execute("""
+                    SELECT dp.id, dp.name, dp.style, dp.total_area, dp.room_count,
+                           dp.status, dp.created_at,
+                           u.name as user_name, u.phone as user_phone,
+                           COUNT(dsr.id) as stages_done
+                    FROM design_projects dp
+                    LEFT JOIN users u ON u.id = dp.user_id
+                    LEFT JOIN design_stage_results dsr ON dsr.project_id = dp.id
+                    GROUP BY dp.id, u.name, u.phone
+                    ORDER BY dp.created_at DESC
+                    LIMIT 100
+                """)
+                rows = cursor.fetchall()
+                projects_list = [
+                    {
+                        'id': r[0], 'name': r[1], 'style': r[2],
+                        'total_area': float(r[3]) if r[3] else None,
+                        'room_count': r[4], 'status': r[5],
+                        'created_at': r[6].isoformat() if r[6] else None,
+                        'user_name': r[7], 'user_phone': r[8],
+                        'stages_done': r[9]
+                    } for r in rows
+                ]
+
+                # --- Регистрации по дням (последние 30 дней) ---
+                cursor.execute("""
+                    SELECT DATE(created_at) as day, COUNT(*) as cnt
+                    FROM users
+                    WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+                    GROUP BY day ORDER BY day
+                """)
+                registrations_by_day = [
+                    {'date': str(r[0]), 'count': r[1]} for r in cursor.fetchall()
+                ]
+
+                # --- Проекты по дням (последние 30 дней) ---
+                cursor.execute("""
+                    SELECT DATE(created_at) as day, COUNT(*) as cnt
+                    FROM design_projects
+                    WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+                    GROUP BY day ORDER BY day
+                """)
+                projects_by_day = [
+                    {'date': str(r[0]), 'count': r[1]} for r in cursor.fetchall()
+                ]
+
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'summary': {
+                            'total_users': total_users,
+                            'customers': customers,
+                            'contractors': contractors,
+                            'total_projects': total_projects,
+                            'auth_projects': auth_projects,
+                            'total_stages': total_stages,
+                            'total_partner_leads': total_partner_leads,
+                            'new_partner_leads': new_partner_leads,
+                            'total_chats': total_chats,
+                        },
+                        'users': users_list,
+                        'projects': projects_list,
+                        'registrations_by_day': registrations_by_day,
+                        'projects_by_day': projects_by_day,
+                    })
+                }
+
             else:
                 return {
                     'statusCode': 400,
