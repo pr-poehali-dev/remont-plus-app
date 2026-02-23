@@ -72,6 +72,69 @@ export default function Calculator() {
     canonical: "/calculator",
   });
 
+  useEffect(() => {
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Сколько стоит ремонт квартиры?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Стоимость ремонта зависит от площади, типа отделки и региона. Косметический ремонт однокомнатной квартиры в Москве — от 250 000 ₽, капитальный — от 600 000 ₽. Рассчитайте точную смету бесплатно в нашем калькуляторе."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Как рассчитать смету на ремонт онлайн?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Выберите ваш регион, добавьте нужные работы из каталога (демонтаж, стяжка, плитка, покраска и др.), укажите площадь — калькулятор автоматически рассчитает итоговую стоимость с учётом актуальных цен."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Можно ли скачать смету в PDF?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да, готовую смету можно скачать в PDF или распечатать. Первые 3 выгрузки бесплатны. Для неограниченного количества смет подключите тарифный план."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Учитывает ли калькулятор стоимость материалов?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Да, калькулятор считает отдельно стоимость работ и материалов. Вы можете добавить материалы из каталога Леман ПРО или указать собственные позиции."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Для каких регионов России доступен калькулятор?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Калькулятор охватывает все крупные регионы России: Москва, Санкт-Петербург, Краснодарский край, Екатеринбург, Новосибирск, Казань, Нижний Новгород и другие. Цены автоматически пересчитываются для выбранного региона."
+          }
+        }
+      ]
+    };
+
+    const scriptId = "faq-jsonld-calculator";
+    let el = document.getElementById(scriptId) as HTMLScriptElement | null;
+    if (!el) {
+      el = document.createElement("script");
+      el.id = scriptId;
+      el.type = "application/ld+json";
+      document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(faqSchema);
+
+    return () => {
+      document.getElementById(scriptId)?.remove();
+    };
+  }, []);
+
   const [items, setItems] = useState<EstimateItem[]>([]);
   const [lemanaItems, setLemanaItems] = useState<EstimateSavedItem[]>([]);
   const [priceCatalog, setPriceCatalog] = useState<PriceCategory[]>([]);
