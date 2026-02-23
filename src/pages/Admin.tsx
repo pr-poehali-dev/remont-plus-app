@@ -12,10 +12,12 @@ import AdminPortfolioTab, { type PortfolioItem } from "@/components/admin/AdminP
 import AdminReviewsTab, { type ReviewItem } from "@/components/admin/AdminReviewsTab";
 import AdminShowroomTab, { type ShowroomItemDB } from "@/components/admin/AdminShowroomTab";
 import AdminBlogTab from "@/components/admin/AdminBlogTab";
+import AdminPartnerLeadsTab, { type PartnerLead } from "@/components/admin/AdminPartnerLeadsTab";
 
 const SUPPLIERS_URL = 'https://functions.poehali.dev/735f02a5-eb3f-4e4b-b378-7564c92b8e00';
 const MATERIALS_URL = 'https://functions.poehali.dev/dd454a25-9f55-4cfb-9e59-736a4a1256fd';
 const ADMIN_API = 'https://functions.poehali.dev/874af9cd-edd6-471e-b6d4-e68c828e6dca';
+const PARTNER_LEAD_URL = 'https://functions.poehali.dev/89a93896-7725-4f8e-b42b-561db9546fd8';
 const SHOWROOM_URL = 'https://functions.poehali.dev/00d5617d-4889-4550-bc82-d94492e380ba';
 
 export default function Admin() {
@@ -25,6 +27,7 @@ export default function Admin() {
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [showroomItems, setShowroomItems] = useState<ShowroomItemDB[]>([]);
+  const [partnerLeads, setPartnerLeads] = useState<PartnerLead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -40,7 +43,22 @@ export default function Admin() {
     loadPortfolio();
     loadReviews();
     loadShowroom();
+    loadPartnerLeads();
   }, []);
+
+  const loadPartnerLeads = async () => {
+    try {
+      const res = await fetch(PARTNER_LEAD_URL, {
+        headers: { "X-Admin-Token": "admin2025" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPartnerLeads(data.leads || []);
+      }
+    } catch (error) {
+      console.error('Error loading partner leads:', error);
+    }
+  };
 
   const loadShowroom = async () => {
     try {
@@ -164,6 +182,15 @@ export default function Admin() {
               <Icon name="Newspaper" className="h-4 w-4" />
               Блог
             </TabsTrigger>
+            <TabsTrigger value="partner-leads" className="gap-1.5">
+              <Icon name="Handshake" className="h-4 w-4" />
+              Партнёры
+              {partnerLeads.filter(l => l.status === "new").length > 0 && (
+                <Badge variant="destructive" className="ml-1 text-[10px] px-1.5 h-4">
+                  {partnerLeads.filter(l => l.status === "new").length}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="stats" className="gap-1.5">
               <Icon name="BarChart3" className="h-4 w-4" />
               Статистика
@@ -192,6 +219,10 @@ export default function Admin() {
 
           <TabsContent value="blog">
             <AdminBlogTab />
+          </TabsContent>
+
+          <TabsContent value="partner-leads">
+            <AdminPartnerLeadsTab leads={partnerLeads} onReload={loadPartnerLeads} />
           </TabsContent>
 
           <TabsContent value="stats">

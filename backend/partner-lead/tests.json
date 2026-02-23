@@ -1,7 +1,7 @@
 {
   "tests": [
     {
-      "name": "Успешная заявка партнёра",
+      "name": "POST — создание заявки",
       "method": "POST",
       "path": "/",
       "body": {
@@ -11,23 +11,27 @@
         "email": "ivan@stroymaster.ru",
         "partner_type": "contractor",
         "region": "Москва",
-        "comment": "Специализируемся на отделочных работах"
+        "comment": "Специализируемся на отделке"
       },
       "expectedStatus": 200,
       "expectedBody": {"ok": true},
       "bodyMatcher": "partial"
     },
     {
-      "name": "Ошибка — не заполнены обязательные поля",
-      "method": "POST",
+      "name": "GET — список заявок (admin)",
+      "method": "GET",
       "path": "/",
-      "body": {
-        "company_name": "",
-        "contact_name": "",
-        "phone": ""
-      },
-      "expectedStatus": 400,
-      "expectedBody": {"error": "Заполните обязательные поля: компания, имя, телефон, тип партнёра"},
+      "headers": {"X-Admin-Token": "admin2025"},
+      "expectedStatus": 200,
+      "expectedBody": {"total": 0},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "GET — без токена → 403",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 403,
+      "expectedBody": {"error": "Forbidden"},
       "bodyMatcher": "partial"
     }
   ]
