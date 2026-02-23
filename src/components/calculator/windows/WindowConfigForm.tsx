@@ -37,6 +37,26 @@ export default function WindowConfigForm({
   return (
     <div className="space-y-4">
 
+      {/* Регион */}
+      <Card className="p-4">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+          <Icon name="MapPin" size={13} />
+          Регион
+        </p>
+        <Select value={cfg.regionId} onValueChange={v => onUpdate({ regionId: v })}>
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {WINDOW_REGIONS.map(r => (
+              <SelectItem key={r.id} value={r.id} className="text-sm">
+                {r.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Card>
+
       {/* Тип конструкции */}
       <Card className="p-4">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Тип конструкции</p>
@@ -289,34 +309,6 @@ export default function WindowConfigForm({
               value={cfg.slopePerimeter} onChange={e => onUpdate({ slopePerimeter: +e.target.value })} />
           </div>
         )}
-      </Card>
-
-      {/* Регион */}
-      <Card className="p-4">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-          <Icon name="MapPin" size={13} />
-          Регион
-        </p>
-        <Select value={cfg.regionId} onValueChange={v => onUpdate({ regionId: v })}>
-          <SelectTrigger className="h-9 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {WINDOW_REGIONS.map(r => (
-              <SelectItem key={r.id} value={r.id} className="text-sm">
-                <span>{r.name}</span>
-                {r.priceCoeff !== 1.0 && (
-                  <span className="ml-2 text-xs text-gray-400">
-                    {r.priceCoeff < 1 ? `−${Math.round((1 - r.priceCoeff) * 100)}%` : `+${Math.round((r.priceCoeff - 1) * 100)}%`}
-                  </span>
-                )}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-gray-400 mt-2">
-          Цены скорректированы с учётом регионального рынка
-        </p>
       </Card>
 
       {/* Монтаж */}
