@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS contracts (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(500) NOT NULL,
+    contract_number VARCHAR(100) DEFAULT '',
+    contract_type VARCHAR(50) DEFAULT 'partner',
+    counterparty_name VARCHAR(500) NOT NULL,
+    counterparty_inn VARCHAR(20) DEFAULT '',
+    counterparty_type VARCHAR(50) DEFAULT 'company',
+    status VARCHAR(50) DEFAULT 'draft',
+    subject TEXT DEFAULT '',
+    amount NUMERIC(15,2),
+    currency VARCHAR(10) DEFAULT 'RUB',
+    signed_at DATE,
+    valid_from DATE,
+    valid_until DATE,
+    auto_renewal BOOLEAN DEFAULT FALSE,
+    responsible_person VARCHAR(200) DEFAULT '',
+    file_url TEXT DEFAULT '',
+    notes TEXT DEFAULT '',
+    tags TEXT[],
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
