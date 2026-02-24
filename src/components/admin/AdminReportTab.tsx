@@ -151,13 +151,20 @@ export default function AdminReportTab() {
 
   async function load() {
     setLoading(true);
-    const res = await fetch(`${ADMIN_API}?action=report`, {
-      headers: { "X-Admin-Token": ADMIN_TOKEN },
-    });
-    const json = await res.json();
-    const parsed = typeof json.body === "string" ? JSON.parse(json.body) : json;
-    setData(parsed);
-    setLoading(false);
+    try {
+      const res = await fetch(`${ADMIN_API}?action=report`, {
+        headers: { "X-Admin-Token": ADMIN_TOKEN },
+      });
+      const json = await res.json();
+      const parsed = typeof json.body === "string" ? JSON.parse(json.body) : json;
+      if (parsed?.summary) {
+        setData(parsed);
+      }
+    } catch (e) {
+      console.error("Report load error", e);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { load(); }, []);
@@ -170,7 +177,13 @@ export default function AdminReportTab() {
     );
   }
 
-  if (!data) return null;
+  if (!data) return (
+    <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
+      <Icon name="AlertCircle" size={32} className="text-red-400" />
+      <p className="text-sm">Не удалось загрузить отчёт. Проверьте права доступа.</p>
+      <button onClick={load} className="text-sm text-violet-600 hover:underline">Попробовать снова</button>
+    </div>
+  );
 
   const { summary } = data;
 

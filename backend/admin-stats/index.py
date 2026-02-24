@@ -18,8 +18,10 @@ def handler(event: dict, context) -> dict:
             'body': ''
         }
     
-    # Проверка админского токена (пока простая проверка)
-    admin_token = event.get('headers', {}).get('X-Admin-Token', '')
+    # Проверка админского токена — headers могут быть в любом регистре
+    headers = event.get('headers', {}) or {}
+    headers_lower = {k.lower(): v for k, v in headers.items()}
+    admin_token = headers_lower.get('x-admin-token', '')
     admin_password = os.environ.get('ADMIN_PASSWORD', 'admin2025')
     
     if admin_token != admin_password:
