@@ -16,6 +16,7 @@ import AdminPartnerLeadsTab, { type PartnerLead } from "@/components/admin/Admin
 import AdminReportTab from "@/components/admin/AdminReportTab";
 import AdminLegalTab from "@/components/admin/AdminLegalTab";
 import AdminMarketingTab from "@/components/admin/AdminMarketingTab";
+import AdminSalesTab from "@/components/admin/AdminSalesTab";
 
 const SUPPLIERS_URL = 'https://functions.poehali.dev/735f02a5-eb3f-4e4b-b378-7564c92b8e00';
 const MATERIALS_URL = 'https://functions.poehali.dev/dd454a25-9f55-4cfb-9e59-736a4a1256fd';
@@ -210,6 +211,10 @@ export default function Admin() {
               <Icon name="Sparkles" className="h-4 w-4" />
               Маркетолог
             </TabsTrigger>
+            <TabsTrigger value="sales" className="gap-1.5">
+              <Icon name="TrendingUp" className="h-4 w-4" />
+              Продажи
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="showroom">
@@ -254,6 +259,10 @@ export default function Admin() {
 
           <TabsContent value="marketing">
             <AdminMarketingTab />
+          </TabsContent>
+
+          <TabsContent value="sales">
+            <AdminSalesTab />
           </TabsContent>
         </Tabs>
       </div>
