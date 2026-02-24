@@ -155,7 +155,8 @@ export default function AdminReportTab() {
       headers: { "X-Admin-Token": ADMIN_TOKEN },
     });
     const json = await res.json();
-    setData(json);
+    const parsed = typeof json.body === "string" ? JSON.parse(json.body) : json;
+    setData(parsed);
     setLoading(false);
   }
 
