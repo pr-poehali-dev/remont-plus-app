@@ -106,6 +106,7 @@ export const CEILING_REGIONS = [
 
 export interface CeilingConfig {
   id: string;
+  roomName: string;     // название помещения
   ceilingType: CeilingType;
   level: CeilingLevel;
   brandId: string;

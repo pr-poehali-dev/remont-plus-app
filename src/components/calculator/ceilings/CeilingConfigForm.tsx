@@ -90,6 +90,19 @@ export default function CeilingConfigForm({ cfg, onUpdate }: Props) {
         <div className="space-y-4">
           <Card className="p-4">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+              <Icon name="Home" size={13} />
+              Название помещения
+            </p>
+            <Input
+              value={cfg.roomName}
+              onChange={e => onUpdate({ roomName: e.target.value })}
+              placeholder="Например: Гостиная, Спальня, Кухня..."
+              className="h-10"
+            />
+          </Card>
+
+          <Card className="p-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
               <Icon name="MapPin" size={13} />
               Регион
             </p>

@@ -10,6 +10,7 @@ export function fmt(n: number) {
 }
 
 export const DEFAULT_CONFIG: Omit<CeilingConfig, "id" | "totalPrice"> = {
+  roomName: "",
   ceilingType: "matte",
   level: "single",
   brandId: "lackfolie",
