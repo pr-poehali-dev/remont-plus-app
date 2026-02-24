@@ -21,7 +21,7 @@ const TARIFFS_TOUR = [
   },
   {
     title: "Остались вопросы?",
-    text: "Оставьте заявку — мы перезвоним в течение 15 минут и подберём подходящий тариф.",
+    text: "Оставьте заявку — мы свяжемся с вами в рабочее время и подберём подходящий тариф.",
     icon: "Phone",
   },
 ];
@@ -120,16 +120,16 @@ export default function Tariffs() {
           <div>
             <h2 className="text-xl font-bold mb-2">Остались вопросы?</h2>
             <p className="text-gray-500 mb-4">
-              Оставьте заявку — мы перезвоним, ответим на все вопросы и подберём подходящий тариф.
+              Оставьте заявку — мы свяжемся с вами, ответим на все вопросы и подберём подходящий тариф.
             </p>
             <ul className="space-y-3 text-sm text-gray-600">
               <li className="flex items-center gap-2">
                 <Icon name="Clock" size={16} className="text-primary shrink-0" />
-                Перезваниваем в течение 15 минут
+                Связываемся в рабочее время (пн–пт, 9:00–18:00)
               </li>
               <li className="flex items-center gap-2">
                 <Icon name="ShieldCheck" size={16} className="text-primary shrink-0" />
-                Бесплатная консультация без обязательств
+                Первичная консультация бесплатна, без обязательств по покупке
               </li>
               <li className="flex items-center gap-2">
                 <Icon name="Phone" size={16} className="text-primary shrink-0" />
