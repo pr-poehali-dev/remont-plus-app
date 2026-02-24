@@ -18,6 +18,7 @@ PARTNER_TYPE_LABELS = {
     "contractor": "Бригада / мастер",
     "supplier": "Поставщик материалов",
     "windows": "Оконная компания",
+    "ceilings": "Натяжные потолки",
     "design": "Дизайн-студия",
     "other": "Другое",
 }

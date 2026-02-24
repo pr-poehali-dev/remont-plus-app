@@ -12,6 +12,7 @@ const PARTNER_TYPES = [
   { value: "contractor", label: "Бригада / мастер", icon: "HardHat", description: "Отделочные и ремонтные работы" },
   { value: "supplier", label: "Поставщик материалов", icon: "Store", description: "Стройматериалы и отделка" },
   { value: "windows", label: "Оконная компания", icon: "AppWindow", description: "ПВХ, алюминий, деревянные окна" },
+  { value: "ceilings", label: "Натяжные потолки", icon: "Layers", description: "ПВХ и тканевые потолки, монтаж" },
   { value: "design", label: "Дизайн-студия", icon: "Palette", description: "Дизайн-проекты интерьера" },
   { value: "other", label: "Другое", icon: "Briefcase", description: "Смежные услуги для ремонта" },
 ];
