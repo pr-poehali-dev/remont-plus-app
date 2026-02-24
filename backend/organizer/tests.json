@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Get templates",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "Unauthorized"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

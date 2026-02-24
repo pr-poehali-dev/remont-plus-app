@@ -165,6 +165,17 @@ const sections = [
     path: "/turnkey",
     requireAuth: false,
   },
+  {
+    id: "organizer",
+    title: "ОРГАНАЙЗЕР",
+    description: "Календарный план ремонта: этапы, сроки, бюджет план/факт и контрольные точки",
+    emoji: "📋",
+    icon: "ClipboardList",
+    gradient: "from-cyan-400 via-sky-400 to-blue-400",
+    glow: "group-hover:shadow-cyan-300/50",
+    path: "/organizer",
+    requireAuth: true,
+  },
 ];
 
 interface Props {
