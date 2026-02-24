@@ -182,7 +182,7 @@ export default function Ceilings() {
         regionId={regionId}
         markupPct={markupPct}
         showMarkup={showMarkup}
-        onBack={() => navigate(-1)}
+        onBack={() => navigate("/")}
         onRegionChange={handleRegionChange}
         onMarkupToggle={() => setShowMarkup(v => !v)}
         onMarkupChange={handleMarkupChange}

@@ -125,7 +125,7 @@ export default function TurnkeyRenovation() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
                 <Icon name="ArrowLeft" className="h-5 w-5" />
               </Button>
               <div>
