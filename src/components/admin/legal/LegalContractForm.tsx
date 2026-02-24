@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Icon from "@/components/ui/icon";
-import { CONTRACT_TYPES, STATUSES } from "./LegalTypes";
+import { CONTRACT_TYPES, STATUSES, CONTRACT_TEMPLATES, EMPTY } from "./LegalTypes";
 import type { Contract } from "./LegalTypes";
 
 interface Props {
@@ -38,6 +38,38 @@ export default function LegalContractForm({
           <DialogTitle>{editing ? "Редактировать договор" : "Новый договор"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          {/* Шаблоны — только при создании */}
+          {!editing && (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <Icon name="Zap" size={11} />
+                Быстрый старт — выбери шаблон
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {CONTRACT_TEMPLATES.map(tpl => (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => {
+                      onFormChange({ ...EMPTY, ...tpl.defaults });
+                      onTagsChange(tpl.tags);
+                    }}
+                    className="flex items-start gap-2 p-2.5 border border-gray-200 rounded-xl text-left hover:border-indigo-400 hover:bg-indigo-50 transition-all group"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-indigo-50 group-hover:bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+                      <Icon name={tpl.icon} size={14} className="text-indigo-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-gray-800 leading-tight">{tpl.label}</p>
+                      <p className="text-[11px] text-gray-400 leading-tight mt-0.5 truncate">{tpl.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <div className="border-t border-gray-100 mt-3" />
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="sm:col-span-2">
               <Label className="text-xs">Название договора *</Label>
