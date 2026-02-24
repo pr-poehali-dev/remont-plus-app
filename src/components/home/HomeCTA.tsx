@@ -38,7 +38,11 @@ export default function HomeCTA({ user }: Props) {
       </section>
 
       <footer className="bg-[#fafaf8] py-6 text-center text-xs text-gray-400 border-t border-gray-100">
-        АВАНГАРД &copy; {new Date().getFullYear()}
+        <div>АВАНГАРД &copy; {new Date().getFullYear()}</div>
+        <div className="flex justify-center gap-4 mt-2">
+          <a href="/terms" className="hover:text-gray-600 transition-colors">Пользовательское соглашение</a>
+          <a href="/privacy" className="hover:text-gray-600 transition-colors">Политика конфиденциальности</a>
+        </div>
       </footer>
     </>
   );

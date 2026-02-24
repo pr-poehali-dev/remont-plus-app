@@ -26,6 +26,7 @@ import LemanaProCatalog from "./pages/LemanaProCatalog";
 import Prices from "./pages/Prices";
 import Masters from "./pages/Masters";
 import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import EstimatePrint from "./pages/EstimatePrint";
 import DocsPrint from "./pages/DocsPrint";
 import Windows from "./pages/Windows";
@@ -68,6 +69,7 @@ const App = () => {
             <Route path="/prices" element={<Prices />} />
             <Route path="/masters" element={<Masters />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="/estimate/print" element={<EstimatePrint />} />
             <Route path="/docs/print" element={<DocsPrint />} />
             <Route path="/windows" element={<Windows />} />

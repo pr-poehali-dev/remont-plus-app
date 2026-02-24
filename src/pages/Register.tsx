@@ -173,11 +173,15 @@ export default function Register() {
                   required
                 />
                 <span className="text-sm text-gray-600">
-                  Я согласен(а) с{" "}
-                  <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">
-                    Политикой конфиденциальности
+                  Я принимаю{" "}
+                  <Link to="/terms" className="text-orange-500 hover:underline" target="_blank">
+                    Пользовательское соглашение
                   </Link>{" "}
-                  и даю согласие на обработку персональных данных в соответствии с ФЗ-152
+                  и{" "}
+                  <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">
+                    Политику конфиденциальности
+                  </Link>
+                  , даю согласие на обработку персональных данных в соответствии с ФЗ-152
                 </span>
               </label>
 
