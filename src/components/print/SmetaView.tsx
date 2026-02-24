@@ -18,7 +18,11 @@ export default function SmetaView({ data }: { data: PrintData }) {
 
   return (
     <div className="page">
-      <PrintButtons />
+      <PrintButtons
+        docTitle={`Смета № С-${docNum} от ${date}`}
+        totalSum={totalWithDelivery}
+        docType="smeta"
+      />
 
       <p className="doc-title">Смета на выполнение ремонтных работ</p>
       <p className="doc-subtitle">№ С-{docNum} от {date} г.</p>

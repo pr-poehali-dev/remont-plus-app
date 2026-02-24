@@ -34,7 +34,13 @@ export default function KpView({ data }: { data: PrintData }) {
 
   return (
     <div className="page">
-      <PrintButtons />
+      <PrintButtons
+        docTitle={`КП-${docNum} от ${date}`}
+        totalSum={grandAll}
+        customerEmail={email}
+        customerPhone={phone}
+        docType="kp"
+      />
 
       <p className="doc-title">Коммерческое предложение</p>
       <p className="doc-subtitle">КП-{docNum} от {date} г.</p>

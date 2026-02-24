@@ -4,6 +4,7 @@ import { CONSTRUCTION_TYPES, PROFILE_SYSTEMS, GLASS_UNITS } from "@/components/c
 import { fmt, WINDOW_PRINT_STYLES } from "@/components/print/WindowPrintTypes";
 import type { WindowPrintState } from "@/components/print/WindowPrintTypes";
 import WindowCard from "@/components/print/WindowCard";
+import SharePanel from "@/components/print/SharePanel";
 
 export default function WindowPrint() {
   const location = useLocation();
@@ -46,20 +47,29 @@ export default function WindowPrint() {
       <style>{WINDOW_PRINT_STYLES}</style>
 
       <div className="page">
-        {/* Кнопки */}
-        <div className="no-print" style={{ textAlign: "right", marginBottom: 16, display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button
-            onClick={() => window.history.back()}
-            style={{ background: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: 4, padding: "7px 16px", fontFamily: "inherit", fontSize: 12, cursor: "pointer" }}
-          >
-            ← Назад
-          </button>
-          <button
-            onClick={() => window.print()}
-            style={{ background: "#111", color: "#fff", border: "none", borderRadius: 4, padding: "7px 18px", fontFamily: "inherit", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
-          >
-            🖨 Распечатать / PDF
-          </button>
+        {/* Панель шаринга и кнопки */}
+        <div className="no-print" style={{ marginBottom: 16 }}>
+          <SharePanel
+            docTitle={isKp ? `КП-${docNum} от ${date} (Окна)` : `Смета на окна № С-${docNum} от ${date}`}
+            totalSum={totalSum}
+            customerEmail={email}
+            customerPhone={phone}
+            docType={docType}
+          />
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <button
+              onClick={() => window.history.back()}
+              style={{ background: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: 4, padding: "7px 16px", fontFamily: "inherit", fontSize: 12, cursor: "pointer" }}
+            >
+              ← Назад
+            </button>
+            <button
+              onClick={() => window.print()}
+              style={{ background: "#111", color: "#fff", border: "none", borderRadius: 4, padding: "7px 18px", fontFamily: "inherit", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+            >
+              🖨 Распечатать / PDF
+            </button>
+          </div>
         </div>
 
         {/* Шапка */}

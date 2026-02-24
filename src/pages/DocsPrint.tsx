@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import SharePanel from "@/components/print/SharePanel";
 import { roundUpToPackaging } from "@/lib/lemanapro-data";
 import type { EstimateItem } from "@/pages/Calculator";
 import type { EstimateSavedItem } from "@/lib/lemanapro-data";
@@ -364,8 +365,15 @@ export default function DocsPrint() {
       <style>{STYLES}</style>
       <div className="page">
         <div className="no-print">
-          <button className="btn" onClick={() => window.print()}>🖨 Распечатать / Сохранить PDF</button>
-          <button className="btn-back" onClick={() => window.history.back()}>← Назад</button>
+          <SharePanel
+            docTitle={DOC_TITLES[docId] || "Документ"}
+            totalSum={grandTotal}
+            docType="smeta"
+          />
+          <div style={{ textAlign: "right", marginBottom: 8 }}>
+            <button className="btn" onClick={() => window.print()}>🖨 Распечатать / Сохранить PDF</button>
+            <button className="btn-back" onClick={() => window.history.back()}>← Назад</button>
+          </div>
         </div>
 
         {docId === "contract" && <Contract form={form} grandTotal={grandTotal} materialSurcharge={materialSurcharge} items={items} />}

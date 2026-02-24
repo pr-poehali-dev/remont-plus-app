@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS, CEILING_COLORS, LIGHTING_OPTIONS, PROFILE_OPTIONS } from "@/components/calculator/ceilings/CeilingTypes";
 import { fmt, CEILING_PRINT_STYLES } from "@/components/print/CeilingPrintTypes";
 import type { CeilingPrintState } from "@/components/print/CeilingPrintTypes";
+import SharePanel from "@/components/print/SharePanel";
 
 export default function CeilingPrint() {
   const location = useLocation();
@@ -45,20 +46,29 @@ export default function CeilingPrint() {
       <style>{CEILING_PRINT_STYLES}</style>
 
       <div className="page">
-        {/* Кнопки */}
-        <div className="no-print" style={{ textAlign: "right", marginBottom: 16, display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button
-            onClick={() => window.history.back()}
-            style={{ background: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: 4, padding: "7px 16px", fontFamily: "inherit", fontSize: 12, cursor: "pointer" }}
-          >
-            ← Назад
-          </button>
-          <button
-            onClick={() => window.print()}
-            style={{ background: "#111", color: "#fff", border: "none", borderRadius: 4, padding: "7px 18px", fontFamily: "inherit", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
-          >
-            🖨 Распечатать / PDF
-          </button>
+        {/* Панель шаринга и кнопки */}
+        <div className="no-print" style={{ marginBottom: 16 }}>
+          <SharePanel
+            docTitle={isKp ? `КП-${docNum} от ${date} (Потолки)` : `Смета на потолки № С-${docNum} от ${date}`}
+            totalSum={totalSum}
+            customerEmail={email}
+            customerPhone={phone}
+            docType={docType}
+          />
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <button
+              onClick={() => window.history.back()}
+              style={{ background: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: 4, padding: "7px 16px", fontFamily: "inherit", fontSize: 12, cursor: "pointer" }}
+            >
+              ← Назад
+            </button>
+            <button
+              onClick={() => window.print()}
+              style={{ background: "#111", color: "#fff", border: "none", borderRadius: 4, padding: "7px 18px", fontFamily: "inherit", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+            >
+              🖨 Распечатать / PDF
+            </button>
+          </div>
         </div>
 
         {/* Шапка */}

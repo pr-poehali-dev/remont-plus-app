@@ -1,22 +1,42 @@
 import { roundUpToPackaging } from "@/lib/lemanapro-data";
 import type { EstimateItem } from "@/pages/Calculator";
 import type { EstimateSavedItem } from "@/lib/lemanapro-data";
+import SharePanel from "./SharePanel";
 
-export function PrintButtons() {
+interface PrintButtonsProps {
+  docTitle?: string;
+  totalSum?: number;
+  customerEmail?: string;
+  customerPhone?: string;
+  docType?: "smeta" | "kp";
+}
+
+export function PrintButtons({ docTitle, totalSum, customerEmail, customerPhone, docType }: PrintButtonsProps) {
   return (
-    <div className="no-print" style={{ textAlign: "right", marginBottom: 16, display: "flex", gap: 8, justifyContent: "flex-end" }}>
-      <button
-        onClick={() => window.history.back()}
-        style={{ background: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: 4, padding: "7px 16px", fontFamily: "inherit", fontSize: 12, cursor: "pointer" }}
-      >
-        ← Назад
-      </button>
-      <button
-        onClick={() => window.print()}
-        style={{ background: "#111", color: "#fff", border: "none", borderRadius: 4, padding: "7px 18px", fontFamily: "inherit", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
-      >
-        🖨 Распечатать / PDF
-      </button>
+    <div className="no-print" style={{ marginBottom: 16 }}>
+      {docTitle && totalSum !== undefined && (
+        <SharePanel
+          docTitle={docTitle}
+          totalSum={totalSum}
+          customerEmail={customerEmail}
+          customerPhone={customerPhone}
+          docType={docType}
+        />
+      )}
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <button
+          onClick={() => window.history.back()}
+          style={{ background: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: 4, padding: "7px 16px", fontFamily: "inherit", fontSize: 12, cursor: "pointer" }}
+        >
+          ← Назад
+        </button>
+        <button
+          onClick={() => window.print()}
+          style={{ background: "#111", color: "#fff", border: "none", borderRadius: 4, padding: "7px 18px", fontFamily: "inherit", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+        >
+          🖨 Распечатать / PDF
+        </button>
+      </div>
     </div>
   );
 }
