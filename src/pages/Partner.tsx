@@ -63,6 +63,7 @@ export default function Partner() {
     company_name: "", contact_name: "", phone: "", email: "",
     partner_type: "", region: "", comment: "",
   });
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -330,11 +331,32 @@ export default function Partner() {
                   </div>
                 )}
 
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="mt-0.5 accent-orange-500 w-4 h-4 shrink-0"
+                    required
+                  />
+                  <span className="text-sm text-gray-600 leading-relaxed">
+                    Я принимаю{" "}
+                    <a href="/terms" target="_blank" className="text-orange-500 hover:underline">
+                      Пользовательское соглашение
+                    </a>{" "}
+                    и{" "}
+                    <a href="/privacy" target="_blank" className="text-orange-500 hover:underline">
+                      Политику конфиденциальности
+                    </a>
+                    , даю согласие на обработку персональных данных в соответствии с ФЗ-152
+                  </span>
+                </label>
+
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !agreed}
                   size="lg"
-                  className="w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white border-0 rounded-2xl h-12 text-base font-semibold shadow-lg shadow-orange-100"
+                  className="w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white border-0 rounded-2xl h-12 text-base font-semibold shadow-lg shadow-orange-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <><Icon name="Loader2" size={18} className="mr-2 animate-spin" />Отправляем заявку...</>
@@ -342,13 +364,6 @@ export default function Partner() {
                     <><Icon name="Send" size={18} className="mr-2" />Отправить заявку</>
                   )}
                 </Button>
-
-                <p className="text-center text-xs text-gray-400">
-                  Нажимая кнопку, вы соглашаетесь с{" "}
-                  <button type="button" onClick={() => navigate("/privacy")} className="underline hover:text-gray-600">
-                    политикой конфиденциальности
-                  </button>
-                </p>
               </form>
             )}
           </div>
