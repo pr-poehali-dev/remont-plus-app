@@ -8,6 +8,7 @@ import {
 import Icon from "@/components/ui/icon";
 import { statusBadge, typelabel, formatDate, formatAmount } from "./LegalTypes";
 import type { Contract } from "./LegalTypes";
+import { exportContractPDF, exportContractWord } from "./legalExport";
 
 interface Props {
   open: boolean;
@@ -103,7 +104,33 @@ export default function LegalContractDetail({ open, contract, onClose, onEdit }:
                 ))}
               </div>
             )}
-            <div className="flex gap-2 pt-2">
+            <div className="border-t pt-3 space-y-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
+                <Icon name="Download" size={11} />
+                Экспорт
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+                  onClick={() => exportContractPDF(contract)}
+                >
+                  <Icon name="FileText" size={14} className="mr-1.5" />
+                  PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 border-blue-200 text-blue-600 hover:bg-blue-50"
+                  onClick={() => exportContractWord(contract)}
+                >
+                  <Icon name="FileType" size={14} className="mr-1.5" />
+                  Word (.rtf)
+                </Button>
+              </div>
+            </div>
+            <div className="flex gap-2">
               <Button className="flex-1" onClick={() => { onClose(); onEdit(contract); }}>
                 <Icon name="Pencil" size={14} className="mr-1.5" />
                 Редактировать
