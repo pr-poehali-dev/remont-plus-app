@@ -1,0 +1,13 @@
+{
+  "tests": [
+    {
+      "name": "Get expiring contracts",
+      "method": "GET",
+      "path": "/?days=30",
+      "headers": { "X-Admin-Token": "admin2025" },
+      "expectedStatus": 200,
+      "expectedBody": { "contracts": [] },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

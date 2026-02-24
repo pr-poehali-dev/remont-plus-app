@@ -4,8 +4,11 @@ import type { Contract } from "./legal/LegalTypes";
 import LegalContractList from "./legal/LegalContractList";
 import LegalContractDetail from "./legal/LegalContractDetail";
 import LegalContractForm from "./legal/LegalContractForm";
+import LegalReminders from "./legal/LegalReminders";
 
 export type { Contract };
+
+const REMINDERS_URL = "https://functions.poehali.dev/64c25e95-c949-4599-9348-5d05b5c394b0";
 
 export default function AdminLegalTab() {
   const [contracts, setContracts] = useState<Contract[]>([]);
@@ -14,6 +17,11 @@ export default function AdminLegalTab() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterType, setFilterType] = useState("");
   const [stats, setStats] = useState<Record<string, number>>({});
+
+  const [expiring, setExpiring] = useState<Contract[]>([]);
+  const [remindersLoading, setRemindersLoading] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Contract | null>(null);
@@ -24,7 +32,27 @@ export default function AdminLegalTab() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailContract, setDetailContract] = useState<Contract | null>(null);
 
-  useEffect(() => { load(); }, [filterStatus, filterType]);
+  useEffect(() => { load(); loadReminders(); }, [filterStatus, filterType]);
+
+  async function loadReminders() {
+    setRemindersLoading(true);
+    const res = await fetch(`${REMINDERS_URL}?days=30`, { headers: HEADERS });
+    const data = await res.json();
+    setExpiring(data.contracts || []);
+    setRemindersLoading(false);
+  }
+
+  async function sendReminderEmail() {
+    setEmailSending(true);
+    await fetch(REMINDERS_URL, {
+      method: "POST",
+      headers: HEADERS,
+      body: JSON.stringify({ send_email: true }),
+    });
+    setEmailSending(false);
+    setEmailSent(true);
+    setTimeout(() => setEmailSent(false), 4000);
+  }
 
   async function load() {
     setLoading(true);
@@ -90,6 +118,14 @@ export default function AdminLegalTab() {
 
   return (
     <div className="space-y-6">
+      <LegalReminders
+        contracts={expiring}
+        loading={remindersLoading}
+        emailSending={emailSending}
+        emailSent={emailSent}
+        onSendEmail={sendReminderEmail}
+        onOpenDetail={openDetail}
+      />
       <LegalContractList
         contracts={contracts}
         loading={loading}

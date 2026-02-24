@@ -23,6 +23,7 @@ export interface Contract {
   tags: string[] | null;
   created_at: string;
   updated_at: string;
+  days_left?: number;
 }
 
 export const CONTRACT_TYPES = [
