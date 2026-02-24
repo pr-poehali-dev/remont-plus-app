@@ -36,6 +36,14 @@ import CeilingPrint from "./pages/CeilingPrint";
 import Flooring from "./pages/Flooring";
 import FlooringPrint from "./pages/FlooringPrint";
 import Partner from "./pages/Partner";
+import Electrics from "./pages/Electrics";
+import ElectricsPrint from "./pages/ElectricsPrint";
+import Bathroom from "./pages/Bathroom";
+import BathroomPrint from "./pages/BathroomPrint";
+import NewbuildRenovation from "./pages/NewbuildRenovation";
+import NewbuildPrint from "./pages/NewbuildPrint";
+import TurnkeyRenovation from "./pages/TurnkeyRenovation";
+import TurnkeyPrint from "./pages/TurnkeyPrint";
 import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
@@ -81,6 +89,14 @@ const App = () => {
             <Route path="/flooring" element={<Flooring />} />
             <Route path="/flooring/print" element={<FlooringPrint />} />
             <Route path="/partner" element={<Partner />} />
+            <Route path="/electrics" element={<Electrics />} />
+            <Route path="/electrics/print" element={<ElectricsPrint />} />
+            <Route path="/bathroom" element={<Bathroom />} />
+            <Route path="/bathroom/print" element={<BathroomPrint />} />
+            <Route path="/newbuild" element={<NewbuildRenovation />} />
+            <Route path="/newbuild/print" element={<NewbuildPrint />} />
+            <Route path="/turnkey" element={<TurnkeyRenovation />} />
+            <Route path="/turnkey/print" element={<TurnkeyPrint />} />
             <Route path="/auth/yandex/callback" element={<YandexCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
