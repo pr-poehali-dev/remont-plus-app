@@ -5,7 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 
 const ADMIN_API = "https://functions.poehali.dev/874af9cd-edd6-471e-b6d4-e68c828e6dca";
-const ADMIN_TOKEN = "admin2025";
+
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem("avangard_token") || "";
+  return token ? { "Authorization": `Bearer ${token}` } : {};
+}
 
 interface Summary {
   total_users: number;
@@ -153,7 +157,7 @@ export default function AdminReportTab() {
     setLoading(true);
     try {
       const res = await fetch(`${ADMIN_API}?action=report`, {
-        headers: { "X-Admin-Token": ADMIN_TOKEN },
+        headers: { ...getAuthHeaders() },
       });
       const json = await res.json();
       const parsed = typeof json.body === "string" ? JSON.parse(json.body) : json;

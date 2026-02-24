@@ -18,13 +18,44 @@ def handler(event: dict, context) -> dict:
             'body': ''
         }
     
-    # Проверка админского токена — headers могут быть в любом регистре
+    # Проверка: принимаем либо статичный ADMIN_PASSWORD, либо сессионный токен admin-пользователя
     headers = event.get('headers', {}) or {}
     headers_lower = {k.lower(): v for k, v in headers.items()}
+
+    # Статичный токен (X-Admin-Token)
     admin_token = headers_lower.get('x-admin-token', '')
-    admin_password = os.environ.get('ADMIN_PASSWORD', 'admin2025')
-    
-    if admin_token != admin_password:
+    admin_password = os.environ.get('ADMIN_PASSWORD', '')
+
+    # Сессионный токен пользователя (Authorization / X-Authorization)
+    session_token = (
+        headers_lower.get('x-authorization', '') or
+        headers_lower.get('authorization', '')
+    ).replace('Bearer ', '').strip()
+
+    is_authorized = False
+
+    if admin_password and admin_token == admin_password:
+        is_authorized = True
+    elif session_token:
+        # Проверяем токен в refresh_tokens: user_id=0 — это admin-вход
+        try:
+            dsn_check = os.environ.get('DATABASE_URL')
+            conn_check = psycopg2.connect(dsn_check)
+            cur_check = conn_check.cursor()
+            schema = os.environ.get('MAIN_DB_SCHEMA', 'public')
+            cur_check.execute(
+                f"SELECT rt.user_id, u.role FROM {schema}.refresh_tokens rt LEFT JOIN {schema}.users u ON u.id = rt.user_id WHERE rt.token_hash = %s AND rt.expires_at > NOW() LIMIT 1",
+                (session_token,)
+            )
+            row = cur_check.fetchone()
+            if row and (row[0] == 0 or row[1] == 'admin'):
+                is_authorized = True
+            cur_check.close()
+            conn_check.close()
+        except Exception:
+            pass
+
+    if not is_authorized:
         return {
             'statusCode': 401,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},

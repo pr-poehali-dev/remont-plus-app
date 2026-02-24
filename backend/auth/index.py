@@ -102,9 +102,16 @@ def handler(event: dict, context) -> dict:
 
         admin_password = os.environ.get('ADMIN_PASSWORD', '')
         if email == 'admin' and password == admin_password and admin_password:
+            token = secrets.token_hex(32)
+            schema = os.environ.get('MAIN_DB_SCHEMA', 'public')
+            # Сохраняем токен в refresh_tokens с user_id=0 (виртуальный admin)
+            cursor.execute(
+                f"INSERT INTO {schema}.refresh_tokens (user_id, token_hash, expires_at) VALUES (0, %s, NOW() + INTERVAL '30 days')",
+                (token,)
+            )
+            conn.commit()
             cursor.close()
             conn.close()
-            token = secrets.token_hex(32)
             return {
                 'statusCode': 200,
                 'headers': headers,
