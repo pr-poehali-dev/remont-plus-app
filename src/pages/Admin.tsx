@@ -14,6 +14,7 @@ import AdminShowroomTab, { type ShowroomItemDB } from "@/components/admin/AdminS
 import AdminBlogTab from "@/components/admin/AdminBlogTab";
 import AdminPartnerLeadsTab, { type PartnerLead } from "@/components/admin/AdminPartnerLeadsTab";
 import AdminReportTab from "@/components/admin/AdminReportTab";
+import AdminLegalTab from "@/components/admin/AdminLegalTab";
 
 const SUPPLIERS_URL = 'https://functions.poehali.dev/735f02a5-eb3f-4e4b-b378-7564c92b8e00';
 const MATERIALS_URL = 'https://functions.poehali.dev/dd454a25-9f55-4cfb-9e59-736a4a1256fd';
@@ -200,6 +201,10 @@ export default function Admin() {
               <Icon name="FileSpreadsheet" className="h-4 w-4" />
               Отчёт
             </TabsTrigger>
+            <TabsTrigger value="legal" className="gap-1.5">
+              <Icon name="Scale" className="h-4 w-4" />
+              Юрист
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="showroom">
@@ -236,6 +241,10 @@ export default function Admin() {
 
           <TabsContent value="report">
             <AdminReportTab />
+          </TabsContent>
+
+          <TabsContent value="legal">
+            <AdminLegalTab />
           </TabsContent>
         </Tabs>
       </div>

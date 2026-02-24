@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "GET all contracts",
+      "method": "GET",
+      "path": "/",
+      "headers": { "X-Admin-Token": "admin2025" },
+      "expectedStatus": 200,
+      "expectedBody": { "contracts": [], "total": 0 },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Forbidden without token",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 403,
+      "expectedBody": { "error": "Forbidden" },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
