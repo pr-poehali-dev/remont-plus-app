@@ -8,7 +8,7 @@ const ADMIN_API = "https://functions.poehali.dev/874af9cd-edd6-471e-b6d4-e68c828
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("avangard_token") || "";
-  return token ? { "Authorization": `Bearer ${token}` } : {};
+  return token ? { "X-Auth-Token": token } : {};
 }
 
 interface Summary {

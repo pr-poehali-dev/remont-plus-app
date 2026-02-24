@@ -13,7 +13,7 @@ def handler(event: dict, context) -> dict:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token'
+                'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token, X-Auth-Token'
             },
             'body': ''
         }
@@ -26,11 +26,8 @@ def handler(event: dict, context) -> dict:
     admin_token = headers_lower.get('x-admin-token', '')
     admin_password = os.environ.get('ADMIN_PASSWORD', '')
 
-    # Сессионный токен пользователя (Authorization / X-Authorization)
-    session_token = (
-        headers_lower.get('x-authorization', '') or
-        headers_lower.get('authorization', '')
-    ).replace('Bearer ', '').strip()
+    # Сессионный токен пользователя (X-Auth-Token)
+    session_token = headers_lower.get('x-auth-token', '').strip()
 
     is_authorized = False
 
