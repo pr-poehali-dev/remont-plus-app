@@ -99,6 +99,17 @@ const sections = [
     path: "/windows",
     requireAuth: false,
   },
+  {
+    id: "ceilings",
+    title: "ПОТОЛКИ",
+    description: "Расчёт натяжных потолков: ПВХ и тканевые полотна, освещение, смета и КП",
+    emoji: "🏠",
+    icon: "Layers",
+    gradient: "from-violet-400 via-purple-400 to-indigo-400",
+    glow: "group-hover:shadow-violet-300/50",
+    path: "/ceilings",
+    requireAuth: false,
+  },
 ];
 
 interface Props {
