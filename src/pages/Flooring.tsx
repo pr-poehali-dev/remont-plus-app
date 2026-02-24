@@ -177,7 +177,16 @@ export default function Flooring() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <select
+                value={regionId}
+                onChange={e => handleRegionChange(e.target.value)}
+                className="h-9 text-sm border border-gray-200 rounded-md px-2 bg-white text-gray-700 cursor-pointer hover:border-amber-400 transition-colors"
+              >
+                {REGIONS.map(r => (
+                  <option key={r.id} value={r.id}>{r.label}</option>
+                ))}
+              </select>
               <Button
                 variant="outline"
                 size="sm"
@@ -199,28 +208,15 @@ export default function Flooring() {
           </div>
 
           {showMarkup && (
-            <div className="mt-3 pb-3 border-t pt-3 flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm whitespace-nowrap">Наценка, %</Label>
-                <Input
-                  type="number" min={0} max={200}
-                  value={markupPct}
-                  onChange={e => handleMarkupChange(e.target.value)}
-                  className="w-20 h-8 text-sm"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Label className="text-sm whitespace-nowrap">Регион</Label>
-                <select
-                  value={regionId}
-                  onChange={e => handleRegionChange(e.target.value)}
-                  className="h-8 text-sm border border-gray-200 rounded-md px-2 bg-white"
-                >
-                  {REGIONS.map(r => (
-                    <option key={r.id} value={r.id}>{r.label}</option>
-                  ))}
-                </select>
-              </div>
+            <div className="mt-3 pb-3 border-t pt-3 flex items-center gap-3 max-w-sm">
+              <Label className="text-sm whitespace-nowrap">Наценка на все зоны, %</Label>
+              <Input
+                type="number" min={0} max={200}
+                value={markupPct}
+                onChange={e => handleMarkupChange(e.target.value)}
+                className="w-24 h-8 text-sm"
+              />
+              <span className="text-xs text-gray-400">0–200%</span>
             </div>
           )}
         </div>

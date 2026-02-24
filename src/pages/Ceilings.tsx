@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
 import {
-  CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS, CEILING_COLORS, LIGHTING_OPTIONS,
+  CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS, CEILING_COLORS, LIGHTING_OPTIONS, CEILING_REGIONS,
 } from "@/components/calculator/ceilings/CeilingTypes";
 import type { CeilingConfig } from "@/components/calculator/ceilings/CeilingTypes";
 import { calcPrice, DEFAULT_CONFIG, fmt } from "@/components/calculator/ceilings/ceilingUtils";
@@ -18,6 +18,7 @@ import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import DocsTab from "@/components/calculator/DocsTab";
 
 const MARKUP_KEY = "ceilings_markup_pct";
+const REGION_KEY = "ceilings_region";
 
 const ROOM_PRESETS = ["Гостиная", "Спальня", "Кухня", "Детская", "Коридор", "Ванная", "Кабинет"];
 
@@ -25,10 +26,14 @@ function loadMarkup(): number {
   const v = parseFloat(localStorage.getItem(MARKUP_KEY) || "0");
   return isNaN(v) ? 0 : v;
 }
+function loadRegion(): string {
+  return localStorage.getItem(REGION_KEY) || "moscow";
+}
 
-function makeZone(name = ""): CeilingConfig {
+function makeZone(name = "", regionId = "moscow"): CeilingConfig {
   return {
     ...DEFAULT_CONFIG,
+    regionId,
     id: `ceil-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     roomName: name,
     totalPrice: 0,
@@ -45,9 +50,11 @@ export default function Ceilings() {
     canonical: "/ceilings",
   });
 
+  const [regionId, setRegionId] = useState<string>(loadRegion);
   const [zones, setZones] = useState<CeilingConfig[]>(() => {
     const mk = loadMarkup();
-    const z = makeZone("Гостиная");
+    const rg = loadRegion();
+    const z = makeZone("Гостиная", rg);
     const base = calcPrice(z);
     return [{ ...z, totalPrice: base + (mk > 0 ? Math.round(base * mk / 100) : 0) }];
   });
@@ -72,11 +79,13 @@ export default function Ceilings() {
     }));
   };
 
-  const recalcAll = (newMarkup: number) => {
+  const recalcAll = (newMarkup: number, newRegion?: string) => {
+    const rg = newRegion ?? regionId;
     setZones(prev => prev.map(z => {
-      const base = calcPrice(z);
+      const updated = { ...z, regionId: rg };
+      const base = calcPrice(updated);
       const mk = newMarkup > 0 ? Math.round(base * newMarkup / 100) : 0;
-      return { ...z, totalPrice: base + mk };
+      return { ...updated, totalPrice: base + mk };
     }));
   };
 
@@ -87,8 +96,14 @@ export default function Ceilings() {
     recalcAll(n);
   };
 
+  const handleRegionChange = (rg: string) => {
+    setRegionId(rg);
+    localStorage.setItem(REGION_KEY, rg);
+    recalcAll(markupPct, rg);
+  };
+
   const addZone = (name = "") => {
-    const z = makeZone(name);
+    const z = makeZone(name, regionId);
     const base = calcPrice(z);
     const mk = markupPct > 0 ? Math.round(base * markupPct / 100) : 0;
     const zWithPrice = { ...z, totalPrice: base + mk };
@@ -195,7 +210,16 @@ export default function Ceilings() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <select
+                value={regionId}
+                onChange={e => handleRegionChange(e.target.value)}
+                className="h-9 text-sm border border-gray-200 rounded-md px-2 bg-white text-gray-700 cursor-pointer hover:border-violet-400 transition-colors"
+              >
+                {CEILING_REGIONS.map(r => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
               <Button
                 variant="outline"
                 size="sm"

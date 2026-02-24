@@ -9,7 +9,7 @@ import {
 import Icon from "@/components/ui/icon";
 import {
   CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS, CEILING_COLORS,
-  LIGHTING_OPTIONS, PROFILE_OPTIONS, CEILING_REGIONS,
+  LIGHTING_OPTIONS, PROFILE_OPTIONS,
 } from "./CeilingTypes";
 import type { CeilingConfig } from "./CeilingTypes";
 import { fmt } from "./ceilingUtils";
@@ -99,25 +99,6 @@ export default function CeilingConfigForm({ cfg, onUpdate }: Props) {
               placeholder="Например: Гостиная, Спальня, Кухня..."
               className="h-10"
             />
-          </Card>
-
-          <Card className="p-4">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-              <Icon name="MapPin" size={13} />
-              Регион
-            </p>
-            <Select value={cfg.regionId} onValueChange={v => onUpdate({ regionId: v })}>
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CEILING_REGIONS.map(r => (
-                  <SelectItem key={r.id} value={r.id} className="text-sm">
-                    {r.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </Card>
 
           <Card className="p-4">
