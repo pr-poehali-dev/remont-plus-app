@@ -109,7 +109,7 @@ export default function Tariffs() {
             className="bg-orange-500 hover:bg-orange-600 text-white shrink-0 h-11 px-5"
           >
             <Icon name="Sparkles" size={16} className="mr-2" />
-            Попробовать бесплатно
+            Попробовать (3 сметы бесплатно)
           </Button>
         </div>
 
