@@ -50,7 +50,7 @@ export default function ElectricsPrint() {
   const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];
 
   const rowsData = zones.map(z => {
-    const roomType = ROOM_TYPES.find(r => r.id === z.roomType);
+    const roomType = ROOM_TYPES.find(r => r.value === z.roomType);
     const cablingType = CABLING_TYPES.find(c => c.id === z.cablingType);
     const bd = calcElectricsPrice(z, regionId, markupPct);
     return { z, roomType, cablingType, bd };

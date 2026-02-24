@@ -255,7 +255,7 @@ export default function Electrics() {
             <div className="space-y-2">
               {zones.map((z, i) => {
                 const isActive = z.id === activeId;
-                const rt = ROOM_TYPES.find(r => r.id === z.roomType);
+                const rt = ROOM_TYPES.find(r => r.value === z.roomType);
                 return (
                   <div
                     key={z.id}

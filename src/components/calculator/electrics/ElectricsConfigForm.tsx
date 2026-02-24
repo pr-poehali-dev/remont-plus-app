@@ -139,17 +139,17 @@ export default function ElectricsConfigForm({ cfg, onUpdate }: Props) {
             <div className="grid grid-cols-2 gap-2">
               {ROOM_TYPES.map(rt => (
                 <button
-                  key={rt.id}
+                  key={rt.value}
                   type="button"
-                  onClick={() => onUpdate({ roomType: rt.id })}
+                  onClick={() => onUpdate({ roomType: rt.value })}
                   className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-all ${
-                    cfg.roomType === rt.id
+                    cfg.roomType === rt.value
                       ? "border-blue-500 bg-blue-50 shadow-sm"
                       : "border-gray-200 hover:border-blue-200"
                   }`}
                 >
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                    cfg.roomType === rt.id ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"
+                    cfg.roomType === rt.value ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"
                   }`}>
                     <Icon name={rt.icon as Parameters<typeof Icon>[0]["name"]} size={16} />
                   </div>
