@@ -45,7 +45,12 @@ export default function Ceilings() {
     canonical: "/ceilings",
   });
 
-  const [zones, setZones] = useState<CeilingConfig[]>([makeZone("Гостиная")]);
+  const [zones, setZones] = useState<CeilingConfig[]>(() => {
+    const mk = loadMarkup();
+    const z = makeZone("Гостиная");
+    const base = calcPrice(z);
+    return [{ ...z, totalPrice: base + (mk > 0 ? Math.round(base * mk / 100) : 0) }];
+  });
   const [activeId, setActiveId] = useState<string>(zones[0].id);
   const [markupPct, setMarkupPct] = useState<number>(loadMarkup);
   const [showMarkup, setShowMarkup] = useState(false);
@@ -84,8 +89,11 @@ export default function Ceilings() {
 
   const addZone = (name = "") => {
     const z = makeZone(name);
-    setZones(prev => [...prev, z]);
-    setActiveId(z.id);
+    const base = calcPrice(z);
+    const mk = markupPct > 0 ? Math.round(base * markupPct / 100) : 0;
+    const zWithPrice = { ...z, totalPrice: base + mk };
+    setZones(prev => [...prev, zWithPrice]);
+    setActiveId(zWithPrice.id);
   };
 
   const removeZone = (id: string) => {
