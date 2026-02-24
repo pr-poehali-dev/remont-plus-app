@@ -23,7 +23,7 @@ function loadMarkup(): number {
   return isNaN(v) ? 0 : v;
 }
 function loadRegion(): string {
-  return localStorage.getItem(REGION_KEY) || "region";
+  return localStorage.getItem(REGION_KEY) || "moscow";
 }
 
 function makeZone(name = ""): ElectricsConfig {

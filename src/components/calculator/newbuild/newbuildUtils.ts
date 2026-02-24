@@ -26,7 +26,7 @@ export interface NewbuildPriceBreakdown {
 
 export function calcNewbuildPrice(
   cfg: Omit<NewbuildConfig, "id" | "totalPrice">,
-  regionId = "region",
+  regionId = "moscow",
   markupPct = 0,
 ): NewbuildPriceBreakdown {
   const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];

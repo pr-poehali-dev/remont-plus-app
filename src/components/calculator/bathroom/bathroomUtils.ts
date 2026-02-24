@@ -24,7 +24,7 @@ export interface BathroomPriceBreakdown {
 
 export function calcBathroomPrice(
   cfg: Omit<BathroomConfig, "id" | "totalPrice">,
-  regionId = "region",
+  regionId = "moscow",
   markupPct = 0
 ): BathroomPriceBreakdown {
   const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];

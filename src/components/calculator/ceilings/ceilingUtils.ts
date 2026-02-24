@@ -53,7 +53,7 @@ export function calcPrice(cfg: Omit<CeilingConfig, "id" | "totalPrice">): number
     price += INSTALLATION_PRICE_PER_M2 * cfg.area;
   }
 
-  price *= (region?.priceCoeff ?? 1.0);
+  price *= (region?.coeff ?? 1.0);
 
   return Math.round(price);
 }

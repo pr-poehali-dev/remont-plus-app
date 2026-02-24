@@ -418,9 +418,5 @@ export const SKIRTING_OPTIONS: SkirtingOption[] = [
   { id: "tile-10",    name: "Плинтус из плитки 10 см", pricePerM: 450, description: "Для керамогранита" },
 ];
 
-export const REGIONS = [
-  { id: "moscow",  label: "Москва / МО",     coeff: 1.3 },
-  { id: "spb",     label: "Санкт-Петербург", coeff: 1.2 },
-  { id: "mil1",    label: "Города 1М+",      coeff: 1.1 },
-  { id: "region",  label: "Регионы",         coeff: 1.0 },
-];
+export { CALC_REGIONS as REGIONS, DEFAULT_REGION_ID } from "@/components/calculator/shared/regions";
+export type { CalcRegion as Region } from "@/components/calculator/shared/regions";

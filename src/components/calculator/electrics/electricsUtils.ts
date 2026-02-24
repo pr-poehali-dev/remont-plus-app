@@ -21,7 +21,7 @@ export interface ElectricsPriceBreakdown {
 
 export function calcElectricsPrice(
   cfg: Omit<ElectricsConfig, "id" | "totalPrice">,
-  regionId = "region",
+  regionId = "moscow",
   markupPct = 0
 ): ElectricsPriceBreakdown {
   const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];

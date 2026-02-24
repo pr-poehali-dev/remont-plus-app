@@ -37,7 +37,7 @@ export interface PriceBreakdown {
   pricePerM2: number;
 }
 
-export function calcFlooringPrice(cfg: Omit<FlooringConfig, "id" | "totalPrice">, regionId = "region", markupPct = 0): PriceBreakdown {
+export function calcFlooringPrice(cfg: Omit<FlooringConfig, "id" | "totalPrice">, regionId = "moscow", markupPct = 0): PriceBreakdown {
   const product = FLOORING_PRODUCTS.find(p => p.id === cfg.productId);
   const substrate = SUBSTRATE_OPTIONS.find(s => s.id === cfg.substrateId);
   const pattern = INSTALL_PATTERNS.find(p => p.id === cfg.patternId);

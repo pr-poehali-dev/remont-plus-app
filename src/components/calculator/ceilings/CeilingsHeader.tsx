@@ -55,7 +55,7 @@ export default function CeilingsHeader({
               className="h-9 text-sm border border-gray-200 rounded-md px-2 bg-white text-gray-700 cursor-pointer hover:border-violet-400 transition-colors"
             >
               {CEILING_REGIONS.map(r => (
-                <option key={r.id} value={r.id}>{r.name}</option>
+                <option key={r.id} value={r.id}>{r.label}</option>
               ))}
             </select>
             <Button

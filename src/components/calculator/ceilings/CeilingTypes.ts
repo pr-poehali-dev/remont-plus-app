@@ -95,12 +95,7 @@ export const PROFILE_OPTIONS = [
 
 // ─── Регионы ─────────────────────────────────────────────────────────────────
 
-export const CEILING_REGIONS = [
-  { id: "moscow",    name: "Москва и МО",    priceCoeff: 1.0  },
-  { id: "spb",       name: "Санкт-Петербург", priceCoeff: 0.95 },
-  { id: "million",   name: "Миллионники",    priceCoeff: 0.85 },
-  { id: "regional",  name: "Регионы",        priceCoeff: 0.75 },
-];
+export { CALC_REGIONS as CEILING_REGIONS } from "@/components/calculator/shared/regions";
 
 // ─── Конфиг ───────────────────────────────────────────────────────────────────
 

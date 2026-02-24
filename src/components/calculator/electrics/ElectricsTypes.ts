@@ -21,11 +21,6 @@ export interface ElectricsConfig {
   totalPrice: number;
 }
 
-export interface Region {
-  id: string;
-  label: string;
-  coeff: number;
-}
 
 export interface RoomType {
   value: string;
@@ -56,12 +51,7 @@ export const CABLING_TYPES: CablingType[] = [
   { id: "hidden",      label: "Скрытая (в штробах)",     description: "Штробление + шпаклёвка",   pricePerM: 390 },
 ];
 
-export const REGIONS: Region[] = [
-  { id: "moscow",  label: "Москва / МО",      coeff: 1.3 },
-  { id: "spb",     label: "Санкт-Петербург",  coeff: 1.2 },
-  { id: "mil1",    label: "Города 1М+",       coeff: 1.1 },
-  { id: "region",  label: "Регионы",          coeff: 1.0 },
-];
+export { CALC_REGIONS as REGIONS, DEFAULT_REGION_ID } from "@/components/calculator/shared/regions";
 
 export const DEFAULT_ELECTRICS_CONFIG: Omit<ElectricsConfig, "id" | "totalPrice"> = {
   roomName: "",

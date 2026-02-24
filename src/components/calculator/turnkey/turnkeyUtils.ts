@@ -29,7 +29,7 @@ export interface TurnkeyPriceBreakdown {
 
 export function calcTurnkeyPrice(
   cfg: Omit<TurnkeyConfig, "id" | "totalPrice">,
-  regionId = "region",
+  regionId = "moscow",
   markupPct = 0,
 ): TurnkeyPriceBreakdown {
   const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];
