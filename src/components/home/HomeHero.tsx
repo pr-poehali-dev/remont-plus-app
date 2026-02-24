@@ -110,6 +110,17 @@ const sections = [
     path: "/ceilings",
     requireAuth: false,
   },
+  {
+    id: "flooring",
+    title: "ПОЛЫ",
+    description: "Расчёт напольных покрытий: ламинат, паркет, плитка, SPC, ковролин — смета с монтажом",
+    emoji: "🪵",
+    icon: "SquareStack",
+    gradient: "from-amber-400 via-yellow-400 to-orange-400",
+    glow: "group-hover:shadow-amber-300/50",
+    path: "/flooring",
+    requireAuth: false,
+  },
 ];
 
 interface Props {
