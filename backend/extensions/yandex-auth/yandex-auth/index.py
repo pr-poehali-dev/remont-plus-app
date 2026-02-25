@@ -115,7 +115,8 @@ def get_yandex_auth_url(client_id: str, redirect_uri: str, state: str) -> str:
 def exchange_code_for_token(
     code: str,
     client_id: str,
-    client_secret: str
+    client_secret: str,
+    redirect_uri: str = ''
 ) -> dict:
     """Exchange authorization code for access token."""
     data = {
@@ -124,6 +125,8 @@ def exchange_code_for_token(
         'client_id': client_id,
         'client_secret': client_secret
     }
+    if redirect_uri:
+        data['redirect_uri'] = redirect_uri
 
     request = Request(
         YANDEX_TOKEN_URL,
@@ -269,7 +272,8 @@ def handle_callback(event: dict, origin: str) -> dict:
         return error(500, 'Server configuration error', origin)
 
     try:
-        token_data = exchange_code_for_token(code, client_id, client_secret)
+        redirect_uri = get_redirect_uri(origin)
+        token_data = exchange_code_for_token(code, client_id, client_secret, redirect_uri)
 
         if 'error' in token_data:
             return error(400, token_data.get('error_description', 'Yandex auth failed'), origin)
