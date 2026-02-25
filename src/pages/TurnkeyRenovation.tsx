@@ -159,7 +159,12 @@ export default function TurnkeyRenovation() {
               </Button>
               <Button
                 size="sm"
-                onClick={() => setShowExport(true)}
+                onClick={() => {
+                  setShowExport(true);
+                  if (typeof window !== "undefined" && (window as unknown as { ym?: (id: number, action: string, goal: string) => void }).ym) {
+                    (window as unknown as { ym: (id: number, action: string, goal: string) => void }).ym(107009331, "reachGoal", "turnkey_document_open");
+                  }
+                }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 <Icon name="FileText" size={15} className="mr-1.5" />
