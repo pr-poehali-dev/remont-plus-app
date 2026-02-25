@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
@@ -72,8 +72,20 @@ export default function Expert() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [started, setStarted] = useState(false);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const hasTZ = (text: string) => text.includes("Техническое задание");
+
+  const copyTZ = useCallback((text: string, index: number) => {
+    const start = text.indexOf("**📋 Техническое задание");
+    const block = start !== -1 ? text.slice(start) : text;
+    const clean = block.replace(/\*\*/g, "").replace(/---/g, "").trim();
+    navigator.clipboard.writeText(clean);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  }, []);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -185,12 +197,24 @@ export default function Expert() {
                       <Icon name="User" size={15} className="text-white/70" />
                     </div>
                   )}
-                  <div className={`max-w-[80%] rounded-2xl px-5 py-4 shadow-sm ${
-                    msg.role === "user"
-                      ? "bg-[#0f0f13] text-white rounded-tr-sm text-sm"
-                      : "bg-white text-gray-700 rounded-tl-sm border border-gray-100"
-                  }`}>
-                    {msg.role === "assistant" ? formatText(msg.text) : msg.text}
+                  <div className="flex flex-col gap-2 max-w-[80%]">
+                    <div className={`rounded-2xl px-5 py-4 shadow-sm ${
+                      msg.role === "user"
+                        ? "bg-[#0f0f13] text-white rounded-tr-sm text-sm"
+                        : "bg-white text-gray-700 rounded-tl-sm border border-gray-100"
+                    }`}>
+                      {msg.role === "assistant" ? formatText(msg.text) : msg.text}
+                    </div>
+                    {msg.role === "assistant" && hasTZ(msg.text) && (
+                      <button
+                        onClick={() => copyTZ(msg.text, i)}
+                        className="self-start flex items-center gap-1.5 bg-[#c9a84c]/10 hover:bg-[#c9a84c]/20 border border-[#c9a84c]/30 text-[#8a6f28] hover:text-[#6b5420] text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
+                        style={{ fontFamily: "Rubik, sans-serif" }}
+                      >
+                        <Icon name={copiedIndex === i ? "Check" : "Copy"} size={12} />
+                        {copiedIndex === i ? "Скопировано!" : "Скопировать ТЗ"}
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
