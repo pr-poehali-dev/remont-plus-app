@@ -43,7 +43,7 @@ export default function OrganizerCreateDialog({ open, onOpenChange, newPlan, set
               <Input type="number" value={newPlan.apartment_area} onChange={e => setNewPlan(p => ({ ...p, apartment_area: e.target.value }))} placeholder="65" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">Дата начала</label>
+              <label className="text-sm font-medium text-gray-700 mb-1 block">Дата начала <span className="text-gray-400 font-normal">(необязательно)</span></label>
               <Input type="date" value={newPlan.start_date} onChange={e => setNewPlan(p => ({ ...p, start_date: e.target.value }))} />
             </div>
           </div>
