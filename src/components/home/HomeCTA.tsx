@@ -23,11 +23,11 @@ export default function HomeCTA({ user }: Props) {
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
           <div className="relative text-center">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Узнайте стоимость онлайн</h2>
-            <p className="text-white/90 text-lg mb-8 max-w-xl mx-auto">Создайте дизайн-проект или рассчитайте ориентировочную смету — партнёры по вашему региону предложат конкретные условия. Первые расчёты бесплатны.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">Начните с бесплатной консультации</h2>
+            <p className="text-white/90 text-lg mb-8 max-w-xl mx-auto">Спросите ИИ‑эксперта по дизайну и ремонту — он ответит на вопросы, поможет с выбором стиля и сформирует ТЗ для дизайнера. Бесплатно, без регистрации.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" onClick={() => navigate(user ? "/designer" : "/login?redirect=/designer")} className="bg-white text-orange-600 hover:bg-gray-100 rounded-full px-8 shadow-xl text-base font-semibold">
-                🎨 Создать дизайн-проект
+              <Button size="lg" onClick={() => navigate("/expert")} className="bg-white text-orange-600 hover:bg-gray-100 rounded-full px-8 shadow-xl text-base font-semibold">
+                ✨ Спросить ИИ‑эксперта
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate("/calculator")} className="border-2 border-white/50 text-white hover:bg-white/20 rounded-full px-8 text-base font-semibold bg-transparent">
                 📋 Рассчитать смету
