@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
 
 const API_URL = "https://functions.poehali.dev/5a1ec782-2df4-4948-89e4-7eaa77f6f7a2";
+const NOTIFY_URL = "https://functions.poehali.dev/a8b87e78-89d1-48d8-ba76-8da2e0df32a3";
 
 interface Message {
   role: "user" | "assistant";
@@ -73,19 +74,46 @@ export default function Expert() {
   const [isLoading, setIsLoading] = useState(false);
   const [started, setStarted] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [briefModal, setBriefModal] = useState<{ text: string } | null>(null);
+  const [briefName, setBriefName] = useState("");
+  const [briefPhone, setBriefPhone] = useState("");
+  const [briefSending, setBriefSending] = useState(false);
+  const [briefSent, setBriefSent] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const hasTZ = (text: string) => text.includes("Техническое задание");
 
-  const copyTZ = useCallback((text: string, index: number) => {
+  const extractTZ = (text: string) => {
     const start = text.indexOf("**📋 Техническое задание");
     const block = start !== -1 ? text.slice(start) : text;
-    const clean = block.replace(/\*\*/g, "").replace(/---/g, "").trim();
-    navigator.clipboard.writeText(clean);
+    return block.replace(/\*\*/g, "").replace(/---/g, "").trim();
+  };
+
+  const copyTZ = useCallback((text: string, index: number) => {
+    navigator.clipboard.writeText(extractTZ(text));
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
   }, []);
+
+  const sendBrief = async () => {
+    setBriefSending(true);
+    try {
+      await fetch(NOTIFY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "send_design_brief",
+          name: briefName,
+          phone: briefPhone,
+          brief: briefModal?.text ?? "",
+        }),
+      });
+      setBriefSent(true);
+    } finally {
+      setBriefSending(false);
+    }
+  };
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -206,14 +234,24 @@ export default function Expert() {
                       {msg.role === "assistant" ? formatText(msg.text) : msg.text}
                     </div>
                     {msg.role === "assistant" && hasTZ(msg.text) && (
-                      <button
-                        onClick={() => copyTZ(msg.text, i)}
-                        className="self-start flex items-center gap-1.5 bg-[#c9a84c]/10 hover:bg-[#c9a84c]/20 border border-[#c9a84c]/30 text-[#8a6f28] hover:text-[#6b5420] text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
-                        style={{ fontFamily: "Rubik, sans-serif" }}
-                      >
-                        <Icon name={copiedIndex === i ? "Check" : "Copy"} size={12} />
-                        {copiedIndex === i ? "Скопировано!" : "Скопировать ТЗ"}
-                      </button>
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          onClick={() => copyTZ(msg.text, i)}
+                          className="flex items-center gap-1.5 bg-[#c9a84c]/10 hover:bg-[#c9a84c]/20 border border-[#c9a84c]/30 text-[#8a6f28] hover:text-[#6b5420] text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
+                          style={{ fontFamily: "Rubik, sans-serif" }}
+                        >
+                          <Icon name={copiedIndex === i ? "Check" : "Copy"} size={12} />
+                          {copiedIndex === i ? "Скопировано!" : "Скопировать ТЗ"}
+                        </button>
+                        <button
+                          onClick={() => { setBriefModal({ text: extractTZ(msg.text) }); setBriefSent(false); setBriefName(""); setBriefPhone(""); }}
+                          className="flex items-center gap-1.5 bg-[#0f0f13] hover:bg-[#1a1a24] text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all shadow-sm"
+                          style={{ fontFamily: "Rubik, sans-serif" }}
+                        >
+                          <Icon name="Send" size={12} />
+                          Отправить дизайнеру
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -324,6 +362,76 @@ export default function Expert() {
           </a>
         </div>
       </div>
+
+      {/* Модалка отправки ТЗ */}
+      {briefModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setBriefModal(null)}>
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+            style={{ fontFamily: "Rubik, sans-serif" }}
+          >
+            <button onClick={() => setBriefModal(null)} className="absolute top-4 right-4 text-gray-300 hover:text-gray-500 transition-colors">
+              <Icon name="X" size={18} />
+            </button>
+
+            {briefSent ? (
+              <div className="text-center py-6">
+                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                  <Icon name="CheckCircle" size={28} className="text-green-500" />
+                </div>
+                <h3 className="text-gray-900 font-bold text-lg mb-2" style={{ fontFamily: "Montserrat, sans-serif" }}>Отправлено!</h3>
+                <p className="text-gray-500 text-sm">Дизайнер свяжется с вами в ближайшее время.</p>
+                <button onClick={() => setBriefModal(null)} className="mt-5 w-full bg-[#0f0f13] hover:bg-[#1a1a24] text-white text-sm font-semibold py-3 rounded-xl transition-colors">
+                  Закрыть
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c9a84c] to-[#e8c96a] flex items-center justify-center flex-shrink-0">
+                    <Icon name="Send" size={16} className="text-[#0f0f13]" />
+                  </div>
+                  <div>
+                    <h3 className="text-gray-900 font-bold text-base" style={{ fontFamily: "Montserrat, sans-serif" }}>Отправить ТЗ дизайнеру</h3>
+                    <p className="text-gray-400 text-xs">Дизайнер свяжется и обсудит детали</p>
+                  </div>
+                </div>
+
+                <div className="bg-[#fafaf8] border border-gray-100 rounded-xl p-3 mb-4 max-h-36 overflow-y-auto">
+                  <p className="text-gray-500 text-xs leading-relaxed whitespace-pre-wrap">{briefModal.text.slice(0, 400)}{briefModal.text.length > 400 ? "…" : ""}</p>
+                </div>
+
+                <div className="space-y-3 mb-5">
+                  <input
+                    type="text"
+                    placeholder="Ваше имя"
+                    value={briefName}
+                    onChange={(e) => setBriefName(e.target.value)}
+                    className="w-full border border-gray-200 focus:border-[#c9a84c]/60 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition-colors"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Телефон для связи"
+                    value={briefPhone}
+                    onChange={(e) => setBriefPhone(e.target.value)}
+                    className="w-full border border-gray-200 focus:border-[#c9a84c]/60 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition-colors"
+                  />
+                </div>
+
+                <button
+                  onClick={sendBrief}
+                  disabled={!briefName.trim() || !briefPhone.trim() || briefSending}
+                  className="w-full bg-gradient-to-r from-[#c9a84c] to-[#e8c96a] hover:from-[#d4b55a] text-[#0f0f13] text-sm font-bold py-3 rounded-xl transition-all shadow-md shadow-[#c9a84c]/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {briefSending ? <><Icon name="Loader2" size={15} className="animate-spin" />Отправляем…</> : <><Icon name="Send" size={15} />Отправить дизайнеру</>}
+                </button>
+                <p className="text-gray-400 text-xs text-center mt-3">Нажимая кнопку, вы соглашаетесь на обработку персональных данных</p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

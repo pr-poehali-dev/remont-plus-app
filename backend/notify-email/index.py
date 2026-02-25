@@ -176,4 +176,36 @@ def handler(event: dict, context) -> dict:
         ok = send_email(admin_email, f'Новая заявка: {lead_name} · {lead_phone}', html)
         return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'success': ok}, ensure_ascii=False)}
 
+    elif action == 'send_design_brief':
+        client_name = body.get('name', '')
+        client_phone = body.get('phone', '')
+        brief_text = body.get('brief', '')
+        admin_email = os.environ.get('SMTP_USER', '')
+        if not admin_email:
+            return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'success': True})}
+        html = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background: linear-gradient(135deg, #c9a84c, #e8c96a); padding: 24px 32px;">
+      <h1 style="color: #0f0f13; margin: 0; font-size: 20px;">📋 Новое ТЗ от клиента</h1>
+      <p style="color: rgba(0,0,0,0.6); margin: 6px 0 0; font-size: 14px;">АВАНГАРД · Техническое задание для дизайн-проекта</p>
+    </div>
+    <div style="padding: 24px 32px;">
+      <table style="width: 100%; font-size: 14px; border-collapse: collapse; margin-bottom: 20px;">
+        <tr><td style="color: #888; padding: 6px 0; width: 120px;">Имя</td><td style="color: #111; font-weight: 600;">{client_name or '—'}</td></tr>
+        <tr><td style="color: #888; padding: 6px 0;">Телефон</td><td style="color: #111; font-weight: 600;">{client_phone or '—'}</td></tr>
+      </table>
+      <div style="background: #fafaf8; border: 1px solid #e5e1d8; border-radius: 8px; padding: 20px; white-space: pre-wrap; font-size: 13px; color: #333; line-height: 1.7;">
+{brief_text}
+      </div>
+    </div>
+    <div style="background: #f9fafb; padding: 14px 32px; text-align: center;">
+      <p style="color: #bbb; font-size: 11px; margin: 0;">Авангард · avangard-ai.ru · Заявка с ИИ-эксперта</p>
+    </div>
+  </div>
+</body></html>"""
+        ok = send_email(admin_email, f'ТЗ на дизайн-проект: {client_name} · {client_phone}', html)
+        return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'success': ok}, ensure_ascii=False)}
+
     return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Invalid action'})}
