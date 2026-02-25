@@ -6,6 +6,7 @@ import HomeProjects from "@/components/home/HomeProjects";
 import HomeLatestPosts, { type LatestPost } from "@/components/home/HomeLatestPosts";
 import HomeCTA from "@/components/home/HomeCTA";
 import HomePartner from "@/components/home/HomePartner";
+import HomeConsultant from "@/components/home/HomeConsultant";
 
 const POSTS_URL = "https://functions.poehali.dev/60baa083-841b-461e-9edb-8460b28e7076";
 
@@ -98,6 +99,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-[#0f0f13]">
       <HomeHero user={user} regionLabel={region.label} onLogout={handleLogout} />
       <HomeHowItWorks />
+      <HomeConsultant />
 
       <div className="bg-[#fafaf8] flex-1 px-4 py-16">
         <div className="w-full max-w-6xl mx-auto">
