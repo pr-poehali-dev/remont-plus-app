@@ -64,7 +64,7 @@ export function calcBathHousePrice(cfg: BathHouseConfig, regionId: string, marku
 
   // --- Крыша (конструкция) ---
   const roofArea = area * 1.25 * ROOF_TYPES[cfg.roofType].priceCoeff;
-  const roofStructure = roofArea * 1800; // стропила, обрешётка
+  const roofStructure = roofArea * 1980; // стропила, обрешётка
   const roofingMat = ROOFING_MATERIALS[cfg.roofingMaterial];
   const roofing = roofArea * roofingMat.pricePerM2;
 
@@ -83,7 +83,7 @@ export function calcBathHousePrice(cfg: BathHouseConfig, regionId: string, marku
 
   // --- Полы ---
   const floorMat = FLOOR_MATERIALS[cfg.floorMaterial];
-  const floor = area * floorMat.pricePerM2 + (cfg.underfloorHeating ? area * 2200 : 0);
+  const floor = area * floorMat.pricePerM2 + (cfg.underfloorHeating ? area * 2420 : 0);
 
   // --- Печь ---
   const stoveData = STOVE_TYPES[cfg.stoveType];
@@ -91,7 +91,7 @@ export function calcBathHousePrice(cfg: BathHouseConfig, regionId: string, marku
 
   // --- Вентиляция ---
   const ventData = VENTILATION_TYPES[cfg.ventilation];
-  const ventilation = ventData.price + area * 180;
+  const ventilation = ventData.price + area * 198;
 
   // --- Полок ---
   const shelfMat = SHELF_MATERIALS[cfg.shelfMaterial];
@@ -99,20 +99,20 @@ export function calcBathHousePrice(cfg: BathHouseConfig, regionId: string, marku
   const shelves = shelfArea * shelfMat.pricePerM2;
 
   // --- Окна ---
-  const windowsBase = cfg.window_pvc ? 8500 : 14000; // ПВХ или деревянный
+  const windowsBase = cfg.window_pvc ? 9350 : 15400; // ПВХ или деревянный
   const windows = cfg.windowCount * windowsBase;
 
   // --- Дымоход ---
-  const chimney = cfg.chimney ? 28000 : 0;
+  const chimney = cfg.chimney ? 30800 : 0;
 
   // --- Бак для воды ---
-  const tank = cfg.tankVolume > 0 ? 8500 + cfg.tankVolume * 45 : 0;
+  const tank = cfg.tankVolume > 0 ? 9350 + cfg.tankVolume * 50 : 0;
 
   // --- Терраса ---
-  const terrace = cfg.terrace ? cfg.terraceArea * 4800 : 0;
+  const terrace = cfg.terrace ? cfg.terraceArea * 5280 : 0;
 
   // --- Электрика ---
-  const electrical = cfg.electricalFull ? area * 1800 + 22000 : cfg.electricalBasic ? area * 850 + 12000 : 0;
+  const electrical = cfg.electricalFull ? area * 1980 + 24200 : cfg.electricalBasic ? area * 935 + 13200 : 0;
 
   // --- Монтаж (работа) ---
   const materialSum = foundation + walls + roofStructure + roofing + insulation + wallFinishSteam + wallFinishWash + wallFinishRest + floor + stove + ventilation + shelves + windows + chimney + tank + terrace + electrical;

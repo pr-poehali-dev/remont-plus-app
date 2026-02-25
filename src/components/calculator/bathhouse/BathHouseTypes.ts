@@ -102,25 +102,25 @@ export const DEFAULT_BATHHOUSE_CONFIG: BathHouseConfig = {
 };
 
 export const WALL_MATERIALS: Record<WallMaterial, { label: string; desc: string; pricePerM2: number; category: string }> = {
-  timber_profiled:   { label: "Брус профилированный 150×150", desc: "Классика. Экологично, быстро, хорошая теплоёмкость", pricePerM2: 4200, category: "Дерево" },
-  timber_glued:      { label: "Брус клеёный 150×150", desc: "Премиум. Не деформируется, не трескается, идеальная геометрия", pricePerM2: 7800, category: "Дерево" },
-  log_rounded:       { label: "Бревно оцилиндрованное ∅200", desc: "Традиционный русский вид, хорошая теплоёмкость", pricePerM2: 5600, category: "Дерево" },
-  log_hand:          { label: "Бревно ручной рубки ∅220+", desc: "Премиум-ручная работа, максимальная аутентичность", pricePerM2: 9500, category: "Дерево" },
-  brick:             { label: "Кирпич полнотелый", desc: "Долговечно, не горит, требует мощного утепления", pricePerM2: 6200, category: "Камень" },
-  block_gas:         { label: "Газобетонный блок D400", desc: "Лёгкий, тёплый, требует пароизоляции", pricePerM2: 3400, category: "Камень" },
-  block_foam:        { label: "Пенобетонный блок D600", desc: "Доступно, но чуть хуже по теплу чем газобетон", pricePerM2: 2900, category: "Камень" },
-  frame_osb:         { label: "Каркас + OSB + утепление", desc: "Быстро, доступно, хорошо утепляется", pricePerM2: 2800, category: "Каркас" },
-  frame_sip:         { label: "Каркас + SIP-панели", desc: "Современно, отличная теплоизоляция, заводская точность", pricePerM2: 4500, category: "Каркас" },
-  frame_metal:       { label: "ЛСТК (металлокаркас)", desc: "Долговечно, не горит, быстрый монтаж", pricePerM2: 5100, category: "Каркас" },
+  timber_profiled:   { label: "Брус профилированный 150×150", desc: "Классика. Экологично, быстро, хорошая теплоёмкость", pricePerM2: 4620, category: "Дерево" },
+  timber_glued:      { label: "Брус клеёный 150×150", desc: "Премиум. Не деформируется, не трескается, идеальная геометрия", pricePerM2: 8580, category: "Дерево" },
+  log_rounded:       { label: "Бревно оцилиндрованное ∅200", desc: "Традиционный русский вид, хорошая теплоёмкость", pricePerM2: 6160, category: "Дерево" },
+  log_hand:          { label: "Бревно ручной рубки ∅220+", desc: "Премиум-ручная работа, максимальная аутентичность", pricePerM2: 10450, category: "Дерево" },
+  brick:             { label: "Кирпич полнотелый", desc: "Долговечно, не горит, требует мощного утепления", pricePerM2: 6820, category: "Камень" },
+  block_gas:         { label: "Газобетонный блок D400", desc: "Лёгкий, тёплый, требует пароизоляции", pricePerM2: 3740, category: "Камень" },
+  block_foam:        { label: "Пенобетонный блок D600", desc: "Доступно, но чуть хуже по теплу чем газобетон", pricePerM2: 3190, category: "Камень" },
+  frame_osb:         { label: "Каркас + OSB + утепление", desc: "Быстро, доступно, хорошо утепляется", pricePerM2: 3080, category: "Каркас" },
+  frame_sip:         { label: "Каркас + SIP-панели", desc: "Современно, отличная теплоизоляция, заводская точность", pricePerM2: 4950, category: "Каркас" },
+  frame_metal:       { label: "ЛСТК (металлокаркас)", desc: "Долговечно, не горит, быстрый монтаж", pricePerM2: 5610, category: "Каркас" },
 };
 
 export const FOUNDATION_TYPES: Record<FoundationType, { label: string; desc: string; basePrice: number }> = {
-  strip_shallow: { label: "Ленточный мелкозаглублённый", desc: "30–50 см, для лёгких строений, дренаж обязателен", basePrice: 85000 },
-  strip_deep:    { label: "Ленточный заглублённый", desc: "Ниже глубины промерзания, надёжно для кирпича/блоков", basePrice: 145000 },
-  piles_screw:   { label: "Сваи винтовые", desc: "Быстро, любой грунт, незаменим на склонах и воде", basePrice: 65000 },
-  piles_bored:   { label: "Сваи буронабивные (ТИСЭ)", desc: "Надёжно на любом грунте, морозоустойчиво", basePrice: 90000 },
-  slab:          { label: "Монолитная плита 200 мм", desc: "Самый надёжный вариант, подходит для слабых грунтов", basePrice: 185000 },
-  columnar:      { label: "Столбчатый", desc: "Бюджетно для лёгких каркасных бань", basePrice: 42000 },
+  strip_shallow: { label: "Ленточный мелкозаглублённый", desc: "30–50 см, для лёгких строений, дренаж обязателен", basePrice: 93500 },
+  strip_deep:    { label: "Ленточный заглублённый", desc: "Ниже глубины промерзания, надёжно для кирпича/блоков", basePrice: 159500 },
+  piles_screw:   { label: "Сваи винтовые", desc: "Быстро, любой грунт, незаменим на склонах и воде", basePrice: 71500 },
+  piles_bored:   { label: "Сваи буронабивные (ТИСЭ)", desc: "Надёжно на любом грунте, морозоустойчиво", basePrice: 99000 },
+  slab:          { label: "Монолитная плита 200 мм", desc: "Самый надёжный вариант, подходит для слабых грунтов", basePrice: 203500 },
+  columnar:      { label: "Столбчатый", desc: "Бюджетно для лёгких каркасных бань", basePrice: 46200 },
 };
 
 export const ROOF_TYPES: Record<RoofType, { label: string; desc: string; priceCoeff: number }> = {
@@ -131,70 +131,70 @@ export const ROOF_TYPES: Record<RoofType, { label: string; desc: string; priceCo
 };
 
 export const ROOFING_MATERIALS: Record<RoofingMaterial, { label: string; pricePerM2: number }> = {
-  metal_tile:        { label: "Металлочерепица", pricePerM2: 850 },
-  corrugated_sheet:  { label: "Профнастил", pricePerM2: 550 },
-  soft_bitumen:      { label: "Мягкая черепица (Шинглас)", pricePerM2: 1400 },
-  ceramic_tile:      { label: "Керамическая черепица", pricePerM2: 2800 },
-  ondulin:           { label: "Ондулин", pricePerM2: 420 },
-  seam_roof:         { label: "Фальцевая кровля (металл)", pricePerM2: 1800 },
+  metal_tile:        { label: "Металлочерепица", pricePerM2: 935 },
+  corrugated_sheet:  { label: "Профнастил", pricePerM2: 605 },
+  soft_bitumen:      { label: "Мягкая черепица (Шинглас)", pricePerM2: 1540 },
+  ceramic_tile:      { label: "Керамическая черепица", pricePerM2: 3080 },
+  ondulin:           { label: "Ондулин", pricePerM2: 462 },
+  seam_roof:         { label: "Фальцевая кровля (металл)", pricePerM2: 1980 },
 };
 
 export const INSULATION_MATERIALS: Record<InsulationMaterial, { label: string; pricePerM3: number }> = {
-  mineral_wool:  { label: "Минеральная вата (Rockwool, Knauf)", pricePerM3: 2200 },
-  basalt_wool:   { label: "Базальтовая вата (ISOVER, ТехноНиколь)", pricePerM3: 2800 },
-  ecowool:       { label: "Эковата (целлюлоза)", pricePerM3: 1900 },
-  penoizol:      { label: "Пеноизол (жидкий пенопласт)", pricePerM3: 3100 },
-  foil_penofol:  { label: "Пенофол фольгированный", pricePerM3: 4500 },
-  pir_panel:     { label: "PIR-панели (современные)", pricePerM3: 8500 },
+  mineral_wool:  { label: "Минеральная вата (Rockwool, Knauf)", pricePerM3: 2420 },
+  basalt_wool:   { label: "Базальтовая вата (ISOVER, ТехноНиколь)", pricePerM3: 3080 },
+  ecowool:       { label: "Эковата (целлюлоза)", pricePerM3: 2090 },
+  penoizol:      { label: "Пеноизол (жидкий пенопласт)", pricePerM3: 3410 },
+  foil_penofol:  { label: "Пенофол фольгированный", pricePerM3: 4950 },
+  pir_panel:     { label: "PIR-панели (современные)", pricePerM3: 9350 },
 };
 
 export const WALL_FINISHES: Record<WallFinishInterior, { label: string; pricePerM2: number; suitsSteam: boolean }> = {
-  linden:         { label: "Вагонка липа", pricePerM2: 980, suitsSteam: true },
-  aspen:          { label: "Вагонка осина", pricePerM2: 850, suitsSteam: true },
-  cedar:          { label: "Вагонка кедр (сибирский)", pricePerM2: 2400, suitsSteam: true },
-  abash:          { label: "Абаши (африканский дуб)", pricePerM2: 3200, suitsSteam: true },
-  thermo_aspen:   { label: "Термоосина", pricePerM2: 1800, suitsSteam: true },
-  spruce:         { label: "Вагонка ель", pricePerM2: 680, suitsSteam: false },
-  pine:           { label: "Вагонка сосна", pricePerM2: 620, suitsSteam: false },
-  tile_ceramic:   { label: "Плитка керамическая", pricePerM2: 2100, suitsSteam: false },
-  tile_porcelain: { label: "Керамогранит", pricePerM2: 2800, suitsSteam: false },
-  plaster_decor:  { label: "Декоративная штукатурка", pricePerM2: 1600, suitsSteam: false },
+  linden:         { label: "Вагонка липа", pricePerM2: 1078, suitsSteam: true },
+  aspen:          { label: "Вагонка осина", pricePerM2: 935, suitsSteam: true },
+  cedar:          { label: "Вагонка кедр (сибирский)", pricePerM2: 2640, suitsSteam: true },
+  abash:          { label: "Абаши (африканский дуб)", pricePerM2: 3520, suitsSteam: true },
+  thermo_aspen:   { label: "Термоосина", pricePerM2: 1980, suitsSteam: true },
+  spruce:         { label: "Вагонка ель", pricePerM2: 748, suitsSteam: false },
+  pine:           { label: "Вагонка сосна", pricePerM2: 682, suitsSteam: false },
+  tile_ceramic:   { label: "Плитка керамическая", pricePerM2: 2310, suitsSteam: false },
+  tile_porcelain: { label: "Керамогранит", pricePerM2: 3080, suitsSteam: false },
+  plaster_decor:  { label: "Декоративная штукатурка", pricePerM2: 1760, suitsSteam: false },
 };
 
 export const STOVE_TYPES: Record<StoveType, { label: string; desc: string; price: number; power: string }> = {
-  metal_sauna:      { label: "Металлическая дровяная (эконом)", desc: "Harvia, TMF, Термофор — надёжно и бюджетно", price: 28000, power: "12–18 кВт" },
-  metal_hakka:      { label: "Финская металлическая (премиум)", desc: "Harvia Legend, Helo — медленный нагрев, мягкий пар", price: 85000, power: "20–36 кВт" },
-  brick_classic:    { label: "Кирпичная классическая", desc: "Долго нагревается, долго держит тепло, аутентично", price: 145000, power: "до 30 кВт" },
-  brick_heater:     { label: "Кирпичная с каменкой", desc: "Максимальная теплоёмкость, премиальный пар", price: 210000, power: "40–60 кВт" },
-  electric_sauna:   { label: "Электрокаменка (сухая)", desc: "Быстрый нагрев 30 мин, никаких дров, точный контроль", price: 35000, power: "6–18 кВт" },
-  electric_infrared:{ label: "ИК-кабина (инфракрасная)", desc: "Низкая температура, лечебный эффект, экономично", price: 95000, power: "2–4 кВт" },
-  gas_sauna:        { label: "Газовая печь", desc: "Экономично при наличии газа, автоматика", price: 68000, power: "18–30 кВт" },
-  steam_generator:  { label: "Парогенератор (хамам/паровая)", desc: "Для турецкой бани, влажность 100%, 40–50°C", price: 75000, power: "3–18 кВт" },
+  metal_sauna:      { label: "Металлическая дровяная (эконом)", desc: "Harvia, TMF, Термофор — надёжно и бюджетно", price: 30800, power: "12–18 кВт" },
+  metal_hakka:      { label: "Финская металлическая (премиум)", desc: "Harvia Legend, Helo — медленный нагрев, мягкий пар", price: 93500, power: "20–36 кВт" },
+  brick_classic:    { label: "Кирпичная классическая", desc: "Долго нагревается, долго держит тепло, аутентично", price: 159500, power: "до 30 кВт" },
+  brick_heater:     { label: "Кирпичная с каменкой", desc: "Максимальная теплоёмкость, премиальный пар", price: 231000, power: "40–60 кВт" },
+  electric_sauna:   { label: "Электрокаменка (сухая)", desc: "Быстрый нагрев 30 мин, никаких дров, точный контроль", price: 38500, power: "6–18 кВт" },
+  electric_infrared:{ label: "ИК-кабина (инфракрасная)", desc: "Низкая температура, лечебный эффект, экономично", price: 104500, power: "2–4 кВт" },
+  gas_sauna:        { label: "Газовая печь", desc: "Экономично при наличии газа, автоматика", price: 74800, power: "18–30 кВт" },
+  steam_generator:  { label: "Парогенератор (хамам/паровая)", desc: "Для турецкой бани, влажность 100%, 40–50°C", price: 82500, power: "3–18 кВт" },
 };
 
 export const VENTILATION_TYPES: Record<VentilationType, { label: string; desc: string; price: number }> = {
-  natural_simple: { label: "Естественная простая", desc: "Приточное и вытяжное отверстие — минимум", price: 8000 },
-  natural_duct:   { label: "Естественная канальная", desc: "Каналы под полом и у потолка — правильно для парной", price: 18000 },
-  forced_supply:  { label: "Принудительная приточная", desc: "Вентилятор на притоке, вытяжка естественная", price: 32000 },
-  forced_full:    { label: "Принудительная полная", desc: "Приток + вытяжка с вентиляторами, таймер", price: 55000 },
-  recuperator:    { label: "Рекуперация тепла (современная)", desc: "Сохраняет до 80% тепла при вентиляции", price: 95000 },
+  natural_simple: { label: "Естественная простая", desc: "Приточное и вытяжное отверстие — минимум", price: 8800 },
+  natural_duct:   { label: "Естественная канальная", desc: "Каналы под полом и у потолка — правильно для парной", price: 19800 },
+  forced_supply:  { label: "Принудительная приточная", desc: "Вентилятор на притоке, вытяжка естественная", price: 35200 },
+  forced_full:    { label: "Принудительная полная", desc: "Приток + вытяжка с вентиляторами, таймер", price: 60500 },
+  recuperator:    { label: "Рекуперация тепла (современная)", desc: "Сохраняет до 80% тепла при вентиляции", price: 104500 },
 };
 
 export const SHELF_MATERIALS: Record<ShelfMaterial, { label: string; pricePerM2: number }> = {
-  linden:       { label: "Липа", pricePerM2: 4500 },
-  aspen:        { label: "Осина", pricePerM2: 3800 },
-  cedar:        { label: "Кедр", pricePerM2: 9500 },
-  abash:        { label: "Абаши", pricePerM2: 12000 },
-  thermo_aspen: { label: "Термоосина", pricePerM2: 7200 },
+  linden:       { label: "Липа", pricePerM2: 4950 },
+  aspen:        { label: "Осина", pricePerM2: 4180 },
+  cedar:        { label: "Кедр", pricePerM2: 10450 },
+  abash:        { label: "Абаши", pricePerM2: 13200 },
+  thermo_aspen: { label: "Термоосина", pricePerM2: 7920 },
 };
 
 export const FLOOR_MATERIALS: Record<FloorMaterial, { label: string; pricePerM2: number }> = {
-  ceramic_tile:   { label: "Керамическая плитка", pricePerM2: 1800 },
-  porcelain_tile: { label: "Керамогранит anti-slip", pricePerM2: 2400 },
-  wood_larch:     { label: "Доска лиственница (разборная)", pricePerM2: 3200 },
-  thermo_wood:    { label: "Термодерево (скандинавский стиль)", pricePerM2: 5800 },
-  concrete_screed:{ label: "Бетонная стяжка + слив", pricePerM2: 950 },
-  anti_slip_tile: { label: "Нескользящая мозаика", pricePerM2: 3800 },
+  ceramic_tile:   { label: "Керамическая плитка", pricePerM2: 1980 },
+  porcelain_tile: { label: "Керамогранит anti-slip", pricePerM2: 2640 },
+  wood_larch:     { label: "Доска лиственница (разборная)", pricePerM2: 3520 },
+  thermo_wood:    { label: "Термодерево (скандинавский стиль)", pricePerM2: 6380 },
+  concrete_screed:{ label: "Бетонная стяжка + слив", pricePerM2: 1045 },
+  anti_slip_tile: { label: "Нескользящая мозаика", pricePerM2: 4180 },
 };
 
 export const BATH_STYLES: Record<BathStyle, { label: string; desc: string; emoji: string }> = {
