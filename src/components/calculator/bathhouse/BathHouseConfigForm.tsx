@@ -299,29 +299,60 @@ export default function BathHouseConfigForm({ config, onChange }: Props) {
 
       {/* Печь */}
       <SectionTitle icon="Flame">Печь</SectionTitle>
-      <div className="space-y-1.5">
-        {(Object.entries(STOVE_TYPES) as [StoveType, typeof STOVE_TYPES[StoveType]][]).map(([key, stove]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onChange({ stoveType: key })}
-            className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition-all ${
-              config.stoveType === key ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:border-amber-300 bg-white"
-            }`}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className={`text-sm font-semibold ${config.stoveType === key ? "text-amber-800" : "text-gray-700"}`}>{stove.label}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{stove.desc}</div>
-              </div>
-              <div className="text-right shrink-0">
-                <div className="text-xs font-bold text-gray-700">{stove.price.toLocaleString("ru-RU")} ₽</div>
-                <div className="text-[10px] text-gray-400">{stove.power}</div>
+      {(() => {
+        const STOVE_META: Record<StoveType, { emoji: string; category: string; categoryColor: string }> = {
+          metal_sauna:       { emoji: "🔥", category: "Дровяная", categoryColor: "bg-orange-100 text-orange-700" },
+          metal_hakka:       { emoji: "🔥", category: "Дровяная", categoryColor: "bg-orange-100 text-orange-700" },
+          brick_classic:     { emoji: "🧱", category: "Кирпичная", categoryColor: "bg-red-100 text-red-700" },
+          brick_heater:      { emoji: "🧱", category: "Кирпичная", categoryColor: "bg-red-100 text-red-700" },
+          electric_sauna:    { emoji: "⚡", category: "Электро", categoryColor: "bg-blue-100 text-blue-700" },
+          electric_infrared: { emoji: "💡", category: "ИК-кабина", categoryColor: "bg-violet-100 text-violet-700" },
+          gas_sauna:         { emoji: "🔵", category: "Газовая", categoryColor: "bg-sky-100 text-sky-700" },
+          steam_generator:   { emoji: "💨", category: "Пар/Хамам", categoryColor: "bg-teal-100 text-teal-700" },
+        };
+        const categories = ["Дровяная", "Кирпичная", "Электро", "ИК-кабина", "Газовая", "Пар/Хамам"];
+        return categories.map(cat => {
+          const items = (Object.entries(STOVE_TYPES) as [StoveType, typeof STOVE_TYPES[StoveType]][])
+            .filter(([k]) => STOVE_META[k].category === cat);
+          if (!items.length) return null;
+          return (
+            <div key={cat} className="mb-3">
+              <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{cat}</p>
+              <div className="space-y-1.5">
+                {items.map(([key, stove]) => {
+                  const meta = STOVE_META[key];
+                  const isSelected = config.stoveType === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => onChange({ stoveType: key })}
+                      className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition-all ${
+                        isSelected ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:border-amber-300 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl leading-none mt-0.5">{meta.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-sm font-semibold ${isSelected ? "text-amber-800" : "text-gray-700"}`}>{stove.label}</span>
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${meta.categoryColor}`}>{meta.category}</span>
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5 leading-snug">{stove.desc}</div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className={`text-sm font-bold ${isSelected ? "text-amber-700" : "text-gray-700"}`}>{stove.price.toLocaleString("ru-RU")} ₽</div>
+                          <div className="text-[10px] text-gray-400">{stove.power}</div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          </button>
-        ))}
-      </div>
+          );
+        });
+      })()}
 
       {/* Камни */}
       <div className="mt-2">

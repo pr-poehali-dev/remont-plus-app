@@ -103,7 +103,7 @@ export default function BathHouseHeader({
                 <option key={k} value={k}>{r.label}</option>
               ))}
             </select>
-            <span className="text-xs text-amber-700 font-medium">×{REGIONS[regionId]?.coeff}</span>
+
           </div>
           <div className="flex items-center gap-2">
             <Icon name="Percent" size={13} className="text-amber-600" />
