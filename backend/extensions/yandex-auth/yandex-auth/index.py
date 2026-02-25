@@ -214,12 +214,8 @@ def get_origin(event: dict) -> str:
 # =============================================================================
 
 def get_redirect_uri(origin: str) -> str:
-    """Get redirect URI based on request origin, falling back to env."""
-    default = os.environ.get('YANDEX_REDIRECT_URI', '')
-    if not origin or origin == '*':
-        return default
-    # Build redirect URI from origin
-    return f"{origin.rstrip('/')}/auth/yandex/callback"
+    """Get redirect URI — always use env variable."""
+    return os.environ.get('YANDEX_REDIRECT_URI', '')
 
 
 def handle_auth_url(event: dict, origin: str) -> dict:
