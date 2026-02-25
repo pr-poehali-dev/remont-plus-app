@@ -104,7 +104,7 @@ export default function Organizer() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+          <button onClick={() => navigate("/")} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
             <Icon name="ArrowLeft" size={20} className="text-gray-600" />
           </button>
           <div className="flex-1">
