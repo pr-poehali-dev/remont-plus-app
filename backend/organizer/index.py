@@ -81,7 +81,7 @@ def handler(event: dict, context) -> dict:
             title = body.get("title", "Мой ремонт")
             address = body.get("address", "")
             area = body.get("apartment_area")
-            start_date = body.get("start_date")
+            start_date = body.get("start_date") or None
             notes = body.get("notes", "")
             cur.execute(f"INSERT INTO {SCHEMA}.renovation_plans (user_id, title, address, apartment_area, start_date, notes) VALUES (%s,%s,%s,%s,%s,%s) RETURNING id", (user_id, title, address, area, start_date, notes))
             plan_id = cur.fetchone()[0]
