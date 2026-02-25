@@ -29,7 +29,11 @@ export default function YandexCallback() {
         localStorage.setItem("avangard_user", JSON.stringify(data.user));
         localStorage.setItem("avangard_token", data.access_token);
         localStorage.setItem("yandex_auth_refresh_token", data.refresh_token);
-        navigate("/");
+        const redirectTo = searchParams.get("state")
+          ? sessionStorage.getItem("yandex_auth_redirect") || "/"
+          : "/";
+        sessionStorage.removeItem("yandex_auth_redirect");
+        navigate(redirectTo);
       })
       .catch(() => setError("Ошибка сети"));
   }, [searchParams, navigate]);

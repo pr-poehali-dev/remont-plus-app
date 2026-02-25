@@ -210,10 +210,19 @@ def get_origin(event: dict) -> str:
 # HANDLERS
 # =============================================================================
 
+def get_redirect_uri(origin: str) -> str:
+    """Get redirect URI based on request origin, falling back to env."""
+    default = os.environ.get('YANDEX_REDIRECT_URI', '')
+    if not origin or origin == '*':
+        return default
+    # Build redirect URI from origin
+    return f"{origin.rstrip('/')}/auth/yandex/callback"
+
+
 def handle_auth_url(event: dict, origin: str) -> dict:
     """Generate Yandex authorization URL."""
     client_id = os.environ.get('YANDEX_CLIENT_ID', '')
-    redirect_uri = os.environ.get('YANDEX_REDIRECT_URI', '')
+    redirect_uri = get_redirect_uri(origin)
 
     if not client_id or not redirect_uri:
         return error(500, 'Server configuration error', origin)
@@ -223,7 +232,8 @@ def handle_auth_url(event: dict, origin: str) -> dict:
 
     return response(200, {
         'auth_url': auth_url,
-        'state': state
+        'state': state,
+        'redirect_uri': redirect_uri
     }, origin)
 
 

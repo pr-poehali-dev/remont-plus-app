@@ -35,6 +35,11 @@ export default function Login() {
     },
   });
 
+  const handleYandexLogin = () => {
+    if (redirectTo) sessionStorage.setItem("yandex_auth_redirect", redirectTo);
+    yandexAuth.login();
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -137,7 +142,7 @@ export default function Login() {
             </div>
 
             <YandexLoginButton
-              onClick={yandexAuth.login}
+              onClick={handleYandexLogin}
               isLoading={yandexAuth.isLoading}
               className="w-full"
             />
