@@ -176,6 +176,17 @@ const sections = [
     path: "/organizer",
     requireAuth: true,
   },
+  {
+    id: "expert",
+    title: "ЭКСПЕРТ",
+    description: "ИИ-консультант по дизайну, интерьеру и ремонту — задайте любой вопрос бесплатно",
+    emoji: "💡",
+    icon: "Sparkles",
+    gradient: "from-amber-400 via-yellow-400 to-orange-400",
+    glow: "group-hover:shadow-amber-300/50",
+    path: "/expert",
+    requireAuth: false,
+  },
 ];
 
 interface Props {
