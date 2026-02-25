@@ -177,6 +177,17 @@ const sections = [
     requireAuth: false,
   },
   {
+    id: "bathhouse",
+    title: "БАНЯ",
+    description: "Калькулятор строительства бани с нуля: брус, бревно, каркас, кирпич — смета, печь, вентиляция, схемы",
+    emoji: "🪵",
+    icon: "Flame",
+    gradient: "from-amber-700 via-orange-600 to-amber-600",
+    glow: "group-hover:shadow-orange-400/50",
+    path: "/bathhouse",
+    requireAuth: false,
+  },
+  {
     id: "expert",
     title: "ЭКСПЕРТ",
     description: "ИИ-консультант по дизайну, интерьеру и ремонту — задайте любой вопрос бесплатно",
