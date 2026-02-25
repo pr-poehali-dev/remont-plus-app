@@ -309,6 +309,26 @@ export default function HomeConsultant() {
           </div>
         </div>
 
+        {/* CTA кнопка */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            href="/calculator"
+            className="inline-flex items-center gap-3 bg-gradient-to-r from-[#c9a84c] to-[#e8c96a] hover:from-[#d4b55a] hover:to-[#f0d47a] text-[#0f0f13] font-bold px-8 py-4 rounded-2xl transition-all duration-200 shadow-lg shadow-[#c9a84c]/25 hover:shadow-[#c9a84c]/40 hover:scale-[1.02]"
+            style={{ fontFamily: "Montserrat, sans-serif", fontSize: 15 }}
+          >
+            <Icon name="FileText" size={18} />
+            Заказать дизайн-проект
+          </a>
+          <a
+            href="/calculator"
+            className="inline-flex items-center gap-2 text-white/40 hover:text-white/70 text-sm transition-colors"
+            style={{ fontFamily: "Rubik, sans-serif" }}
+          >
+            <Icon name="Calculator" size={15} />
+            Рассчитать стоимость ремонта
+          </a>
+        </div>
+
         {/* Нижние аргументы */}
         <div className="grid grid-cols-3 gap-4 mt-6">
           {[
