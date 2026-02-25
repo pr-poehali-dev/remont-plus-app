@@ -4,8 +4,8 @@
       "name": "Get templates",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 401,
-      "expectedBody": {"error": "Unauthorized"},
+      "expectedStatus": 200,
+      "expectedBody": {"plan": null},
       "bodyMatcher": "partial"
     }
   ]

@@ -61,7 +61,7 @@ def handler(event: dict, context) -> dict:
         # GET / — получить план пользователя (или создать из шаблона)
         if method == "GET" and not path.endswith("/stages"):
             if not user_id:
-                return json_resp(401, {"error": "Unauthorized"})
+                return json_resp(200, {"plan": None, "stages": []})
             cur.execute(f"SELECT id, title, address, apartment_area, start_date, notes, created_at FROM {SCHEMA}.renovation_plans WHERE user_id = %s ORDER BY id LIMIT 1", (user_id,))
             row = cur.fetchone()
             if not row:
@@ -77,7 +77,7 @@ def handler(event: dict, context) -> dict:
         # POST / — создать план из шаблона
         if method == "POST" and not path.endswith("/stages"):
             if not user_id:
-                return json_resp(401, {"error": "Unauthorized"})
+                return json_resp(400, {"error": "User ID required"})
             title = body.get("title", "Мой ремонт")
             address = body.get("address", "")
             area = body.get("apartment_area")
@@ -93,7 +93,7 @@ def handler(event: dict, context) -> dict:
         # PUT / — обновить план
         if method == "PUT" and not path.endswith("/stages"):
             if not user_id:
-                return json_resp(401, {"error": "Unauthorized"})
+                return json_resp(400, {"error": "User ID required"})
             plan_id = body.get("plan_id")
             cur.execute(f"UPDATE {SCHEMA}.renovation_plans SET title=%s, address=%s, apartment_area=%s, start_date=%s, notes=%s, updated_at=NOW() WHERE id=%s AND user_id=%s", (body.get("title"), body.get("address"), body.get("apartment_area"), body.get("start_date"), body.get("notes"), plan_id, user_id))
             conn.commit()

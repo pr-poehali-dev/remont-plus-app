@@ -1,12 +1,22 @@
 export const API = "https://functions.poehali.dev/2718d43b-b9db-426c-add0-8a4f4b840a10";
 
+export function getGuestUserId(): number {
+  const key = "avangard_guest_id";
+  const existing = localStorage.getItem(key);
+  if (existing) return parseInt(existing);
+  const id = 900000000 + Math.floor(Math.random() * 99999999);
+  localStorage.setItem(key, String(id));
+  return id;
+}
+
 export function getHeaders() {
   const raw = localStorage.getItem("avangard_user");
   const user = raw ? (() => { try { return JSON.parse(raw); } catch { return null; } })() : null;
   const token = localStorage.getItem("avangard_token");
+  const userId = user?.id || getGuestUserId();
   return {
     "Content-Type": "application/json",
-    ...(user?.id ? { "X-User-Id": String(user.id) } : {}),
+    "X-User-Id": String(userId),
     ...(token ? { "X-Auth-Token": token } : {}),
   };
 }

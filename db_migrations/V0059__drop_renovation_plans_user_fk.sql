@@ -1,0 +1,1 @@
+ALTER TABLE t_p46588937_remont_plus_app.renovation_plans DROP CONSTRAINT renovation_plans_user_id_fkey;
