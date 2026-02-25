@@ -1,4 +1,3 @@
-import { type ReactNode } from "react";
 import Icon from "@/components/ui/icon";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 
@@ -11,10 +10,9 @@ interface RegionData {
 
 interface Props {
   region: RegionData;
-  consultant?: ReactNode;
 }
 
-export default function HomeProjects({ region, consultant }: Props) {
+export default function HomeProjects({ region }: Props) {
   const projects = [
     {
       before: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/d1145c26-c0f3-473a-870a-652d6c28a68c.jpg",
@@ -98,7 +96,7 @@ export default function HomeProjects({ region, consultant }: Props) {
         </div>
       </section>
 
-      {/* Отзывы + Эксперт */}
+      {/* Отзывы */}
       <section className="mt-20">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
@@ -106,7 +104,7 @@ export default function HomeProjects({ region, consultant }: Props) {
           </h2>
           <p className="text-gray-500 text-lg">Отзывы пользователей сервиса АВАНГАРД</p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+        <div className="grid md:grid-cols-3 gap-6">
           {reviews.map((review, idx) => (
             <div key={idx} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300">
               <div className="flex items-center gap-1 mb-4">
@@ -129,7 +127,6 @@ export default function HomeProjects({ region, consultant }: Props) {
               </div>
             </div>
           ))}
-          {consultant && <div>{consultant}</div>}
         </div>
       </section>
     </>
