@@ -47,6 +47,7 @@ import TurnkeyPrint from "./pages/TurnkeyPrint";
 import Organizer from "./pages/Organizer";
 import Expert from "./pages/Expert";
 import BathHouse from "./pages/BathHouse";
+import BathHousePrint from "./pages/BathHousePrint";
 import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
@@ -103,6 +104,7 @@ const App = () => {
             <Route path="/organizer" element={<Organizer />} />
             <Route path="/expert" element={<Expert />} />
             <Route path="/bathhouse" element={<BathHouse />} />
+            <Route path="/bathhouse/print" element={<BathHousePrint />} />
             <Route path="/auth/yandex/callback" element={<YandexCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
