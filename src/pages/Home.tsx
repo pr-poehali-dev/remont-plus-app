@@ -99,11 +99,10 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-[#0f0f13]">
       <HomeHero user={user} regionLabel={region.label} onLogout={handleLogout} />
       <HomeHowItWorks />
-      <HomeConsultant />
 
       <div className="bg-[#fafaf8] flex-1 px-4 py-16">
         <div className="w-full max-w-6xl mx-auto">
-          <HomeProjects region={region} />
+          <HomeProjects region={region} consultant={<HomeConsultant />} />
           <HomePartner />
           <HomeLatestPosts posts={latestPosts} />
           <HomeCTA user={user} />
