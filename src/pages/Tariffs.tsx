@@ -110,11 +110,11 @@ export default function Tariffs() {
             </p>
           </div>
           <Button
-            onClick={() => navigate("/ai-chat")}
+            onClick={() => navigate("/expert")}
             className="bg-orange-500 hover:bg-orange-600 text-white shrink-0 h-11 px-5"
           >
             <Icon name="Sparkles" size={16} className="mr-2" />
-            Попробовать (3 сметы бесплатно)
+            Спросить ИИ‑эксперта бесплатно
           </Button>
         </div>
 
