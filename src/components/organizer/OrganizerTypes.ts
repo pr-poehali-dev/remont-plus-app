@@ -1,13 +1,20 @@
 export const API = "https://functions.poehali.dev/2718d43b-b9db-426c-add0-8a4f4b840a10";
 
 export function getHeaders() {
-  const userId = localStorage.getItem("user_id");
-  const token = localStorage.getItem("auth_token");
+  const raw = localStorage.getItem("avangard_user");
+  const user = raw ? (() => { try { return JSON.parse(raw); } catch { return null; } })() : null;
+  const token = localStorage.getItem("avangard_token");
   return {
     "Content-Type": "application/json",
-    ...(userId ? { "X-User-Id": userId } : {}),
+    ...(user?.id ? { "X-User-Id": String(user.id) } : {}),
     ...(token ? { "X-Auth-Token": token } : {}),
   };
+}
+
+export function getLocalUser() {
+  const raw = localStorage.getItem("avangard_user");
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
 }
 
 export const STATUS_CONFIG: Record<string, { label: string; color: string; icon: string }> = {

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import { useToast } from "@/hooks/use-toast";
-import { API, getHeaders, Stage, Plan, fmt, fmtDays, diffLabel } from "@/components/organizer/OrganizerTypes";
+import { API, getHeaders, getLocalUser, Stage, Plan, fmt, fmtDays, diffLabel } from "@/components/organizer/OrganizerTypes";
 import OrganizerStageCard from "@/components/organizer/OrganizerStageCard";
 import OrganizerCreateDialog from "@/components/organizer/OrganizerCreateDialog";
 import OrganizerStageDialog, { SummaryCard } from "@/components/organizer/OrganizerStageDialog";
@@ -25,8 +25,8 @@ export default function Organizer() {
   const [newPlan, setNewPlan] = useState({ title: "Мой ремонт", address: "", apartment_area: "", start_date: "", notes: "" });
 
   useEffect(() => {
-    const userId = localStorage.getItem("user_id");
-    if (!userId) { navigate("/login"); return; }
+    const user = getLocalUser();
+    if (!user?.id) { navigate("/login?redirect=/organizer"); return; }
     loadPlan();
   }, []);
 
