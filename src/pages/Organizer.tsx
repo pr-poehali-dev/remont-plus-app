@@ -25,8 +25,6 @@ export default function Organizer() {
   const [newPlan, setNewPlan] = useState({ title: "Мой ремонт", address: "", apartment_area: "", start_date: "", notes: "" });
 
   useEffect(() => {
-    const user = getLocalUser();
-    if (!user?.id) { navigate("/login?redirect=/organizer"); return; }
     loadPlan();
   }, []);
 

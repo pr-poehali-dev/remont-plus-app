@@ -174,7 +174,7 @@ const sections = [
     gradient: "from-cyan-400 via-sky-400 to-blue-400",
     glow: "group-hover:shadow-cyan-300/50",
     path: "/organizer",
-    requireAuth: true,
+    requireAuth: false,
   },
   {
     id: "expert",
