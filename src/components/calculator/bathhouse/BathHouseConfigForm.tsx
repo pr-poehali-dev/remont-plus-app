@@ -376,24 +376,56 @@ export default function BathHouseConfigForm({ config, onChange }: Props) {
 
       {/* Вентиляция */}
       <SectionTitle icon="AirVent">Вентиляция</SectionTitle>
-      <div className="space-y-1.5">
-        {(Object.entries(VENTILATION_TYPES) as [VentilationType, typeof VENTILATION_TYPES[VentilationType]][]).map(([key, vent]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onChange({ ventilation: key })}
-            className={`w-full text-left rounded-xl border-2 px-3 py-2 transition-all flex items-center justify-between gap-2 ${
-              config.ventilation === key ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:border-amber-300 bg-white"
-            }`}
-          >
-            <div>
-              <div className={`text-sm font-medium ${config.ventilation === key ? "text-amber-800" : "text-gray-700"}`}>{vent.label}</div>
-              <div className="text-xs text-gray-500">{vent.desc}</div>
+      {(() => {
+        const VENT_META: Record<VentilationType, { emoji: string; category: string; categoryColor: string; level: string; levelColor: string }> = {
+          natural_simple: { emoji: "🌬️", category: "Естественная", categoryColor: "bg-green-100 text-green-700",  level: "Базовый",    levelColor: "bg-gray-100 text-gray-500" },
+          natural_duct:   { emoji: "🌀", category: "Естественная", categoryColor: "bg-green-100 text-green-700",  level: "Стандарт",   levelColor: "bg-blue-100 text-blue-600" },
+          forced_supply:  { emoji: "💨", category: "Принудительная", categoryColor: "bg-sky-100 text-sky-700",    level: "Комфорт",    levelColor: "bg-amber-100 text-amber-600" },
+          forced_full:    { emoji: "🌪️", category: "Принудительная", categoryColor: "bg-sky-100 text-sky-700",    level: "Продвинутый", levelColor: "bg-orange-100 text-orange-600" },
+          recuperator:    { emoji: "♻️", category: "Рекуперация",   categoryColor: "bg-emerald-100 text-emerald-700", level: "Премиум", levelColor: "bg-violet-100 text-violet-600" },
+        };
+        const categories = ["Естественная", "Принудительная", "Рекуперация"];
+        return categories.map(cat => {
+          const items = (Object.entries(VENTILATION_TYPES) as [VentilationType, typeof VENTILATION_TYPES[VentilationType]][])
+            .filter(([k]) => VENT_META[k].category === cat);
+          if (!items.length) return null;
+          return (
+            <div key={cat} className="mb-3">
+              <p className="text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{cat}</p>
+              <div className="space-y-1.5">
+                {items.map(([key, vent]) => {
+                  const meta = VENT_META[key];
+                  const isSelected = config.ventilation === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => onChange({ ventilation: key })}
+                      className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition-all ${
+                        isSelected ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:border-amber-300 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl leading-none mt-0.5">{meta.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-sm font-semibold ${isSelected ? "text-amber-800" : "text-gray-700"}`}>{vent.label}</span>
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${meta.levelColor}`}>{meta.level}</span>
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5 leading-snug">{vent.desc}</div>
+                        </div>
+                        <div className={`text-sm font-bold shrink-0 ${isSelected ? "text-amber-700" : "text-gray-700"}`}>
+                          {vent.price.toLocaleString("ru-RU")} ₽
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div className="text-xs text-gray-400 shrink-0">{vent.price.toLocaleString("ru-RU")} ₽</div>
-          </button>
-        ))}
-      </div>
+          );
+        });
+      })()}
 
       {/* Полок */}
       <SectionTitle icon="AlignVerticalJustifyCenter">Полок</SectionTitle>
