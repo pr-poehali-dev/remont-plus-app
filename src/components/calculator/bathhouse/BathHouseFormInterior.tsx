@@ -112,7 +112,7 @@ export default function BathHouseFormInterior({ config, onChange }: Props) {
           className="rounded accent-amber-500"
         />
         <span className="text-sm text-gray-700">Тёплый пол (электрический)</span>
-        <Badge variant="secondary" className="text-[10px]">+2 200 ₽/м²</Badge>
+        <Badge variant="secondary" className="text-[10px]">+2 420 ₽/м²</Badge>
       </label>
 
       {/* Печь */}

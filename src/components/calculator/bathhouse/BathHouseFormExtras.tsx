@@ -35,7 +35,7 @@ export default function BathHouseFormExtras({ config, onChange }: Props) {
           <input type="checkbox" checked={config.chimney} onChange={e => onChange({ chimney: e.target.checked })} className="accent-amber-500" />
           <div>
             <span className="text-sm font-medium text-gray-700">Дымоход (сэндвич-труба)</span>
-            <span className="text-xs text-gray-400 block">~28 000 ₽</span>
+            <span className="text-xs text-gray-400 block">~30 800 ₽</span>
           </div>
         </label>
         <div className="flex items-center gap-3">
