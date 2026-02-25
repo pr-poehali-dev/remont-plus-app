@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 
 const YANDEX_AUTH_URL = "https://functions.poehali.dev/e79ea16f-9897-425c-8f3a-6944097e6748";
 
