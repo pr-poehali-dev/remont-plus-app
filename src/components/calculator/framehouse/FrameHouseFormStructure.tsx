@@ -1,0 +1,177 @@
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { SectionTitle, RadioGroup } from "./FrameHouseFormShared";
+import type {
+  FrameHouseConfig, HouseStyle, HouseLayout, FrameWallTech,
+  FrameInsulation, FoundationType, RoofType, RoofingMaterial, FacadeType,
+} from "./FrameHouseTypes";
+import {
+  HOUSE_STYLES, HOUSE_LAYOUTS, FRAME_WALL_TECHS, FRAME_INSULATIONS,
+  FOUNDATION_TYPES, ROOF_TYPES, ROOFING_MATERIALS, FACADE_TYPES,
+} from "./FrameHouseTypes";
+
+interface Props {
+  config: FrameHouseConfig;
+  onChange: (patch: Partial<FrameHouseConfig>) => void;
+}
+
+export default function FrameHouseFormStructure({ config, onChange }: Props) {
+  return (
+    <>
+      {/* Стиль дома */}
+      <SectionTitle icon="Sparkles">Стиль дома</SectionTitle>
+      <div className="grid grid-cols-2 gap-2">
+        {(Object.entries(HOUSE_STYLES) as [HouseStyle, typeof HOUSE_STYLES[HouseStyle]][]).map(([key, s]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onChange({ style: key })}
+            className={`text-left rounded-xl border-2 p-2.5 transition-all ${
+              config.style === key ? "border-green-500 bg-green-50" : "border-gray-200 hover:border-green-300 bg-white"
+            }`}
+          >
+            <div className="text-lg mb-0.5">{s.emoji}</div>
+            <div className={`text-sm font-semibold leading-tight ${config.style === key ? "text-green-800" : "text-gray-700"}`}>{s.label}</div>
+            <div className="text-xs text-gray-500 mt-0.5 leading-snug">{s.desc}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Планировка */}
+      <SectionTitle icon="LayoutDashboard">Планировка</SectionTitle>
+      <RadioGroup<HouseLayout>
+        options={(Object.entries(HOUSE_LAYOUTS) as [HouseLayout, typeof HOUSE_LAYOUTS[HouseLayout]][]).map(([k, v]) => ({
+          value: k, label: v.label, desc: v.desc,
+        }))}
+        value={config.layout}
+        onChange={(v) => onChange({ layout: v })}
+        columns={2}
+      />
+
+      {/* Основные размеры */}
+      <SectionTitle icon="Ruler">Размеры дома</SectionTitle>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label className="text-xs text-gray-600 mb-1 block">Этажей</Label>
+          <div className="flex gap-2">
+            {([1, 2] as const).map(f => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => onChange({ floors: f })}
+                className={`flex-1 py-2 rounded-lg border-2 text-sm font-semibold transition-all ${
+                  config.floors === f ? "border-green-500 bg-green-50 text-green-800" : "border-gray-200 hover:border-green-300"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <Label className="text-xs text-gray-600 mb-1 block">Высота потолков, м</Label>
+          <Input
+            type="number" min={2.4} max={4.0} step={0.1} value={config.wallHeight}
+            onChange={e => onChange({ wallHeight: parseFloat(e.target.value) || 2.7 })}
+            className="h-9 text-sm"
+          />
+        </div>
+        <div className="col-span-2">
+          <Label className="text-xs text-gray-600 mb-1 block">Общая площадь, м²</Label>
+          <Input
+            type="number" min={30} max={500} value={config.totalArea}
+            onChange={e => onChange({ totalArea: parseFloat(e.target.value) || 80 })}
+            className="h-9 text-sm"
+          />
+          <p className="text-xs text-gray-400 mt-1">~{Math.round(config.totalArea / config.floors)} м² на этаж</p>
+        </div>
+      </div>
+
+      {/* Технология стен */}
+      <SectionTitle icon="Layers">Технология каркаса</SectionTitle>
+      <div className="space-y-1.5">
+        {(Object.entries(FRAME_WALL_TECHS) as [FrameWallTech, typeof FRAME_WALL_TECHS[FrameWallTech]][]).map(([key, t]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onChange({ wallTech: key })}
+            className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition-all flex items-center justify-between gap-2 ${
+              config.wallTech === key ? "border-green-500 bg-green-50" : "border-gray-200 hover:border-green-300 bg-white"
+            }`}
+          >
+            <div>
+              <div className={`text-sm font-medium ${config.wallTech === key ? "text-green-800" : "text-gray-700"}`}>{t.label}</div>
+              <div className="text-xs text-gray-500">{t.desc}</div>
+            </div>
+            <div className="text-xs text-gray-400 shrink-0">{t.pricePerM2.toLocaleString("ru-RU")} ₽/м²</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Утепление */}
+      <SectionTitle icon="Wind">Утепление</SectionTitle>
+      <RadioGroup<FrameInsulation>
+        options={(Object.entries(FRAME_INSULATIONS) as [FrameInsulation, typeof FRAME_INSULATIONS[FrameInsulation]][]).map(([k, v]) => ({
+          value: k,
+          label: v.label,
+          desc: `${v.thickness} мм · ${v.pricePerM2.toLocaleString("ru-RU")} ₽/м²`,
+        }))}
+        value={config.insulation}
+        onChange={(v) => onChange({ insulation: v })}
+      />
+
+      {/* Фундамент */}
+      <SectionTitle icon="Building2">Фундамент</SectionTitle>
+      <RadioGroup<FoundationType>
+        options={(Object.entries(FOUNDATION_TYPES) as [FoundationType, typeof FOUNDATION_TYPES[FoundationType]][]).map(([k, v]) => ({
+          value: k, label: v.label, desc: v.desc,
+        }))}
+        value={config.foundation}
+        onChange={(v) => onChange({ foundation: v })}
+      />
+
+      {/* Тип крыши */}
+      <SectionTitle icon="Home">Тип крыши</SectionTitle>
+      <RadioGroup<RoofType>
+        options={(Object.entries(ROOF_TYPES) as [RoofType, typeof ROOF_TYPES[RoofType]][]).map(([k, v]) => ({
+          value: k, label: v.label, desc: v.desc,
+        }))}
+        value={config.roofType}
+        onChange={(v) => onChange({ roofType: v })}
+        columns={2}
+      />
+
+      {/* Кровельный материал */}
+      <SectionTitle icon="CloudRain">Кровельный материал</SectionTitle>
+      <RadioGroup<RoofingMaterial>
+        options={(Object.entries(ROOFING_MATERIALS) as [RoofingMaterial, typeof ROOFING_MATERIALS[RoofingMaterial]][]).map(([k, v]) => ({
+          value: k, label: v.label, desc: `${v.pricePerM2.toLocaleString("ru-RU")} ₽/м²`,
+        }))}
+        value={config.roofingMaterial}
+        onChange={(v) => onChange({ roofingMaterial: v })}
+        columns={2}
+      />
+
+      {/* Фасад */}
+      <SectionTitle icon="PaintBucket">Фасадный материал</SectionTitle>
+      <div className="space-y-1.5">
+        {(Object.entries(FACADE_TYPES) as [FacadeType, typeof FACADE_TYPES[FacadeType]][]).map(([key, f]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onChange({ facade: key })}
+            className={`w-full text-left rounded-xl border-2 px-3 py-2.5 transition-all flex items-center justify-between gap-2 ${
+              config.facade === key ? "border-green-500 bg-green-50" : "border-gray-200 hover:border-green-300 bg-white"
+            }`}
+          >
+            <div>
+              <div className={`text-sm font-medium ${config.facade === key ? "text-green-800" : "text-gray-700"}`}>{f.label}</div>
+              <div className="text-xs text-gray-500">{f.desc}</div>
+            </div>
+            <div className="text-xs text-gray-400 shrink-0">{f.pricePerM2.toLocaleString("ru-RU")} ₽/м²</div>
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
