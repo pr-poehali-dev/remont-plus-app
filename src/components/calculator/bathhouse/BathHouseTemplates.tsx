@@ -1,5 +1,4 @@
 import type { BathLayout, RoofType, WallMaterial } from "./BathHouseTypes";
-import { ExteriorSVG } from "./BathHouseExterior";
 
 export interface BathTemplate {
   id: string;
@@ -13,6 +12,7 @@ export interface BathTemplate {
   terrace: boolean;
   description: string;
   tags: string[];
+  photo: string;
 }
 
 export const BATH_TEMPLATES: BathTemplate[] = [
@@ -28,6 +28,7 @@ export const BATH_TEMPLATES: BathTemplate[] = [
     terrace: false,
     description: "Традиционная баня из круглого бревна с двускатной крышей. Максимальный жар, настоящий русский пар.",
     tags: ["Популярная", "Традиционная"],
+    photo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/f09b557d-23a5-4636-8a15-e99534d7e066.jpg",
   },
   {
     id: "modern_frame",
@@ -41,6 +42,7 @@ export const BATH_TEMPLATES: BathTemplate[] = [
     terrace: true,
     description: "Минималистичный дизайн, быстрый прогрев, панорамные окна. Строится за 2–3 месяца.",
     tags: ["Быстро", "Экономично"],
+    photo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/3963f0b7-a54f-486b-84a6-1ef06ee780fe.jpg",
   },
   {
     id: "scandinavian",
@@ -54,6 +56,7 @@ export const BATH_TEMPLATES: BathTemplate[] = [
     terrace: true,
     description: "Сухой пар, электрическая печь, светлая отделка осиной. Терраса с видом на природу.",
     tags: ["Сухой пар", "Эстетика"],
+    photo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/877840ca-f7f7-4da4-b2bb-a868c60ee2a6.jpg",
   },
   {
     id: "house_bath",
@@ -67,6 +70,7 @@ export const BATH_TEMPLATES: BathTemplate[] = [
     terrace: true,
     description: "Первый этаж — полноценная баня. Мансарда — спальня или комната отдыха для гостей.",
     tags: ["Два в одном", "Клееный брус"],
+    photo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/9a7e8f8c-3a5a-4427-8df2-ecccfdd37c46.jpg",
   },
   {
     id: "brick_classic",
@@ -80,6 +84,7 @@ export const BATH_TEMPLATES: BathTemplate[] = [
     terrace: false,
     description: "Кирпич держит тепло часами. Вальмовая крыша, 4 помещения, кирпичная печь-каменка.",
     tags: ["Долговечность", "Солидность"],
+    photo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/636e0277-c5df-4e66-a6cd-f805e76ef461.jpg",
   },
   {
     id: "eco_log",
@@ -93,6 +98,7 @@ export const BATH_TEMPLATES: BathTemplate[] = [
     terrace: false,
     description: "Компактная баня из ручного сруба. Минимум химии, максимум природы. Идеальна для небольших участков.",
     tags: ["Компактная", "Природность"],
+    photo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/beaa9c86-b9ef-4ae6-83db-d56e80125f9f.jpg",
   },
   {
     id: "finnish_electric",
@@ -106,6 +112,7 @@ export const BATH_TEMPLATES: BathTemplate[] = [
     terrace: false,
     description: "Сухой сауна-режим 80–100°C. Быстрый разогрев за 20 минут. Электропечь без дымохода.",
     tags: ["Без дымохода", "Быстрый разогрев"],
+    photo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/13655425-586e-455c-916e-7b69684b32c4.jpg",
   },
   {
     id: "glued_mansard",
@@ -119,6 +126,7 @@ export const BATH_TEMPLATES: BathTemplate[] = [
     terrace: true,
     description: "Мансардная крыша даёт дополнительное пространство. Клееный брус — без усадки, отделка сразу.",
     tags: ["Без усадки", "Мансарда"],
+    photo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/6f445070-d676-428a-bdfb-9a6a1089bcdc.jpg",
   },
   {
     id: "gazebo_bath",
@@ -132,6 +140,7 @@ export const BATH_TEMPLATES: BathTemplate[] = [
     terrace: false,
     description: "Небольшая баня для 2–3 человек. Свайный фундамент, быстрый монтаж, минимальная площадь участка.",
     tags: ["Мини-баня", "Свайный фундамент"],
+    photo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/70ce5f0f-c612-45f7-9880-720d703b2fad.jpg",
   },
   {
     id: "gas_block",
@@ -145,6 +154,7 @@ export const BATH_TEMPLATES: BathTemplate[] = [
     terrace: false,
     description: "Газобетонные блоки + тщательная гидро/пароизоляция. Дешевле кирпича, теплее каркаса.",
     tags: ["Бюджетно", "Надёжно"],
+    photo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/f4442ff7-bacd-41b8-be35-71c3cc272f73.jpg",
   },
 ];
 
@@ -162,10 +172,15 @@ export function BathTemplateCard({ tpl, selected, onSelect }: TemplateCardProps)
         selected ? "border-amber-500 shadow-amber-200 shadow-md" : "border-gray-200 hover:border-amber-300"
       }`}
     >
-      <div className="bg-slate-800 h-28 overflow-hidden relative">
-        <ExteriorSVG roofType={tpl.roofType} wallMaterial={tpl.wallMaterial} terrace={tpl.terrace} />
+      <div className="h-28 overflow-hidden relative bg-slate-100">
+        <img
+          src={tpl.photo}
+          alt={tpl.name}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
         {selected && (
-          <div className="absolute top-2 right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+          <div className="absolute top-2 right-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
             ✓ Выбрана
           </div>
         )}
