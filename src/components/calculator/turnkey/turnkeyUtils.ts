@@ -82,20 +82,20 @@ export function calcTurnkeyPrice(
     ? Math.round(cfg.bathroomCount * (bathroomLevel?.pricePerUnit ?? 145000) * rc)
     : 0;
 
-  // Монтаж кухни
+  // Монтаж кухни (зависит от площади кухни и уровня)
   const kitchenCost = cfg.kitchenIncluded
-    ? Math.round(16000 * rc)
+    ? Math.round((cfg.kitchenAreaM2 || 12) * 1200 * lc * rc)
     : 0;
 
-  // Двери (8 000 ₽ — стандарт/шт + установка)
+  // Двери (с учётом уровня ремонта)
   const doorsCost = cfg.doorsIncluded && cfg.doorsCount > 0
-    ? Math.round(cfg.doorsCount * 12000 * rc)
+    ? Math.round(cfg.doorsCount * 12000 * lc * rc)
     : 0;
 
   // Откосы окон (≈ кол-во окон = balcony + ~2 на комнату)
   const windowCount = cfg.balconyCount + Math.ceil(area / 18);
   const windowSlopesCost = cfg.windowslopeIncluded
-    ? Math.round(windowCount * 3200 * rc)
+    ? Math.round(windowCount * 3200 * lc * rc)
     : 0;
 
   // Сборка мебели

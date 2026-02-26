@@ -46,14 +46,14 @@ export function calcNewbuildPrice(
   const area = cfg.area || 0;
   const wallArea = Math.round(area * wallCoeff * 10) / 10;
 
-  // Стяжка пола
+  // Стяжка пола (tc уже заложен в wallCoeff — для стяжки не применяем)
   const screedCost = cfg.screedIncluded
-    ? Math.round(area * (screedType?.priceM2 ?? 850) * tc * rc)
+    ? Math.round(area * (screedType?.priceM2 ?? 850) * rc)
     : 0;
 
-  // Штукатурка стен
+  // Штукатурка стен (wallArea уже рассчитан с wallCoeff типа комнаты — tc не дублируем)
   const plasterCost = cfg.plasterIncluded
-    ? Math.round(wallArea * (plasterType?.priceM2 ?? 550) * tc * rc)
+    ? Math.round(wallArea * (plasterType?.priceM2 ?? 550) * rc)
     : 0;
 
   // Потолок
