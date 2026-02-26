@@ -33,6 +33,8 @@ export interface PriceBreakdown {
   demolitionCost: number;
   levelingCost: number;
   thresholdCost: number;
+  materialsCost: number;
+  worksCost: number;
   total: number;
   pricePerM2: number;
 }
@@ -65,6 +67,11 @@ export function calcFlooringPrice(cfg: Omit<FlooringConfig, "id" | "totalPrice">
   const markup = markupPct > 0 ? Math.round(subtotal * markupPct / 100) : 0;
   const total = subtotal + markup;
 
+  // Материалы: само покрытие + подложка + пороги (изделия)
+  const materialsCost = materialCost + substrateCost + Math.round(cfg.thresholdCount * 850 * 0.7); // пороги ~70% материал
+  // Работы: монтаж + плинтус (монтаж) + демонтаж + выравнивание
+  const worksCost = subtotal - materialsCost;
+
   return {
     materialQty,
     materialCost,
@@ -74,6 +81,8 @@ export function calcFlooringPrice(cfg: Omit<FlooringConfig, "id" | "totalPrice">
     demolitionCost,
     levelingCost,
     thresholdCost,
+    materialsCost,
+    worksCost,
     total,
     pricePerM2: area > 0 ? Math.round(total / area) : 0,
   };

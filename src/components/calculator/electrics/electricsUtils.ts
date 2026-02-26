@@ -13,6 +13,8 @@ export interface ElectricsPriceBreakdown {
   panelCost: number;
   groundingCost: number;
   testingCost: number;
+  materialsCost: number;
+  worksCost: number;
   subtotal: number;
   regionCoeff: number;
   markupAmount: number;
@@ -76,6 +78,18 @@ export function calcElectricsPrice(
   const markupAmount = markupPct > 0 ? Math.round(subtotal * markupPct / 100) : 0;
   const total = subtotal + markupAmount;
 
+  // Материалы: кабель (~70%), розетки/выключатели (~50%), щиток (~60%)
+  const materialsCost = Math.round(
+    outletsCost  * 0.50 +
+    switchesCost * 0.50 +
+    lightingCost * 0.40 +
+    cablingCost  * 0.70 +
+    panelCost    * 0.60 +
+    groundingCost * 0.30 +
+    testingCost  * 0.00
+  );
+  const worksCost = subtotal - materialsCost;
+
   return {
     outletsCost,
     switchesCost,
@@ -84,6 +98,8 @@ export function calcElectricsPrice(
     panelCost,
     groundingCost,
     testingCost,
+    materialsCost,
+    worksCost,
     subtotal,
     regionCoeff: rc,
     markupAmount,

@@ -16,6 +16,7 @@ export interface BathroomPriceBreakdown {
   furnitureCost: number;
   accessoriesCost: number;
   ventilationCost: number;
+  materialsCost: number;
   subtotal: number;
   regionCoeff: number;
   markupAmount: number;
@@ -103,6 +104,20 @@ export function calcBathroomPrice(
     furnitureCost +
     accessoriesCost;
 
+  // Материальная составляющая по каждой статье
+  const materialsCost = Math.round(
+    demolitionCost      * 0.00 +
+    screedCost          * 0.55 + // смеси для стяжки
+    waterproofingCost   * 0.60 + // гидроизоляционные материалы
+    floorMaterialCost             + // вся стоимость плитки пола — материал
+    wallMaterialCost              + // вся стоимость плитки стен — материал
+    plumbingCost        * 0.50 + // сантехнические приборы (50% — установка)
+    heatedFloorCost     * 0.60 + // кабель/плёнка тёплого пола
+    ventilationCost     * 0.40 + // вентилятор и фурнитура
+    furnitureCost       * 0.00 + // только монтаж (мебель куплена отдельно)
+    accessoriesCost     * 0.70   // аксессуары — почти полностью материалы
+  );
+
   const markupAmount = markupPct > 0 ? Math.round(subtotal * markupPct / 100) : 0;
   const total = subtotal + markupAmount;
 
@@ -117,6 +132,7 @@ export function calcBathroomPrice(
     furnitureCost,
     accessoriesCost,
     ventilationCost,
+    materialsCost,
     subtotal,
     regionCoeff: rc,
     markupAmount,

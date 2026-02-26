@@ -441,7 +441,23 @@ export default function Flooring() {
                   )}
                 </div>
 
-                <div className="border-t border-amber-200 pt-2 mt-3 flex justify-between text-base font-bold text-amber-700">
+                <div className="border-t border-amber-200 pt-2 mt-3 space-y-1">
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>Работы</span>
+                    <span className="font-medium">{fmt(activeBreakdown.worksCost)} ₽</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>Материалы</span>
+                    <span className="font-medium">{fmt(activeBreakdown.materialsCost)} ₽</span>
+                  </div>
+                  {markupPct > 0 && (
+                    <div className="flex justify-between text-xs text-orange-500">
+                      <span>в т.ч. наценка {markupPct}%</span>
+                      <span>+{fmt(Math.round(activeBreakdown.total - activeBreakdown.total / (1 + markupPct / 100)))} ₽</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-between text-base font-bold text-amber-700 pt-1">
                   <span>Итого</span>
                   <span>{fmt(activeBreakdown.total)} ₽</span>
                 </div>
@@ -449,12 +465,6 @@ export default function Flooring() {
                   <div className="flex justify-between text-xs text-gray-400 mt-0.5">
                     <span>Удельная стоимость</span>
                     <span>{fmt(activeBreakdown.pricePerM2)} ₽/м²</span>
-                  </div>
-                )}
-                {markupPct > 0 && (
-                  <div className="flex justify-between text-xs text-orange-500 mt-1">
-                    <span>в т.ч. наценка {markupPct}%</span>
-                    <span>+{fmt(Math.round(activeBreakdown.total - activeBreakdown.total / (1 + markupPct / 100)))} ₽</span>
                   </div>
                 )}
               </Card>

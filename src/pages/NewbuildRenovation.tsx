@@ -366,6 +366,16 @@ export default function NewbuildRenovation() {
                   Документ
                 </Button>
               </div>
+              <div className="mt-3 pt-2 border-t border-white/20 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <p className="opacity-60">Работы</p>
+                  <p className="font-semibold">{fmt(projectTotals.worksTotal - projectTotals.materialsTotal)} ₽</p>
+                </div>
+                <div>
+                  <p className="opacity-60">Материалы</p>
+                  <p className="font-semibold">{fmt(projectTotals.materialsTotal)} ₽</p>
+                </div>
+              </div>
               {markupPct > 0 && (
                 <p className="text-xs opacity-60 mt-2 flex items-center gap-1">
                   <Icon name="Info" size={11} />
@@ -470,13 +480,17 @@ export default function NewbuildRenovation() {
                   )}
 
 
-                  <div className="border-t border-orange-200 pt-1.5 mt-1.5">
-                    <div className="flex justify-between text-gray-500">
-                      <span>Сумма работ</span>
-                      <span>{fmt(activeBreakdown.subtotal)} ₽</span>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-400">
+                  <div className="border-t border-orange-200 pt-1.5 mt-1.5 space-y-1">
+                    <div className="flex justify-between text-gray-500 text-xs">
                       <span>Уровень ×{activeBreakdown.levelCoeff} · Регион ×{activeBreakdown.regionCoeff}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Работы</span>
+                      <span className="font-medium">{fmt(activeBreakdown.subtotal - activeBreakdown.materialsCost)} ₽</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Материалы</span>
+                      <span className="font-medium">{fmt(activeBreakdown.materialsCost)} ₽</span>
                     </div>
                     {markupPct > 0 && (
                       <div className="flex justify-between text-orange-600">
