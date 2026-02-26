@@ -188,6 +188,17 @@ const sections = [
     requireAuth: false,
   },
   {
+    id: "framehouse",
+    title: "КАРКАСНИК",
+    description: "Калькулятор строительства каркасного дома: OSB, SIP, ЛСТК — фасад, фундамент, отопление, смета",
+    emoji: "🏗",
+    icon: "Home",
+    gradient: "from-green-800 via-green-700 to-emerald-600",
+    glow: "group-hover:shadow-green-500/50",
+    path: "/framehouse",
+    requireAuth: false,
+  },
+  {
     id: "expert",
     title: "ЭКСПЕРТ",
     description: "ИИ-консультант по дизайну, интерьеру и ремонту — задайте любой вопрос бесплатно",
