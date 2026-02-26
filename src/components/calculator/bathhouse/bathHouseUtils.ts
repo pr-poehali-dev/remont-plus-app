@@ -36,6 +36,7 @@ export interface BathHouseBreakdown {
   terrace: number;
   electrical: number;
   assembly: number;
+  materialsBase: number;
   foreman: number;
   supplier: number;
   regionCoeff: number;
@@ -120,9 +121,20 @@ export function calcBathHousePrice(cfg: BathHouseConfig, regionId: string, marku
   const materialSum = foundation + walls + roofStructure + roofing + insulation + wallFinishSteam + wallFinishWash + wallFinishRest + floor + stove + ventilation + shelves + windows + chimney + tank + terrace + electrical;
   const assembly = materialSum * 0.42; // 42% монтажные работы
 
-  const worksSubtotal = (materialSum + assembly) * rc;
-  const foreman = cfg.foremanIncluded ? Math.round(worksSubtotal * (cfg.foremanPct || 10) / 100) : 0;
-  const supplier = cfg.supplierIncluded ? Math.round(worksSubtotal * (cfg.supplierPct || 5) / 100) : 0;
+  // База для расчёта вознаграждений (с учётом региона)
+  const materialsWithRegion = materialSum * rc;       // закупаемые материалы
+  const worksSubtotal = (materialSum + assembly) * rc; // материалы + работа
+
+  // Прораб: % от всей суммы (работы + материалы)
+  const foreman = cfg.foremanIncluded
+    ? Math.round(worksSubtotal * (cfg.foremanPct || 10) / 100)
+    : 0;
+
+  // Снабженец: % от суммы закупаемых материалов
+  const supplier = cfg.supplierIncluded
+    ? Math.round(materialsWithRegion * (cfg.supplierPct || 5) / 100)
+    : 0;
+
   const subtotal = worksSubtotal + foreman + supplier;
   const markupAmount = subtotal * (markupPct / 100);
   const total = subtotal + markupAmount;
@@ -151,7 +163,7 @@ export function calcBathHousePrice(cfg: BathHouseConfig, regionId: string, marku
     foundation, walls, roofStructure, roofing, insulation,
     wallFinishSteam, wallFinishWash, wallFinishRest,
     floor, stove, ventilation, shelves, windows, chimney, tank, terrace, electrical,
-    assembly, foreman, supplier, regionCoeff: rc, markupAmount, subtotal, total,
+    assembly, materialsBase: Math.round(materialsWithRegion), foreman, supplier, regionCoeff: rc, markupAmount, subtotal, total,
     stoveRecommendation, ventRecommendation, shelfRecommendation,
   };
 }

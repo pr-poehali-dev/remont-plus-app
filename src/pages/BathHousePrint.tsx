@@ -45,8 +45,8 @@ const BREAKDOWN_ROWS: { key: keyof BathHouseBreakdown; label: string; unit: stri
   { key: "terrace",         label: "Терраса",                          unit: "м²",      getQty: c => String(c.terraceArea) },
   { key: "electrical",      label: "Электрика",                        unit: "компл.",  getQty: () => "1" },
   { key: "assembly",        label: "Монтаж и строительные работы",     unit: "компл.",  getQty: () => "1" },
-  { key: "foreman",         label: "Прораб — технический надзор и координация", unit: "от работ", getQty: c => `${c.foremanPct}%` },
-  { key: "supplier",        label: "Снабженец — закупка материалов и логистика", unit: "от работ", getQty: c => `${c.supplierPct}%` },
+  { key: "foreman",         label: "Прораб — технический надзор и координация", unit: "от работ+материалов", getQty: c => `${c.foremanPct}%` },
+  { key: "supplier",        label: "Снабженец — закупка и логистика материалов", unit: "от материалов", getQty: c => `${c.supplierPct}%` },
 ];
 
 export default function BathHousePrint() {
@@ -248,13 +248,13 @@ export default function BathHousePrint() {
               </tr>
               {bd.foreman > 0 && (
                 <tr>
-                  <td className="py-1.5 text-gray-600">Прораб {config.foremanPct}%</td>
+                  <td className="py-1.5 text-gray-600">Прораб {config.foremanPct}% (от работ+материалов)</td>
                   <td className="py-1.5 text-right font-medium tabular-nums">+ {fmt(bd.foreman)} ₽</td>
                 </tr>
               )}
               {bd.supplier > 0 && (
                 <tr>
-                  <td className="py-1.5 text-gray-600">Снабженец {config.supplierPct}%</td>
+                  <td className="py-1.5 text-gray-600">Снабженец {config.supplierPct}% (от материалов {fmt(bd.materialsBase)} ₽)</td>
                   <td className="py-1.5 text-right font-medium tabular-nums">+ {fmt(bd.supplier)} ₽</td>
                 </tr>
               )}
