@@ -117,11 +117,11 @@ export default function TurnkeyPrint() {
     },
     cfg.foremanIncluded && bd.foremanCost > 0 && {
       label: `Прораб — технический надзор и координация`,
-      qty: `${cfg.foremanPct}%`, unit: "от работ", price: "—", total: bd.foremanCost,
+      qty: `${cfg.foremanPct}%`, unit: "от работ+материалов", price: `база ${fmt(bd.subtotal - bd.foremanCost - bd.supplierCost)} ₽`, total: bd.foremanCost,
     },
     cfg.supplierIncluded && bd.supplierCost > 0 && {
-      label: `Снабженец — закупка материалов и логистика`,
-      qty: `${cfg.supplierPct}%`, unit: "от работ", price: "—", total: bd.supplierCost,
+      label: `Снабженец — закупка и логистика материалов`,
+      qty: `${cfg.supplierPct}%`, unit: "от материалов", price: `база ${fmt(bd.materialsCost)} ₽`, total: bd.supplierCost,
     },
   ].filter(Boolean) as { label: string; qty: number | string; unit: string; price: string; total: number }[];
 

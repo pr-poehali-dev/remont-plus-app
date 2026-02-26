@@ -244,17 +244,17 @@ export default function NewbuildPrint() {
                   <tr className="border-t border-gray-100">
                     <td className="px-2 py-1.5">Прораб — технический надзор и координация</td>
                     <td className="px-2 py-1.5 text-center">{z.foremanPct}%</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">от работ</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">от работ+материалов</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(bd.subtotal - bd.foremanCost - bd.supplierCost)} ₽</td>
                     <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.foremanCost)} ₽</td>
                   </tr>
                 )}
                 {bd.supplierCost > 0 && (
                   <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Снабженец — закупка материалов и логистика</td>
+                    <td className="px-2 py-1.5">Снабженец — закупка и логистика материалов</td>
                     <td className="px-2 py-1.5 text-center">{z.supplierPct}%</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">от работ</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">от материалов</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(bd.materialsCost)} ₽</td>
                     <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.supplierCost)} ₽</td>
                   </tr>
                 )}

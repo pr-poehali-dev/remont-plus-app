@@ -462,13 +462,13 @@ export default function NewbuildRenovation() {
                   )}
                   {activeBreakdown.foremanCost > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Прораб {activeZone.foremanPct}%</span>
+                      <span className="text-gray-600">Прораб {activeZone.foremanPct}% (работы+материалы)</span>
                       <span className="font-medium">{fmt(activeBreakdown.foremanCost)} ₽</span>
                     </div>
                   )}
                   {activeBreakdown.supplierCost > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Снабженец {activeZone.supplierPct}%</span>
+                      <span className="text-gray-600">Снабженец {activeZone.supplierPct}% (материалы {fmt(activeBreakdown.materialsCost)} ₽)</span>
                       <span className="font-medium">{fmt(activeBreakdown.supplierCost)} ₽</span>
                     </div>
                   )}

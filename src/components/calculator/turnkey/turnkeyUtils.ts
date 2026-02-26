@@ -20,6 +20,7 @@ export interface TurnkeyPriceBreakdown {
   windowSlopesCost: number;
   furnitureCost: number;
   cleaningCost: number;
+  materialsCost: number;
   foremanCost: number;
   supplierCost: number;
   subtotal: number;
@@ -124,14 +125,29 @@ export function calcTurnkeyPrice(
     furnitureCost +
     cleaningCost;
 
-  // Прораб (% от стоимости работ)
+  // Материальная составляющая по каждой статье (доля материалов от суммы позиции)
+  const materialsCost =
+    demolitionCost  * 0.00 + // демонтаж — чистая работа
+    electricsCost   * 0.50 + // кабель, розетки, щиток
+    plumbingCost    * 0.40 + // трубы, фитинги
+    plasterCost     * 0.55 + // смеси, штукатурка, стяжка
+    floorsCost      * 0.65 + // напольное покрытие
+    ceilingsCost    * 0.55 + // потолочные материалы
+    bathroomsCost   * 0.60 + // плитка, сантехника, фурнитура
+    kitchenCost     * 0.00 + // только монтаж, мебель куплена отдельно
+    doorsCost       * 0.70 + // сами двери + коробки
+    windowSlopesCost* 0.50 + // откосные панели
+    furnitureCost   * 0.00 + // сборка, мебель куплена отдельно
+    cleaningCost    * 0.00;  // расходники незначительны
+
+  // Прораб: % от всей суммы работ (работа + материалы)
   const foremanCost = cfg.foremanIncluded
     ? Math.round(worksSubtotal * (cfg.foremanPct || 10) / 100)
     : 0;
 
-  // Снабженец (% от стоимости работ)
+  // Снабженец: % от суммы закупаемых материалов
   const supplierCost = cfg.supplierIncluded
-    ? Math.round(worksSubtotal * (cfg.supplierPct || 5) / 100)
+    ? Math.round(materialsCost * (cfg.supplierPct || 5) / 100)
     : 0;
 
   const subtotal = worksSubtotal + foremanCost + supplierCost;
@@ -152,6 +168,7 @@ export function calcTurnkeyPrice(
     windowSlopesCost,
     furnitureCost,
     cleaningCost,
+    materialsCost: Math.round(materialsCost),
     foremanCost,
     supplierCost,
     subtotal,

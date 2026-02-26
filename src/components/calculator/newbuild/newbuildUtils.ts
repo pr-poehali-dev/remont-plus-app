@@ -17,6 +17,7 @@ export interface NewbuildPriceBreakdown {
   electricsCost: number;
   doorsCost: number;
   windowSlopesCost: number;
+  materialsCost: number;
   foremanCost: number;
   supplierCost: number;
   subtotal: number;
@@ -98,14 +99,25 @@ export function calcNewbuildPrice(
     doorsCost +
     windowSlopesCost;
 
-  // Прораб (% от стоимости работ)
+  // Материальная составляющая по каждой статье
+  const materialsCost =
+    screedCost       * 0.60 + // смеси для стяжки
+    plasterCost      * 0.55 + // штукатурные смеси, шпаклёвка
+    ceilingCost      * 0.55 + // потолочные материалы
+    paintCost        * 0.40 + // краска, грунт, шпаклёвка
+    flooringCost     * 0.65 + // напольное покрытие
+    electricsCost    * 0.50 + // кабель, розетки, выключатели
+    doorsCost        * 0.70 + // сами двери + коробки
+    windowSlopesCost * 0.50;  // откосные панели
+
+  // Прораб: % от всей суммы (работы + материалы)
   const foremanCost = cfg.foremanIncluded
     ? Math.round(worksSubtotal * (cfg.foremanPct || 10) / 100)
     : 0;
 
-  // Снабженец (% от стоимости работ)
+  // Снабженец: % от суммы закупаемых материалов
   const supplierCost = cfg.supplierIncluded
-    ? Math.round(worksSubtotal * (cfg.supplierPct || 5) / 100)
+    ? Math.round(materialsCost * (cfg.supplierPct || 5) / 100)
     : 0;
 
   const subtotal = worksSubtotal + foremanCost + supplierCost;
@@ -122,6 +134,7 @@ export function calcNewbuildPrice(
     electricsCost,
     doorsCost,
     windowSlopesCost,
+    materialsCost: Math.round(materialsCost),
     foremanCost,
     supplierCost,
     subtotal,
