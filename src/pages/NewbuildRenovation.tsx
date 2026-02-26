@@ -10,7 +10,7 @@ import {
   REGIONS, ROOM_TYPES, RENOVATION_LEVELS, FLOORING_TYPES, DEFAULT_NEWBUILD_CONFIG,
 } from "@/components/calculator/newbuild/NewbuildTypes";
 import type { NewbuildConfig } from "@/components/calculator/newbuild/NewbuildTypes";
-import { calcNewbuildPrice, fmt } from "@/components/calculator/newbuild/newbuildUtils";
+import { calcNewbuildPrice, calcNewbuildProjectTotals, fmt } from "@/components/calculator/newbuild/newbuildUtils";
 import NewbuildConfigForm from "@/components/calculator/newbuild/NewbuildConfigForm";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
@@ -59,6 +59,10 @@ export default function NewbuildRenovation() {
   const [regionId, setRegionId] = useState<string>(loadRegion);
   const [showMarkup, setShowMarkup] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [foremanIncluded, setForemanIncluded] = useState(false);
+  const [foremanPct, setForemanPct] = useState(10);
+  const [supplierIncluded, setSupplierIncluded] = useState(false);
+  const [supplierPct, setSupplierPct] = useState(5);
   const [renamingId, setRenamingId] = useState<string | null>(null);
 
   const activeZone = zones.find(z => z.id === activeId) ?? zones[0];
@@ -134,7 +138,9 @@ export default function NewbuildRenovation() {
     setZones(prev => prev.map(z => z.id === id ? { ...z, roomName: name } : z));
   };
 
-  const totalSum = zones.reduce((s, z) => s + z.totalPrice, 0);
+  const allBreakdowns = zones.map(z => calcNewbuildPrice(z, regionId, 0));
+  const projectTotals = calcNewbuildProjectTotals(allBreakdowns, foremanIncluded, foremanPct, supplierIncluded, supplierPct, markupPct);
+  const totalSum = projectTotals.total;
   const totalArea = zones.reduce((s, z) => s + (z.area || 0), 0);
 
   const handleExportConfirm = (data: ExportConfirmData) => {
@@ -145,6 +151,8 @@ export default function NewbuildRenovation() {
         markupPct,
         regionId,
         totalSum,
+        foremanIncluded, foremanPct,
+        supplierIncluded, supplierPct,
         docNum: String(now.getTime()).slice(-6),
         date: now.toLocaleDateString("ru-RU"),
         ...data,
@@ -460,18 +468,7 @@ export default function NewbuildRenovation() {
                       <span className="font-medium">{fmt(activeBreakdown.windowSlopesCost)} ₽</span>
                     </div>
                   )}
-                  {activeBreakdown.foremanCost > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Прораб {activeZone.foremanPct}% (работы+материалы)</span>
-                      <span className="font-medium">{fmt(activeBreakdown.foremanCost)} ₽</span>
-                    </div>
-                  )}
-                  {activeBreakdown.supplierCost > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Снабженец {activeZone.supplierPct}% (материалы {fmt(activeBreakdown.materialsCost)} ₽)</span>
-                      <span className="font-medium">{fmt(activeBreakdown.supplierCost)} ₽</span>
-                    </div>
-                  )}
+
 
                   <div className="border-t border-orange-200 pt-1.5 mt-1.5">
                     <div className="flex justify-between text-gray-500">
@@ -497,6 +494,64 @@ export default function NewbuildRenovation() {
                     <p className="text-xs text-gray-400 text-right">
                       {fmt(Math.round(activeBreakdown.total / activeZone.area))} ₽/м²
                     </p>
+                  )}
+                </div>
+              </Card>
+
+              {/* Управление объектом — один раз на весь объект */}
+              <Card className="p-4 border-gray-200">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <Icon name="HardHat" size={13} />
+                  Управление объектом
+                </p>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-orange-300"
+                    style={{ borderColor: foremanIncluded ? "#f97316" : "", background: foremanIncluded ? "#fff7ed" : "" }}>
+                    <input type="checkbox" checked={foremanIncluded} onChange={e => setForemanIncluded(e.target.checked)} className="accent-orange-500" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">Прораб</p>
+                      <p className="text-xs text-gray-500">% от всей суммы работ + материалов</p>
+                    </div>
+                    {foremanIncluded && (
+                      <div className="flex items-center gap-1.5">
+                        <Input type="number" min={1} max={50} value={foremanPct}
+                          onChange={e => setForemanPct(Math.max(1, Math.min(50, parseFloat(e.target.value) || 10)))}
+                          className="w-16 h-8 text-sm text-center" />
+                        <span className="text-xs text-gray-400">%</span>
+                      </div>
+                    )}
+                  </label>
+                  <label className="flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all hover:border-orange-300"
+                    style={{ borderColor: supplierIncluded ? "#f97316" : "", background: supplierIncluded ? "#fff7ed" : "" }}>
+                    <input type="checkbox" checked={supplierIncluded} onChange={e => setSupplierIncluded(e.target.checked)} className="accent-orange-500" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">Снабженец</p>
+                      <p className="text-xs text-gray-500">% от суммы материалов ({fmt(projectTotals.materialsTotal)} ₽)</p>
+                    </div>
+                    {supplierIncluded && (
+                      <div className="flex items-center gap-1.5">
+                        <Input type="number" min={1} max={30} value={supplierPct}
+                          onChange={e => setSupplierPct(Math.max(1, Math.min(30, parseFloat(e.target.value) || 5)))}
+                          className="w-16 h-8 text-sm text-center" />
+                        <span className="text-xs text-gray-400">%</span>
+                      </div>
+                    )}
+                  </label>
+                  {(foremanIncluded || supplierIncluded) && (
+                    <div className="pt-2 border-t border-gray-100 space-y-1 text-sm">
+                      {foremanIncluded && (
+                        <div className="flex justify-between text-gray-700">
+                          <span>Прораб {foremanPct}%</span>
+                          <span className="font-medium">+ {fmt(projectTotals.foremanCost)} ₽</span>
+                        </div>
+                      )}
+                      {supplierIncluded && (
+                        <div className="flex justify-between text-gray-700">
+                          <span>Снабженец {supplierPct}%</span>
+                          <span className="font-medium">+ {fmt(projectTotals.supplierCost)} ₽</span>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </Card>

@@ -5,7 +5,7 @@ import {
   CEILING_FINISH_TYPES, FLOORING_TYPES, DOOR_TYPES,
 } from "@/components/calculator/newbuild/NewbuildTypes";
 import type { NewbuildConfig } from "@/components/calculator/newbuild/NewbuildTypes";
-import { calcNewbuildPrice, fmt } from "@/components/calculator/newbuild/newbuildUtils";
+import { calcNewbuildPrice, calcNewbuildProjectTotals, fmt } from "@/components/calculator/newbuild/newbuildUtils";
 import SharePanel from "@/components/print/SharePanel";
 
 interface PrintState {
@@ -13,6 +13,10 @@ interface PrintState {
   markupPct: number;
   regionId: string;
   totalSum: number;
+  foremanIncluded?: boolean;
+  foremanPct?: number;
+  supplierIncluded?: boolean;
+  supplierPct?: number;
   docNum: string;
   date: string;
   docType: "smeta" | "kp";
@@ -52,6 +56,8 @@ export default function NewbuildPrint() {
 
   const {
     zones, markupPct, regionId, docNum, date, docType,
+    foremanIncluded = false, foremanPct = 10,
+    supplierIncluded = false, supplierPct = 5,
     customer, contractor, address, phone, email, validDays, inn, kpp,
   } = state;
   const isKp = docType === "kp";
@@ -65,11 +71,13 @@ export default function NewbuildPrint() {
     const ceilingType = CEILING_FINISH_TYPES.find(c => c.id === z.ceilingType);
     const flooringType = FLOORING_TYPES.find(f => f.id === z.flooringType);
     const doorType = DOOR_TYPES.find(d => d.id === z.doorType);
-    const bd = calcNewbuildPrice(z, regionId, markupPct);
+    const bd = calcNewbuildPrice(z, regionId, 0);
     return { z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, bd };
   });
 
-  const totalSum = rowsData.reduce((s, r) => s + r.bd.total, 0);
+  const allBreakdowns = rowsData.map(r => r.bd);
+  const projectTotals = calcNewbuildProjectTotals(allBreakdowns, foremanIncluded, foremanPct, supplierIncluded, supplierPct, markupPct);
+  const totalSum = projectTotals.total;
 
   return (
     <>
@@ -240,35 +248,10 @@ export default function NewbuildPrint() {
                     <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.windowSlopesCost)} ₽</td>
                   </tr>
                 )}
-                {bd.foremanCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Прораб — технический надзор и координация</td>
-                    <td className="px-2 py-1.5 text-center">{z.foremanPct}%</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">от работ+материалов</td>
-                    <td className="px-2 py-1.5 text-right">{fmt(bd.subtotal - bd.foremanCost - bd.supplierCost)} ₽</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.foremanCost)} ₽</td>
-                  </tr>
-                )}
-                {bd.supplierCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Снабженец — закупка и логистика материалов</td>
-                    <td className="px-2 py-1.5 text-center">{z.supplierPct}%</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">от материалов</td>
-                    <td className="px-2 py-1.5 text-right">{fmt(bd.materialsCost)} ₽</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.supplierCost)} ₽</td>
-                  </tr>
-                )}
-                {markupPct > 0 && (
-                  <tr className="border-t border-gray-100 text-orange-600">
-                    <td className="px-2 py-1.5">Наценка {markupPct}%</td>
-                    <td colSpan={3} />
-                    <td className="px-2 py-1.5 text-right font-medium">+ {fmt(bd.markupAmount)} ₽</td>
-                  </tr>
-                )}
                 <tr className="border-t-2 border-gray-300 bg-gray-50 font-bold">
                   <td className="px-2 py-2">Итого по помещению</td>
                   <td colSpan={3} />
-                  <td className="px-2 py-2 text-right text-orange-700">{fmt(bd.total)} ₽</td>
+                  <td className="px-2 py-2 text-right text-orange-700">{fmt(bd.subtotal)} ₽</td>
                 </tr>
               </tbody>
             </table>
@@ -279,15 +262,42 @@ export default function NewbuildPrint() {
 
         {/* Итого */}
         <div className="border-t-2 border-gray-800 pt-4 mt-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-lg font-bold text-gray-900">ИТОГО ПО СМЕТЕ</p>
-              <p className="text-sm text-gray-500">Регион: {region.label}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-orange-700">{fmt(totalSum)} ₽</p>
-              {markupPct > 0 && <p className="text-xs text-gray-400">Включая наценку {markupPct}%</p>}
-            </div>
+          <div className="ml-auto max-w-sm">
+            <table className="w-full text-sm mb-3">
+              <tbody>
+                <tr>
+                  <td className="py-1.5 text-gray-600">Сумма по помещениям</td>
+                  <td className="py-1.5 text-right font-medium tabular-nums">{fmt(projectTotals.worksTotal)} ₽</td>
+                </tr>
+                {projectTotals.foremanCost > 0 && (
+                  <tr>
+                    <td className="py-1.5 text-gray-600">Прораб {foremanPct}% (от работ+материалов)</td>
+                    <td className="py-1.5 text-right font-medium tabular-nums">+ {fmt(projectTotals.foremanCost)} ₽</td>
+                  </tr>
+                )}
+                {projectTotals.supplierCost > 0 && (
+                  <tr>
+                    <td className="py-1.5 text-gray-600">Снабженец {supplierPct}% (от материалов {fmt(projectTotals.materialsTotal)} ₽)</td>
+                    <td className="py-1.5 text-right font-medium tabular-nums">+ {fmt(projectTotals.supplierCost)} ₽</td>
+                  </tr>
+                )}
+                {markupPct > 0 && (
+                  <tr>
+                    <td className="py-1.5 text-orange-600">Наценка {markupPct}%</td>
+                    <td className="py-1.5 text-right font-medium text-orange-600 tabular-nums">+ {fmt(projectTotals.markupAmount)} ₽</td>
+                  </tr>
+                )}
+                <tr className="border-t-2 border-orange-400">
+                  <td className="pt-3 font-bold text-base text-gray-900">ИТОГО ПО СМЕТЕ</td>
+                  <td className="pt-3 text-right font-extrabold text-xl text-orange-700 tabular-nums">{fmt(totalSum)} ₽</td>
+                </tr>
+                <tr>
+                  <td colSpan={2} className="pt-1 text-center text-xs text-gray-400">
+                    Регион: {region.label}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 

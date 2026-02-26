@@ -18,11 +18,18 @@ export interface NewbuildPriceBreakdown {
   doorsCost: number;
   windowSlopesCost: number;
   materialsCost: number;
-  foremanCost: number;
-  supplierCost: number;
   subtotal: number;
   levelCoeff: number;
   regionCoeff: number;
+  markupAmount: number;
+  total: number;
+}
+
+export interface NewbuildProjectTotals {
+  worksTotal: number;     // сумма всех зон без вознаграждений
+  materialsTotal: number; // сумма материалов по всем зонам
+  foremanCost: number;
+  supplierCost: number;
   markupAmount: number;
   total: number;
 }
@@ -101,26 +108,16 @@ export function calcNewbuildPrice(
 
   // Материальная составляющая по каждой статье
   const materialsCost =
-    screedCost       * 0.60 + // смеси для стяжки
-    plasterCost      * 0.55 + // штукатурные смеси, шпаклёвка
-    ceilingCost      * 0.55 + // потолочные материалы
-    paintCost        * 0.40 + // краска, грунт, шпаклёвка
-    flooringCost     * 0.65 + // напольное покрытие
-    electricsCost    * 0.50 + // кабель, розетки, выключатели
-    doorsCost        * 0.70 + // сами двери + коробки
-    windowSlopesCost * 0.50;  // откосные панели
+    screedCost       * 0.60 +
+    plasterCost      * 0.55 +
+    ceilingCost      * 0.55 +
+    paintCost        * 0.40 +
+    flooringCost     * 0.65 +
+    electricsCost    * 0.50 +
+    doorsCost        * 0.70 +
+    windowSlopesCost * 0.50;
 
-  // Прораб: % от всей суммы (работы + материалы)
-  const foremanCost = cfg.foremanIncluded
-    ? Math.round(worksSubtotal * (cfg.foremanPct || 10) / 100)
-    : 0;
-
-  // Снабженец: % от суммы закупаемых материалов
-  const supplierCost = cfg.supplierIncluded
-    ? Math.round(materialsCost * (cfg.supplierPct || 5) / 100)
-    : 0;
-
-  const subtotal = worksSubtotal + foremanCost + supplierCost;
+  const subtotal = worksSubtotal;
 
   const markupAmount = markupPct > 0 ? Math.round(subtotal * markupPct / 100) : 0;
   const total = subtotal + markupAmount;
@@ -135,12 +132,36 @@ export function calcNewbuildPrice(
     doorsCost,
     windowSlopesCost,
     materialsCost: Math.round(materialsCost),
-    foremanCost,
-    supplierCost,
     subtotal,
     levelCoeff: lc,
     regionCoeff: rc,
     markupAmount,
     total,
   };
+}
+
+// Итоговый расчёт по всему объекту (прораб и снабженец — один раз на весь объект)
+export function calcNewbuildProjectTotals(
+  breakdowns: NewbuildPriceBreakdown[],
+  foremanIncluded: boolean,
+  foremanPct: number,
+  supplierIncluded: boolean,
+  supplierPct: number,
+  markupPct = 0,
+): NewbuildProjectTotals {
+  const worksTotal = breakdowns.reduce((s, bd) => s + bd.subtotal, 0);
+  const materialsTotal = breakdowns.reduce((s, bd) => s + bd.materialsCost, 0);
+
+  const foremanCost = foremanIncluded
+    ? Math.round(worksTotal * (foremanPct || 10) / 100)
+    : 0;
+  const supplierCost = supplierIncluded
+    ? Math.round(materialsTotal * (supplierPct || 5) / 100)
+    : 0;
+
+  const base = worksTotal + foremanCost + supplierCost;
+  const markupAmount = markupPct > 0 ? Math.round(base * markupPct / 100) : 0;
+  const total = base + markupAmount;
+
+  return { worksTotal, materialsTotal, foremanCost, supplierCost, markupAmount, total };
 }
