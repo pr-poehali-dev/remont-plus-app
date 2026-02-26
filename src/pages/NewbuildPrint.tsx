@@ -240,6 +240,24 @@ export default function NewbuildPrint() {
                     <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.windowSlopesCost)} ₽</td>
                   </tr>
                 )}
+                {bd.foremanCost > 0 && (
+                  <tr className="border-t border-gray-100">
+                    <td className="px-2 py-1.5">Прораб — технический надзор и координация</td>
+                    <td className="px-2 py-1.5 text-center">{z.foremanPct}%</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">от работ</td>
+                    <td className="px-2 py-1.5 text-right">—</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.foremanCost)} ₽</td>
+                  </tr>
+                )}
+                {bd.supplierCost > 0 && (
+                  <tr className="border-t border-gray-100">
+                    <td className="px-2 py-1.5">Снабженец — закупка материалов и логистика</td>
+                    <td className="px-2 py-1.5 text-center">{z.supplierPct}%</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">от работ</td>
+                    <td className="px-2 py-1.5 text-right">—</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.supplierCost)} ₽</td>
+                  </tr>
+                )}
                 {markupPct > 0 && (
                   <tr className="border-t border-gray-100 text-orange-600">
                     <td className="px-2 py-1.5">Наценка {markupPct}%</td>
