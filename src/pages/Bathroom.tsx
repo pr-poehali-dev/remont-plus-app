@@ -186,6 +186,7 @@ export default function Bathroom() {
             activeIndex={activeIndex}
             activeBreakdown={activeBreakdown}
             markupPct={markupPct}
+            regionId={regionId}
             onUpdateZone={updateZone}
           />
         </div>

@@ -10,7 +10,8 @@ import {
   REGIONS, ROOM_TYPES, RENOVATION_LEVELS, FLOORING_TYPES, DEFAULT_NEWBUILD_CONFIG,
 } from "@/components/calculator/newbuild/NewbuildTypes";
 import type { NewbuildConfig } from "@/components/calculator/newbuild/NewbuildTypes";
-import { calcNewbuildPrice, calcNewbuildProjectTotals, fmt } from "@/components/calculator/newbuild/newbuildUtils";
+import { calcNewbuildPrice, calcNewbuildProjectTotals, calcNewbuildMaterials, fmt } from "@/components/calculator/newbuild/newbuildUtils";
+import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 import NewbuildConfigForm from "@/components/calculator/newbuild/NewbuildConfigForm";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
@@ -511,6 +512,12 @@ export default function NewbuildRenovation() {
                   )}
                 </div>
               </Card>
+
+              {/* Ведомость материалов */}
+              <MaterialsTable
+                items={calcNewbuildMaterials(activeZone, activeBreakdown, regionId)}
+                accentColor="indigo"
+              />
 
               {/* Управление объектом — один раз на весь объект */}
               <Card className="p-4 border-gray-200">

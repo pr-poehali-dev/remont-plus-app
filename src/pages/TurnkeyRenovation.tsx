@@ -12,7 +12,8 @@ import {
   DEFAULT_TURNKEY_CONFIG,
 } from "@/components/calculator/turnkey/TurnkeyTypes";
 import type { TurnkeyConfig } from "@/components/calculator/turnkey/TurnkeyTypes";
-import { calcTurnkeyPrice, fmt } from "@/components/calculator/turnkey/turnkeyUtils";
+import { calcTurnkeyPrice, calcTurnkeyMaterials, fmt } from "@/components/calculator/turnkey/turnkeyUtils";
+import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 import TurnkeyConfigForm from "@/components/calculator/turnkey/TurnkeyConfigForm";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
@@ -311,6 +312,12 @@ export default function TurnkeyRenovation() {
                   </div>
                 </div>
               </Card>
+
+              {/* Ведомость материалов */}
+              <MaterialsTable
+                items={calcTurnkeyMaterials(cfg, breakdown, regionId)}
+                accentColor="green"
+              />
             </div>
           </div>
         </div>

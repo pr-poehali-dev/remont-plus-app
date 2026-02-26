@@ -8,7 +8,8 @@ import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
 import { REGIONS, ROOM_TYPES, DEFAULT_ELECTRICS_CONFIG } from "@/components/calculator/electrics/ElectricsTypes";
 import type { ElectricsConfig } from "@/components/calculator/electrics/ElectricsTypes";
-import { calcElectricsPrice, fmt } from "@/components/calculator/electrics/electricsUtils";
+import { calcElectricsPrice, calcElectricsMaterials, fmt } from "@/components/calculator/electrics/electricsUtils";
+import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 import ElectricsConfigForm from "@/components/calculator/electrics/ElectricsConfigForm";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
@@ -466,6 +467,12 @@ export default function Electrics() {
                   </div>
                 </div>
               </Card>
+
+              {/* Ведомость материалов */}
+              <MaterialsTable
+                items={calcElectricsMaterials(activeZone, activeBreakdown, regionId)}
+                accentColor="blue"
+              />
             </div>
           </div>
         </div>

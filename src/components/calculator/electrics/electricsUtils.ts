@@ -1,5 +1,6 @@
 import { REGIONS, ROOM_TYPES, CABLING_TYPES } from "./ElectricsTypes";
 import type { ElectricsConfig } from "./ElectricsTypes";
+import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
 
 export function fmt(n: number): string {
   return n.toLocaleString("ru-RU");
@@ -105,4 +106,239 @@ export function calcElectricsPrice(
     markupAmount,
     total,
   };
+}
+
+export function calcElectricsMaterials(
+  cfg: Omit<ElectricsConfig, "id" | "totalPrice">,
+  bd: ElectricsPriceBreakdown,
+  regionId = "moscow",
+): MaterialItem[] {
+  const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];
+  const cablingType = CABLING_TYPES.find(c => c.id === cfg.cablingType);
+  const rc = region.coeff;
+  const tc = ROOM_TYPES.find(r => r.id === cfg.roomType)?.priceCoeff ?? 1.0;
+
+  const items: MaterialItem[] = [];
+
+  // ── МАТЕРИАЛЫ: Розетки ───────────────────────────────────────────────────
+  const totalOutlets = cfg.outletsCount + cfg.doubleOutletsCount + cfg.groundedOutletsCount;
+  if (totalOutlets > 0) {
+    if (cfg.outletsCount > 0) items.push({
+      name: "Розетка одинарная",
+      spec: "IP20, скрытый монтаж",
+      unit: "шт.",
+      qty: cfg.outletsCount,
+      pricePerUnit: Math.round(550 * 0.50),
+      total: Math.round(cfg.outletsCount * 550 * 0.50 * tc * rc),
+    });
+    if (cfg.doubleOutletsCount > 0) items.push({
+      name: "Розетка двойная",
+      spec: "IP20, евростандарт",
+      unit: "шт.",
+      qty: cfg.doubleOutletsCount,
+      pricePerUnit: Math.round(700 * 0.50),
+      total: Math.round(cfg.doubleOutletsCount * 700 * 0.50 * tc * rc),
+    });
+    if (cfg.groundedOutletsCount > 0) items.push({
+      name: "Розетка с заземлением",
+      spec: "IP44, для кухни/ванной",
+      unit: "шт.",
+      qty: cfg.groundedOutletsCount,
+      pricePerUnit: Math.round(650 * 0.50),
+      total: Math.round(cfg.groundedOutletsCount * 650 * 0.50 * tc * rc),
+    });
+  }
+
+  // ── МАТЕРИАЛЫ: Выключатели ───────────────────────────────────────────────
+  if (cfg.switchesCount > 0) items.push({
+    name: "Выключатель одноклавишный",
+    unit: "шт.",
+    qty: cfg.switchesCount,
+    pricePerUnit: Math.round(450 * 0.50),
+    total: Math.round(cfg.switchesCount * 450 * 0.50 * tc * rc),
+  });
+  if (cfg.doubleSwitchesCount > 0) items.push({
+    name: "Выключатель двухклавишный",
+    unit: "шт.",
+    qty: cfg.doubleSwitchesCount,
+    pricePerUnit: Math.round(600 * 0.50),
+    total: Math.round(cfg.doubleSwitchesCount * 600 * 0.50 * tc * rc),
+  });
+  if (cfg.dimmersCount > 0) items.push({
+    name: "Диммер",
+    spec: "регулятор яркости, 300 Вт",
+    unit: "шт.",
+    qty: cfg.dimmersCount,
+    pricePerUnit: Math.round(900 * 0.50),
+    total: Math.round(cfg.dimmersCount * 900 * 0.50 * tc * rc),
+  });
+
+  // ── МАТЕРИАЛЫ: Кабель ────────────────────────────────────────────────────
+  if (cfg.cableRunM > 0 && cablingType) {
+    items.push({
+      name: "Кабель ВВГнг-LS 3×2,5",
+      spec: "силовой, для розеток",
+      unit: "м.п.",
+      qty: Math.round(cfg.cableRunM * 0.7),
+      pricePerUnit: Math.round(cablingType.pricePerM * 0.7 * 0.6),
+      total: Math.round(cfg.cableRunM * 0.7 * cablingType.pricePerM * 0.7 * tc * rc),
+    });
+    items.push({
+      name: "Кабель ВВГнг-LS 3×1,5",
+      spec: "для освещения",
+      unit: "м.п.",
+      qty: Math.round(cfg.cableRunM * 0.3),
+      pricePerUnit: Math.round(cablingType.pricePerM * 0.7 * 0.45),
+      total: Math.round(cfg.cableRunM * 0.3 * cablingType.pricePerM * 0.7 * tc * rc),
+    });
+  }
+
+  // ── МАТЕРИАЛЫ: Щиток ─────────────────────────────────────────────────────
+  if (cfg.panelIncluded) {
+    items.push({
+      name: "Щиток распределительный",
+      spec: `на ${cfg.breakersCount} мест`,
+      unit: "шт.",
+      qty: 1,
+      pricePerUnit: Math.round(3500 * 0.6 * rc),
+      total: Math.round(3500 * 0.6 * rc),
+    });
+    items.push({
+      name: "Автоматический выключатель",
+      spec: "16/25 А, однополюсный",
+      unit: "шт.",
+      qty: cfg.breakersCount,
+      pricePerUnit: Math.round(550 * 0.6 * rc),
+      total: Math.round(cfg.breakersCount * 550 * 0.6 * rc),
+    });
+  }
+
+  // ── РАСХОДНИКИ ────────────────────────────────────────────────────────────
+  if (cfg.cableRunM > 0) {
+    if (cfg.cablingType === "hidden") {
+      items.push({
+        name: "Гофротруба ПВХ ∅20 мм",
+        spec: "для скрытой разводки",
+        unit: "м.п.",
+        qty: Math.ceil(cfg.cableRunM * 1.1),
+        pricePerUnit: 18,
+        total: Math.ceil(cfg.cableRunM * 1.1) * 18,
+        isConsumable: true,
+      });
+      items.push({
+        name: "Монтажная коробка (подрозетник)",
+        spec: "∅68 мм, глубина 45 мм",
+        unit: "шт.",
+        qty: totalOutlets + cfg.switchesCount + cfg.doubleSwitchesCount + cfg.dimmersCount,
+        pricePerUnit: 35,
+        total: (totalOutlets + cfg.switchesCount + cfg.doubleSwitchesCount + cfg.dimmersCount) * 35,
+        isConsumable: true,
+      });
+      items.push({
+        name: "Алебастр / ротбанд для заделки штроб",
+        unit: "кг",
+        qty: Math.ceil(cfg.cableRunM * 0.3),
+        pricePerUnit: 22,
+        total: Math.ceil(cfg.cableRunM * 0.3) * 22,
+        isConsumable: true,
+      });
+    } else if (cfg.cablingType === "corrugated") {
+      items.push({
+        name: "Гофротруба ∅20 мм + крепёж",
+        unit: "м.п.",
+        qty: Math.ceil(cfg.cableRunM * 1.1),
+        pricePerUnit: 25,
+        total: Math.ceil(cfg.cableRunM * 1.1) * 25,
+        isConsumable: true,
+      });
+    } else {
+      items.push({
+        name: "Кабель-канал 25×16 мм",
+        spec: "пластиковый, белый",
+        unit: "м.п.",
+        qty: Math.ceil(cfg.cableRunM),
+        pricePerUnit: 45,
+        total: Math.ceil(cfg.cableRunM) * 45,
+        isConsumable: true,
+      });
+    }
+    items.push({
+      name: "Клеммники Wago, стяжки, изолента",
+      spec: "монтажные расходники",
+      unit: "компл.",
+      qty: 1,
+      pricePerUnit: Math.round(cfg.cableRunM * 8),
+      total: Math.round(cfg.cableRunM * 8),
+      isConsumable: true,
+    });
+  }
+
+  // ── РАБОТЫ ────────────────────────────────────────────────────────────────
+  const outletTotal = cfg.outletsCount + cfg.doubleOutletsCount + cfg.groundedOutletsCount;
+  if (outletTotal > 0) items.push({
+    name: "Установка розеток",
+    unit: "шт.",
+    qty: outletTotal,
+    pricePerUnit: Math.round(550 * 0.50 * tc * rc),
+    total: Math.round(outletTotal * 550 * 0.50 * tc * rc),
+    isWork: true,
+  });
+
+  const switchTotal = cfg.switchesCount + cfg.doubleSwitchesCount + cfg.dimmersCount;
+  if (switchTotal > 0) items.push({
+    name: "Установка выключателей / диммеров",
+    unit: "шт.",
+    qty: switchTotal,
+    pricePerUnit: Math.round(500 * 0.50 * tc * rc),
+    total: Math.round(switchTotal * 500 * 0.50 * tc * rc),
+    isWork: true,
+  });
+
+  if (cfg.lightGroupsCount + cfg.spotLightsCount > 0) items.push({
+    name: "Монтаж светильников",
+    unit: "точка",
+    qty: cfg.lightGroupsCount + cfg.spotLightsCount,
+    pricePerUnit: Math.round(280 * tc * rc),
+    total: Math.round((cfg.lightGroupsCount * 950 + cfg.spotLightsCount * 280) * 0.60 * tc * rc),
+    isWork: true,
+  });
+
+  if (cfg.cableRunM > 0) items.push({
+    name: `Прокладка кабеля (${cablingType?.label ?? ""})`,
+    unit: "м.п.",
+    qty: cfg.cableRunM,
+    pricePerUnit: Math.round(cablingType ? cablingType.pricePerM * 0.30 * tc * rc : 0),
+    total: Math.round(cfg.cableRunM * (cablingType?.pricePerM ?? 0) * 0.30 * tc * rc),
+    isWork: true,
+  });
+
+  if (cfg.panelIncluded) items.push({
+    name: "Монтаж и сборка щитка",
+    unit: "компл.",
+    qty: 1,
+    pricePerUnit: Math.round((3500 + cfg.breakersCount * 550) * 0.40 * rc),
+    total: Math.round((3500 + cfg.breakersCount * 550) * 0.40 * rc),
+    isWork: true,
+  });
+
+  if (cfg.groundingIncluded) items.push({
+    name: "Устройство заземления",
+    unit: "компл.",
+    qty: 1,
+    pricePerUnit: Math.round(5500 * 0.70 * rc),
+    total: Math.round(5500 * 0.70 * rc),
+    isWork: true,
+  });
+
+  if (cfg.testingIncluded) items.push({
+    name: "Прозвонка и тестирование",
+    spec: "протокол испытаний",
+    unit: "компл.",
+    qty: 1,
+    pricePerUnit: Math.round(3000 * rc),
+    total: Math.round(3000 * rc),
+    isWork: true,
+  });
+
+  return items;
 }

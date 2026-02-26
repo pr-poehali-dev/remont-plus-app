@@ -8,7 +8,8 @@ import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
 import { FLOORING_PRODUCTS, FLOORING_CATEGORIES, REGIONS } from "@/components/calculator/flooring/FlooringTypes";
 import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTypes";
-import { calcFlooringPrice, DEFAULT_CONFIG, fmt } from "@/components/calculator/flooring/flooringUtils";
+import { calcFlooringPrice, calcFlooringMaterials, DEFAULT_CONFIG, fmt } from "@/components/calculator/flooring/flooringUtils";
+import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 import FlooringConfigForm from "@/components/calculator/flooring/FlooringConfigForm";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
@@ -468,6 +469,12 @@ export default function Flooring() {
                   </div>
                 )}
               </Card>
+
+              {/* Ведомость материалов */}
+              <MaterialsTable
+                items={calcFlooringMaterials(activeZone, activeBreakdown, regionId)}
+                accentColor="amber"
+              />
             </div>
           </div>
         </div>

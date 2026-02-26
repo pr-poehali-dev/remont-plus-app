@@ -3,14 +3,16 @@ import Icon from "@/components/ui/icon";
 import { BATHROOM_TYPES } from "@/components/calculator/bathroom/BathroomTypes";
 import type { BathroomConfig } from "@/components/calculator/bathroom/BathroomTypes";
 import type { BathroomPriceBreakdown } from "@/components/calculator/bathroom/bathroomUtils";
-import { fmt } from "@/components/calculator/bathroom/bathroomUtils";
+import { fmt, calcBathroomMaterials } from "@/components/calculator/bathroom/bathroomUtils";
 import BathroomConfigForm from "@/components/calculator/bathroom/BathroomConfigForm";
+import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 
 interface Props {
   activeZone: BathroomConfig;
   activeIndex: number;
   activeBreakdown: BathroomPriceBreakdown;
   markupPct: number;
+  regionId: string;
   onUpdateZone: (patch: Partial<Omit<BathroomConfig, "id">>) => void;
 }
 
@@ -19,6 +21,7 @@ export default function BathroomZoneEditor({
   activeIndex,
   activeBreakdown,
   markupPct,
+  regionId,
   onUpdateZone,
 }: Props) {
   const activeBathroomType = BATHROOM_TYPES.find(b => b.id === activeZone.bathroomType);
@@ -141,6 +144,12 @@ export default function BathroomZoneEditor({
             </div>
           </div>
         </Card>
+
+        {/* Ведомость материалов */}
+        <MaterialsTable
+          items={calcBathroomMaterials(activeZone, activeBreakdown, regionId)}
+          accentColor="teal"
+        />
       </div>
     </div>
   );
