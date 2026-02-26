@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import type { BathHouseConfig } from "@/components/calculator/bathhouse/BathHouseTypes";
-import { FloorplanSVG, ExteriorSVG, BathTemplateCard, BATH_TEMPLATES } from "@/components/calculator/bathhouse/BathHouseSchemes";
+import { FloorplanSVG, BathTemplateCard, BATH_TEMPLATES } from "@/components/calculator/bathhouse/BathHouseSchemes";
 import { BATH_STYLES } from "@/components/calculator/bathhouse/BathHouseTypes";
 
 interface Props {
@@ -18,6 +18,25 @@ const NORMS = [
   { icon: "🏗", title: "Усадка", text: "Брус 150×150: усадка 1–2 года. Бревно: 3–5 лет. Клееный брус и каркас: без усадки — можно отделывать сразу." },
   { icon: "⚡", title: "Электрика в парной", text: "Только специальные термостойкие провода РКГМ. Светильники — IP54 и выше, рассчитаны на 130°C." },
   { icon: "🔥", title: "Дымоход", text: "Сэндвич-труба ∅115/200 мм. Высота над коньком ≥0,5 м. Расстояние от горючих конструкций ≥250 мм." },
+];
+
+const EXTERIOR_PHOTOS: Record<string, string> = {
+  classic_log:      "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/e92a3aac-4375-4446-aa2c-d420a6d9b9f0.jpg",
+  modern_frame:     "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/7deb69f8-3e9a-4c8c-b4d8-c07585e73d81.jpg",
+  scandinavian:     "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/61d20cf1-11b4-4a98-ae86-eec9979e2a73.jpg",
+  house_bath:       "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/d4c7e1c9-bdd0-4b1c-8a49-c2d5640649ab.jpg",
+  brick_classic:    "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/8f24496d-cb0b-4f47-b1e5-f5734805c767.jpg",
+  eco_log:          "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/8542ec57-8970-4cd3-a0ca-46734dce274c.jpg",
+  finnish_electric: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/6f100c79-b30f-4fad-9bc6-401c5540f755.jpg",
+  glued_mansard:    "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/36223447-0164-4877-85ff-ecbc9b978146.jpg",
+  gazebo_bath:      "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/48f1452f-6a1b-4919-bab8-0b981056cf46.jpg",
+  gas_block:        "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/a87655a3-0636-403b-9eec-7a55e04a4363.jpg",
+};
+
+const DEFAULT_EXTERIOR_PHOTOS = [
+  "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/7deb69f8-3e9a-4c8c-b4d8-c07585e73d81.jpg",
+  "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/61d20cf1-11b4-4a98-ae86-eec9979e2a73.jpg",
+  "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/d4c7e1c9-bdd0-4b1c-8a49-c2d5640649ab.jpg",
 ];
 
 type MainTab = "plan" | "exterior" | "templates";
@@ -88,19 +107,41 @@ export default function BathHouseTabScheme({ config }: Props) {
           {/* ── Внешний вид ── */}
           {schemeTab === "exterior" && (
             <>
-              <ExteriorSVG
-                roofType={activeTpl ? activeTpl.roofType : config.roofType}
-                wallMaterial={activeTpl ? activeTpl.wallMaterial : config.wallMaterial}
-                terrace={activeTpl ? activeTpl.terrace : config.terrace}
-                style={activeTpl ? activeTpl.name : style.label}
-              />
-              {activeTpl && (
-                <div className="mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
-                  <div className="font-bold mb-1">{activeTpl.name} — {activeTpl.subtitle}</div>
-                  <div className="text-gray-600">{activeTpl.description}</div>
-                </div>
+              {activeTpl ? (
+                <>
+                  <div className="rounded-2xl overflow-hidden aspect-video bg-slate-100">
+                    <img
+                      src={EXTERIOR_PHOTOS[activeTpl.id] ?? DEFAULT_EXTERIOR_PHOTOS[0]}
+                      alt={activeTpl.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
+                    <div className="font-bold mb-1">{activeTpl.name} — {activeTpl.subtitle}</div>
+                    <div className="text-gray-600">{activeTpl.description}</div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="rounded-2xl overflow-hidden aspect-video bg-slate-100">
+                    <img
+                      src={DEFAULT_EXTERIOR_PHOTOS[0]}
+                      alt="Баня с панорамными окнами"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {DEFAULT_EXTERIOR_PHOTOS.slice(1).map((url, i) => (
+                      <div key={i} className="rounded-xl overflow-hidden aspect-video bg-slate-100">
+                        <img src={url} alt="Баня" className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-gray-400 text-center mt-2">
+                    Выберите шаблон во вкладке «Шаблоны» — покажем фото именно вашего стиля
+                  </p>
+                </>
               )}
-              <p className="text-[10px] text-gray-400 text-center mt-2">Визуализация условная — для ориентира по форме</p>
             </>
           )}
 
