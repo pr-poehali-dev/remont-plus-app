@@ -153,6 +153,10 @@ export interface TurnkeyConfig {
   windowslopeIncluded: boolean;
   furnitureAssembly: boolean;
   cleaningIncluded: boolean;
+  foremanIncluded: boolean;
+  foremanPct: number;
+  supplierIncluded: boolean;
+  supplierPct: number;
   note: string;
   totalPrice: number;
 }
@@ -183,5 +187,9 @@ export const DEFAULT_TURNKEY_CONFIG: Omit<TurnkeyConfig, "id" | "totalPrice"> = 
   windowslopeIncluded: true,
   furnitureAssembly: false,
   cleaningIncluded: true,
+  foremanIncluded: false,
+  foremanPct: 10,
+  supplierIncluded: false,
+  supplierPct: 5,
   note: "",
 };

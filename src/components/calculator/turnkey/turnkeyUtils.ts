@@ -20,6 +20,8 @@ export interface TurnkeyPriceBreakdown {
   windowSlopesCost: number;
   furnitureCost: number;
   cleaningCost: number;
+  foremanCost: number;
+  supplierCost: number;
   subtotal: number;
   levelCoeff: number;
   regionCoeff: number;
@@ -108,7 +110,7 @@ export function calcTurnkeyPrice(
     ? Math.round(area * 180 * rc)
     : 0;
 
-  const subtotal =
+  const worksSubtotal =
     demolitionCost +
     electricsCost +
     plumbingCost +
@@ -121,6 +123,18 @@ export function calcTurnkeyPrice(
     windowSlopesCost +
     furnitureCost +
     cleaningCost;
+
+  // Прораб (% от стоимости работ)
+  const foremanCost = cfg.foremanIncluded
+    ? Math.round(worksSubtotal * (cfg.foremanPct || 10) / 100)
+    : 0;
+
+  // Снабженец (% от стоимости работ)
+  const supplierCost = cfg.supplierIncluded
+    ? Math.round(worksSubtotal * (cfg.supplierPct || 5) / 100)
+    : 0;
+
+  const subtotal = worksSubtotal + foremanCost + supplierCost;
 
   const markupAmount = markupPct > 0 ? Math.round(subtotal * markupPct / 100) : 0;
   const total = subtotal + markupAmount;
@@ -138,6 +152,8 @@ export function calcTurnkeyPrice(
     windowSlopesCost,
     furnitureCost,
     cleaningCost,
+    foremanCost,
+    supplierCost,
     subtotal,
     levelCoeff: lc,
     regionCoeff: rc,

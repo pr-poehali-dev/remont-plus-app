@@ -116,6 +116,8 @@ export default function TurnkeyRenovation() {
     { label: "Откосы окон", value: breakdown.windowSlopesCost },
     { label: "Сборка мебели", value: breakdown.furnitureCost },
     { label: "Финальная уборка", value: breakdown.cleaningCost },
+    { label: `Прораб ${cfg.foremanPct}%`, value: breakdown.foremanCost },
+    { label: `Снабженец ${cfg.supplierPct}%`, value: breakdown.supplierCost },
   ].filter(r => r.value > 0);
 
   return (

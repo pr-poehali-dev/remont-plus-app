@@ -432,6 +432,44 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             </div>
           )}
 
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Управление объектом</p>
+          <ToggleRow
+            label="Прораб"
+            description="Технический надзор, координация бригад, контроль качества"
+            checked={cfg.foremanIncluded}
+            onChange={v => onUpdate({ foremanIncluded: v })}
+          />
+          {cfg.foremanIncluded && (
+            <div className="ml-4 flex items-center gap-3">
+              <Label className="text-xs text-gray-500 whitespace-nowrap">% от работ</Label>
+              <Input
+                type="number" min={1} max={50} step={1}
+                value={cfg.foremanPct}
+                onChange={e => onUpdate({ foremanPct: Math.max(1, Math.min(50, parseFloat(e.target.value) || 10)) })}
+                className="h-9 w-24"
+              />
+              <span className="text-xs text-gray-400">обычно 8–15%</span>
+            </div>
+          )}
+          <ToggleRow
+            label="Снабженец"
+            description="Закупка материалов, логистика, складской учёт"
+            checked={cfg.supplierIncluded}
+            onChange={v => onUpdate({ supplierIncluded: v })}
+          />
+          {cfg.supplierIncluded && (
+            <div className="ml-4 flex items-center gap-3">
+              <Label className="text-xs text-gray-500 whitespace-nowrap">% от работ</Label>
+              <Input
+                type="number" min={1} max={30} step={1}
+                value={cfg.supplierPct}
+                onChange={e => onUpdate({ supplierPct: Math.max(1, Math.min(30, parseFloat(e.target.value) || 5)) })}
+                className="h-9 w-24"
+              />
+              <span className="text-xs text-gray-400">обычно 3–7%</span>
+            </div>
+          )}
+
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Откосы и примечания</p>
           <div className="rounded-xl border border-gray-200 overflow-hidden">
             <div className="px-4 py-1">

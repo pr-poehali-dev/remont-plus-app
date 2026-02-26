@@ -460,6 +460,18 @@ export default function NewbuildRenovation() {
                       <span className="font-medium">{fmt(activeBreakdown.windowSlopesCost)} ₽</span>
                     </div>
                   )}
+                  {activeBreakdown.foremanCost > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Прораб {activeZone.foremanPct}%</span>
+                      <span className="font-medium">{fmt(activeBreakdown.foremanCost)} ₽</span>
+                    </div>
+                  )}
+                  {activeBreakdown.supplierCost > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Снабженец {activeZone.supplierPct}%</span>
+                      <span className="font-medium">{fmt(activeBreakdown.supplierCost)} ₽</span>
+                    </div>
+                  )}
 
                   <div className="border-t border-orange-200 pt-1.5 mt-1.5">
                     <div className="flex justify-between text-gray-500">
