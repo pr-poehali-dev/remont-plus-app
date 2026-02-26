@@ -45,6 +45,8 @@ const BREAKDOWN_ROWS: { key: keyof BathHouseBreakdown; label: string; unit: stri
   { key: "terrace",         label: "Терраса",                          unit: "м²",      getQty: c => String(c.terraceArea) },
   { key: "electrical",      label: "Электрика",                        unit: "компл.",  getQty: () => "1" },
   { key: "assembly",        label: "Монтаж и строительные работы",     unit: "компл.",  getQty: () => "1" },
+  { key: "foreman",         label: "Прораб — технический надзор и координация", unit: "от работ", getQty: c => `${c.foremanPct}%` },
+  { key: "supplier",        label: "Снабженец — закупка материалов и логистика", unit: "от работ", getQty: c => `${c.supplierPct}%` },
 ];
 
 export default function BathHousePrint() {
@@ -234,7 +236,7 @@ export default function BathHousePrint() {
             <tbody>
               <tr>
                 <td className="py-1.5 text-gray-600">Материалы + монтаж</td>
-                <td className="py-1.5 text-right font-medium tabular-nums">{fmt(bd.subtotal / bd.regionCoeff)} ₽</td>
+                <td className="py-1.5 text-right font-medium tabular-nums">{fmt((bd.subtotal - bd.foreman - bd.supplier) / bd.regionCoeff)} ₽</td>
               </tr>
               <tr>
                 <td className="py-1 text-gray-400 text-xs">Региональный коэффициент ×{bd.regionCoeff}</td>
@@ -242,8 +244,20 @@ export default function BathHousePrint() {
               </tr>
               <tr>
                 <td className="py-1.5 text-gray-600">С учётом региона</td>
-                <td className="py-1.5 text-right font-medium tabular-nums">{fmt(bd.subtotal)} ₽</td>
+                <td className="py-1.5 text-right font-medium tabular-nums">{fmt(bd.subtotal - bd.foreman - bd.supplier)} ₽</td>
               </tr>
+              {bd.foreman > 0 && (
+                <tr>
+                  <td className="py-1.5 text-gray-600">Прораб {config.foremanPct}%</td>
+                  <td className="py-1.5 text-right font-medium tabular-nums">+ {fmt(bd.foreman)} ₽</td>
+                </tr>
+              )}
+              {bd.supplier > 0 && (
+                <tr>
+                  <td className="py-1.5 text-gray-600">Снабженец {config.supplierPct}%</td>
+                  <td className="py-1.5 text-right font-medium tabular-nums">+ {fmt(bd.supplier)} ₽</td>
+                </tr>
+              )}
               {markupPct > 0 && (
                 <tr>
                   <td className="py-1.5 text-orange-600">Наценка {markupPct}%</td>

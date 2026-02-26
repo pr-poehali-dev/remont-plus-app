@@ -61,6 +61,40 @@ export default function BathHouseFormExtras({ config, onChange }: Props) {
           )}
         </label>
         <div className="space-y-1">
+          <p className="text-xs text-gray-500 font-medium">Управление объектом</p>
+          <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl border-2 border-gray-200 hover:border-amber-300 transition-all">
+            <input type="checkbox" checked={config.foremanIncluded} onChange={e => onChange({ foremanIncluded: e.target.checked })} className="accent-amber-500" />
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-700">Прораб</span>
+              <span className="text-xs text-gray-400 block">Надзор, координация, контроль качества</span>
+            </div>
+            {config.foremanIncluded && (
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Input type="number" min={1} max={50} value={config.foremanPct}
+                  onChange={e => onChange({ foremanPct: Math.max(1, Math.min(50, parseFloat(e.target.value) || 10)) })}
+                  className="w-16 h-8 text-sm text-center" />
+                <span className="text-xs text-gray-400">%</span>
+              </div>
+            )}
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl border-2 border-gray-200 hover:border-amber-300 transition-all">
+            <input type="checkbox" checked={config.supplierIncluded} onChange={e => onChange({ supplierIncluded: e.target.checked })} className="accent-amber-500" />
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-700">Снабженец</span>
+              <span className="text-xs text-gray-400 block">Закупка материалов, логистика, склад</span>
+            </div>
+            {config.supplierIncluded && (
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Input type="number" min={1} max={30} value={config.supplierPct}
+                  onChange={e => onChange({ supplierPct: Math.max(1, Math.min(30, parseFloat(e.target.value) || 5)) })}
+                  className="w-16 h-8 text-sm text-center" />
+                <span className="text-xs text-gray-400">%</span>
+              </div>
+            )}
+          </label>
+        </div>
+
+        <div className="space-y-1">
           <p className="text-xs text-gray-500 font-medium">Электрика</p>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="radio" checked={!config.electricalBasic && !config.electricalFull} onChange={() => onChange({ electricalBasic: false, electricalFull: false })} className="accent-amber-500" />

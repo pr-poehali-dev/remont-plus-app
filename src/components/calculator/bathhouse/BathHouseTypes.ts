@@ -57,6 +57,10 @@ export interface BathHouseConfig {
   tankVolume: number;
   electricalBasic: boolean;
   electricalFull: boolean;
+  foremanIncluded: boolean;
+  foremanPct: number;
+  supplierIncluded: boolean;
+  supplierPct: number;
   region: string;
   // Итог
   totalPrice: number;
@@ -97,6 +101,10 @@ export const DEFAULT_BATHHOUSE_CONFIG: BathHouseConfig = {
   tankVolume: 200,
   electricalBasic: true,
   electricalFull: false,
+  foremanIncluded: false,
+  foremanPct: 10,
+  supplierIncluded: false,
+  supplierPct: 5,
   region: "moscow",
   totalPrice: 0,
 };
