@@ -5,7 +5,7 @@ import {
   FLOOR_TYPES, CEILING_TYPES, BATHROOM_LEVELS,
 } from "@/components/calculator/turnkey/TurnkeyTypes";
 import type { TurnkeyConfig } from "@/components/calculator/turnkey/TurnkeyTypes";
-import { calcTurnkeyPrice, fmt } from "@/components/calculator/turnkey/turnkeyUtils";
+import { calcTurnkeyPrice, calcTurnkeyMaterials, fmt } from "@/components/calculator/turnkey/turnkeyUtils";
 import SharePanel from "@/components/print/SharePanel";
 
 interface PrintState {
@@ -65,6 +65,7 @@ export default function TurnkeyPrint() {
 
   const bd = calcTurnkeyPrice(cfg, regionId, markupPct);
   const totalSum = bd.total;
+  const materials = calcTurnkeyMaterials(cfg, bd, regionId);
 
   const rows: { label: string; qty: number | string; unit: string; price: string; total: number }[] = [
     cfg.demolitionIncluded && bd.demolitionCost > 0 && {
@@ -291,6 +292,46 @@ export default function TurnkeyPrint() {
             <p className="text-xs text-gray-400">подпись / дата</p>
           </div>
         </div>
+
+        {/* Перечень материалов */}
+        {materials.length > 0 && (
+          <div className="mt-10 pt-6 border-t border-gray-200" style={{ pageBreakBefore: "always" }}>
+            <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Перечень материалов</h2>
+            <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden">
+              <thead>
+                <tr className="bg-gray-50 text-gray-500">
+                  <th className="text-left px-3 py-2 font-medium w-6">№</th>
+                  <th className="text-left px-3 py-2 font-medium">Наименование</th>
+                  <th className="text-left px-3 py-2 font-medium">Спецификация</th>
+                  <th className="text-center px-3 py-2 font-medium">Кол-во</th>
+                  <th className="text-center px-3 py-2 font-medium">Ед.</th>
+                  <th className="text-right px-3 py-2 font-medium">Цена</th>
+                  <th className="text-right px-3 py-2 font-medium">Сумма</th>
+                </tr>
+              </thead>
+              <tbody>
+                {materials.map((m, i) => (
+                  <tr key={i} className={`border-t border-gray-100 ${m.isConsumable ? "text-gray-400" : ""} ${i % 2 === 0 ? "" : "bg-gray-50/50"}`}>
+                    <td className="px-3 py-1.5 text-gray-400">{i + 1}</td>
+                    <td className="px-3 py-1.5">{m.name}</td>
+                    <td className="px-3 py-1.5 text-gray-400">{m.spec ?? "—"}</td>
+                    <td className="px-3 py-1.5 text-center">{m.qty}</td>
+                    <td className="px-3 py-1.5 text-center text-gray-500">{m.unit}</td>
+                    <td className="px-3 py-1.5 text-right">{fmt(m.pricePerUnit)} ₽</td>
+                    <td className="px-3 py-1.5 text-right font-medium">{fmt(m.total)} ₽</td>
+                  </tr>
+                ))}
+                <tr className="border-t-2 border-gray-300 bg-gray-50 font-bold">
+                  <td colSpan={6} className="px-3 py-2">Итого материалы</td>
+                  <td className="px-3 py-2 text-right text-emerald-700">
+                    {fmt(materials.reduce((s, m) => s + m.total, 0))} ₽
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p className="text-xs text-gray-400 mt-2">* Серым выделены расходные материалы и комплектующие</p>
+          </div>
+        )}
       </div>
     </>
   );

@@ -5,7 +5,7 @@ import {
   CEILING_FINISH_TYPES, FLOORING_TYPES, DOOR_TYPES,
 } from "@/components/calculator/newbuild/NewbuildTypes";
 import type { NewbuildConfig } from "@/components/calculator/newbuild/NewbuildTypes";
-import { calcNewbuildPrice, calcNewbuildProjectTotals, fmt } from "@/components/calculator/newbuild/newbuildUtils";
+import { calcNewbuildPrice, calcNewbuildProjectTotals, calcNewbuildMaterials, fmt } from "@/components/calculator/newbuild/newbuildUtils";
 import SharePanel from "@/components/print/SharePanel";
 
 interface PrintState {
@@ -72,7 +72,8 @@ export default function NewbuildPrint() {
     const flooringType = FLOORING_TYPES.find(f => f.id === z.flooringType);
     const doorType = DOOR_TYPES.find(d => d.id === z.doorType);
     const bd = calcNewbuildPrice(z, regionId, 0);
-    return { z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, bd };
+    const mats = calcNewbuildMaterials(z, bd, regionId);
+    return { z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, bd, mats };
   });
 
   const allBreakdowns = rowsData.map(r => r.bd);
@@ -148,7 +149,7 @@ export default function NewbuildPrint() {
           </div>
         )}
 
-        <p className="text-xs text-gray-400 mb-4">Регион: {region.label} (коэф. {region.coeff})</p>
+        <p className="text-xs text-gray-400 mb-4">Регион: {region.label}</p>
 
         <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ по помещениям</h2>
 
@@ -293,7 +294,7 @@ export default function NewbuildPrint() {
                 </tr>
                 <tr>
                   <td colSpan={2} className="pt-1 text-center text-xs text-gray-400">
-                    Регион: {region.label}
+                    Регион: {region.label} · {RENOVATION_LEVELS.find(l => l.id === zones[0]?.renovationLevel)?.label}
                   </td>
                 </tr>
               </tbody>
@@ -313,6 +314,56 @@ export default function NewbuildPrint() {
             <p className="text-xs text-gray-400">подпись / дата</p>
           </div>
         </div>
+
+        {/* Перечень материалов по помещениям */}
+        {rowsData.some(r => r.mats.length > 0) && (
+          <div className="mt-10 pt-6 border-t border-gray-200" style={{ pageBreakBefore: "always" }}>
+            <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">Перечень материалов</h2>
+            {rowsData.map(({ z, mats }, idx) => mats.length > 0 && (
+              <div key={z.id} className="mb-6">
+                <p className="text-xs font-semibold text-gray-600 mb-2">{z.roomName || `Помещение ${idx + 1}`} · {z.area} м²</p>
+                <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden">
+                  <thead>
+                    <tr className="bg-gray-50 text-gray-500">
+                      <th className="text-left px-3 py-1.5 font-medium w-6">№</th>
+                      <th className="text-left px-3 py-1.5 font-medium">Наименование</th>
+                      <th className="text-left px-3 py-1.5 font-medium">Спецификация</th>
+                      <th className="text-center px-3 py-1.5 font-medium">Кол-во</th>
+                      <th className="text-center px-3 py-1.5 font-medium">Ед.</th>
+                      <th className="text-right px-3 py-1.5 font-medium">Цена</th>
+                      <th className="text-right px-3 py-1.5 font-medium">Сумма</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {mats.map((m, i) => (
+                      <tr key={i} className={`border-t border-gray-100 ${m.isConsumable ? "text-gray-400" : ""} ${i % 2 === 0 ? "" : "bg-gray-50/50"}`}>
+                        <td className="px-3 py-1.5 text-gray-400">{i + 1}</td>
+                        <td className="px-3 py-1.5">{m.name}</td>
+                        <td className="px-3 py-1.5 text-gray-400">{m.spec ?? "—"}</td>
+                        <td className="px-3 py-1.5 text-center">{m.qty}</td>
+                        <td className="px-3 py-1.5 text-center text-gray-500">{m.unit}</td>
+                        <td className="px-3 py-1.5 text-right">{fmt(m.pricePerUnit)} ₽</td>
+                        <td className="px-3 py-1.5 text-right font-medium">{fmt(m.total)} ₽</td>
+                      </tr>
+                    ))}
+                    <tr className="border-t-2 border-gray-300 bg-gray-50 font-bold">
+                      <td colSpan={6} className="px-3 py-1.5">Итого по помещению</td>
+                      <td className="px-3 py-1.5 text-right text-orange-700">
+                        {fmt(mats.reduce((s, m) => s + m.total, 0))} ₽
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ))}
+            {rowsData.length > 1 && (
+              <div className="border-t-2 border-orange-400 pt-2 text-right text-sm font-bold text-orange-700">
+                Итого материалы по объекту: {fmt(rowsData.reduce((s, r) => s + r.mats.reduce((ss, m) => ss + m.total, 0), 0))} ₽
+              </div>
+            )}
+            <p className="text-xs text-gray-400 mt-2">* Серым выделены расходные материалы и комплектующие</p>
+          </div>
+        )}
       </div>
     </>
   );
