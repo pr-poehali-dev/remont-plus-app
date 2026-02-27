@@ -36,7 +36,7 @@ export const RENOVATION_LEVELS: RenovationLevelOption[] = [
     label: "Эконом",
     description: "Минимальный набор работ, бюджетные материалы",
     includes: ["Стяжка", "Штукатурка", "Обои/покраска", "Линолеум/ламинат эконом"],
-    basePriceM2: 4500,
+    basePriceM2: 12000,
     priceCoeff: 0.7,
   },
   {
@@ -44,7 +44,7 @@ export const RENOVATION_LEVELS: RenovationLevelOption[] = [
     label: "Стандарт",
     description: "Оптимальное соотношение цены и качества",
     includes: ["Стяжка", "Штукатурка гипс", "Покраска 2 слоя", "Ламинат 33кл", "Электрика базовая"],
-    basePriceM2: 7000,
+    basePriceM2: 18000,
     priceCoeff: 1.0,
   },
   {
@@ -52,7 +52,7 @@ export const RENOVATION_LEVELS: RenovationLevelOption[] = [
     label: "Комфорт",
     description: "Качественные материалы, детальная проработка",
     includes: ["Стяжка самонивелир", "Штукатурка+шпаклёвка", "Покраска 3 слоя", "Паркетная доска", "Электрика полная"],
-    basePriceM2: 11000,
+    basePriceM2: 28000,
     priceCoeff: 1.4,
   },
   {
@@ -60,7 +60,7 @@ export const RENOVATION_LEVELS: RenovationLevelOption[] = [
     label: "Премиум",
     description: "Материалы премиум-класса, авторские решения",
     includes: ["Все работы комфорт", "Дизайн-проект", "Авторский надзор", "Паркет/натуральный камень", "Умный дом"],
-    basePriceM2: 18000,
+    basePriceM2: 45000,
     priceCoeff: 2.0,
   },
 ];
