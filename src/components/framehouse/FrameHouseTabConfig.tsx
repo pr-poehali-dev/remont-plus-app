@@ -9,6 +9,7 @@ import type { FrameHouseConfig } from "@/components/calculator/framehouse/FrameH
 import type { FrameHouseBreakdown } from "@/components/calculator/framehouse/frameHouseUtils";
 import { fmt } from "@/components/calculator/framehouse/frameHouseUtils";
 import FrameHouseConfigForm from "@/components/calculator/framehouse/FrameHouseConfigForm";
+import HouseStylePreview from "@/components/framehouse/HouseStylePreview";
 
 interface Props {
   config: FrameHouseConfig;
@@ -27,6 +28,8 @@ export default function FrameHouseTabConfig({ config, bd, onChange, onOpenResult
       {/* Боковая панель */}
       <div className="hidden lg:block">
         <div className="sticky top-14 space-y-4">
+          <HouseStylePreview style={config.style} label={HOUSE_STYLES[config.style]?.label ?? ""} />
+
           <Card className="p-4 bg-green-50 border-green-200">
             <h3 className="font-bold text-green-900 text-sm mb-3 flex items-center gap-2">
               <Icon name="Settings2" size={14} />
