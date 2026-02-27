@@ -25,7 +25,23 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
           <button
             key={key}
             type="button"
-            onClick={() => onChange({ style: key })}
+            onClick={() => {
+              if (key === "a_frame") {
+                onChange({
+                  style: key,
+                  roofType: "a_frame",
+                  floors: 1.5,
+                  facade: "fiber_cement",
+                  windowType: "pvc_triple",
+                  windowCount: 10,
+                  wallHeight: 3.0,
+                });
+              } else if (key === "barnhouse") {
+                onChange({ style: key, roofType: "flat_single", facade: "scandinavian_board" });
+              } else {
+                onChange({ style: key });
+              }
+            }}
             className={`text-left rounded-xl border-2 p-2.5 transition-all ${
               config.style === key ? "border-green-500 bg-green-50" : "border-gray-200 hover:border-green-300 bg-white"
             }`}

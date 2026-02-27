@@ -9,7 +9,7 @@ export type FloorType       = "laminate" | "parquet_board" | "ceramic_tile" | "p
 export type WindowType      = "pvc_double" | "pvc_triple" | "wood_euro";
 export type HeatingType     = "none" | "electric_convectors" | "gas_boiler" | "heat_pump" | "pellet_boiler";
 export type InteriorFinish  = "rough" | "pre_finish" | "turnkey_econom" | "turnkey_standard" | "turnkey_premium";
-export type HouseStyle      = "modern" | "barnhouse" | "scandinavian" | "classic" | "eco_wood" | "hi_tech";
+export type HouseStyle      = "modern" | "barnhouse" | "scandinavian" | "classic" | "eco_wood" | "hi_tech" | "a_frame";
 export type HouseFloors     = 1 | 1.5 | 2;
 export type HouseLayout     = "studio" | "1bed" | "2bed" | "3bed" | "4bed";
 
@@ -22,6 +22,7 @@ export const HOUSE_STYLES: Record<HouseStyle, { label: string; emoji: string; de
   classic:       { label: "Классический",    emoji: "🏡", desc: "Симметрия, портик, традиционные формы" },
   eco_wood:      { label: "Эко / деревянный",emoji: "🌿", desc: "Натуральное дерево, вписан в природу" },
   hi_tech:       { label: "Hi-Tech",         emoji: "⚡", desc: "Стекло, металл, технологичный вид" },
+  a_frame:       { label: "А-фрейм",         emoji: "🔺", desc: "Треугольный силуэт, крыша до земли, панорамные окна" },
 };
 
 export const HOUSE_LAYOUTS: Record<HouseLayout, { label: string; bedrooms: number; desc: string }> = {
