@@ -53,6 +53,7 @@ import FrameHousePrint from "./pages/FrameHousePrint";
 import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
+import InstallPWABanner from "./components/pwa/InstallPWABanner";
 
 const queryClient = new QueryClient();
 
@@ -115,6 +116,7 @@ const App = () => {
           </Routes>
           <CookieBanner />
           <ChatWidget />
+          <InstallPWABanner />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
