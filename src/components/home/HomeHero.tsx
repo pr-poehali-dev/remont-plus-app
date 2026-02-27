@@ -68,7 +68,7 @@ const sections = [
   },
   {
     id: "prices",
-    title: "БЮДЖЕТ",
+    title: "ПРАЙС",
     description: "Прозрачные расценки на отделку, сантехнику, электрику, монтаж дверей и окон",
     emoji: "📋",
     icon: "ClipboardList",
