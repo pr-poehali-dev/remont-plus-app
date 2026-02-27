@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import type { HouseStyle } from "@/components/calculator/framehouse/FrameHouseTypes";
 
 const STYLE_IMAGES: Record<HouseStyle, string> = {
@@ -23,17 +24,41 @@ interface Props {
 }
 
 export default function HouseStylePreview({ style, label }: Props) {
-  const src = STYLE_IMAGES[style];
+  const [displayed, setDisplayed] = useState<{ src: string; label: string }>({
+    src: STYLE_IMAGES[style],
+    label,
+  });
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    setVisible(false);
+    const timer = setTimeout(() => {
+      setDisplayed({ src: STYLE_IMAGES[style], label });
+      setVisible(true);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [style, label]);
+
   return (
     <div className="relative w-full overflow-hidden rounded-xl aspect-[16/9] bg-gray-100">
       <img
-        src={src}
-        alt={label}
-        className="w-full h-full object-cover transition-opacity duration-500"
+        src={displayed.src}
+        alt={displayed.label}
+        className="w-full h-full object-cover"
+        style={{
+          opacity: visible ? 1 : 0,
+          transition: "opacity 0.35s ease-in-out",
+        }}
         loading="lazy"
       />
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-2">
-        <span className="text-white text-xs font-semibold">{label}</span>
+      <div
+        className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/55 to-transparent px-3 py-2"
+        style={{
+          opacity: visible ? 1 : 0,
+          transition: "opacity 0.35s ease-in-out",
+        }}
+      >
+        <span className="text-white text-xs font-semibold">{displayed.label}</span>
       </div>
     </div>
   );
