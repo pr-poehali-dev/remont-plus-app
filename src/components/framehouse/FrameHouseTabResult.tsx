@@ -11,7 +11,8 @@ import {
 } from "@/components/calculator/framehouse/FrameHouseTypes";
 import type { FrameHouseConfig } from "@/components/calculator/framehouse/FrameHouseTypes";
 import type { FrameHouseBreakdown } from "@/components/calculator/framehouse/frameHouseUtils";
-import { fmt } from "@/components/calculator/framehouse/frameHouseUtils";
+import { fmt, calcFrameHouseMaterials } from "@/components/calculator/framehouse/frameHouseUtils";
+import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 
 interface ExportState {
   showExportPanel: boolean;
@@ -46,6 +47,7 @@ export default function FrameHouseTabResult({
   config, bd, regionId, markupPct, exportState, onExportChange, onPrint, onFindMasters,
 }: Props) {
   const region = REGIONS[regionId] ?? REGIONS["samara"];
+  const matItems = calcFrameHouseMaterials(config, bd, regionId);
 
   const rows: BreakdownRow[] = [
     { label: "Фундамент", value: bd.foundation, icon: "Building2" },
@@ -132,6 +134,9 @@ export default function FrameHouseTabResult({
             </div>
           </div>
         </Card>
+
+        {/* Ведомость материалов */}
+        <MaterialsTable items={matItems} accentColor="green" />
 
         {/* CTA */}
         <Card className="p-4 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">

@@ -6,7 +6,8 @@ import Icon from "@/components/ui/icon";
 import { REGIONS } from "@/components/calculator/bathhouse/BathHouseTypes";
 import type { BathHouseConfig } from "@/components/calculator/bathhouse/BathHouseTypes";
 import type { BathHouseBreakdown } from "@/components/calculator/bathhouse/bathHouseUtils";
-import { fmt } from "@/components/calculator/bathhouse/bathHouseUtils";
+import { fmt, calcBathHouseMaterials } from "@/components/calculator/bathhouse/bathHouseUtils";
+import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 
 const BREAKDOWN_LABELS: { key: string; label: string; icon: string }[] = [
   { key: "foundation", label: "Фундамент", icon: "Building2" },
@@ -60,6 +61,8 @@ export default function BathHouseTabResult({
   const breakdownItems = BREAKDOWN_LABELS
     .map(({ key, label, icon }) => ({ label, icon, key, value: (bd as Record<string, number>)[key] ?? 0 }))
     .filter(i => i.value > 0);
+
+  const matItems = calcBathHouseMaterials(config, bd, regionId);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-5">
@@ -122,6 +125,9 @@ export default function BathHouseTabResult({
             * Ориентировочный расчёт. Точная стоимость зависит от типа грунта, особенностей проекта, сезона и подрядчика. Для точной сметы обратитесь к партнёрам АВАНГАРД.
           </p>
         </Card>
+
+        {/* Ведомость материалов */}
+        <MaterialsTable items={matItems} accentColor="amber" />
 
         {/* CTA партнёры */}
         <Card className="p-5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200">

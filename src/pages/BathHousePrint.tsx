@@ -8,7 +8,8 @@ import {
 } from "@/components/calculator/bathhouse/BathHouseTypes";
 import type { BathHouseConfig } from "@/components/calculator/bathhouse/BathHouseTypes";
 import type { BathHouseBreakdown } from "@/components/calculator/bathhouse/bathHouseUtils";
-import { fmt } from "@/components/calculator/bathhouse/bathHouseUtils";
+import { fmt, calcBathHouseMaterials } from "@/components/calculator/bathhouse/bathHouseUtils";
+import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
 
 interface PrintState {
   config: BathHouseConfig;
@@ -86,6 +87,16 @@ export default function BathHousePrint() {
       return { ...row, value, qty, unitPrice };
     })
     .filter(Boolean) as NonNullable<(typeof BREAKDOWN_ROWS[0] & { value: number; qty: string; unitPrice: number })>[];
+
+  const matItems = calcBathHouseMaterials(config, bd, regionId);
+  const matMaterials = matItems.filter((i: MaterialItem) => !i.isWork && !i.isConsumable);
+  const matConsumables = matItems.filter((i: MaterialItem) => i.isConsumable);
+  const matWorks = matItems.filter((i: MaterialItem) => i.isWork);
+
+  function fmtN(n: number) {
+    if (Number.isInteger(n)) return n.toLocaleString("ru-RU");
+    return n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
+  }
 
   return (
     <>
@@ -275,6 +286,51 @@ export default function BathHousePrint() {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        {/* Ведомость материалов */}
+        <div className="mt-8 pt-6 border-t border-gray-200 page-break">
+          <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">Ведомость материалов и работ</h2>
+
+          {[
+            { label: "МАТЕРИАЛЫ", rows: matMaterials, bg: "#fffbeb" },
+            { label: "РАСХОДНИКИ", rows: matConsumables, bg: "#f0fdf4" },
+            { label: "РАБОТЫ", rows: matWorks, bg: "#f0f9ff" },
+          ].map(section => section.rows.length > 0 && (
+            <div key={section.label} className="mb-5">
+              <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#6b7280", marginBottom: 4 }}>{section.label}</p>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ background: section.bg }}>
+                    <th className="text-left px-2 py-1.5 font-semibold text-gray-600" style={{ width: "40%" }}>Наименование</th>
+                    <th className="text-left px-2 py-1.5 font-semibold text-gray-500" style={{ width: "15%" }}>Характеристика</th>
+                    <th className="text-center px-2 py-1.5 font-semibold text-gray-600" style={{ width: "10%" }}>Кол-во</th>
+                    <th className="text-center px-2 py-1.5 font-semibold text-gray-600" style={{ width: "8%" }}>Ед.</th>
+                    <th className="text-right px-2 py-1.5 font-semibold text-gray-600" style={{ width: "12%" }}>Цена/ед.</th>
+                    <th className="text-right px-2 py-1.5 font-semibold text-gray-700" style={{ width: "15%" }}>Сумма, ₽</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {section.rows.map((item: MaterialItem, i: number) => (
+                    <tr key={i} style={{ background: i % 2 === 0 ? "white" : "#f9fafb" }}>
+                      <td className="px-2 py-1.5 text-gray-800">{item.name}</td>
+                      <td className="px-2 py-1.5 text-gray-400 text-[10px]">{item.spec ?? ""}</td>
+                      <td className="px-2 py-1.5 text-center text-gray-600 tabular-nums">{fmtN(item.qty)}</td>
+                      <td className="px-2 py-1.5 text-center text-gray-400">{item.unit}</td>
+                      <td className="px-2 py-1.5 text-right text-gray-500 tabular-nums">{fmt(item.pricePerUnit)}</td>
+                      <td className="px-2 py-1.5 text-right font-semibold text-gray-800 tabular-nums">{fmt(item.total)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+
+          <div className="flex justify-end mt-2">
+            <div className="text-xs text-gray-400">
+              Итого по ведомости: <span className="font-bold text-amber-700 text-sm">{fmt(matItems.reduce((s: number, i: MaterialItem) => s + i.total, 0))} ₽</span>
+            </div>
+          </div>
         </div>
 
         {/* Рекомендации */}
