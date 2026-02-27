@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Forbidden without token",
+      "method": "POST",
+      "path": "/",
+      "body": {"message": "test"},
+      "expectedStatus": 403
+    }
+  ]
+}
