@@ -54,19 +54,28 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
         <div>
           <Label className="text-xs text-gray-600 mb-1 block">Этажей</Label>
           <div className="flex gap-2">
-            {([1, 2] as const).map(f => (
+            {([
+              { value: 1, label: "1" },
+              { value: 1.5, label: "1,5" },
+              { value: 2, label: "2" },
+            ] as const).map(f => (
               <button
-                key={f}
+                key={f.value}
                 type="button"
-                onClick={() => onChange({ floors: f })}
+                onClick={() => onChange({ floors: f.value })}
                 className={`flex-1 py-2 rounded-lg border-2 text-sm font-semibold transition-all ${
-                  config.floors === f ? "border-green-500 bg-green-50 text-green-800" : "border-gray-200 hover:border-green-300"
+                  config.floors === f.value ? "border-green-500 bg-green-50 text-green-800" : "border-gray-200 hover:border-green-300"
                 }`}
               >
-                {f}
+                {f.label}
               </button>
             ))}
           </div>
+          {config.floors === 1.5 && (
+            <p className="text-xs text-green-700 mt-1.5 bg-green-50 rounded-lg px-2.5 py-1.5 leading-snug">
+              Первый этаж полный + зона второго света с потолком 4+ м и панорамными окнами
+            </p>
+          )}
         </div>
         <div>
           <Label className="text-xs text-gray-600 mb-1 block">Высота потолков, м</Label>
@@ -83,7 +92,11 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
             onChange={e => onChange({ totalArea: parseFloat(e.target.value) || 80 })}
             className="h-9 text-sm"
           />
-          <p className="text-xs text-gray-400 mt-1">~{Math.round(config.totalArea / config.floors)} м² на этаж</p>
+          <p className="text-xs text-gray-400 mt-1">
+            {config.floors === 1.5
+              ? `~${Math.round(config.totalArea * 0.65)} м² первый этаж · ~${Math.round(config.totalArea * 0.35)} м² второй свет`
+              : `~${Math.round(config.totalArea / config.floors)} м² на этаж`}
+          </p>
         </div>
       </div>
 

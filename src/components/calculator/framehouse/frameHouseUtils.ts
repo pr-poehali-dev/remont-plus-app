@@ -58,9 +58,13 @@ export function calcFrameHousePrice(
   const regionCoeff = REGIONS[regionId]?.coeff ?? 0.8;
 
   // ── Геометрия ──────────────────────────────────────────────────────────────
-  const side = Math.sqrt(area / cfg.floors);
+  // Для 1.5 этажа: первый полный + половина второго (второй свет / мансарда)
+  const floorFactor = cfg.floors === 1.5 ? 1.3 : cfg.floors;
+  const side = Math.sqrt(area / floorFactor);
   const perimeter = side * 4;
-  const wallArea = perimeter * cfg.wallHeight * cfg.floors;
+  // У А-фрейма стены только 1-го этажа, далее — наклонная кровля-стена
+  const wallFloors = cfg.roofType === "a_frame" ? 1 : (cfg.floors === 1.5 ? 1.5 : cfg.floors);
+  const wallArea = perimeter * cfg.wallHeight * wallFloors;
   const roofArea = area * 1.25 * ROOF_TYPES[cfg.roofType].priceCoeff;
 
   // ── 1. Фундамент ──────────────────────────────────────────────────────────
@@ -73,7 +77,7 @@ export function calcFrameHousePrice(
 
   // ── 3. Утепление (стены + перекрытия + кровля) ────────────────────────────
   const insulPriceM2 = FRAME_INSULATIONS[cfg.insulation].pricePerM2;
-  const insulArea = wallArea + area * (cfg.floors === 2 ? 2 : 1.5);
+  const insulArea = wallArea + area * (cfg.floors === 2 ? 2 : cfg.floors === 1.5 ? 1.75 : 1.5);
   const insulation = insulArea * insulPriceM2;
 
   // ── 4. Кровельная конструкция ─────────────────────────────────────────────
@@ -184,11 +188,13 @@ export function calcFrameHouseMaterials(
 ): MaterialItem[] {
   const rc = REGIONS[regionId]?.coeff ?? 0.8;
   const area = Math.max(cfg.totalArea, 10);
-  const side = Math.sqrt(area / cfg.floors);
+  const floorFactor = cfg.floors === 1.5 ? 1.3 : cfg.floors;
+  const side = Math.sqrt(area / floorFactor);
   const perimeter = side * 4;
-  const wallArea = perimeter * cfg.wallHeight * cfg.floors;
+  const wallFloors = cfg.roofType === "a_frame" ? 1 : (cfg.floors === 1.5 ? 1.5 : cfg.floors);
+  const wallArea = perimeter * cfg.wallHeight * wallFloors;
   const roofArea = area * 1.25 * ROOF_TYPES[cfg.roofType].priceCoeff;
-  const insulArea = wallArea + area * (cfg.floors === 2 ? 2 : 1.5);
+  const insulArea = wallArea + area * (cfg.floors === 2 ? 2 : cfg.floors === 1.5 ? 1.75 : 1.5);
 
   const frameTech = FRAME_WALL_TECHS[cfg.wallTech];
   const insulData = FRAME_INSULATIONS[cfg.insulation];

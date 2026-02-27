@@ -2,7 +2,7 @@
 export type FrameWallTech   = "frame_osb" | "frame_sip" | "frame_lsts";
 export type FrameInsulation = "mineral_wool_150" | "mineral_wool_200" | "basalt_wool_200" | "ecowool_200" | "pir_panel_150";
 export type FoundationType  = "piles_screw" | "strip_shallow" | "strip_deep" | "slab" | "columnar";
-export type RoofType        = "gable" | "flat_single" | "hip" | "mansard";
+export type RoofType        = "gable" | "flat_single" | "hip" | "mansard" | "a_frame";
 export type RoofingMaterial = "metal_tile" | "corrugated_sheet" | "soft_bitumen" | "seam_roof";
 export type FacadeType      = "scandinavian_board" | "imitation_timber" | "osb_paint" | "fiber_cement" | "vinyl_siding" | "dspc";
 export type FloorType       = "laminate" | "parquet_board" | "ceramic_tile" | "porcelain_tile" | "lvt" | "linoleum";
@@ -10,7 +10,7 @@ export type WindowType      = "pvc_double" | "pvc_triple" | "wood_euro";
 export type HeatingType     = "none" | "electric_convectors" | "gas_boiler" | "heat_pump" | "pellet_boiler";
 export type InteriorFinish  = "rough" | "pre_finish" | "turnkey_econom" | "turnkey_standard" | "turnkey_premium";
 export type HouseStyle      = "modern" | "barnhouse" | "scandinavian" | "classic" | "eco_wood" | "hi_tech";
-export type HouseFloors     = 1 | 2;
+export type HouseFloors     = 1 | 1.5 | 2;
 export type HouseLayout     = "studio" | "1bed" | "2bed" | "3bed" | "4bed";
 
 // ─── Справочники ────────────────────────────────────────────────────────────
@@ -59,6 +59,7 @@ export const ROOF_TYPES: Record<RoofType, { label: string; desc: string; priceCo
   flat_single: { label: "Односкатная",     desc: "Современный вид, дешевле, барнхаус стиль", priceCoeff: 0.82 },
   hip:         { label: "Вальмовая (4-скатная)", desc: "Устойчива к ветру, красивый вид со всех сторон", priceCoeff: 1.35 },
   mansard:     { label: "Мансардная",      desc: "Жилой этаж под крышей, увеличивает площадь", priceCoeff: 1.55 },
+  a_frame:     { label: "А-фрейм",        desc: "Треугольный силуэт, крыша до земли, современный стиль", priceCoeff: 1.65 },
 };
 
 export const ROOFING_MATERIALS: Record<RoofingMaterial, { label: string; pricePerM2: number }> = {
