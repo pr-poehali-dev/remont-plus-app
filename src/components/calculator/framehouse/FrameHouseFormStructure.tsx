@@ -37,7 +37,50 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
                   wallHeight: 3.0,
                 });
               } else if (key === "barnhouse") {
-                onChange({ style: key, roofType: "flat_single", facade: "scandinavian_board" });
+                onChange({
+                  style: key,
+                  roofType: "flat_single",
+                  facade: "osb_paint",
+                  roofingMaterial: "seam_roof",
+                  floors: 1,
+                });
+              } else if (key === "scandinavian") {
+                onChange({
+                  style: key,
+                  roofType: "gable",
+                  facade: "scandinavian_board",
+                  roofingMaterial: "metal_tile",
+                  floors: 1,
+                });
+              } else if (key === "classic") {
+                onChange({
+                  style: key,
+                  roofType: "hip",
+                  facade: "imitation_timber",
+                  roofingMaterial: "soft_bitumen",
+                });
+              } else if (key === "eco_wood") {
+                onChange({
+                  style: key,
+                  roofType: "gable",
+                  facade: "imitation_timber",
+                  roofingMaterial: "soft_bitumen",
+                });
+              } else if (key === "hi_tech") {
+                onChange({
+                  style: key,
+                  roofType: "flat_single",
+                  facade: "fiber_cement",
+                  roofingMaterial: "seam_roof",
+                  floors: 2,
+                });
+              } else if (key === "modern") {
+                onChange({
+                  style: key,
+                  roofType: "flat_single",
+                  facade: "dspc",
+                  roofingMaterial: "seam_roof",
+                });
               } else {
                 onChange({ style: key });
               }
@@ -54,7 +97,37 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
       </div>
       {config.style === "a_frame" && (
         <div className="text-xs text-green-700 bg-green-50 rounded-lg px-2.5 py-2 leading-snug">
-          Автоматически выбраны: крыша А-фрейм · 1,5 этажа · высота 3 м · 10 окон
+          Автоматически выбраны: крыша А-фрейм · 1,5 этажа · высота 3 м · 10 окон · фиброцемент
+        </div>
+      )}
+      {config.style === "barnhouse" && (
+        <div className="text-xs text-green-700 bg-green-50 rounded-lg px-2.5 py-2 leading-snug">
+          Автоматически выбраны: односкатная крыша · 1 этаж · крашеный ОСП фасад · фальцевая кровля
+        </div>
+      )}
+      {config.style === "scandinavian" && (
+        <div className="text-xs text-green-700 bg-green-50 rounded-lg px-2.5 py-2 leading-snug">
+          Автоматически выбраны: двускатная крыша · 1 этаж · скандинавская доска · металлочерепица
+        </div>
+      )}
+      {config.style === "classic" && (
+        <div className="text-xs text-green-700 bg-green-50 rounded-lg px-2.5 py-2 leading-snug">
+          Автоматически выбраны: вальмовая крыша · имитация бруса · мягкая черепица
+        </div>
+      )}
+      {config.style === "eco_wood" && (
+        <div className="text-xs text-green-700 bg-green-50 rounded-lg px-2.5 py-2 leading-snug">
+          Автоматически выбраны: двускатная крыша · имитация бруса · мягкая черепица
+        </div>
+      )}
+      {config.style === "hi_tech" && (
+        <div className="text-xs text-green-700 bg-green-50 rounded-lg px-2.5 py-2 leading-snug">
+          Автоматически выбраны: плоская крыша · 2 этажа · фиброцемент · фальцевая кровля
+        </div>
+      )}
+      {config.style === "modern" && (
+        <div className="text-xs text-green-700 bg-green-50 rounded-lg px-2.5 py-2 leading-snug">
+          Автоматически выбраны: плоская крыша · ДСПК фасад · фальцевая кровля
         </div>
       )}
 
