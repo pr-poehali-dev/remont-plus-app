@@ -31,6 +31,23 @@ export interface TurnkeyPriceBreakdown {
   total: number;
 }
 
+// Доли каждой статьи от базовой стоимости (сумма активных долей = 1.0)
+// Базовые доли при полном наборе работ
+const BASE_SHARES = {
+  demolition:   0.06,
+  electrics:    0.12,
+  plumbing:     0.10,
+  plaster:      0.18,
+  floors:       0.14,
+  ceilings:     0.08,
+  bathrooms:    0.16,
+  kitchen:      0.04,
+  doors:        0.06,
+  windowSlopes: 0.02,
+  furniture:    0.02,
+  cleaning:     0.02,
+};
+
 export function calcTurnkeyPrice(
   cfg: Omit<TurnkeyConfig, "id" | "totalPrice">,
   regionId = "moscow",
@@ -38,121 +55,86 @@ export function calcTurnkeyPrice(
 ): TurnkeyPriceBreakdown {
   const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];
   const level = RENOVATION_LEVELS.find(l => l.id === cfg.renovationLevel);
-  const floorType = FLOOR_TYPES.find(f => f.id === cfg.floorType);
-  const ceilingType = CEILING_TYPES.find(c => c.id === cfg.ceilingType);
-  const bathroomLevel = BATHROOM_LEVELS.find(b => b.id === cfg.bathroomLevel);
 
   const rc = region.coeff;
   const lc = level?.priceCoeff ?? 1.0;
   const area = cfg.totalAreaM2 || 0;
-  const ceilingH = cfg.ceilingHeightM || 2.7;
+  const basePriceM2 = level?.basePriceM2 ?? 18000;
 
-  // Приблизительная площадь стен по всей квартире:
-  // периметр ≈ sqrt(area) * 3.5, площадь стен = периметр * высота
-  const wallArea = Math.round(Math.sqrt(area) * 3.5 * ceilingH * 10) / 10;
+  // Базовая сумма — именно то, что написано в карточке пакета
+  const baseTotal = Math.round(basePriceM2 * area * rc);
 
-  // Демонтаж
-  const demolitionCost = cfg.demolitionIncluded
-    ? Math.round(area * 1600 * rc)
-    : 0;
+  // Считаем, какие статьи включены, нормируем доли чтобы сумма = baseTotal
+  const activeShares: Record<string, number> = {
+    demolition:   cfg.demolitionIncluded    ? BASE_SHARES.demolition   : 0,
+    electrics:    cfg.electricsIncluded     ? BASE_SHARES.electrics     : 0,
+    plumbing:     cfg.plumbingIncluded      ? BASE_SHARES.plumbing      : 0,
+    plaster:      cfg.plastersIncluded      ? BASE_SHARES.plaster       : 0,
+    floors:       cfg.floorsIncluded        ? BASE_SHARES.floors        : 0,
+    ceilings:     cfg.ceilingsIncluded      ? BASE_SHARES.ceilings      : 0,
+    bathrooms:    cfg.bathroomIncluded      ? BASE_SHARES.bathrooms     : 0,
+    kitchen:      cfg.kitchenIncluded       ? BASE_SHARES.kitchen       : 0,
+    doors:        cfg.doorsIncluded && cfg.doorsCount > 0 ? BASE_SHARES.doors : 0,
+    windowSlopes: cfg.windowslopeIncluded   ? BASE_SHARES.windowSlopes  : 0,
+    furniture:    cfg.furnitureAssembly     ? BASE_SHARES.furniture     : 0,
+    cleaning:     cfg.cleaningIncluded      ? BASE_SHARES.cleaning      : 0,
+  };
 
-  // Электрика
-  const electricsCost = cfg.electricsIncluded
-    ? Math.round(area * 1300 * lc * rc)
-    : 0;
+  const totalShare = Object.values(activeShares).reduce((s, v) => s + v, 0);
+  const norm = totalShare > 0 ? 1 / totalShare : 1;
 
-  // Сантехника (разводка труб, без санузловой отделки)
-  const plumbingCost = cfg.plumbingIncluded
-    ? Math.round((area * 800 + cfg.bathroomCount * 25000) * rc)
-    : 0;
+  const get = (key: string) =>
+    totalShare > 0 ? Math.round(baseTotal * activeShares[key] * norm) : 0;
 
-  // Штукатурка и стяжка
-  const plasterCost = cfg.plastersIncluded
-    ? Math.round((wallArea * 600 + area * 900) * lc * rc)
-    : 0;
-
-  // Полы
-  const floorsCost = cfg.floorsIncluded
-    ? Math.round(area * (floorType?.priceM2 ?? 900) * lc * rc)
-    : 0;
-
-  // Потолки
-  const ceilingsCost = cfg.ceilingsIncluded
-    ? Math.round(area * (ceilingType?.priceM2 ?? 650) * lc * rc)
-    : 0;
-
-  // Санузлы (под ключ: плитка, гидроизоляция, сантехника)
-  const bathroomsCost = cfg.bathroomIncluded
-    ? Math.round(cfg.bathroomCount * (bathroomLevel?.pricePerUnit ?? 145000) * rc)
-    : 0;
-
-  // Монтаж кухни (зависит от площади кухни и уровня)
-  const kitchenCost = cfg.kitchenIncluded
-    ? Math.round((cfg.kitchenAreaM2 || 12) * 1200 * lc * rc)
-    : 0;
-
-  // Двери (с учётом уровня ремонта)
-  const doorsCost = cfg.doorsIncluded && cfg.doorsCount > 0
-    ? Math.round(cfg.doorsCount * 12000 * lc * rc)
-    : 0;
-
-  // Откосы окон (≈ кол-во окон = balcony + ~2 на комнату)
-  const windowCount = cfg.balconyCount + Math.ceil(area / 18);
-  const windowSlopesCost = cfg.windowslopeIncluded
-    ? Math.round(windowCount * 3200 * lc * rc)
-    : 0;
-
-  // Сборка мебели
-  const furnitureCost = cfg.furnitureAssembly
-    ? Math.round(area * 500 * rc)
-    : 0;
-
-  // Уборка
+  const demolitionCost   = get("demolition");
+  const electricsCost    = get("electrics");
+  const plumbingCost     = get("plumbing");
+  const plasterCost      = get("plaster");
+  const floorsCost       = get("floors");
+  const ceilingsCost     = get("ceilings");
+  const bathroomsCost    = get("bathrooms");
+  const kitchenCost      = get("kitchen");
+  const doorsCost        = get("doors");
+  const windowSlopesCost = get("windowSlopes");
+  const furnitureCost    = get("furniture");
+  // Остаток уходит в уборку чтобы сумма была точной
+  const cleaningCostRaw  = get("cleaning");
+  const sumSoFar = demolitionCost + electricsCost + plumbingCost + plasterCost +
+    floorsCost + ceilingsCost + bathroomsCost + kitchenCost + doorsCost +
+    windowSlopesCost + furnitureCost + cleaningCostRaw;
   const cleaningCost = cfg.cleaningIncluded
-    ? Math.round(area * 180 * rc)
+    ? cleaningCostRaw + (baseTotal - sumSoFar)
     : 0;
 
-  const worksSubtotal =
-    demolitionCost +
-    electricsCost +
-    plumbingCost +
-    plasterCost +
-    floorsCost +
-    ceilingsCost +
-    bathroomsCost +
-    kitchenCost +
-    doorsCost +
-    windowSlopesCost +
-    furnitureCost +
-    cleaningCost;
+  const worksSubtotal = demolitionCost + electricsCost + plumbingCost + plasterCost +
+    floorsCost + ceilingsCost + bathroomsCost + kitchenCost + doorsCost +
+    windowSlopesCost + furnitureCost + cleaningCost;
 
-  // Материальная составляющая по каждой статье (доля материалов от суммы позиции)
-  const materialsCost =
-    demolitionCost  * 0.00 + // демонтаж — чистая работа
-    electricsCost   * 0.50 + // кабель, розетки, щиток
-    plumbingCost    * 0.40 + // трубы, фитинги
-    plasterCost     * 0.55 + // смеси, штукатурка, стяжка
-    floorsCost      * 0.65 + // напольное покрытие
-    ceilingsCost    * 0.55 + // потолочные материалы
-    bathroomsCost   * 0.60 + // плитка, сантехника, фурнитура
-    kitchenCost     * 0.00 + // только монтаж, мебель куплена отдельно
-    doorsCost       * 0.70 + // сами двери + коробки
-    windowSlopesCost* 0.50 + // откосные панели
-    furnitureCost   * 0.00 + // сборка, мебель куплена отдельно
-    cleaningCost    * 0.00;  // расходники незначительны
+  // Материальная составляющая (доля материалов по каждой статье)
+  const materialsCost = Math.round(
+    demolitionCost   * 0.00 +
+    electricsCost    * 0.50 +
+    plumbingCost     * 0.40 +
+    plasterCost      * 0.55 +
+    floorsCost       * 0.65 +
+    ceilingsCost     * 0.55 +
+    bathroomsCost    * 0.60 +
+    kitchenCost      * 0.00 +
+    doorsCost        * 0.70 +
+    windowSlopesCost * 0.50 +
+    furnitureCost    * 0.00 +
+    cleaningCost     * 0.00,
+  );
 
-  // Прораб: % от всей суммы работ (работа + материалы)
   const foremanCost = cfg.foremanIncluded
     ? Math.round(worksSubtotal * (cfg.foremanPct || 10) / 100)
     : 0;
 
-  // Снабженец: % от суммы закупаемых материалов
   const supplierCost = cfg.supplierIncluded
     ? Math.round(materialsCost * (cfg.supplierPct || 5) / 100)
     : 0;
 
   const subtotal = worksSubtotal + foremanCost + supplierCost;
-
   const markupAmount = markupPct > 0 ? Math.round(subtotal * markupPct / 100) : 0;
   const total = subtotal + markupAmount;
 
@@ -169,7 +151,7 @@ export function calcTurnkeyPrice(
     windowSlopesCost,
     furnitureCost,
     cleaningCost,
-    materialsCost: Math.round(materialsCost),
+    materialsCost,
     foremanCost,
     supplierCost,
     subtotal,
@@ -197,7 +179,6 @@ export function calcTurnkeyMaterials(
 
   const items: MaterialItem[] = [];
 
-  // ── МАТЕРИАЛЫ: Штукатурка + Стяжка ───────────────────────────────────────
   if (cfg.plastersIncluded && bd.plasterCost > 0) {
     const plasterKg = Math.ceil(wallArea * 12);
     items.push({ name: "Гипсовая штукатурка Knauf Rotband", spec: "мешки 30 кг", unit: "кг", qty: plasterKg, pricePerUnit: 12, total: plasterKg * 12 });
@@ -208,7 +189,6 @@ export function calcTurnkeyMaterials(
     items.push({ name: "Маяки, профили, серпянка", unit: "компл.", qty: 1, pricePerUnit: Math.round((wallArea + area) * 45), total: Math.round((wallArea + area) * 45), isConsumable: true });
   }
 
-  // ── МАТЕРИАЛЫ: Электрика ─────────────────────────────────────────────────
   if (cfg.electricsIncluded && bd.electricsCost > 0) {
     items.push({ name: "Кабель ВВГнг-LS 3×2,5 мм²", spec: "силовой, для розеток", unit: "м.п.", qty: Math.round(area * 5), pricePerUnit: 55, total: Math.round(area * 5 * 55) });
     items.push({ name: "Кабель ВВГнг-LS 3×1,5 мм²", spec: "для освещения", unit: "м.п.", qty: Math.round(area * 2), pricePerUnit: 38, total: Math.round(area * 2 * 38) });
@@ -217,72 +197,51 @@ export function calcTurnkeyMaterials(
     items.push({ name: "Гофра, подрозетники, стяжки", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 85), total: Math.round(area * 85), isConsumable: true });
   }
 
-  // ── МАТЕРИАЛЫ: Водоснабжение ─────────────────────────────────────────────
   if (cfg.plumbingIncluded && bd.plumbingCost > 0) {
-    items.push({ name: "Труба полипропиленовая ∅20/25 мм", spec: "для ХВС/ГВС", unit: "м.п.", qty: Math.round(cfg.bathroomCount * 12 + 6), pricePerUnit: 95, total: Math.round((cfg.bathroomCount * 12 + 6) * 95) });
-    items.push({ name: "Фитинги полипропиленовые", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: 1800, total: cfg.bathroomCount * 1800 });
-    items.push({ name: "Труба канализационная ПВХ ∅50/110 мм", unit: "м.п.", qty: Math.round(cfg.bathroomCount * 5 + 3), pricePerUnit: 140, total: Math.round((cfg.bathroomCount * 5 + 3) * 140) });
-    items.push({ name: "Ревизии, тройники, угловые соединения", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: 650, total: cfg.bathroomCount * 650, isConsumable: true });
+    items.push({ name: "Труба полипропиленовая ∅20/25 мм", spec: "ХВС/ГВС", unit: "м.п.", qty: Math.round(cfg.bathroomCount * 18), pricePerUnit: 95, total: Math.round(cfg.bathroomCount * 18 * 95) });
+    items.push({ name: "Фитинги PPR (муфты, тройники, угольники)", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: 3500, total: cfg.bathroomCount * 3500, isConsumable: true });
+    items.push({ name: "Гофра канализационная ∅50/110 мм", unit: "м.п.", qty: Math.round(cfg.bathroomCount * 8), pricePerUnit: 120, total: Math.round(cfg.bathroomCount * 8 * 120) });
   }
 
-  // ── МАТЕРИАЛЫ: Полы ──────────────────────────────────────────────────────
   if (cfg.floorsIncluded && bd.floorsCost > 0 && floorType) {
-    const floorQty = Math.round(area * 1.07 * 10) / 10;
-    items.push({ name: floorType.label, spec: floorType.description, unit: "м²", qty: floorQty, pricePerUnit: Math.round(floorType.priceM2 * 0.65 * lc), total: Math.round(floorQty * floorType.priceM2 * 0.65 * lc) });
-    if (cfg.floorType === "laminate") {
-      items.push({ name: "Подложка 3 мм (пенополистирол)", unit: "м²", qty: Math.round(area * 1.05 * 10) / 10, pricePerUnit: 95, total: Math.round(area * 1.05 * 95), isConsumable: true });
-    } else if (cfg.floorType === "tile-all" || cfg.floorType === "mixed") {
-      items.push({ name: "Клей плиточный C2, затирка", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 190), total: Math.round(area * 190), isConsumable: true });
-    }
+    const floorQty = Math.round(area * 1.08 * 10) / 10;
+    items.push({ name: `Напольное покрытие: ${floorType.label}`, spec: "с учётом 8% отхода", unit: "м²", qty: floorQty, pricePerUnit: Math.round(floorType.priceM2 * lc * rc * 0.6), total: Math.round(floorQty * floorType.priceM2 * lc * rc * 0.6) });
+    items.push({ name: "Подложка под ламинат/паркет", unit: "м²", qty: Math.round(area * 1.05), pricePerUnit: 55, total: Math.round(area * 1.05 * 55) });
+    items.push({ name: "Плинтус напольный с кабель-каналом", unit: "м.п.", qty: Math.round(Math.sqrt(area) * 3.5), pricePerUnit: 180, total: Math.round(Math.sqrt(area) * 3.5 * 180) });
+    items.push({ name: "Клей для напольных покрытий, дюбели", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 35), total: Math.round(area * 35), isConsumable: true });
   }
 
-  // ── МАТЕРИАЛЫ: Потолки ───────────────────────────────────────────────────
   if (cfg.ceilingsIncluded && bd.ceilingsCost > 0 && ceilingType) {
-    if (cfg.ceilingType === "stretch") {
-      items.push({ name: "Натяжное полотно ПВХ", spec: "матовый белый, включая профиль", unit: "м²", qty: area, pricePerUnit: Math.round(ceilingType.priceM2 * 0.55 * lc * rc), total: Math.round(area * ceilingType.priceM2 * 0.55 * lc * rc) });
+    if (ceilingType.id === "stretch") {
+      items.push({ name: "Натяжное полотно ПВХ (глянец/матт)", unit: "м²", qty: Math.round(area * 1.05), pricePerUnit: Math.round(ceilingType.priceM2 * lc * 0.5), total: Math.round(area * 1.05 * ceilingType.priceM2 * lc * 0.5) });
+      items.push({ name: "Профиль для натяжного потолка", unit: "м.п.", qty: Math.round(Math.sqrt(area) * 3.5), pricePerUnit: 95, total: Math.round(Math.sqrt(area) * 3.5 * 95) });
     } else {
-      items.push({ name: "Шпаклёвка + грунтовка + краска (потолки)", unit: "м²", qty: area, pricePerUnit: Math.round(ceilingType.priceM2 * 0.55 * lc), total: Math.round(area * ceilingType.priceM2 * 0.55 * lc) });
+      items.push({ name: "Шпаклёвка потолочная Bergauf", unit: "кг", qty: Math.ceil(area * 0.9), pricePerUnit: 22, total: Math.ceil(area * 0.9) * 22 });
+      items.push({ name: "Краска для потолков Dulux / Tikkurila", spec: "белая матовая", unit: "л", qty: Math.ceil(area * 0.18 * 2), pricePerUnit: Math.round(95 * lc), total: Math.ceil(area * 0.18 * 2) * Math.round(95 * lc) });
+      items.push({ name: "Грунтовка потолка", unit: "л", qty: Math.ceil(area * 0.15), pricePerUnit: 90, total: Math.ceil(area * 0.15) * 90, isConsumable: true });
     }
   }
 
-  // ── МАТЕРИАЛЫ: Санузлы ───────────────────────────────────────────────────
   if (cfg.bathroomIncluded && bd.bathroomsCost > 0 && bathroomLevel) {
-    items.push({ name: `Плитка для санузлов (${bathroomLevel.label})`, spec: "пол + стены, +10% запас", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: Math.round(bathroomLevel.pricePerUnit * 0.35 * rc), total: Math.round(cfg.bathroomCount * bathroomLevel.pricePerUnit * 0.35 * rc) });
-    items.push({ name: "Гидроизоляция + затирка + клей (санузлы)", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: Math.round(bathroomLevel.pricePerUnit * 0.10 * rc), total: Math.round(cfg.bathroomCount * bathroomLevel.pricePerUnit * 0.10 * rc), isConsumable: true });
-    items.push({ name: "Сантехника (унитаз, ванна/душ, раковина, смесители)", spec: bathroomLevel.label, unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: Math.round(bathroomLevel.pricePerUnit * 0.15 * rc), total: Math.round(cfg.bathroomCount * bathroomLevel.pricePerUnit * 0.15 * rc) });
+    const bathroomArea = cfg.bathroomCount * 6;
+    items.push({ name: `Плитка настенная (${bathroomLevel.label})`, unit: "м²", qty: Math.round(bathroomArea * 2.8 * 1.1), pricePerUnit: Math.round(bathroomLevel.pricePerUnit * 0.15 / (bathroomArea * 2.8 * 1.1)), total: Math.round(bathroomLevel.pricePerUnit * 0.15 * cfg.bathroomCount) });
+    items.push({ name: "Плитка напольная для санузлов", unit: "м²", qty: Math.round(bathroomArea * 1.1), pricePerUnit: Math.round(bathroomLevel.pricePerUnit * 0.08 / (bathroomArea * 1.1)), total: Math.round(bathroomLevel.pricePerUnit * 0.08 * cfg.bathroomCount) });
+    items.push({ name: "Унитаз + инсталляция", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: Math.round(bathroomLevel.pricePerUnit * 0.12), total: Math.round(bathroomLevel.pricePerUnit * 0.12 * cfg.bathroomCount) });
+    items.push({ name: "Смеситель, душ, полотенцесушитель", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: Math.round(bathroomLevel.pricePerUnit * 0.10), total: Math.round(bathroomLevel.pricePerUnit * 0.10 * cfg.bathroomCount) });
+    items.push({ name: "Гидроизоляция, клей для плитки, затирка", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: Math.round(bathroomLevel.pricePerUnit * 0.05), total: Math.round(bathroomLevel.pricePerUnit * 0.05 * cfg.bathroomCount), isConsumable: true });
   }
 
-  // ── МАТЕРИАЛЫ: Двери ─────────────────────────────────────────────────────
   if (cfg.doorsIncluded && cfg.doorsCount > 0 && bd.doorsCost > 0) {
-    const doorPrice = Math.round(12000 * lc * 0.70 * rc);
-    items.push({ name: "Дверные блоки (полотно + коробка)", spec: `уровень ${RENOVATION_LEVELS.find(l => l.id === cfg.renovationLevel)?.label ?? ""}`, unit: "компл.", qty: cfg.doorsCount, pricePerUnit: doorPrice, total: cfg.doorsCount * doorPrice });
-    items.push({ name: "Фурнитура дверная (ручки, петли, доводчики)", unit: "компл.", qty: cfg.doorsCount, pricePerUnit: Math.round(950 * lc), total: Math.round(cfg.doorsCount * 950 * lc), isConsumable: true });
+    const pricePerDoor = Math.round(bd.doorsCost / cfg.doorsCount);
+    items.push({ name: "Межкомнатные двери с коробкой и фурнитурой", unit: "компл.", qty: cfg.doorsCount, pricePerUnit: Math.round(pricePerDoor * 0.70), total: Math.round(bd.doorsCost * 0.70) });
+    items.push({ name: "Наличники, петли, ручки", unit: "компл.", qty: cfg.doorsCount, pricePerUnit: Math.round(pricePerDoor * 0.05), total: Math.round(bd.doorsCost * 0.05), isConsumable: true });
   }
 
-  // ── МАТЕРИАЛЫ: Откосы ────────────────────────────────────────────────────
   if (cfg.windowslopeIncluded && bd.windowSlopesCost > 0) {
-    const winCount = cfg.balconyCount + Math.ceil(area / 18);
-    items.push({ name: "Откосные сэндвич-панели", spec: "1500×350 мм, белые", unit: "компл.", qty: winCount, pricePerUnit: Math.round(3200 * 0.50 * lc * rc), total: Math.round(winCount * 3200 * 0.50 * lc * rc) });
+    const windowCount = cfg.balconyCount + Math.ceil(area / 18);
+    items.push({ name: "Откосы оконные ПВХ (панель + уголок)", unit: "компл.", qty: windowCount, pricePerUnit: Math.round(bd.windowSlopesCost * 0.50 / windowCount), total: Math.round(bd.windowSlopesCost * 0.50) });
+    items.push({ name: "Монтажная пена, герметик", unit: "компл.", qty: 1, pricePerUnit: Math.round(windowCount * 380), total: Math.round(windowCount * 380), isConsumable: true });
   }
-
-  // ── РАСХОДНИКИ (общестрой) ────────────────────────────────────────────────
-  items.push({ name: "Дюбели, шурупы, анкеры, крепёж", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 65), total: Math.round(area * 65), isConsumable: true });
-  items.push({ name: "Полиэтиленовая плёнка, скотч малярный", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 28), total: Math.round(area * 28), isConsumable: true });
-  if (cfg.cleaningIncluded) {
-    items.push({ name: "Расходники для уборки", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 35), total: Math.round(area * 35), isConsumable: true });
-  }
-
-  // ── РАБОТЫ ───────────────────────────────────────────────────────────────
-  if (cfg.demolitionIncluded && bd.demolitionCost > 0) items.push({ name: "Демонтаж перегородок, покрытий, сантехники", unit: "м²", qty: area, pricePerUnit: Math.round(1600 * rc), total: bd.demolitionCost, isWork: true });
-  if (cfg.plastersIncluded && bd.plasterCost > 0)      items.push({ name: "Штукатурка стен + стяжка пола", unit: "м²", qty: area + wallArea, pricePerUnit: Math.round(bd.plasterCost * 0.45 / (area + wallArea)), total: Math.round(bd.plasterCost * 0.45), isWork: true });
-  if (cfg.electricsIncluded && bd.electricsCost > 0)   items.push({ name: "Электромонтажные работы", unit: "м²", qty: area, pricePerUnit: Math.round(bd.electricsCost * 0.50 / area), total: Math.round(bd.electricsCost * 0.50), isWork: true });
-  if (cfg.plumbingIncluded && bd.plumbingCost > 0)     items.push({ name: "Сантехнические работы (разводка)", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: Math.round(bd.plumbingCost * 0.60 / cfg.bathroomCount), total: Math.round(bd.plumbingCost * 0.60), isWork: true });
-  if (cfg.floorsIncluded && bd.floorsCost > 0)         items.push({ name: "Укладка напольного покрытия", unit: "м²", qty: area, pricePerUnit: Math.round(bd.floorsCost * 0.35 / area), total: Math.round(bd.floorsCost * 0.35), isWork: true });
-  if (cfg.ceilingsIncluded && bd.ceilingsCost > 0)     items.push({ name: "Работы по потолку", unit: "м²", qty: area, pricePerUnit: Math.round(bd.ceilingsCost * 0.45 / area), total: Math.round(bd.ceilingsCost * 0.45), isWork: true });
-  if (cfg.bathroomIncluded && bd.bathroomsCost > 0)    items.push({ name: "Ремонт санузлов под ключ", unit: "санузел", qty: cfg.bathroomCount, pricePerUnit: Math.round(bd.bathroomsCost * 0.40 / cfg.bathroomCount), total: Math.round(bd.bathroomsCost * 0.40), isWork: true });
-  if (cfg.doorsIncluded && cfg.doorsCount > 0 && bd.doorsCost > 0) items.push({ name: "Установка дверей", unit: "шт.", qty: cfg.doorsCount, pricePerUnit: Math.round(12000 * 0.30 * lc * rc), total: Math.round(cfg.doorsCount * 12000 * 0.30 * lc * rc), isWork: true });
-  if (cfg.kitchenIncluded && bd.kitchenCost > 0) items.push({ name: "Монтаж кухонного гарнитура", unit: "компл.", qty: 1, pricePerUnit: bd.kitchenCost, total: bd.kitchenCost, isWork: true });
-  if (cfg.furnitureAssembly && bd.furnitureCost > 0) items.push({ name: "Сборка мебели", unit: "компл.", qty: 1, pricePerUnit: bd.furnitureCost, total: bd.furnitureCost, isWork: true });
 
   return items;
 }
