@@ -52,6 +52,11 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
           </button>
         ))}
       </div>
+      {config.style === "a_frame" && (
+        <div className="text-xs text-green-700 bg-green-50 rounded-lg px-2.5 py-2 leading-snug">
+          Автоматически выбраны: крыша А-фрейм · 1,5 этажа · высота 3 м · 10 окон
+        </div>
+      )}
 
       {/* Планировка */}
       <SectionTitle icon="LayoutDashboard">Планировка</SectionTitle>
