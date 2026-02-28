@@ -214,7 +214,8 @@ export default function Tariffs() {
       </main>
 
       <footer className="py-8 text-center text-xs text-gray-400 mt-8">
-        АВАНГАРД &copy; {new Date().getFullYear()}
+        <div>АВАНГАРД &copy; {new Date().getFullYear()}</div>
+        <div className="mt-1">ООО «МАТ-Лабс» &nbsp;|&nbsp; ИНН/КПП 6312223437/631201001 &nbsp;|&nbsp; ОГРН 1266300004288</div>
       </footer>
 
       <PageTour tourKey="tariffs_tour_done" steps={TARIFFS_TOUR} delay={1200} />

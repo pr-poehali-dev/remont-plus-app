@@ -197,7 +197,8 @@ export default function Prices() {
       </main>
 
       <footer className="py-8 text-center text-xs text-gray-400 mt-8">
-        АВАНГАРД &copy; {new Date().getFullYear()}
+        <div>АВАНГАРД &copy; {new Date().getFullYear()}</div>
+        <div className="mt-1">ООО «МАТ-Лабс» &nbsp;|&nbsp; ИНН/КПП 6312223437/631201001 &nbsp;|&nbsp; ОГРН 1266300004288</div>
       </footer>
 
       <PageTour tourKey="prices_tour_done" steps={PRICES_TOUR} delay={1000} />

@@ -39,6 +39,7 @@ export default function HomeCTA({ user }: Props) {
 
       <footer className="bg-[#fafaf8] py-6 text-center text-xs text-gray-400 border-t border-gray-100">
         <div>АВАНГАРД &copy; {new Date().getFullYear()}</div>
+        <div className="mt-1">ООО «МАТ-Лабс» &nbsp;|&nbsp; ИНН/КПП 6312223437/631201001 &nbsp;|&nbsp; ОГРН 1266300004288</div>
         <div className="flex justify-center gap-4 mt-2">
           <a href="/terms" className="hover:text-gray-600 transition-colors">Пользовательское соглашение</a>
           <a href="/privacy" className="hover:text-gray-600 transition-colors">Политика конфиденциальности</a>
