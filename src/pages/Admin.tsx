@@ -17,6 +17,7 @@ import AdminReportTab from "@/components/admin/AdminReportTab";
 import AdminLegalTab from "@/components/admin/AdminLegalTab";
 import AdminMarketingTab from "@/components/admin/AdminMarketingTab";
 import AdminSalesTab from "@/components/admin/AdminSalesTab";
+import AdminMediaTab from "@/components/admin/AdminMediaTab";
 
 const SUPPLIERS_URL = 'https://functions.poehali.dev/735f02a5-eb3f-4e4b-b378-7564c92b8e00';
 const MATERIALS_URL = 'https://functions.poehali.dev/dd454a25-9f55-4cfb-9e59-736a4a1256fd';
@@ -182,6 +183,10 @@ export default function Admin() {
               <Icon name="Package" className="h-4 w-4" />
               Товары
             </TabsTrigger>
+            <TabsTrigger value="media" className="gap-1.5">
+              <Icon name="ImagePlay" className="h-4 w-4" />
+              Медиатека
+            </TabsTrigger>
             <TabsTrigger value="blog" className="gap-1.5">
               <Icon name="Newspaper" className="h-4 w-4" />
               Блог
@@ -235,6 +240,10 @@ export default function Admin() {
 
           <TabsContent value="products">
             <AdminProductsTab products={products} isLoading={isLoading} onReload={loadProducts} />
+          </TabsContent>
+
+          <TabsContent value="media">
+            <AdminMediaTab />
           </TabsContent>
 
           <TabsContent value="blog">

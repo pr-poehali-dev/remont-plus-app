@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Missing admin token",
+      "method": "POST",
+      "path": "/",
+      "headers": {},
+      "body": {"file": "dGVzdA==", "filename": "test.jpg", "media_type": "photo"},
+      "expectedStatus": 403,
+      "expectedBody": {"error": "Forbidden"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

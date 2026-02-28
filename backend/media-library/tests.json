@@ -1,0 +1,19 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET media list",
+      "method": "GET",
+      "path": "/",
+      "headers": {"X-Admin-Token": "admin2025"},
+      "expectedStatus": 200,
+      "expectedBody": {"items": []},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
