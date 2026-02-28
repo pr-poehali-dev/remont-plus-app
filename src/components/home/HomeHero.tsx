@@ -252,6 +252,15 @@ export default function HomeHero({ user, regionLabel, onLogout }: Props) {
               <span className="text-2xl font-bold tracking-tight text-white">АВАНГАРД</span>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/tariffs")}
+                className="hidden md:flex rounded-full border-white/25 text-white/80 hover:bg-white/15 hover:text-white gap-1.5"
+              >
+                <Icon name="Building2" className="h-3.5 w-3.5" />
+                Для компаний
+              </Button>
               <a href="mailto:info@avangard-ai.ru" className="hidden md:flex items-center gap-2 text-sm text-white/50 hover:text-white/90 transition-colors mr-2">
                 <Icon name="Mail" className="h-4 w-4" />
                 <span className="font-medium">info@avangard-ai.ru</span>
