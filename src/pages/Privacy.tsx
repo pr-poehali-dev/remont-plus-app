@@ -138,8 +138,9 @@ export default function Privacy() {
           </p>
         </section>
 
-        <div className="border-t border-gray-200 pt-6 text-gray-400 text-xs">
-          Документ соответствует требованиям Федерального закона от 27.07.2006 № 152-ФЗ «О персональных данных».
+        <div className="border-t border-gray-200 pt-6 text-gray-400 text-xs space-y-1">
+          <div>Документ соответствует требованиям Федерального закона от 27.07.2006 № 152-ФЗ «О персональных данных».</div>
+          <div>Оператор персональных данных: ООО «МАТ-Лабс» &nbsp;|&nbsp; ИНН/КПП 6312223437/631201001 &nbsp;|&nbsp; ОГРН 1266300004288</div>
         </div>
       </div>
     </div>
