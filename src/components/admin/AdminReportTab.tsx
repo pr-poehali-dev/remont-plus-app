@@ -157,7 +157,7 @@ export default function AdminReportTab() {
     setLoading(true);
     try {
       const res = await fetch(`${ADMIN_API}?action=report`, {
-        headers: { ...getAuthHeaders() },
+        headers: { ...getAuthHeaders(), "X-Admin-Token": "admin2025" },
       });
       const json = await res.json();
       const parsed = typeof json.body === "string" ? JSON.parse(json.body) : json;
