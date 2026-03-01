@@ -220,6 +220,10 @@ export default function Admin() {
               <Icon name="TrendingUp" className="h-4 w-4" />
               Продажи
             </TabsTrigger>
+            <TabsTrigger value="leads-parser" className="gap-1.5">
+              <Icon name="DatabaseZap" className="h-4 w-4" />
+              Лидогенерация
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="showroom">
@@ -272,6 +276,17 @@ export default function Admin() {
 
           <TabsContent value="sales">
             <AdminSalesTab />
+          </TabsContent>
+          <TabsContent value="leads-parser">
+            <div className="text-center py-12">
+              <a href="/rbc-parser" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 px-8 py-5 bg-primary text-primary-foreground rounded-2xl text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity">
+                <Icon name="DatabaseZap" className="h-6 w-6" />
+                Открыть инструмент парсинга
+              </a>
+              <p className="mt-4 text-sm text-muted-foreground max-w-md mx-auto">
+                Сбор контактов компаний с companies.rbc.ru и orgpage.ru по нужной категории. Выгрузка в CSV для холодной базы.
+              </p>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
