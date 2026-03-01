@@ -199,6 +199,17 @@ const sections = [
     requireAuth: false,
   },
   {
+    id: "office",
+    title: "ОФИС",
+    description: "Расчёт ремонта и оснащения коммерческих помещений: офисов, складов — вентиляция, сигнализация, огнезащита",
+    emoji: "🏢",
+    icon: "Building2",
+    gradient: "from-slate-600 via-blue-700 to-indigo-700",
+    glow: "group-hover:shadow-blue-500/50",
+    path: "/office",
+    requireAuth: false,
+  },
+  {
     id: "expert",
     title: "ЭКСПЕРТ",
     description: "ИИ-консультант по дизайну, интерьеру и ремонту — задайте любой вопрос бесплатно",
