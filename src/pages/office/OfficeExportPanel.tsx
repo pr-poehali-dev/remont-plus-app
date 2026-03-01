@@ -56,10 +56,96 @@ export default function OfficeExportPanel({ exportState, onChange, zones, totalA
 
   const handlePrint = () => {
     setPrinting(true);
-    setTimeout(() => {
-      window.print();
+
+    const dateStr = new Date().toLocaleDateString("ru-RU");
+    const title = docType === "smeta" ? "СМЕТА" : "КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ";
+
+    const rowsBg = zones.map((z, i) => `
+      <tr style="background:${i % 2 === 0 ? "#fff" : "#f5f7fa"}">
+        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb">${z.name}</td>
+        <td style="padding:6px 10px;text-align:right;border-bottom:1px solid #e5e7eb">${z.area} м²</td>
+        ${markupPct > 0 ? `<td style="padding:6px 10px;text-align:right;border-bottom:1px solid #e5e7eb">${markupPct}%</td>` : ""}
+        <td style="padding:6px 10px;text-align:right;font-weight:bold;border-bottom:1px solid #e5e7eb">${fmtPrice(z.totalPrice)}</td>
+      </tr>`).join("");
+
+    const html = `<!DOCTYPE html><html><head>
+      <meta charset="utf-8"/>
+      <title>${title}</title>
+      <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #111; margin: 0; padding: 20mm; }
+        @page { margin: 15mm; }
+        table { width: 100%; border-collapse: collapse; }
+        h1 { font-size: 16px; text-align: center; margin: 0 0 4px; }
+        .sub { text-align: center; color: #555; font-size: 11px; margin-bottom: 16px; }
+        .meta td { padding-bottom: 4px; }
+        .meta td:first-child { width: 140px; color: #555; }
+        .staff { background: #f9f9f9; margin-bottom: 14px; }
+        .staff td { padding: 4px 8px; }
+        .staff td:first-child { width: 140px; color: #555; }
+        thead tr { background: #1e3a5f; color: white; }
+        thead th { padding: 7px 10px; text-align: left; font-size: 11px; }
+        thead th:not(:first-child) { text-align: right; }
+        tfoot tr { background: #1e3a5f; color: white; }
+        tfoot td { padding: 8px 10px; font-weight: bold; }
+        tfoot td:last-child { text-align: right; font-size: 14px; }
+        .signs { display: flex; gap: 40px; margin-top: 32px; }
+        .sign { flex: 1; border-top: 1px solid #111; padding-top: 4px; font-size: 11px; color: #555; }
+        .footer { margin-top: 20px; font-size: 10px; color: #888; text-align: center; }
+      </style>
+    </head><body>
+      <h1>${title}</h1>
+      <p class="sub">на выполнение работ по коммерческому помещению · ${dateStr}</p>
+
+      <table class="meta" style="margin-bottom:14px">
+        ${customer ? `<tr><td>Заказчик:</td><td><b>${customer}</b></td></tr>` : ""}
+        ${contractor ? `<tr><td>Подрядчик:</td><td><b>${contractor}</b></td></tr>` : ""}
+        ${address ? `<tr><td>Адрес объекта:</td><td>${address}</td></tr>` : ""}
+        ${phone ? `<tr><td>Телефон:</td><td>${phone}</td></tr>` : ""}
+        ${email ? `<tr><td>E-mail:</td><td>${email}</td></tr>` : ""}
+        <tr><td>Регион:</td><td>${regionLabel}</td></tr>
+        ${docType === "kp" ? `<tr><td>Срок действия КП:</td><td>${validDays} дней</td></tr>` : ""}
+      </table>
+
+      ${(foremanName || supplyName) ? `
+      <table class="staff" style="margin-bottom:14px">
+        ${foremanName ? `<tr><td>Прораб:</td><td>${foremanName}${foremanPhone ? " — " + foremanPhone : ""}</td></tr>` : ""}
+        ${supplyName ? `<tr><td>Снабженец:</td><td>${supplyName}${supplyPhone ? " — " + supplyPhone : ""}</td></tr>` : ""}
+      </table>` : ""}
+
+      <table style="margin-bottom:16px">
+        <thead>
+          <tr>
+            <th style="text-align:left">Зона / Помещение</th>
+            <th style="text-align:right">Площадь</th>
+            ${markupPct > 0 ? `<th style="text-align:right">Наценка</th>` : ""}
+            <th style="text-align:right">Сумма</th>
+          </tr>
+        </thead>
+        <tbody>${rowsBg}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="${markupPct > 0 ? 3 : 2}">ИТОГО</td>
+            <td style="text-align:right">${fmtPrice(totalAll)}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="signs">
+        <div class="sign">Заказчик${customer ? ": " + customer : ""}</div>
+        <div class="sign">Подрядчик${contractor ? ": " + contractor : ""}</div>
+      </div>
+      <p class="footer">Расчёт ориентировочный. Окончательная стоимость определяется после выезда специалиста и подписания договора.</p>
+    </body></html>`;
+
+    const win = window.open("", "_blank", "width=900,height=700");
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      setTimeout(() => { win.print(); setPrinting(false); }, 300);
+    } else {
       setPrinting(false);
-    }, 100);
+    }
   };
 
   return (
@@ -168,99 +254,6 @@ export default function OfficeExportPanel({ exportState, onChange, zones, totalA
         </Button>
       </div>
 
-      {/* ── ПЕЧАТНАЯ ФОРМА ─────────────────────────────────────────────────────── */}
-      <style>{`
-        @media print {
-          body > *:not(#office-print-doc) { display: none !important; }
-          #office-print-doc { display: block !important; }
-          @page { margin: 15mm; }
-        }
-      `}</style>
-
-      <div id="office-print-doc" style={{ display: "none" }}>
-        <div style={{ fontFamily: "Arial, sans-serif", fontSize: "12px", color: "#111" }}>
-          {/* Заголовок */}
-          <div style={{ textAlign: "center", marginBottom: "16px" }}>
-            <h1 style={{ fontSize: "16px", fontWeight: "bold", margin: 0 }}>
-              {docType === "smeta" ? "СМЕТА" : "КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ"}
-            </h1>
-            <div style={{ fontSize: "11px", color: "#555", marginTop: "4px" }}>
-              на выполнение работ по коммерческому помещению
-            </div>
-          </div>
-
-          {/* Реквизиты */}
-          {(customer || contractor || address) && (
-            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "14px" }}>
-              <tbody>
-                {customer && <tr><td style={{ width: "140px", color: "#555", paddingBottom: "4px" }}>Заказчик:</td><td style={{ fontWeight: "bold" }}>{customer}</td></tr>}
-                {contractor && <tr><td style={{ color: "#555", paddingBottom: "4px" }}>Подрядчик:</td><td style={{ fontWeight: "bold" }}>{contractor}</td></tr>}
-                {address && <tr><td style={{ color: "#555", paddingBottom: "4px" }}>Адрес объекта:</td><td>{address}</td></tr>}
-                {phone && <tr><td style={{ color: "#555", paddingBottom: "4px" }}>Телефон:</td><td>{phone}</td></tr>}
-                {email && <tr><td style={{ color: "#555", paddingBottom: "4px" }}>E-mail:</td><td>{email}</td></tr>}
-                <tr><td style={{ color: "#555", paddingBottom: "4px" }}>Регион:</td><td>{regionLabel}</td></tr>
-                {docType === "kp" && <tr><td style={{ color: "#555", paddingBottom: "4px" }}>Срок действия:</td><td>{validDays} дней</td></tr>}
-              </tbody>
-            </table>
-          )}
-
-          {/* Ответственные */}
-          {(foremanName || supplyName) && (
-            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "14px", backgroundColor: "#f9f9f9", padding: "8px" }}>
-              <tbody>
-                {foremanName && <tr><td style={{ width: "140px", color: "#555", paddingBottom: "4px" }}>Прораб:</td><td>{foremanName}{foremanPhone ? ` — ${foremanPhone}` : ""}</td></tr>}
-                {supplyName && <tr><td style={{ color: "#555" }}>Снабженец:</td><td>{supplyName}{supplyPhone ? ` — ${supplyPhone}` : ""}</td></tr>}
-              </tbody>
-            </table>
-          )}
-
-          {/* Таблица по зонам */}
-          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "16px" }}>
-            <thead>
-              <tr style={{ backgroundColor: "#1e3a5f", color: "white" }}>
-                <th style={{ padding: "7px 10px", textAlign: "left", fontSize: "11px" }}>Зона / Помещение</th>
-                <th style={{ padding: "7px 10px", textAlign: "right", fontSize: "11px" }}>Площадь, м²</th>
-                {markupPct > 0 && <th style={{ padding: "7px 10px", textAlign: "right", fontSize: "11px" }}>Наценка</th>}
-                <th style={{ padding: "7px 10px", textAlign: "right", fontSize: "11px" }}>Сумма</th>
-              </tr>
-            </thead>
-            <tbody>
-              {zones.map((z, i) => (
-                <tr key={z.id} style={{ backgroundColor: i % 2 === 0 ? "#fff" : "#f5f7fa" }}>
-                  <td style={{ padding: "6px 10px", borderBottom: "1px solid #e5e7eb" }}>{z.name}</td>
-                  <td style={{ padding: "6px 10px", textAlign: "right", borderBottom: "1px solid #e5e7eb" }}>{z.area}</td>
-                  {markupPct > 0 && <td style={{ padding: "6px 10px", textAlign: "right", borderBottom: "1px solid #e5e7eb" }}>{markupPct}%</td>}
-                  <td style={{ padding: "6px 10px", textAlign: "right", fontWeight: "bold", borderBottom: "1px solid #e5e7eb" }}>{fmtPrice(z.totalPrice)}</td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr style={{ backgroundColor: "#1e3a5f", color: "white" }}>
-                <td colSpan={markupPct > 0 ? 3 : 2} style={{ padding: "8px 10px", fontWeight: "bold" }}>ИТОГО</td>
-                <td style={{ padding: "8px 10px", textAlign: "right", fontWeight: "bold", fontSize: "14px" }}>{fmtPrice(totalAll)}</td>
-              </tr>
-            </tfoot>
-          </table>
-
-          {/* Подписи */}
-          <div style={{ marginTop: "32px", display: "flex", justifyContent: "space-between", gap: "24px" }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ borderTop: "1px solid #111", paddingTop: "4px", fontSize: "11px", color: "#555" }}>
-                Заказчик{customer ? `: ${customer}` : ""}
-              </div>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ borderTop: "1px solid #111", paddingTop: "4px", fontSize: "11px", color: "#555" }}>
-                Подрядчик{contractor ? `: ${contractor}` : ""}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginTop: "20px", fontSize: "10px", color: "#888", textAlign: "center" }}>
-            Расчёт ориентировочный. Окончательная стоимость определяется после выезда специалиста и подписания договора.
-          </div>
-        </div>
-      </div>
     </Card>
   );
 }
