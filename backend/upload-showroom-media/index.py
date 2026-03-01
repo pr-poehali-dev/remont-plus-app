@@ -68,7 +68,7 @@ def handler(event: dict, context) -> dict:
         ContentType=content_type,
     )
 
-    cdn_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/files/{file_key}"
+    cdn_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{file_key}"
 
     return {
         'statusCode': 200,
