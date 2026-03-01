@@ -132,17 +132,31 @@ export default function OfficeCalc() {
 
             {/* Регион */}
             <Card className="p-4">
-              <Label className="text-xs text-gray-500 mb-2 block">Регион</Label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {REGIONS.map(r => (
-                  <button key={r.id} type="button" onClick={() => handleRegionChange(r.id)}
-                    className={`px-2 py-1.5 rounded-lg border text-xs font-medium transition-all ${
-                      regionId === r.id ? "bg-blue-600 text-white border-blue-600" : "border-gray-200 text-gray-600 hover:border-blue-400"
-                    }`}>
-                    {r.label}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-xs text-gray-500">Регион объекта</Label>
+                <span className="text-xs text-blue-600 font-medium">
+                  ×{REGIONS.find(r => r.id === regionId)?.coeff ?? 1.0} к ценам
+                </span>
               </div>
+              <select
+                value={regionId}
+                onChange={e => handleRegionChange(e.target.value)}
+                className="w-full h-9 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                {Object.entries(
+                  REGIONS.reduce<Record<string, typeof REGIONS>>((acc, r) => {
+                    if (!acc[r.group]) acc[r.group] = [];
+                    acc[r.group].push(r);
+                    return acc;
+                  }, {})
+                ).map(([group, items]) => (
+                  <optgroup key={group} label={group}>
+                    {items.map(r => (
+                      <option key={r.id} value={r.id}>{r.label}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
             </Card>
 
             {/* Вкладки зон */}
