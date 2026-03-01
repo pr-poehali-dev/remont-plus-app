@@ -50,6 +50,7 @@ import BathHouse from "./pages/BathHouse";
 import BathHousePrint from "./pages/BathHousePrint";
 import FrameHouse from "./pages/FrameHouse";
 import FrameHousePrint from "./pages/FrameHousePrint";
+import RbcParser from "./pages/RbcParser";
 import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
@@ -111,6 +112,7 @@ const App = () => {
             <Route path="/framehouse" element={<FrameHouse />} />
             <Route path="/framehouse/print" element={<FrameHousePrint />} />
             <Route path="/auth/yandex/callback" element={<YandexCallback />} />
+            <Route path="/rbc-parser" element={<RbcParser />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

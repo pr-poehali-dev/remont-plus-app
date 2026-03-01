@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "List companies from category page 1",
+      "method": "GET",
+      "path": "/?action=list&category=924-stroitelnye_otdelochnye_raboty&page=1",
+      "expectedStatus": 200,
+      "expectedBody": { "current_page": 1 },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
