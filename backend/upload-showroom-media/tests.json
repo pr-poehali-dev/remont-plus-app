@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Reject unsupported file type",
+      "method": "POST",
+      "path": "/",
+      "body": {"content_type": "application/pdf", "file_data": "dGVzdA=="},
+      "expectedStatus": 400
+    }
+  ]
+}

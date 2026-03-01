@@ -45,8 +45,8 @@ def handler(event: dict, context) -> dict:
         elif method == 'POST':
             data = json.loads(event.get('body') or '{}')
             cur.execute(
-                '''INSERT INTO showroom_items (title, description, room, style, area, materials, image, designer, features, aspect_ratio, color, sort_order)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                '''INSERT INTO showroom_items (title, description, room, style, area, materials, image, video_url, designer, features, aspect_ratio, color, sort_order)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                    RETURNING *''',
                 (
                     data.get('title', ''),
@@ -56,6 +56,7 @@ def handler(event: dict, context) -> dict:
                     data.get('area', ''),
                     data.get('materials', []),
                     data.get('image', ''),
+                    data.get('video_url', ''),
                     data.get('designer', ''),
                     data.get('features', []),
                     data.get('aspect_ratio', 'square'),
@@ -74,7 +75,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 '''UPDATE showroom_items SET
                     title = %s, description = %s, room = %s, style = %s, area = %s,
-                    materials = %s, image = %s, designer = %s, features = %s,
+                    materials = %s, image = %s, video_url = %s, designer = %s, features = %s,
                     aspect_ratio = %s, color = %s, sort_order = %s, updated_at = NOW()
                    WHERE id = %s RETURNING *''',
                 (
@@ -85,6 +86,7 @@ def handler(event: dict, context) -> dict:
                     data.get('area', ''),
                     data.get('materials', []),
                     data.get('image', ''),
+                    data.get('video_url', ''),
                     data.get('designer', ''),
                     data.get('features', []),
                     data.get('aspect_ratio', 'square'),

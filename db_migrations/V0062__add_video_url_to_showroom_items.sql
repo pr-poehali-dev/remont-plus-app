@@ -1,0 +1,1 @@
+ALTER TABLE showroom_items ADD COLUMN IF NOT EXISTS video_url TEXT DEFAULT '';
