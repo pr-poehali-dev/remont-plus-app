@@ -60,6 +60,30 @@ function toBase64(file: File): Promise<string> {
   });
 }
 
+function captureVideoThumbnail(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.muted = true;
+    video.playsInline = true;
+    video.src = url;
+    video.onloadeddata = () => {
+      video.currentTime = 1;
+    };
+    video.onseeked = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 360;
+      canvas.getContext("2d")!.drawImage(video, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      resolve(dataUrl.split(",")[1]);
+    };
+    video.onerror = reject;
+  });
+}
+
 export default function AdminShowroomTab({ items, onReload }: Props) {
   const [editing, setEditing] = useState<ShowroomItemDB | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -148,8 +172,26 @@ export default function AdminShowroomTab({ items, onReload }: Props) {
         setUploadError(data.error || "Ошибка загрузки");
         return;
       }
-      if (type === "photo") setField("image", data.url);
-      else setField("video_url", data.url);
+      if (type === "photo") {
+        setField("image", data.url);
+      } else {
+        setField("video_url", data.url);
+        // Автоматически генерируем обложку из видео если фото не задано
+        try {
+          const thumbBase64 = await captureVideoThumbnail(file);
+          const thumbRes = await fetch(UPLOAD_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content_type: "image/jpeg", file_data: thumbBase64 }),
+          });
+          if (thumbRes.ok) {
+            const thumbData = await thumbRes.json();
+            setForm((f) => ({ ...f, video_url: data.url, image: f.image || thumbData.url }));
+          }
+        } catch {
+          // превью не критично
+        }
+      }
     } catch {
       setUploadError("Ошибка при загрузке файла");
     } finally {
