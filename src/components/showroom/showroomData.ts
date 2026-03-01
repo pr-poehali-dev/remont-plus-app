@@ -11,6 +11,7 @@ export interface ShowroomItem {
   features: string[];
   aspectRatio?: "tall" | "wide" | "square";
   color?: string;
+  videoUrl?: string;
 }
 
 export interface ExampleImage {

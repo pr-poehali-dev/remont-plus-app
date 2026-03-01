@@ -29,6 +29,14 @@ export default function ShowroomItemCard({ item, onClick }: ShowroomItemCardProp
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+        {item.videoUrl && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <Icon name="Play" size={20} className="text-white ml-0.5" />
+            </div>
+          </div>
+        )}
+
         <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
           <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-white/90 text-gray-800 backdrop-blur-sm shadow-sm">
             {item.room}

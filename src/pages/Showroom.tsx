@@ -28,6 +28,7 @@ function dbItemToShowroom(item: Record<string, unknown>): ShowroomItem {
     features: (item.features as string[]) || [],
     aspectRatio: (item.aspect_ratio as "tall" | "wide" | "square") || "square",
     color: item.color as string,
+    videoUrl: (item.video_url as string) || "",
   };
 }
 
@@ -292,12 +293,24 @@ export default function Showroom() {
           )}
 
           <div className="flex flex-col lg:flex-row items-center gap-6 max-w-5xl w-full max-h-[90vh]">
-            <div className="flex-1 flex items-center justify-center min-h-0">
-              <img
-                src={lightbox.image}
-                alt={lightbox.title}
-                className="max-w-full max-h-[70vh] lg:max-h-[85vh] object-contain rounded-xl"
-              />
+            <div className="flex-1 flex flex-col items-center justify-center min-h-0 gap-3">
+              {lightbox.videoUrl ? (
+                <video
+                  key={lightbox.videoUrl}
+                  src={lightbox.videoUrl}
+                  className="max-w-full max-h-[55vh] lg:max-h-[70vh] rounded-xl bg-black"
+                  controls
+                  autoPlay
+                  playsInline
+                />
+              ) : null}
+              {lightbox.image && (
+                <img
+                  src={lightbox.image}
+                  alt={lightbox.title}
+                  className={`max-w-full object-contain rounded-xl ${lightbox.videoUrl ? "max-h-[20vh]" : "max-h-[70vh] lg:max-h-[85vh]"}`}
+                />
+              )}
             </div>
 
             <div className="lg:w-72 bg-white rounded-2xl p-6 flex-shrink-0 w-full lg:self-center">
