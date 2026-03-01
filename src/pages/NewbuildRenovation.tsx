@@ -15,6 +15,7 @@ import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 import NewbuildConfigForm from "@/components/calculator/newbuild/NewbuildConfigForm";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 
 const MARKUP_KEY = "newbuild_markup_pct";
 const REGION_KEY = "newbuild_region";
@@ -517,6 +518,11 @@ export default function NewbuildRenovation() {
               <MaterialsTable
                 items={calcNewbuildMaterials(activeZone, activeBreakdown, regionId)}
                 accentColor="indigo"
+              />
+
+              <CalcOrderForm
+                calcType="Новостройка"
+                total={`от ${fmt(totalSum)} ₽`}
               />
 
               {/* Управление объектом — один раз на весь объект */}

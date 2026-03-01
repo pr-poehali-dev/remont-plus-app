@@ -17,6 +17,7 @@ import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 import TurnkeyConfigForm from "@/components/calculator/turnkey/TurnkeyConfigForm";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 
 const MARKUP_KEY = "turnkey_markup_pct";
 const REGION_KEY = "turnkey_region";
@@ -312,6 +313,11 @@ export default function TurnkeyRenovation() {
                   </div>
                 </div>
               </Card>
+
+              <CalcOrderForm
+                calcType="Ремонт под ключ"
+                total={`от ${fmt(breakdown.total)} ₽`}
+              />
 
               {/* Ведомость материалов */}
               <MaterialsTable

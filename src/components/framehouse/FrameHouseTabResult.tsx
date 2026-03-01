@@ -13,6 +13,7 @@ import type { FrameHouseConfig } from "@/components/calculator/framehouse/FrameH
 import type { FrameHouseBreakdown } from "@/components/calculator/framehouse/frameHouseUtils";
 import { fmt, calcFrameHouseMaterials } from "@/components/calculator/framehouse/frameHouseUtils";
 import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 
 interface ExportState {
   showExportPanel: boolean;
@@ -137,6 +138,11 @@ export default function FrameHouseTabResult({
 
         {/* Ведомость материалов */}
         <MaterialsTable items={matItems} accentColor="green" />
+
+        <CalcOrderForm
+          calcType="Каркасный дом"
+          total={`от ${fmt(bd.total)} ₽`}
+        />
 
         {/* CTA */}
         <Card className="p-4 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">

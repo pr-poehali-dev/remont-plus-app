@@ -13,6 +13,7 @@ import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 import ElectricsConfigForm from "@/components/calculator/electrics/ElectricsConfigForm";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 
 const MARKUP_KEY = "electrics_markup_pct";
 const REGION_KEY = "electrics_region";
@@ -365,6 +366,11 @@ export default function Electrics() {
                 </p>
               )}
             </Card>
+
+            <CalcOrderForm
+              calcType="Электрика"
+              total={`от ${fmt(totalSum)} ₽`}
+            />
           </div>
 
           {/* Правая панель — редактор */}

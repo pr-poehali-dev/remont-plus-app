@@ -17,6 +17,7 @@ import WindowConfigForm from "@/components/calculator/windows/WindowConfigForm";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import DocsTab from "@/components/calculator/DocsTab";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 
 const MARKUP_KEY = "windows_markup_pct";
 
@@ -333,6 +334,13 @@ export default function Windows() {
                         Создать документ
                       </Button>
                     </Card>
+                  )}
+
+                  {configs.length > 0 && (
+                    <CalcOrderForm
+                      calcType="Окна"
+                      total={`от ${fmt(totalSum)} ₽`}
+                    />
                   )}
                 </div>
               </div>

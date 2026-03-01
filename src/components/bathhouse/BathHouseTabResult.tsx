@@ -8,6 +8,7 @@ import type { BathHouseConfig } from "@/components/calculator/bathhouse/BathHous
 import type { BathHouseBreakdown } from "@/components/calculator/bathhouse/bathHouseUtils";
 import { fmt, calcBathHouseMaterials } from "@/components/calculator/bathhouse/bathHouseUtils";
 import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 
 const BREAKDOWN_LABELS: { key: string; label: string; icon: string }[] = [
   { key: "foundation", label: "Фундамент", icon: "Building2" },
@@ -128,6 +129,11 @@ export default function BathHouseTabResult({
 
         {/* Ведомость материалов */}
         <MaterialsTable items={matItems} accentColor="amber" />
+
+        <CalcOrderForm
+          calcType="Баня"
+          total={`от ${fmt(bd.total)} ₽`}
+        />
 
         {/* CTA партнёры */}
         <Card className="p-5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200">

@@ -13,6 +13,7 @@ import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 import FlooringConfigForm from "@/components/calculator/flooring/FlooringConfigForm";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 
 const MARKUP_KEY = "flooring_markup_pct";
 const REGION_KEY = "flooring_region";
@@ -365,6 +366,11 @@ export default function Flooring() {
                 </p>
               )}
             </Card>
+
+            <CalcOrderForm
+              calcType="Полы"
+              total={`от ${fmt(totalSum)} ₽`}
+            />
           </div>
 
           {/* Правая панель — редактор */}

@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import { CEILING_TYPES } from "./CeilingTypes";
 import type { CeilingConfig } from "./CeilingTypes";
 import { calcPrice, fmt } from "./ceilingUtils";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 
 const ROOM_PRESETS = ["Гостиная", "Спальня", "Кухня", "Детская", "Коридор", "Ванная", "Кабинет"];
 
@@ -177,6 +178,11 @@ export default function CeilingsZoneList({
           </p>
         )}
       </Card>
+
+      <CalcOrderForm
+        calcType="Потолки"
+        total={`от ${fmt(totalSum)} ₽`}
+      />
     </div>
   );
 }
