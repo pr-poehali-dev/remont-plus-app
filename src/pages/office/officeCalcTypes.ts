@@ -15,7 +15,23 @@ export type FlooringType = "none" | "linoleum" | "carpet" | "porcelain" | "epoxy
 export type CeilingType = "none" | "armstrong" | "stretch" | "gypsum" | "grillato" | "exposed";
 export type PartitionType = "none" | "gypsum" | "glass" | "glass_full" | "mobile";
 
-export interface ZoneConfig {
+// Блок-флаги — включает/выключает целый раздел из расчёта
+export interface ZoneBlocks {
+  blockFinish: boolean;
+  blockFlooring: boolean;
+  blockCeiling: boolean;
+  blockPartitions: boolean;
+  blockHeating: boolean;
+  blockVentilation: boolean;
+  blockElectric: boolean;
+  blockNetwork: boolean;
+  blockAlarm: boolean;
+  blockCCTV: boolean;
+  blockAccess: boolean;
+  blockFire: boolean;
+}
+
+export interface ZoneConfig extends ZoneBlocks {
   id: string;
   name: string;
   roomType: RoomType;
@@ -273,27 +289,33 @@ export function calcPrice(z: ZoneConfig, regionId: string, markupPct: number): n
 
   let total = 0;
 
-  total += finish.pricePerM2 * z.area * room.coeff;
-  total += flooring.pricePerM2 * z.area;
-  total += ceiling.pricePerM2 * z.area;
-  total += partition.pricePerLM * z.partitionLinearM;
-  total += heating.pricePerM2 * z.area;
-  total += vent.pricePerM2 * z.area;
-  total += z.airConditioners * 28000;
-  total += z.electricPoints * 3500;
-  if (z.lighting) total += z.area * 1800;
-  if (z.ups) total += 85000;
-  total += network.pricePerM2 * z.area;
-  total += alarm.priceBase + z.alarmSensors * 4500;
-  if (z.cctvType !== "none") total += cctv.dvr + cctv.pricePerCamera * z.cctvCameras;
-  if (z.accessType !== "none") total += access.panel + access.pricePerDoor * z.accessDoors;
-  if (z.fireSignaling) total += 45000 + z.fireSensors * 2800;
-  total += z.fireExtinguishers * 3500;
-  total += fireProt.base + fireProt.pricePerHead * z.fireSprinklerHeads;
-  total += metalFP.pricePerM2 * z.metalFireProofM2;
-  total += woodFP.pricePerM2 * z.woodFireProofM2;
-  total += z.fireDoors * 38000;
-  if (z.fireHydrantCheck) total += 8500 + z.fireHydrantCount * 3200;
+  if (z.blockFinish)     total += finish.pricePerM2 * z.area * room.coeff;
+  if (z.blockFlooring)   total += flooring.pricePerM2 * z.area;
+  if (z.blockCeiling)    total += ceiling.pricePerM2 * z.area;
+  if (z.blockPartitions) total += partition.pricePerLM * z.partitionLinearM;
+  if (z.blockHeating)    total += heating.pricePerM2 * z.area;
+  if (z.blockVentilation) {
+    total += vent.pricePerM2 * z.area;
+    total += z.airConditioners * 28000;
+  }
+  if (z.blockElectric) {
+    total += z.electricPoints * 3500;
+    if (z.lighting) total += z.area * 1800;
+    if (z.ups) total += 85000;
+  }
+  if (z.blockNetwork)    total += network.pricePerM2 * z.area;
+  if (z.blockAlarm)      total += alarm.priceBase + z.alarmSensors * 4500;
+  if (z.blockCCTV && z.cctvType !== "none") total += cctv.dvr + cctv.pricePerCamera * z.cctvCameras;
+  if (z.blockAccess && z.accessType !== "none") total += access.panel + access.pricePerDoor * z.accessDoors;
+  if (z.blockFire) {
+    if (z.fireSignaling) total += 45000 + z.fireSensors * 2800;
+    total += z.fireExtinguishers * 3500;
+    total += fireProt.base + fireProt.pricePerHead * z.fireSprinklerHeads;
+    total += metalFP.pricePerM2 * z.metalFireProofM2;
+    total += woodFP.pricePerM2 * z.woodFireProofM2;
+    total += z.fireDoors * 38000;
+    if (z.fireHydrantCheck) total += 8500 + z.fireHydrantCount * 3200;
+  }
 
   total *= region.coeff;
   total *= 1 + markupPct / 100;
@@ -305,6 +327,20 @@ export function makeZone(name = ""): ZoneConfig {
   return {
     id: `off-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     name,
+    // блок-флаги — по умолчанию все включены
+    blockFinish: true,
+    blockFlooring: true,
+    blockCeiling: true,
+    blockPartitions: true,
+    blockHeating: true,
+    blockVentilation: true,
+    blockElectric: true,
+    blockNetwork: true,
+    blockAlarm: true,
+    blockCCTV: true,
+    blockAccess: true,
+    blockFire: true,
+    // параметры
     roomType: "office",
     area: 100,
     height: 3,

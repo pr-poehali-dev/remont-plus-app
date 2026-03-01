@@ -132,11 +132,8 @@ export default function OfficeCalc() {
 
             {/* Регион */}
             <Card className="p-4">
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2">
                 <Label className="text-xs text-gray-500">Регион объекта</Label>
-                <span className="text-xs text-blue-600 font-medium">
-                  ×{REGIONS.find(r => r.id === regionId)?.coeff ?? 1.0} к ценам
-                </span>
               </div>
               <select
                 value={regionId}
