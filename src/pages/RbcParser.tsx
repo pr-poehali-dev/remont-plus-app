@@ -168,9 +168,31 @@ export default function RbcParser() {
     setPhase("done");
   }, [category, pageTo, source]);
 
+  const [filterPhone, setFilterPhone] = useState(false);
+  const [filterEmail, setFilterEmail] = useState(false);
+  const [filterSite, setFilterSite] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const doneCount = companies.filter(c => c.status === "done").length;
   const hasData = doneCount > 0;
   const quickCategories = source === "rbc" ? RBC_CATEGORIES : ORGPAGE_CATEGORIES;
+
+  const filteredCompanies = companies.filter(c => {
+    if (c.status !== "done") return false;
+    if (filterPhone && !c.phone) return false;
+    if (filterEmail && !c.email) return false;
+    if (filterSite && !c.site) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return (
+        c.name?.toLowerCase().includes(q) ||
+        c.phone?.includes(q) ||
+        c.email?.toLowerCase().includes(q) ||
+        c.address?.toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -188,12 +210,12 @@ export default function RbcParser() {
           </div>
           {hasData && (
             <Button
-              onClick={() => downloadCsv(companies, source)}
+              onClick={() => downloadCsv(filteredCompanies, source)}
               className="ml-auto bg-green-600 hover:bg-green-700 text-white"
               size="sm"
             >
               <Icon name="Download" size={15} className="mr-1.5" />
-              Скачать CSV ({doneCount})
+              Скачать CSV ({filteredCompanies.length})
             </Button>
           )}
         </div>
@@ -326,6 +348,48 @@ export default function RbcParser() {
           </div>
         )}
 
+        {/* Фильтры */}
+        {hasData && (
+          <Card className="p-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm font-medium text-gray-600 flex items-center gap-1.5">
+                <Icon name="Filter" size={14} />
+                Фильтры:
+              </span>
+              {[
+                { label: "Есть телефон", value: filterPhone, set: setFilterPhone },
+                { label: "Есть email", value: filterEmail, set: setFilterEmail },
+                { label: "Есть сайт", value: filterSite, set: setFilterSite },
+              ].map(f => (
+                <button
+                  key={f.label}
+                  type="button"
+                  onClick={() => f.set(!f.value)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                    f.value
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "border-gray-200 text-gray-600 hover:border-blue-400 bg-white"
+                  }`}
+                >
+                  {f.value && <span className="mr-1">✓</span>}
+                  {f.label}
+                </button>
+              ))}
+              <div className="ml-auto flex items-center gap-2">
+                <Input
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Поиск по названию, телефону..."
+                  className="h-8 text-sm w-56"
+                />
+                <span className="text-xs text-gray-400 whitespace-nowrap">
+                  {filteredCompanies.length} из {doneCount}
+                </span>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Таблица */}
         {companies.length > 0 && (
           <Card className="overflow-hidden">
@@ -344,7 +408,7 @@ export default function RbcParser() {
                   </tr>
                 </thead>
                 <tbody>
-                  {companies.map((c, i) => (
+                  {filteredCompanies.map((c, i) => (
                     <tr key={c.url} className="border-t hover:bg-gray-50">
                       <td className="px-3 py-2 text-gray-400 text-xs">{i + 1}</td>
                       <td className="px-3 py-2 max-w-[200px]">
