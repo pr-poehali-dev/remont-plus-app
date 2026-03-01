@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = "https://functions.poehali.dev/f301a75f-bbd1-4c9d-91ee-b7346d13d460";
 
-type Source = "rbc" | "orgpage";
+type Source = "rbc";
 
 interface Company {
   url: string;
@@ -32,12 +32,7 @@ const RBC_CATEGORIES = [
   { label: "Дизайн интерьера", slug: "884-dizayn_interera" },
 ];
 
-const ORGPAGE_CATEGORIES = [
-  { label: "Ремонт квартир", slug: "rossiya/%D1%80%D0%B5%D0%BC%D0%BE%D0%BD%D1%82_%D0%BA%D0%B2%D0%B0%D1%80%D1%82%D0%B8%D1%80" },
-  { label: "Строительство", slug: "rossiya/stroitelstvo" },
-  { label: "Электрика", slug: "rossiya/elektrika" },
-  { label: "Сантехника", slug: "rossiya/santehnika" },
-];
+
 
 function downloadCsv(companies: Company[], source: Source) {
   const bom = "\uFEFF";
@@ -72,7 +67,7 @@ function downloadCsv(companies: Company[], source: Source) {
 
 export default function RbcParser() {
   const navigate = useNavigate();
-  const [source, setSource] = useState<Source>("rbc");
+  const source: Source = "rbc";
   const [category, setCategory] = useState(RBC_CATEGORIES[0].slug);
   const [pageTo, setPageTo] = useState(3);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -82,15 +77,6 @@ export default function RbcParser() {
   const [error, setError] = useState("");
 
   const apiUrl = (path: string) => `${API_BASE}${path}`;
-
-  const handleSourceChange = (s: Source) => {
-    setSource(s);
-    setCompanies([]);
-    setPhase("idle");
-    setError("");
-    if (s === "rbc") setCategory(RBC_CATEGORIES[0].slug);
-    else setCategory(ORGPAGE_CATEGORIES[0].slug);
-  };
 
   const collectList = useCallback(async () => {
     setLoading(true);
@@ -175,24 +161,27 @@ export default function RbcParser() {
 
   const doneCount = companies.filter(c => c.status === "done").length;
   const hasData = doneCount > 0;
-  const quickCategories = source === "rbc" ? RBC_CATEGORIES : ORGPAGE_CATEGORIES;
+  const quickCategories = RBC_CATEGORIES;
 
-  const filteredCompanies = companies.filter(c => {
-    if (c.status !== "done") return false;
-    if (filterPhone && !c.phone) return false;
-    if (filterEmail && !c.email) return false;
-    if (filterSite && !c.site) return false;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      return (
-        c.name?.toLowerCase().includes(q) ||
-        c.phone?.includes(q) ||
-        c.email?.toLowerCase().includes(q) ||
-        c.address?.toLowerCase().includes(q)
-      );
+  const visibleCompanies = companies.filter(c => {
+    if (c.status === "done") {
+      if (filterPhone && !c.phone) return false;
+      if (filterEmail && !c.email) return false;
+      if (filterSite && !c.site) return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return (
+          c.name?.toLowerCase().includes(q) ||
+          c.phone?.includes(q) ||
+          c.email?.toLowerCase().includes(q) ||
+          c.address?.toLowerCase().includes(q)
+        );
+      }
     }
     return true;
   });
+
+  const filteredCompanies = visibleCompanies.filter(c => c.status === "done");
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -228,37 +217,9 @@ export default function RbcParser() {
             Параметры сбора
           </h2>
 
-          {/* Выбор источника */}
-          <div className="mb-4">
-            <Label className="text-sm mb-2 block">Источник данных</Label>
-            <div className="flex gap-2">
-              {(["rbc", "orgpage"] as Source[]).map(s => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => handleSourceChange(s)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
-                    source === s
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "border-gray-200 text-gray-600 hover:border-blue-400 hover:text-blue-600 bg-white"
-                  }`}
-                >
-                  {s === "rbc" ? "РБК Компании" : "Orgpage.ru"}
-                </button>
-              ))}
-            </div>
-            <p className="text-xs text-gray-400 mt-1.5">
-              {source === "rbc"
-                ? "companies.rbc.ru — ИНН, телефон, email, сайт, адрес"
-                : "orgpage.ru — телефон, email, сайт, адрес, рейтинг и отзывы"}
-            </p>
-          </div>
-
           <div className="grid sm:grid-cols-2 gap-4 mb-4">
             <div>
-              <Label className="text-sm mb-1.5 block">
-                {source === "rbc" ? "Категория (slug из URL РБК)" : "Путь категории на orgpage.ru"}
-              </Label>
+              <Label className="text-sm mb-1.5 block">Категория (slug из URL РБК)</Label>
               <Input
                 value={category}
                 onChange={e => setCategory(e.target.value)}
@@ -401,14 +362,14 @@ export default function RbcParser() {
                     <th className="px-3 py-2 text-left">Компания</th>
                     <th className="px-3 py-2 text-left">Телефон</th>
                     <th className="px-3 py-2 text-left">Email</th>
-                    {source === "orgpage" && <th className="px-3 py-2 text-left">Рейтинг</th>}
+
                     <th className="px-3 py-2 text-left">ИНН</th>
                     <th className="px-3 py-2 text-left">Сайт</th>
                     <th className="px-3 py-2 text-left w-8" />
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCompanies.map((c, i) => (
+                  {visibleCompanies.map((c, i) => (
                     <tr key={c.url} className="border-t hover:bg-gray-50">
                       <td className="px-3 py-2 text-gray-400 text-xs">{i + 1}</td>
                       <td className="px-3 py-2 max-w-[200px]">
@@ -423,17 +384,7 @@ export default function RbcParser() {
                       <td className="px-3 py-2 text-gray-600 max-w-[180px] truncate">
                         {c.status !== "loading" && (c.email || <span className="text-gray-300">—</span>)}
                       </td>
-                      {source === "orgpage" && (
-                        <td className="px-3 py-2 text-gray-600 whitespace-nowrap">
-                          {c.rating ? (
-                            <span className="flex items-center gap-1">
-                              <Icon name="Star" size={12} className="text-yellow-500 fill-yellow-500" />
-                              {c.rating}
-                              {c.reviews_count && <span className="text-xs text-gray-400">({c.reviews_count})</span>}
-                            </span>
-                          ) : <span className="text-gray-300">—</span>}
-                        </td>
-                      )}
+
                       <td className="px-3 py-2 text-gray-500 text-xs">{c.inn || ""}</td>
                       <td className="px-3 py-2 text-xs">
                         {c.site ? (
