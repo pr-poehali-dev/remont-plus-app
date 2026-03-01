@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
@@ -19,22 +19,21 @@ export default function CompaniesTable({ companies, doneCount }: Props) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const visibleCompanies = companies.filter(c => {
-    if (c.status === "done") {
-      if (filterPhone && !c.phone) return false;
-      if (filterEmail && !c.email) return false;
-      if (filterSite && !c.site) return false;
-      if (filterActive && c.egrul?.status !== "Действующая") return false;
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        return (
-          c.name?.toLowerCase().includes(q) ||
-          c.egrul?.full_name?.toLowerCase().includes(q) ||
-          c.phone?.includes(q) ||
-          c.email?.toLowerCase().includes(q) ||
-          c.address?.toLowerCase().includes(q) ||
-          c.inn?.includes(q)
-        );
-      }
+    if (c.status !== "done") return true;
+    if (filterPhone && !c.phone) return false;
+    if (filterEmail && !c.email) return false;
+    if (filterSite && !c.site) return false;
+    if (filterActive && c.egrul?.status !== "Действующая") return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return (
+        c.name?.toLowerCase().includes(q) ||
+        c.egrul?.full_name?.toLowerCase().includes(q) ||
+        c.phone?.includes(q) ||
+        c.email?.toLowerCase().includes(q) ||
+        c.address?.toLowerCase().includes(q) ||
+        c.inn?.includes(q)
+      );
     }
     return true;
   });
@@ -95,9 +94,8 @@ export default function CompaniesTable({ companies, doneCount }: Props) {
             </thead>
             <tbody>
               {visibleCompanies.map((c, i) => (
-                <>
+                <Fragment key={c.url}>
                   <tr
-                    key={c.url}
                     className={`border-t hover:bg-gray-50 cursor-pointer ${expandedRow === c.url ? "bg-indigo-50/50" : ""}`}
                     onClick={() => setExpandedRow(expandedRow === c.url ? null : c.url)}
                   >
@@ -140,7 +138,7 @@ export default function CompaniesTable({ companies, doneCount }: Props) {
                     </td>
                   </tr>
                   {expandedRow === c.url && c.egrul && !c.egrul.error && (
-                    <tr key={`${c.url}-expand`} className="bg-indigo-50/60 border-t border-indigo-100">
+                    <tr className="bg-indigo-50/60 border-t border-indigo-100">
                       <td colSpan={9} className="px-4 py-3">
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5 text-xs">
                           {c.egrul.full_name && <div><span className="text-gray-400">Полное название:</span> <span className="font-medium">{c.egrul.full_name}</span></div>}
@@ -154,7 +152,7 @@ export default function CompaniesTable({ companies, doneCount }: Props) {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>
