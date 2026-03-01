@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
 import { DEFAULT_BATHHOUSE_CONFIG } from "@/components/calculator/bathhouse/BathHouseTypes";
@@ -8,6 +8,8 @@ import BathHouseHeader from "@/components/bathhouse/BathHouseHeader";
 import BathHouseTabConfig from "@/components/bathhouse/BathHouseTabConfig";
 import BathHouseTabScheme from "@/components/bathhouse/BathHouseTabScheme";
 import BathHouseTabResult from "@/components/bathhouse/BathHouseTabResult";
+import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const REGION_KEY = "bathhouse_region";
 const MARKUP_KEY = "bathhouse_markup";
@@ -34,6 +36,7 @@ interface ExportState {
 
 export default function BathHouse() {
   const navigate = useNavigate();
+  useEffect(() => { trackCalcEvent('bathhouse', 'open'); }, []);
 
   useMeta({
     title: "Калькулятор строительства бани — АВАНГАРД",
@@ -106,6 +109,7 @@ export default function BathHouse() {
   };
 
   return (
+    <CalcAuthGate calcName="Баня под ключ" calcPath="/bathhouse">
     <div className="min-h-screen bg-[#fafaf8]">
       <BathHouseHeader
         config={config}
@@ -148,5 +152,6 @@ export default function BathHouse() {
         )}
       </div>
     </div>
+    </CalcAuthGate>
   );
 }

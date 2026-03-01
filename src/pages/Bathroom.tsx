@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
 import { DEFAULT_BATHROOM_CONFIG } from "@/components/calculator/bathroom/BathroomTypes";
@@ -9,6 +9,8 @@ import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import BathroomHeader from "@/components/bathroom/BathroomHeader";
 import BathroomZoneList from "@/components/bathroom/BathroomZoneList";
 import BathroomZoneEditor from "@/components/bathroom/BathroomZoneEditor";
+import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const MARKUP_KEY = "bathroom_markup_pct";
 const REGION_KEY = "bathroom_region";
@@ -32,6 +34,7 @@ function makeZone(name = ""): BathroomConfig {
 
 export default function Bathroom() {
   const navigate = useNavigate();
+  useEffect(() => { trackCalcEvent('bathroom', 'open'); }, []);
 
   useMeta({
     title: "Расчёт ремонта санузла",
@@ -149,6 +152,7 @@ export default function Bathroom() {
   const activeIndex = zones.findIndex(z => z.id === activeId);
 
   return (
+    <CalcAuthGate calcName="Ремонт санузла" calcPath="/bathroom">
     <div className="min-h-screen bg-gray-50">
       <BathroomHeader
         zonesCount={zones.length}
@@ -199,5 +203,6 @@ export default function Bathroom() {
         />
       )}
     </div>
+    </CalcAuthGate>
   );
 }

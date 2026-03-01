@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
 import { DEFAULT_FRAMEHOUSE_CONFIG } from "@/components/calculator/framehouse/FrameHouseTypes";
@@ -8,6 +8,8 @@ import FrameHouseHeader from "@/components/framehouse/FrameHouseHeader";
 import type { ViewTab } from "@/components/framehouse/FrameHouseHeader";
 import FrameHouseTabConfig from "@/components/framehouse/FrameHouseTabConfig";
 import FrameHouseTabResult from "@/components/framehouse/FrameHouseTabResult";
+import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const REGION_KEY = "framehouse_region";
 const MARKUP_KEY = "framehouse_markup";
@@ -32,6 +34,7 @@ interface ExportState {
 
 export default function FrameHouse() {
   const navigate = useNavigate();
+  useEffect(() => { trackCalcEvent('framehouse', 'open'); }, []);
 
   useMeta({
     title: "Калькулятор строительства каркасного дома — АВАНГАРД",
@@ -104,6 +107,7 @@ export default function FrameHouse() {
   };
 
   return (
+    <CalcAuthGate calcName="Каркасный дом" calcPath="/framehouse">
     <div className="min-h-screen bg-[#f7faf7]">
       <FrameHouseHeader
         config={config}
@@ -141,5 +145,6 @@ export default function FrameHouse() {
         )}
       </div>
     </div>
+    </CalcAuthGate>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,6 +14,8 @@ import FlooringConfigForm from "@/components/calculator/flooring/FlooringConfigF
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const MARKUP_KEY = "flooring_markup_pct";
 const REGION_KEY = "flooring_region";
@@ -39,6 +41,7 @@ function makeZone(name = ""): FlooringConfig {
 
 export default function Flooring() {
   const navigate = useNavigate();
+  useEffect(() => { trackCalcEvent('flooring', 'open'); }, []);
 
   useMeta({
     title: "Расчёт напольных покрытий",
@@ -160,6 +163,7 @@ export default function Flooring() {
   const activeProduct = FLOORING_PRODUCTS.find(p => p.id === activeZone.productId);
 
   return (
+    <CalcAuthGate calcName="Напольные покрытия" calcPath="/flooring">
     <div className="min-h-screen bg-gray-50">
       {/* Шапка */}
       <header className="bg-white border-b sticky top-0 z-10">
@@ -493,5 +497,6 @@ export default function Flooring() {
         />
       )}
     </div>
+    </CalcAuthGate>
   );
 }

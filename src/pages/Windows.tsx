@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +18,8 @@ import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import DocsTab from "@/components/calculator/DocsTab";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const MARKUP_KEY = "windows_markup_pct";
 
@@ -28,6 +30,7 @@ function loadMarkup(): number {
 
 export default function Windows() {
   const navigate = useNavigate();
+  useEffect(() => { trackCalcEvent('windows', 'open'); }, []);
 
   useMeta({
     title: "Расчёт окон и остекления",
@@ -115,6 +118,7 @@ export default function Windows() {
   });
 
   return (
+    <CalcAuthGate calcName="Окна и остекление" calcPath="/windows">
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
@@ -370,5 +374,6 @@ export default function Windows() {
         />
       )}
     </div>
+    </CalcAuthGate>
   );
 }

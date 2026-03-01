@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -41,6 +43,8 @@ function makeZone(name = ""): NewbuildConfig {
 
 export default function NewbuildRenovation() {
   const navigate = useNavigate();
+
+  useEffect(() => { trackCalcEvent('newbuild', 'open'); }, []);
 
   useMeta({
     title: "Расчёт ремонта в новостройке",
@@ -168,6 +172,7 @@ export default function NewbuildRenovation() {
   const activeFlooringType = FLOORING_TYPES.find(f => f.id === activeZone.flooringType);
 
   return (
+    <CalcAuthGate calcName="Новостройка" calcPath="/newbuild">
     <div className="min-h-screen bg-gray-50">
       {/* Шапка */}
       <header className="bg-white border-b sticky top-0 z-10">
@@ -594,5 +599,6 @@ export default function NewbuildRenovation() {
         />
       )}
     </div>
+    </CalcAuthGate>
   );
 }

@@ -8,6 +8,10 @@ import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 const ADMIN_API_URL = 'https://functions.poehali.dev/874af9cd-edd6-471e-b6d4-e68c828e6dca';
+const CALC_EVENTS_URL = 'https://functions.poehali.dev/85d1f13f-3446-417d-85a1-7cc975466f50';
+
+interface CalcEventRow { calc_type: string; opens: number; calcs: number; leads: number; }
+interface CalcStats { by_calc: CalcEventRow[]; totals: { opens: number; calcs: number; leads: number } }
 
 interface Stats {
   users: {
@@ -65,9 +69,18 @@ export const AdminStats = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [userTypeFilter, setUserTypeFilter] = useState<string>('all');
+  const [calcStats, setCalcStats] = useState<CalcStats | null>(null);
   const { toast } = useToast();
 
   const adminPassword = localStorage.getItem('admin_password') || 'admin2025';
+
+  const fetchCalcStats = async () => {
+    try {
+      const res = await fetch(CALC_EVENTS_URL, { headers: { 'X-Admin-Token': adminPassword } });
+      const data = await res.json();
+      if (data.by_calc) setCalcStats(data);
+    } catch (_e) { /* ignore */ }
+  };
 
   const fetchStats = async () => {
     try {
@@ -140,7 +153,7 @@ export const AdminStats = () => {
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
-      await Promise.all([fetchStats(), fetchProjects(), fetchUsers()]);
+      await Promise.all([fetchStats(), fetchProjects(), fetchUsers(), fetchCalcStats()]);
       setIsLoading(false);
     };
     loadData();
@@ -256,6 +269,46 @@ export const AdminStats = () => {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {calcStats && (
+        <Card className="shadow-lg border-0">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Калькуляторы</CardTitle>
+              <Icon name="Calculator" size={24} className="text-primary" />
+            </div>
+            <CardDescription>Активность посетителей в калькуляторах</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 mb-5">
+              <div className="text-center p-3 bg-blue-50 rounded-xl">
+                <div className="text-2xl font-bold text-blue-600">{calcStats.totals.opens}</div>
+                <div className="text-xs text-gray-500 mt-1">Открытий</div>
+              </div>
+              <div className="text-center p-3 bg-orange-50 rounded-xl">
+                <div className="text-2xl font-bold text-orange-500">{calcStats.totals.calcs}</div>
+                <div className="text-xs text-gray-500 mt-1">Расчётов</div>
+              </div>
+              <div className="text-center p-3 bg-green-50 rounded-xl">
+                <div className="text-2xl font-bold text-green-600">{calcStats.totals.leads}</div>
+                <div className="text-xs text-gray-500 mt-1">Заявок</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {calcStats.by_calc.map((row) => (
+                <div key={row.calc_type} className="flex items-center justify-between py-2 border-b last:border-0">
+                  <span className="text-sm font-medium text-gray-700">{row.calc_type}</span>
+                  <div className="flex gap-4 text-sm">
+                    <span className="text-blue-500">{row.opens} откр.</span>
+                    <span className="text-orange-500">{row.calcs} расч.</span>
+                    <span className="text-green-600">{row.leads} заявок</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <Tabs defaultValue="projects" className="w-full">

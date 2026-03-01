@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Icon from "@/components/ui/icon";
@@ -12,6 +12,8 @@ import DocsTab from "@/components/calculator/DocsTab";
 import CeilingsHeader from "@/components/calculator/ceilings/CeilingsHeader";
 import CeilingsZoneList from "@/components/calculator/ceilings/CeilingsZoneList";
 import CeilingsZoneSummary from "@/components/calculator/ceilings/CeilingsZoneSummary";
+import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const MARKUP_KEY = "ceilings_markup_pct";
 const REGION_KEY = "ceilings_region";
@@ -36,6 +38,7 @@ function makeZone(name = "", regionId = "moscow"): CeilingConfig {
 
 export default function Ceilings() {
   const navigate = useNavigate();
+  useEffect(() => { trackCalcEvent('ceilings', 'open'); }, []);
 
   useMeta({
     title: "Расчёт натяжных потолков",
@@ -175,6 +178,7 @@ export default function Ceilings() {
   });
 
   return (
+    <CalcAuthGate calcName="Натяжные потолки" calcPath="/ceilings">
     <div className="min-h-screen bg-gray-50">
       <CeilingsHeader
         zoneCount={zones.length}
@@ -246,5 +250,6 @@ export default function Ceilings() {
         />
       )}
     </div>
+    </CalcAuthGate>
   );
 }

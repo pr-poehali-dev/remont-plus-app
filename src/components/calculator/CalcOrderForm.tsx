@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 interface Props {
   calcType: string;
@@ -27,7 +28,12 @@ export default function CalcOrderForm({ calcType, total, onClose }: Props) {
         body: JSON.stringify({ name, phone, comment, calc_type: calcType, total }),
       });
       await res.json();
-      setStatus(res.ok ? "success" : "error");
+      if (res.ok) {
+        trackCalcEvent(calcType, 'lead');
+        setStatus("success");
+      } else {
+        setStatus("error");
+      }
     } catch {
       setStatus("error");
     }

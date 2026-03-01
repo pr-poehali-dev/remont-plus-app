@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST событие открытия калькулятора",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "calc_type": "newbuild",
+        "event_type": "open"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST без event_type — ошибка",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "calc_type": "newbuild"
+      },
+      "expectedStatus": 400,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +18,8 @@ import TurnkeyConfigForm from "@/components/calculator/turnkey/TurnkeyConfigForm
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const MARKUP_KEY = "turnkey_markup_pct";
 const REGION_KEY = "turnkey_region";
@@ -40,6 +42,7 @@ function makeConfig(): TurnkeyConfig {
 
 export default function TurnkeyRenovation() {
   const navigate = useNavigate();
+  useEffect(() => { trackCalcEvent('turnkey', 'open'); }, []);
 
   useMeta({
     title: "Ремонт квартиры под ключ — расчёт стоимости",
@@ -123,6 +126,7 @@ export default function TurnkeyRenovation() {
   ].filter(r => r.value > 0);
 
   return (
+    <CalcAuthGate calcName="Ремонт под ключ" calcPath="/turnkey">
     <div className="min-h-screen bg-gray-50">
       {/* Шапка */}
       <header className="bg-white border-b sticky top-0 z-10">
@@ -336,5 +340,6 @@ export default function TurnkeyRenovation() {
         />
       )}
     </div>
+    </CalcAuthGate>
   );
 }

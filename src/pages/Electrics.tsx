@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,6 +14,8 @@ import ElectricsConfigForm from "@/components/calculator/electrics/ElectricsConf
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const MARKUP_KEY = "electrics_markup_pct";
 const REGION_KEY = "electrics_region";
@@ -39,6 +41,7 @@ function makeZone(name = ""): ElectricsConfig {
 
 export default function Electrics() {
   const navigate = useNavigate();
+  useEffect(() => { trackCalcEvent('electrics', 'open'); }, []);
 
   useMeta({
     title: "Расчёт электромонтажных работ",
@@ -156,6 +159,7 @@ export default function Electrics() {
   const activeRoomType = ROOM_TYPES.find(r => r.id === activeZone.roomType);
 
   return (
+    <CalcAuthGate calcName="Электромонтаж" calcPath="/electrics">
     <div className="min-h-screen bg-gray-50">
       {/* Шапка */}
       <header className="bg-white border-b sticky top-0 z-10">
@@ -491,5 +495,6 @@ export default function Electrics() {
         />
       )}
     </div>
+    </CalcAuthGate>
   );
 }
