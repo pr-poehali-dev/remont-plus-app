@@ -113,7 +113,8 @@ def handler(event: dict, context) -> dict:
 
     try:
         ok = send_email(to_email, subject, html)
-    except Exception:
+    except Exception as e:
+        print(f'SMTP ERROR: {e}')
         ok = False
 
     return {
