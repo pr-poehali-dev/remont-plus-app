@@ -35,6 +35,7 @@ export interface ZoneBlocks {
   blockFire: boolean;
   blockMaterials: boolean;
   blockDocs: boolean;
+  blockStaff: boolean;
 }
 
 export interface ZoneConfig extends ZoneBlocks {
@@ -76,6 +77,9 @@ export interface ZoneConfig extends ZoneBlocks {
   // Материалы
   materialsSupply: MaterialsSupply;
   materialsCoeffCustom: number;
+  // Персонал (прораб, снабженец)
+  foremanPct: number;
+  supplyPct: number;
   // Документы
   docProject: DocType;
   docEstimate: DocEstimate;
@@ -367,6 +371,12 @@ export function calcPrice(z: ZoneConfig, regionId: string, markupPct: number): n
     if (z.fireHydrantCheck) total += 8500 + z.fireHydrantCount * 3200;
   }
 
+  // Персонал — % от суммы работ до регионального коэффициента
+  if (z.blockStaff) {
+    total += total * (z.foremanPct / 100);
+    total += total * (z.supplyPct / 100);
+  }
+
   // Применяем региональный коэффициент и наценку к работам
   const laborTotal = total * region.coeff * (1 + markupPct / 100);
 
@@ -414,6 +424,7 @@ export function makeZone(name = ""): ZoneConfig {
     blockFire: true,
     blockMaterials: false,
     blockDocs: false,
+    blockStaff: false,
     // параметры
     roomType: "office",
     area: 100,
@@ -451,6 +462,9 @@ export function makeZone(name = ""): ZoneConfig {
     // Материалы
     materialsSupply: "labor_only",
     materialsCoeffCustom: 1.0,
+    // Персонал
+    foremanPct: 8,
+    supplyPct: 5,
     // Документы
     docProject: "none",
     docEstimate: "none",

@@ -295,6 +295,27 @@ export default function OfficeZoneEditor({ zone, onChange }: Props) {
         )}
       </BlockToggle>
 
+      {/* ПРОРАБ И СНАБЖЕНЕЦ */}
+      <BlockToggle enabled={zone.blockStaff} onToggle={() => onChange({ blockStaff: !zone.blockStaff })}
+        title="Прораб и снабженец" icon="HardHat">
+        <p className="text-xs text-gray-500 -mt-1 mb-2">Затраты на управление и снабжение — % от суммы работ</p>
+        <NumRow
+          label="Прораб (технадзор), %"
+          value={zone.foremanPct}
+          onChange={v => onChange({ foremanPct: v })}
+          min={0} max={30}
+        />
+        <NumRow
+          label="Снабженец (логистика), %"
+          value={zone.supplyPct}
+          onChange={v => onChange({ supplyPct: v })}
+          min={0} max={20}
+        />
+        <div className="text-xs text-gray-400 bg-gray-50 rounded px-3 py-2 mt-1">
+          Типовые значения: прораб 5–15%, снабженец 3–8% от стоимости работ
+        </div>
+      </BlockToggle>
+
     </Card>
   );
 }
