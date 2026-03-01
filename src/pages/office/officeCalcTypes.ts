@@ -14,6 +14,10 @@ export type CCTVType = "none" | "basic" | "ip_hd" | "ip_4k" | "analytics";
 export type FlooringType = "none" | "linoleum" | "carpet" | "porcelain" | "epoxy" | "raised_floor";
 export type CeilingType = "none" | "armstrong" | "stretch" | "gypsum" | "grillato" | "exposed";
 export type PartitionType = "none" | "gypsum" | "glass" | "glass_full" | "mobile";
+export type MaterialsSupply = "labor_only" | "customer" | "contractor_basic" | "contractor_full" | "turnkey";
+export type DocType = "none" | "sketch" | "working" | "bim";
+export type DocEstimate = "none" | "local" | "full" | "expertize";
+export type DocPermit = "none" | "notice" | "permit" | "full_approval";
 
 // Блок-флаги — включает/выключает целый раздел из расчёта
 export interface ZoneBlocks {
@@ -29,6 +33,8 @@ export interface ZoneBlocks {
   blockCCTV: boolean;
   blockAccess: boolean;
   blockFire: boolean;
+  blockMaterials: boolean;
+  blockDocs: boolean;
 }
 
 export interface ZoneConfig extends ZoneBlocks {
@@ -67,6 +73,17 @@ export interface ZoneConfig extends ZoneBlocks {
   fireDoors: number;
   fireHydrantCheck: boolean;
   fireHydrantCount: number;
+  // Материалы
+  materialsSupply: MaterialsSupply;
+  materialsCoeffCustom: number;
+  // Документы
+  docProject: DocType;
+  docEstimate: DocEstimate;
+  docPermit: DocPermit;
+  docAsBuilt: boolean;
+  docSro: boolean;
+  docFireAudit: boolean;
+  docEnergyCert: boolean;
   totalPrice: number;
 }
 
@@ -268,6 +285,39 @@ export const REGIONS: { id: string; label: string; coeff: number; group: string 
   { id: "other",      label: "Другой регион",         coeff: 0.74, group: "Другое" },
 ];
 
+// ─── МАТЕРИАЛЫ ────────────────────────────────────────────────────────────────
+
+export const MATERIALS_SUPPLY: { id: MaterialsSupply; label: string; description: string; coeff: number }[] = [
+  { id: "labor_only",       label: "Только работы",            description: "Материалы не входят в смету", coeff: 0 },
+  { id: "customer",         label: "Материалы заказчика",      description: "Клиент привозит сам, мы монтируем", coeff: 0 },
+  { id: "contractor_basic", label: "Материалы подрядчика — базовые", description: "Эконом-класс, проверенные бренды", coeff: 0.40 },
+  { id: "contractor_full",  label: "Материалы подрядчика — стандарт", description: "Средний сегмент, гарантия качества", coeff: 0.65 },
+  { id: "turnkey",          label: "Под ключ — премиум материалы", description: "Всё включено, материалы высокого класса", coeff: 0.90 },
+];
+
+// ─── ДОКУМЕНТЫ ────────────────────────────────────────────────────────────────
+
+export const DOC_PROJECT_OPTIONS: { id: DocType; label: string; price: number }[] = [
+  { id: "none",    label: "Без проекта",                        price: 0 },
+  { id: "sketch",  label: "Эскизный проект",                    price: 45000 },
+  { id: "working", label: "Рабочий проект (АР + ЭОМ + ВК...)", price: 120000 },
+  { id: "bim",     label: "BIM-проект (полный)",                price: 280000 },
+];
+
+export const DOC_ESTIMATE_OPTIONS: { id: DocEstimate; label: string; price: number }[] = [
+  { id: "none",      label: "Без сметы",                        price: 0 },
+  { id: "local",     label: "Локальная смета (ФЕР/ТЕР)",        price: 25000 },
+  { id: "full",      label: "Сводная смета по разделам",        price: 65000 },
+  { id: "expertize", label: "Смета + госэкспертиза",            price: 150000 },
+];
+
+export const DOC_PERMIT_OPTIONS: { id: DocPermit; label: string; price: number }[] = [
+  { id: "none",          label: "Без согласований",             price: 0 },
+  { id: "notice",        label: "Уведомление (несущ. перепланировка)", price: 18000 },
+  { id: "permit",        label: "Разрешение на перепланировку", price: 55000 },
+  { id: "full_approval", label: "Полное согласование (все ведомства)", price: 120000 },
+];
+
 // ─── CALCULATION ──────────────────────────────────────────────────────────────
 
 export function calcPrice(z: ZoneConfig, regionId: string, markupPct: number): number {
@@ -317,10 +367,32 @@ export function calcPrice(z: ZoneConfig, regionId: string, markupPct: number): n
     if (z.fireHydrantCheck) total += 8500 + z.fireHydrantCount * 3200;
   }
 
-  total *= region.coeff;
-  total *= 1 + markupPct / 100;
+  // Применяем региональный коэффициент и наценку к работам
+  const laborTotal = total * region.coeff * (1 + markupPct / 100);
 
-  return Math.round(total);
+  // Материалы — процент от стоимости работ
+  let materialsTotal = 0;
+  if (z.blockMaterials) {
+    const matSupply = MATERIALS_SUPPLY.find(m => m.id === z.materialsSupply) ?? MATERIALS_SUPPLY[0];
+    materialsTotal = laborTotal * matSupply.coeff * z.materialsCoeffCustom;
+  }
+
+  // Документы — фиксированные суммы, не зависят от площади
+  let docsTotal = 0;
+  if (z.blockDocs) {
+    const docProj = DOC_PROJECT_OPTIONS.find(d => d.id === z.docProject) ?? DOC_PROJECT_OPTIONS[0];
+    const docEst  = DOC_ESTIMATE_OPTIONS.find(d => d.id === z.docEstimate) ?? DOC_ESTIMATE_OPTIONS[0];
+    const docPerm = DOC_PERMIT_OPTIONS.find(d => d.id === z.docPermit) ?? DOC_PERMIT_OPTIONS[0];
+    docsTotal += docProj.price;
+    docsTotal += docEst.price;
+    docsTotal += docPerm.price;
+    if (z.docAsBuilt)    docsTotal += 35000;
+    if (z.docSro)        docsTotal += 45000;
+    if (z.docFireAudit)  docsTotal += 28000;
+    if (z.docEnergyCert) docsTotal += 22000;
+  }
+
+  return Math.round(laborTotal + materialsTotal + docsTotal);
 }
 
 export function makeZone(name = ""): ZoneConfig {
@@ -340,6 +412,8 @@ export function makeZone(name = ""): ZoneConfig {
     blockCCTV: true,
     blockAccess: true,
     blockFire: true,
+    blockMaterials: false,
+    blockDocs: false,
     // параметры
     roomType: "office",
     area: 100,
@@ -374,6 +448,17 @@ export function makeZone(name = ""): ZoneConfig {
     fireDoors: 1,
     fireHydrantCheck: false,
     fireHydrantCount: 0,
+    // Материалы
+    materialsSupply: "labor_only",
+    materialsCoeffCustom: 1.0,
+    // Документы
+    docProject: "none",
+    docEstimate: "none",
+    docPermit: "none",
+    docAsBuilt: false,
+    docSro: false,
+    docFireAudit: false,
+    docEnergyCert: false,
     totalPrice: 0,
   };
 }

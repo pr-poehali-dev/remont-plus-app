@@ -9,6 +9,7 @@ import {
   ROOM_TYPES, FINISH_LEVELS, FLOORING_OPTIONS, CEILING_OPTIONS, PARTITION_OPTIONS,
   HEATING_OPTIONS, VENT_OPTIONS, ALARM_OPTIONS, CCTV_OPTIONS, ACCESS_OPTIONS,
   FIRE_PROTECTION_OPTIONS, METAL_FIREPROOF_OPTIONS, WOOD_FIREPROOF_OPTIONS, NETWORK_OPTIONS,
+  MATERIALS_SUPPLY, DOC_PROJECT_OPTIONS, DOC_ESTIMATE_OPTIONS, DOC_PERMIT_OPTIONS,
   fmtPrice,
 } from "./officeCalcTypes";
 
@@ -75,27 +76,46 @@ interface Props {
 export default function OfficeSidebar({ zones, activeId, totalAll, markupPct, onSelectZone }: Props) {
   const activeZone = zones.find(z => z.id === activeId) ?? zones[0];
 
+  const az = activeZone;
+  const matSupply = MATERIALS_SUPPLY.find(m => m.id === az.materialsSupply) ?? MATERIALS_SUPPLY[0];
+  const docProj   = DOC_PROJECT_OPTIONS.find(d => d.id === az.docProject) ?? DOC_PROJECT_OPTIONS[0];
+  const docEst    = DOC_ESTIMATE_OPTIONS.find(d => d.id === az.docEstimate) ?? DOC_ESTIMATE_OPTIONS[0];
+  const docPerm   = DOC_PERMIT_OPTIONS.find(d => d.id === az.docPermit) ?? DOC_PERMIT_OPTIONS[0];
+
+  // Базовая стоимость работ (без регионального коэффициента — для разбивки)
+  const laborBase =
+    (az.blockFinish ? FINISH_LEVELS.find(f => f.id === az.finishLevel)!.pricePerM2 * az.area * (ROOM_TYPES.find(r => r.id === az.roomType)?.coeff ?? 1) : 0) +
+    (az.blockFlooring ? FLOORING_OPTIONS.find(f => f.id === az.flooring)!.pricePerM2 * az.area : 0) +
+    (az.blockCeiling ? CEILING_OPTIONS.find(c => c.id === az.ceiling)!.pricePerM2 * az.area : 0) +
+    (az.blockPartitions ? PARTITION_OPTIONS.find(p => p.id === az.partitions)!.pricePerLM * az.partitionLinearM : 0) +
+    (az.blockHeating ? HEATING_OPTIONS.find(h => h.id === az.heating)!.pricePerM2 * az.area : 0) +
+    (az.blockVentilation ? VENT_OPTIONS.find(v => v.id === az.ventilation)!.pricePerM2 * az.area + az.airConditioners * 28000 : 0) +
+    (az.blockElectric ? az.electricPoints * 3500 + (az.lighting ? az.area * 1800 : 0) + (az.ups ? 85000 : 0) : 0) +
+    (az.blockNetwork ? NETWORK_OPTIONS.find(n => n.id === az.networkType)!.pricePerM2 * az.area : 0) +
+    (az.blockAlarm ? ALARM_OPTIONS.find(a => a.id === az.alarmType)!.priceBase + az.alarmSensors * 4500 : 0) +
+    (az.blockCCTV && az.cctvType !== "none" ? CCTV_OPTIONS.find(c => c.id === az.cctvType)!.dvr + CCTV_OPTIONS.find(c => c.id === az.cctvType)!.pricePerCamera * az.cctvCameras : 0) +
+    (az.blockAccess && az.accessType !== "none" ? ACCESS_OPTIONS.find(a => a.id === az.accessType)!.panel + ACCESS_OPTIONS.find(a => a.id === az.accessType)!.pricePerDoor * az.accessDoors : 0) +
+    (az.blockFire ? (az.fireSignaling ? 45000 + az.fireSensors * 2800 : 0) + az.fireExtinguishers * 3500 + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.base + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.pricePerHead * az.fireSprinklerHeads + METAL_FIREPROOF_OPTIONS.find(m => m.id === az.metalFireProof)!.pricePerM2 * az.metalFireProofM2 + WOOD_FIREPROOF_OPTIONS.find(w => w.id === az.woodFireProof)!.pricePerM2 * az.woodFireProofM2 + az.fireDoors * 38000 + (az.fireHydrantCheck ? 8500 + az.fireHydrantCount * 3200 : 0) : 0);
+
+  const materialsVal = az.blockMaterials && matSupply.coeff > 0 ? laborBase * matSupply.coeff * az.materialsCoeffCustom : 0;
+  const docsVal = az.blockDocs ? docProj.price + docEst.price + docPerm.price + (az.docAsBuilt ? 35000 : 0) + (az.docSro ? 45000 : 0) + (az.docFireAudit ? 28000 : 0) + (az.docEnergyCert ? 22000 : 0) : 0;
+
   const breakdown = [
-    { label: "Базовая отделка", val: FINISH_LEVELS.find(f => f.id === activeZone.finishLevel)!.pricePerM2 * activeZone.area * (ROOM_TYPES.find(r => r.id === activeZone.roomType)?.coeff ?? 1) },
-    { label: "Полы", val: FLOORING_OPTIONS.find(f => f.id === activeZone.flooring)!.pricePerM2 * activeZone.area },
-    { label: "Потолок", val: CEILING_OPTIONS.find(c => c.id === activeZone.ceiling)!.pricePerM2 * activeZone.area },
-    { label: "Перегородки", val: PARTITION_OPTIONS.find(p => p.id === activeZone.partitions)!.pricePerLM * activeZone.partitionLinearM },
-    { label: "Отопление", val: HEATING_OPTIONS.find(h => h.id === activeZone.heating)!.pricePerM2 * activeZone.area },
-    { label: "Вентиляция", val: VENT_OPTIONS.find(v => v.id === activeZone.ventilation)!.pricePerM2 * activeZone.area },
-    { label: "Сплиты", val: activeZone.airConditioners * 28000 },
-    { label: "Электрика", val: activeZone.electricPoints * 3500 + (activeZone.lighting ? activeZone.area * 1800 : 0) + (activeZone.ups ? 85000 : 0) },
-    { label: "Сети (СКС)", val: NETWORK_OPTIONS.find(n => n.id === activeZone.networkType)!.pricePerM2 * activeZone.area },
-    { label: "Сигнализация", val: ALARM_OPTIONS.find(a => a.id === activeZone.alarmType)!.priceBase + activeZone.alarmSensors * 4500 },
-    { label: "Видеонаблюдение", val: activeZone.cctvType !== "none" ? (CCTV_OPTIONS.find(c => c.id === activeZone.cctvType)!.dvr + CCTV_OPTIONS.find(c => c.id === activeZone.cctvType)!.pricePerCamera * activeZone.cctvCameras) : 0 },
-    { label: "СКУД", val: activeZone.accessType !== "none" ? (ACCESS_OPTIONS.find(a => a.id === activeZone.accessType)!.panel + ACCESS_OPTIONS.find(a => a.id === activeZone.accessType)!.pricePerDoor * activeZone.accessDoors) : 0 },
-    { label: "Пожарная сигнализация", val: activeZone.fireSignaling ? (45000 + activeZone.fireSensors * 2800) : 0 },
-    { label: "Огнетушители", val: activeZone.fireExtinguishers * 3500 },
-    { label: "Пожаротушение", val: FIRE_PROTECTION_OPTIONS.find(f => f.id === activeZone.fireProtection)!.base + FIRE_PROTECTION_OPTIONS.find(f => f.id === activeZone.fireProtection)!.pricePerHead * activeZone.fireSprinklerHeads },
-    { label: "Огнезащита металла", val: METAL_FIREPROOF_OPTIONS.find(m => m.id === activeZone.metalFireProof)!.pricePerM2 * activeZone.metalFireProofM2 },
-    { label: "Огнезащита дерева", val: WOOD_FIREPROOF_OPTIONS.find(w => w.id === activeZone.woodFireProof)!.pricePerM2 * activeZone.woodFireProofM2 },
-    { label: "Прот/пож. двери", val: activeZone.fireDoors * 38000 },
-    { label: "Проверка кранов/гидрантов", val: activeZone.fireHydrantCheck ? (8500 + activeZone.fireHydrantCount * 3200) : 0 },
-  ].filter(r => r.val > 0);
+    { label: "Базовая отделка",       enabled: az.blockFinish,      val: FINISH_LEVELS.find(f => f.id === az.finishLevel)!.pricePerM2 * az.area * (ROOM_TYPES.find(r => r.id === az.roomType)?.coeff ?? 1) },
+    { label: "Полы",                  enabled: az.blockFlooring,    val: FLOORING_OPTIONS.find(f => f.id === az.flooring)!.pricePerM2 * az.area },
+    { label: "Потолок",               enabled: az.blockCeiling,     val: CEILING_OPTIONS.find(c => c.id === az.ceiling)!.pricePerM2 * az.area },
+    { label: "Перегородки",           enabled: az.blockPartitions,  val: PARTITION_OPTIONS.find(p => p.id === az.partitions)!.pricePerLM * az.partitionLinearM },
+    { label: "Отопление",             enabled: az.blockHeating,     val: HEATING_OPTIONS.find(h => h.id === az.heating)!.pricePerM2 * az.area },
+    { label: "Вентиляция + сплиты",   enabled: az.blockVentilation, val: VENT_OPTIONS.find(v => v.id === az.ventilation)!.pricePerM2 * az.area + az.airConditioners * 28000 },
+    { label: "Электрика",             enabled: az.blockElectric,    val: az.electricPoints * 3500 + (az.lighting ? az.area * 1800 : 0) + (az.ups ? 85000 : 0) },
+    { label: "Сети (СКС)",            enabled: az.blockNetwork,     val: NETWORK_OPTIONS.find(n => n.id === az.networkType)!.pricePerM2 * az.area },
+    { label: "Сигнализация",          enabled: az.blockAlarm,       val: ALARM_OPTIONS.find(a => a.id === az.alarmType)!.priceBase + az.alarmSensors * 4500 },
+    { label: "Видеонаблюдение",       enabled: az.blockCCTV && az.cctvType !== "none", val: az.cctvType !== "none" ? CCTV_OPTIONS.find(c => c.id === az.cctvType)!.dvr + CCTV_OPTIONS.find(c => c.id === az.cctvType)!.pricePerCamera * az.cctvCameras : 0 },
+    { label: "СКУД",                  enabled: az.blockAccess && az.accessType !== "none", val: az.accessType !== "none" ? ACCESS_OPTIONS.find(a => a.id === az.accessType)!.panel + ACCESS_OPTIONS.find(a => a.id === az.accessType)!.pricePerDoor * az.accessDoors : 0 },
+    { label: "Пожарная безопасность", enabled: az.blockFire,        val: (az.fireSignaling ? 45000 + az.fireSensors * 2800 : 0) + az.fireExtinguishers * 3500 + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.base + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.pricePerHead * az.fireSprinklerHeads + METAL_FIREPROOF_OPTIONS.find(m => m.id === az.metalFireProof)!.pricePerM2 * az.metalFireProofM2 + WOOD_FIREPROOF_OPTIONS.find(w => w.id === az.woodFireProof)!.pricePerM2 * az.woodFireProofM2 + az.fireDoors * 38000 + (az.fireHydrantCheck ? 8500 + az.fireHydrantCount * 3200 : 0) },
+    { label: `Материалы (${matSupply.label.toLowerCase()})`, enabled: az.blockMaterials, val: materialsVal },
+    { label: "Документация",          enabled: az.blockDocs,        val: docsVal },
+  ].filter(r => r.enabled && r.val > 0);
 
   return (
     <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
