@@ -26,8 +26,8 @@ export default function CalcOrderForm({ calcType, total, onClose }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, phone, comment, calc_type: calcType, total }),
       });
-      const data = await res.json();
-      setStatus(data.success ? "success" : "error");
+      await res.json();
+      setStatus(res.ok ? "success" : "error");
     } catch {
       setStatus("error");
     }
