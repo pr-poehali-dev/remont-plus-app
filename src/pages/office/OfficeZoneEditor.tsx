@@ -8,7 +8,7 @@ import {
   ROOM_TYPES, FINISH_LEVELS, FLOORING_OPTIONS, CEILING_OPTIONS, PARTITION_OPTIONS,
   HEATING_OPTIONS, VENT_OPTIONS, ALARM_OPTIONS, CCTV_OPTIONS, ACCESS_OPTIONS,
   FIRE_PROTECTION_OPTIONS, METAL_FIREPROOF_OPTIONS, WOOD_FIREPROOF_OPTIONS, NETWORK_OPTIONS,
-  MATERIALS_SUPPLY, DOC_PROJECT_OPTIONS, DOC_ESTIMATE_OPTIONS, DOC_PERMIT_OPTIONS,
+  MATERIALS_SUPPLY,
   fmtPrice,
 } from "./officeCalcTypes";
 
@@ -263,7 +263,7 @@ export default function OfficeZoneEditor({ zone, onChange }: Props) {
       {/* МАТЕРИАЛЫ */}
       <BlockToggle enabled={zone.blockMaterials} onToggle={() => onChange({ blockMaterials: !zone.blockMaterials })}
         title="Материалы" icon="Package">
-        <p className="text-xs text-gray-500 -mt-1 mb-1">Выберите, кто поставляет материалы — это влияет на итоговую сумму</p>
+        <p className="text-xs text-gray-500 -mt-1 mb-1">Кто поставляет материалы — влияет на итоговую сумму</p>
         <div className="space-y-2">
           {MATERIALS_SUPPLY.map(m => (
             <button key={m.id} type="button"
@@ -285,7 +285,7 @@ export default function OfficeZoneEditor({ zone, onChange }: Props) {
         </div>
         {zone.materialsSupply !== "labor_only" && zone.materialsSupply !== "customer" && (
           <div className="flex items-center gap-3 pt-1">
-            <span className="text-sm text-gray-600 flex-1">Корректировка коэффициента материалов</span>
+            <span className="text-sm text-gray-600 flex-1">Коэффициент материалов</span>
             <Input
               type="number" value={zone.materialsCoeffCustom} min={0.5} max={3} step={0.05}
               onChange={e => onChange({ materialsCoeffCustom: Math.max(0.5, Math.min(3, Number(e.target.value) || 1)) })}
@@ -294,64 +294,6 @@ export default function OfficeZoneEditor({ zone, onChange }: Props) {
           </div>
         )}
       </BlockToggle>
-
-      {/* ДОКУМЕНТЫ */}
-      <div className={`rounded-xl border-2 transition-all ${zone.blockDocs ? "border-amber-200 bg-amber-50/40" : "border-dashed border-amber-100 bg-gray-50 opacity-60"}`}>
-        <button
-          type="button"
-          onClick={() => onChange({ blockDocs: !zone.blockDocs })}
-          className="w-full flex items-center gap-3 px-4 py-3 text-left"
-        >
-          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-            zone.blockDocs ? "bg-amber-500 border-amber-500" : "border-gray-300 bg-white"
-          }`}>
-            {zone.blockDocs && <Icon name="Check" size={11} className="text-white" />}
-          </div>
-          <Icon name="FileText" size={16} className={zone.blockDocs ? "text-amber-600" : "text-gray-400"} />
-          <span className={`font-bold text-sm uppercase tracking-wide ${zone.blockDocs ? "text-amber-700" : "text-gray-400"}`}>
-            Документация и согласования
-          </span>
-          {!zone.blockDocs && <span className="ml-auto text-xs text-gray-400">выключена из расчёта</span>}
-        </button>
-
-        {zone.blockDocs && (
-          <div className="px-4 pb-4 space-y-5 border-t border-amber-100 pt-3">
-            <Section title="Проектная документация" icon="Ruler">
-              <OptionGrid options={DOC_PROJECT_OPTIONS} value={zone.docProject}
-                onChange={v => onChange({ docProject: v })} />
-            </Section>
-
-            <Section title="Сметная документация" icon="Calculator">
-              <OptionGrid options={DOC_ESTIMATE_OPTIONS} value={zone.docEstimate}
-                onChange={v => onChange({ docEstimate: v })} />
-            </Section>
-
-            <Section title="Согласования и разрешения" icon="Stamp">
-              <OptionGrid options={DOC_PERMIT_OPTIONS} value={zone.docPermit}
-                onChange={v => onChange({ docPermit: v })} />
-            </Section>
-
-            <Section title="Дополнительные документы" icon="ClipboardList">
-              <Toggle label="Исполнительная документация (as-built)"
-                value={zone.docAsBuilt} onChange={v => onChange({ docAsBuilt: v })}
-                description="Схемы, акты скрытых работ — ~35 000 ₽" />
-              <Toggle label="Допуск СРО (свидетельство)"
-                value={zone.docSro} onChange={v => onChange({ docSro: v })}
-                description="Оформление/аренда допуска — ~45 000 ₽" />
-              <Toggle label="Пожарный аудит и заключение МЧС"
-                value={zone.docFireAudit} onChange={v => onChange({ docFireAudit: v })}
-                description="Независимая пожарная экспертиза — ~28 000 ₽" />
-              <Toggle label="Энергетический паспорт здания"
-                value={zone.docEnergyCert} onChange={v => onChange({ docEnergyCert: v })}
-                description="Обследование и сертификация — ~22 000 ₽" />
-            </Section>
-
-            <div className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
-              Стоимость документации фиксированная и не зависит от площади зоны
-            </div>
-          </div>
-        )}
-      </div>
 
     </Card>
   );

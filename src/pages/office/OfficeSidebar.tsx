@@ -9,9 +9,10 @@ import {
   ROOM_TYPES, FINISH_LEVELS, FLOORING_OPTIONS, CEILING_OPTIONS, PARTITION_OPTIONS,
   HEATING_OPTIONS, VENT_OPTIONS, ALARM_OPTIONS, CCTV_OPTIONS, ACCESS_OPTIONS,
   FIRE_PROTECTION_OPTIONS, METAL_FIREPROOF_OPTIONS, WOOD_FIREPROOF_OPTIONS, NETWORK_OPTIONS,
-  MATERIALS_SUPPLY, DOC_PROJECT_OPTIONS, DOC_ESTIMATE_OPTIONS, DOC_PERMIT_OPTIONS,
+  MATERIALS_SUPPLY,
   fmtPrice,
 } from "./officeCalcTypes";
+import OfficeExportPanel, { OfficeExportState, makeExportState } from "./OfficeExportPanel";
 
 // ─── LEAD FORM ────────────────────────────────────────────────────────────────
 
@@ -70,35 +71,36 @@ interface Props {
   activeId: string;
   totalAll: number;
   markupPct: number;
+  regionId: string;
   onSelectZone: (id: string) => void;
 }
 
-export default function OfficeSidebar({ zones, activeId, totalAll, markupPct, onSelectZone }: Props) {
+export default function OfficeSidebar({ zones, activeId, totalAll, markupPct, regionId, onSelectZone }: Props) {
+  const [exportState, setExportState] = useState<OfficeExportState>(makeExportState);
+  const handleExportChange = (patch: Partial<OfficeExportState>) =>
+    setExportState(prev => ({ ...prev, ...patch }));
+
   const activeZone = zones.find(z => z.id === activeId) ?? zones[0];
-
   const az = activeZone;
+
   const matSupply = MATERIALS_SUPPLY.find(m => m.id === az.materialsSupply) ?? MATERIALS_SUPPLY[0];
-  const docProj   = DOC_PROJECT_OPTIONS.find(d => d.id === az.docProject) ?? DOC_PROJECT_OPTIONS[0];
-  const docEst    = DOC_ESTIMATE_OPTIONS.find(d => d.id === az.docEstimate) ?? DOC_ESTIMATE_OPTIONS[0];
-  const docPerm   = DOC_PERMIT_OPTIONS.find(d => d.id === az.docPermit) ?? DOC_PERMIT_OPTIONS[0];
 
-  // Базовая стоимость работ (без регионального коэффициента — для разбивки)
-  const laborBase =
-    (az.blockFinish ? FINISH_LEVELS.find(f => f.id === az.finishLevel)!.pricePerM2 * az.area * (ROOM_TYPES.find(r => r.id === az.roomType)?.coeff ?? 1) : 0) +
-    (az.blockFlooring ? FLOORING_OPTIONS.find(f => f.id === az.flooring)!.pricePerM2 * az.area : 0) +
-    (az.blockCeiling ? CEILING_OPTIONS.find(c => c.id === az.ceiling)!.pricePerM2 * az.area : 0) +
-    (az.blockPartitions ? PARTITION_OPTIONS.find(p => p.id === az.partitions)!.pricePerLM * az.partitionLinearM : 0) +
-    (az.blockHeating ? HEATING_OPTIONS.find(h => h.id === az.heating)!.pricePerM2 * az.area : 0) +
-    (az.blockVentilation ? VENT_OPTIONS.find(v => v.id === az.ventilation)!.pricePerM2 * az.area + az.airConditioners * 28000 : 0) +
-    (az.blockElectric ? az.electricPoints * 3500 + (az.lighting ? az.area * 1800 : 0) + (az.ups ? 85000 : 0) : 0) +
-    (az.blockNetwork ? NETWORK_OPTIONS.find(n => n.id === az.networkType)!.pricePerM2 * az.area : 0) +
-    (az.blockAlarm ? ALARM_OPTIONS.find(a => a.id === az.alarmType)!.priceBase + az.alarmSensors * 4500 : 0) +
-    (az.blockCCTV && az.cctvType !== "none" ? CCTV_OPTIONS.find(c => c.id === az.cctvType)!.dvr + CCTV_OPTIONS.find(c => c.id === az.cctvType)!.pricePerCamera * az.cctvCameras : 0) +
-    (az.blockAccess && az.accessType !== "none" ? ACCESS_OPTIONS.find(a => a.id === az.accessType)!.panel + ACCESS_OPTIONS.find(a => a.id === az.accessType)!.pricePerDoor * az.accessDoors : 0) +
-    (az.blockFire ? (az.fireSignaling ? 45000 + az.fireSensors * 2800 : 0) + az.fireExtinguishers * 3500 + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.base + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.pricePerHead * az.fireSprinklerHeads + METAL_FIREPROOF_OPTIONS.find(m => m.id === az.metalFireProof)!.pricePerM2 * az.metalFireProofM2 + WOOD_FIREPROOF_OPTIONS.find(w => w.id === az.woodFireProof)!.pricePerM2 * az.woodFireProofM2 + az.fireDoors * 38000 + (az.fireHydrantCheck ? 8500 + az.fireHydrantCount * 3200 : 0) : 0);
-
-  const materialsVal = az.blockMaterials && matSupply.coeff > 0 ? laborBase * matSupply.coeff * az.materialsCoeffCustom : 0;
-  const docsVal = az.blockDocs ? docProj.price + docEst.price + docPerm.price + (az.docAsBuilt ? 35000 : 0) + (az.docSro ? 45000 : 0) + (az.docFireAudit ? 28000 : 0) + (az.docEnergyCert ? 22000 : 0) : 0;
+  const materialsVal = az.blockMaterials && matSupply.coeff > 0
+    ? (
+      (az.blockFinish ? FINISH_LEVELS.find(f => f.id === az.finishLevel)!.pricePerM2 * az.area * (ROOM_TYPES.find(r => r.id === az.roomType)?.coeff ?? 1) : 0) +
+      (az.blockFlooring ? FLOORING_OPTIONS.find(f => f.id === az.flooring)!.pricePerM2 * az.area : 0) +
+      (az.blockCeiling ? CEILING_OPTIONS.find(c => c.id === az.ceiling)!.pricePerM2 * az.area : 0) +
+      (az.blockPartitions ? PARTITION_OPTIONS.find(p => p.id === az.partitions)!.pricePerLM * az.partitionLinearM : 0) +
+      (az.blockHeating ? HEATING_OPTIONS.find(h => h.id === az.heating)!.pricePerM2 * az.area : 0) +
+      (az.blockVentilation ? VENT_OPTIONS.find(v => v.id === az.ventilation)!.pricePerM2 * az.area + az.airConditioners * 28000 : 0) +
+      (az.blockElectric ? az.electricPoints * 3500 + (az.lighting ? az.area * 1800 : 0) + (az.ups ? 85000 : 0) : 0) +
+      (az.blockNetwork ? NETWORK_OPTIONS.find(n => n.id === az.networkType)!.pricePerM2 * az.area : 0) +
+      (az.blockAlarm ? ALARM_OPTIONS.find(a => a.id === az.alarmType)!.priceBase + az.alarmSensors * 4500 : 0) +
+      (az.blockCCTV && az.cctvType !== "none" ? CCTV_OPTIONS.find(c => c.id === az.cctvType)!.dvr + CCTV_OPTIONS.find(c => c.id === az.cctvType)!.pricePerCamera * az.cctvCameras : 0) +
+      (az.blockAccess && az.accessType !== "none" ? ACCESS_OPTIONS.find(a => a.id === az.accessType)!.panel + ACCESS_OPTIONS.find(a => a.id === az.accessType)!.pricePerDoor * az.accessDoors : 0) +
+      (az.blockFire ? (az.fireSignaling ? 45000 + az.fireSensors * 2800 : 0) + az.fireExtinguishers * 3500 + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.base + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.pricePerHead * az.fireSprinklerHeads + METAL_FIREPROOF_OPTIONS.find(m => m.id === az.metalFireProof)!.pricePerM2 * az.metalFireProofM2 + WOOD_FIREPROOF_OPTIONS.find(w => w.id === az.woodFireProof)!.pricePerM2 * az.woodFireProofM2 + az.fireDoors * 38000 + (az.fireHydrantCheck ? 8500 + az.fireHydrantCount * 3200 : 0) : 0)
+    ) * matSupply.coeff * az.materialsCoeffCustom
+    : 0;
 
   const breakdown = [
     { label: "Базовая отделка",       enabled: az.blockFinish,      val: FINISH_LEVELS.find(f => f.id === az.finishLevel)!.pricePerM2 * az.area * (ROOM_TYPES.find(r => r.id === az.roomType)?.coeff ?? 1) },
@@ -112,9 +114,8 @@ export default function OfficeSidebar({ zones, activeId, totalAll, markupPct, on
     { label: "Сигнализация",          enabled: az.blockAlarm,       val: ALARM_OPTIONS.find(a => a.id === az.alarmType)!.priceBase + az.alarmSensors * 4500 },
     { label: "Видеонаблюдение",       enabled: az.blockCCTV && az.cctvType !== "none", val: az.cctvType !== "none" ? CCTV_OPTIONS.find(c => c.id === az.cctvType)!.dvr + CCTV_OPTIONS.find(c => c.id === az.cctvType)!.pricePerCamera * az.cctvCameras : 0 },
     { label: "СКУД",                  enabled: az.blockAccess && az.accessType !== "none", val: az.accessType !== "none" ? ACCESS_OPTIONS.find(a => a.id === az.accessType)!.panel + ACCESS_OPTIONS.find(a => a.id === az.accessType)!.pricePerDoor * az.accessDoors : 0 },
-    { label: "Пожарная безопасность", enabled: az.blockFire,        val: (az.fireSignaling ? 45000 + az.fireSensors * 2800 : 0) + az.fireExtinguishers * 3500 + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.base + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.pricePerHead * az.fireSprinklerHeads + METAL_FIREPROOF_OPTIONS.find(m => m.id === az.metalFireProof)!.pricePerM2 * az.metalFireProofM2 + WOOD_FIREPROOF_OPTIONS.find(w => w.id === az.woodFireProof)!.pricePerM2 * az.woodFireProofM2 + az.fireDoors * 38000 + (az.fireHydrantCheck ? 8500 + az.fireHydrantCount * 3200 : 0) },
-    { label: `Материалы (${matSupply.label.toLowerCase()})`, enabled: az.blockMaterials, val: materialsVal },
-    { label: "Документация",          enabled: az.blockDocs,        val: docsVal },
+    { label: "Пожарная безопасность", enabled: az.blockFire, val: (az.fireSignaling ? 45000 + az.fireSensors * 2800 : 0) + az.fireExtinguishers * 3500 + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.base + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.pricePerHead * az.fireSprinklerHeads + METAL_FIREPROOF_OPTIONS.find(m => m.id === az.metalFireProof)!.pricePerM2 * az.metalFireProofM2 + WOOD_FIREPROOF_OPTIONS.find(w => w.id === az.woodFireProof)!.pricePerM2 * az.woodFireProofM2 + az.fireDoors * 38000 + (az.fireHydrantCheck ? 8500 + az.fireHydrantCount * 3200 : 0) },
+    { label: `Материалы (${matSupply.label.toLowerCase()})`, enabled: az.blockMaterials && matSupply.coeff > 0, val: materialsVal },
   ].filter(r => r.enabled && r.val > 0);
 
   return (
@@ -153,7 +154,7 @@ export default function OfficeSidebar({ zones, activeId, totalAll, markupPct, on
       <Card className="p-4">
         <div className="flex items-center gap-2 mb-3">
           <Icon name="List" size={15} className="text-gray-400" />
-          <span className="font-semibold text-gray-800 text-sm">«{activeZone.name}» — детали</span>
+          <span className="font-semibold text-gray-800 text-sm">«{az.name}» — детали</span>
         </div>
         <div className="space-y-1 text-xs">
           {breakdown.map(r => (
@@ -164,10 +165,20 @@ export default function OfficeSidebar({ zones, activeId, totalAll, markupPct, on
           ))}
           <div className="border-t pt-2 mt-2 flex justify-between font-bold text-gray-800">
             <span>Итого зона</span>
-            <span className="text-blue-600">{fmtPrice(activeZone.totalPrice)}</span>
+            <span className="text-blue-600">{fmtPrice(az.totalPrice)}</span>
           </div>
         </div>
       </Card>
+
+      {/* Экспорт / Смета / КП */}
+      <OfficeExportPanel
+        exportState={exportState}
+        onChange={handleExportChange}
+        zones={zones}
+        totalAll={totalAll}
+        regionId={regionId}
+        markupPct={markupPct}
+      />
 
       {/* Форма заявки */}
       <LeadForm totalPrice={totalAll} />

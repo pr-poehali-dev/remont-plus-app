@@ -199,6 +199,7 @@ export default function OfficeCalc() {
             activeId={activeId}
             totalAll={totalAll}
             markupPct={markupPct}
+            regionId={regionId}
             onSelectZone={setActiveId}
           />
         </div>
