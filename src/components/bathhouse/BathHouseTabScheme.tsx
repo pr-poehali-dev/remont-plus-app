@@ -1,24 +1,13 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import Icon from "@/components/ui/icon";
 import type { BathHouseConfig } from "@/components/calculator/bathhouse/BathHouseTypes";
 import { FloorplanSVG, BathTemplateCard, BATH_TEMPLATES } from "@/components/calculator/bathhouse/BathHouseSchemes";
 import { BATH_STYLES } from "@/components/calculator/bathhouse/BathHouseTypes";
+import BathHouseNormsCard from "./BathHouseNormsCard";
 
 interface Props {
   config: BathHouseConfig;
 }
-
-const NORMS = [
-  { icon: "🔥", title: "Размер парной", text: "Оптимум: 2,4×3 м (7,2 м²). Мин. для 2 чел.: 2,2×2,2 м. Высота потолка 2,1–2,3 м — выше тратится больше дров." },
-  { icon: "🛖", title: "Полок: расположение", text: "Верхний полок — у стены напротив печи. Нижний — ступенька 40–50 см. Ширина лежака ≥0,6 м, длина ≥1,8 м." },
-  { icon: "💨", title: "Вентиляция", text: "Приток — у печи на высоте 20 см от пола. Вытяжка — на противоположной стене под потолком. Обмен 3–5 объёмов парной/час." },
-  { icon: "🚪", title: "Дверь в парную", text: "Открывается наружу! Стекло закалённое 8 мм. Порог 15–25 см — держит тепло." },
-  { icon: "💧", title: "Гидроизоляция", text: "В мойке и парной обязательна. В парной — паро-гидробарьер под обшивку. Фольгированный пенофол + герметизация швов." },
-  { icon: "🏗", title: "Усадка", text: "Брус 150×150: усадка 1–2 года. Бревно: 3–5 лет. Клееный брус и каркас: без усадки — можно отделывать сразу." },
-  { icon: "⚡", title: "Электрика в парной", text: "Только специальные термостойкие провода РКГМ. Светильники — IP54 и выше, рассчитаны на 130°C." },
-  { icon: "🔥", title: "Дымоход", text: "Сэндвич-труба ∅115/200 мм. Высота над коньком ≥0,5 м. Расстояние от горючих конструкций ≥250 мм." },
-];
 
 const EXTERIOR_PHOTOS: Record<string, string> = {
   classic_log:      "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/e92a3aac-4375-4446-aa2c-d420a6d9b9f0.jpg",
@@ -44,15 +33,14 @@ type MainTab = "plan" | "exterior" | "templates";
 export default function BathHouseTabScheme({ config }: Props) {
   const [schemeTab, setSchemeTab] = useState<MainTab>("plan");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+   
   const style = BATH_STYLES[config.style];
 
   const activeTpl = BATH_TEMPLATES.find(t => t.id === selectedTemplate);
 
   return (
     <div className="space-y-5">
-      {/* ── Схема / Шаблоны ─────────────────────── */}
       <Card className="overflow-hidden">
-        {/* Tabs */}
         <div className="flex border-b border-gray-100 bg-gray-50/50">
           {[
             { key: "plan" as MainTab, icon: "📐", label: "Планировка" },
@@ -75,7 +63,7 @@ export default function BathHouseTabScheme({ config }: Props) {
         </div>
 
         <div className="p-4">
-          {/* ── Планировка ── */}
+          {/* Планировка */}
           {schemeTab === "plan" && (
             <>
               <FloorplanSVG
@@ -104,7 +92,7 @@ export default function BathHouseTabScheme({ config }: Props) {
             </>
           )}
 
-          {/* ── Внешний вид ── */}
+          {/* Внешний вид */}
           {schemeTab === "exterior" && (
             <>
               {activeTpl ? (
@@ -124,11 +112,7 @@ export default function BathHouseTabScheme({ config }: Props) {
               ) : (
                 <>
                   <div className="rounded-2xl overflow-hidden aspect-video bg-slate-100">
-                    <img
-                      src={DEFAULT_EXTERIOR_PHOTOS[0]}
-                      alt="Баня с панорамными окнами"
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={DEFAULT_EXTERIOR_PHOTOS[0]} alt="Баня с панорамными окнами" className="w-full h-full object-cover" />
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     {DEFAULT_EXTERIOR_PHOTOS.slice(1).map((url, i) => (
@@ -145,7 +129,7 @@ export default function BathHouseTabScheme({ config }: Props) {
             </>
           )}
 
-          {/* ── Галерея шаблонов ── */}
+          {/* Галерея шаблонов */}
           {schemeTab === "templates" && (
             <div>
               <div className="mb-3 flex items-center justify-between">
@@ -173,7 +157,6 @@ export default function BathHouseTabScheme({ config }: Props) {
                 ))}
               </div>
 
-              {/* Detail panel */}
               {activeTpl && (
                 <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-200">
                   <div className="flex items-start justify-between gap-4">
@@ -201,24 +184,7 @@ export default function BathHouseTabScheme({ config }: Props) {
         </div>
       </Card>
 
-      {/* ── Нормы ─────────────────────────────── */}
-      <Card className="p-4">
-        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2 text-sm">
-          <Icon name="Info" size={15} className="text-amber-600" />
-          Нормы и рекомендации по строительству
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-          {NORMS.map((item, i) => (
-            <div key={i} className="bg-amber-50 rounded-xl p-3 border border-amber-100">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-base">{item.icon}</span>
-                <span className="text-xs font-bold text-amber-900">{item.title}</span>
-              </div>
-              <p className="text-xs text-gray-600 leading-relaxed">{item.text}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
+      <BathHouseNormsCard />
     </div>
   );
 }
