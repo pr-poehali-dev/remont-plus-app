@@ -1,73 +1,16 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Icon from "@/components/ui/icon";
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useMeta } from "@/hooks/useMeta";
 import SEOMeta from "@/components/SEOMeta";
-import { getEstimateItems, type EstimateSavedItem } from "@/lib/lemanapro-data";
-import { useSubscription } from "@/hooks/useSubscription";
+import { useCalculatorState } from "@/hooks/useCalculatorState";
 
-import EstimateTab from "@/components/calculator/EstimateTab";
-import LemanaProTab from "@/components/calculator/LemanaProTab";
-import DocsTab from "@/components/calculator/DocsTab";
-import CalculatorSidebar from "@/components/calculator/CalculatorSidebar";
-import ExportDialog from "@/components/calculator/ExportDialog";
-import TemplatesDialog from "@/components/calculator/TemplatesDialog";
-import PaywallModal from "@/components/calculator/PaywallModal";
-import CalcTour from "@/components/calculator/CalcTour";
-import SalesWidget from "@/components/calculator/SalesWidget";
+import CalculatorHeader from "@/components/calculator/CalculatorHeader";
+import CalculatorBody from "@/components/calculator/CalculatorBody";
+import CalculatorCities from "@/components/calculator/CalculatorCities";
+import CalculatorModals from "@/components/calculator/CalculatorModals";
 
-const FREE_PRINTS_KEY = "calc_free_prints_used";
-const FREE_PRINTS_LIMIT = 3;
-
-function getFreePrintsUsed(): number {
-  return parseInt(localStorage.getItem(FREE_PRINTS_KEY) || "0", 10);
-}
-function incrementFreePrints() {
-  localStorage.setItem(FREE_PRINTS_KEY, String(getFreePrintsUsed() + 1));
-}
-
-const SERVICE_PRICES_URL = "https://functions.poehali.dev/4dae7ba0-b573-436a-b4c6-d3b0abf69fce";
-const ESTIMATES_URL = "https://functions.poehali.dev/2be69072-d4ba-493f-b89e-575fbbd70e8e";
-
-export interface EstimateItem {
-  id: string;
-  category: string;
-  name: string;
-  unit: string;
-  quantity: number;
-  price: number;
-  total: number;
-}
-
-export interface PriceCategory {
-  id: number;
-  name: string;
-  slug: string;
-  icon: string;
-  items: PriceItem[];
-}
-
-export interface PriceItem {
-  id: number;
-  name: string;
-  description: string | null;
-  unit: string;
-  price: number;
-}
-
-export interface Region {
-  id: number;
-  name: string;
-  code: string;
-}
+export type { EstimateItem, PriceCategory, PriceItem, Region } from "@/hooks/useCalculatorState";
 
 export default function Calculator() {
-  const navigate = useNavigate();
-
   useMeta({
     title: "Калькулятор стоимости ремонта",
     description: "Рассчитайте стоимость ремонта квартиры онлайн. Калькулятор учитывает актуальные цены на работы и материалы по вашему региону — получите смету за 2 минуты.",
@@ -138,133 +81,7 @@ export default function Calculator() {
     };
   }, []);
 
-  const [items, setItems] = useState<EstimateItem[]>([]);
-  const [lemanaItems, setLemanaItems] = useState<EstimateSavedItem[]>([]);
-  const [priceCatalog, setPriceCatalog] = useState<PriceCategory[]>([]);
-  const [regions, setRegions] = useState<Region[]>([]);
-  const [selectedRegion, setSelectedRegion] = useState(() => {
-    return localStorage.getItem("avangard_calc_region") || "moscow";
-  });
-  const [loading, setLoading] = useState(true);
-  const [showExportDialog, setShowExportDialog] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
-
-  const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
-  const userId: number | null = storedUser?.id ?? null;
-  const { subscription, reload: reloadSub } = useSubscription(userId);
-  const hasPaidPlan = !!subscription && subscription.status === "active";
-  const freePrintsUsed = getFreePrintsUsed();
-  const hasFreePrints = freePrintsUsed < FREE_PRINTS_LIMIT;
-  const canExport = hasPaidPlan || hasFreePrints;
-
-  const [deliveryFloor, setDeliveryFloor] = useState<number>(1);
-  const [deliveryHasElevator, setDeliveryHasElevator] = useState<boolean>(true);
-  const [deliveryEnabled, setDeliveryEnabled] = useState<boolean>(false);
-
-  useEffect(() => {
-    setLemanaItems(getEstimateItems());
-    const saved = localStorage.getItem("avangard_calc_items");
-    if (saved) {
-      try { setItems(JSON.parse(saved)); } catch { /* ignore */ }
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("avangard_calc_items", JSON.stringify(items));
-  }, [items]);
-
-  const [savedToDb, setSavedToDb] = useState(false);
-  useEffect(() => {
-    if (!userId || items.length === 0) return;
-    setSavedToDb(false);
-    const timer = setTimeout(async () => {
-      const tm = items.filter(i => i.category === "Материалы").reduce((s, i) => s + i.total, 0);
-      const tw = items.filter(i => i.category === "Работы").reduce((s, i) => s + i.total, 0);
-      const regionName = regions.find(r => r.code === selectedRegion)?.name || selectedRegion;
-      await fetch(ESTIMATES_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-User-Id": String(userId) },
-        body: JSON.stringify({
-          name: `Смета — ${regionName}`,
-          items,
-          total_materials: tm,
-          total_works: tw,
-          total: tm + tw,
-          region: selectedRegion,
-        }),
-      });
-      setSavedToDb(true);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [items, userId, selectedRegion, regions]);
-
-  const loadPrices = useCallback(async () => {
-    setLoading(true);
-    const response = await fetch(`${SERVICE_PRICES_URL}?region=${selectedRegion}`);
-    const data = await response.json();
-    setPriceCatalog(data.prices);
-    setRegions(data.regions);
-    setLoading(false);
-    localStorage.setItem("avangard_calc_region", selectedRegion);
-  }, [selectedRegion]);
-
-  useEffect(() => {
-    loadPrices();
-  }, [loadPrices]);
-
-  const addItem = (item: EstimateItem) => {
-    setItems(prev => [...prev, item]);
-  };
-
-  const removeItem = (id: string) => {
-    setItems(prev => prev.filter(i => i.id !== id));
-  };
-
-  const updateItem = (id: string, updates: Partial<EstimateItem>) => {
-    setItems(prev => prev.map(i => {
-      if (i.id !== id) return i;
-      const updated = { ...i, ...updates };
-      updated.total = updated.quantity * updated.price;
-      return updated;
-    }));
-  };
-
-  const addFromPriceList = (priceItem: PriceItem, quantity: number) => {
-    const newItem: EstimateItem = {
-      id: `work-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      category: "Работы",
-      name: priceItem.name,
-      unit: priceItem.unit,
-      quantity,
-      price: priceItem.price,
-      total: priceItem.price * quantity,
-    };
-    setItems(prev => [...prev, newItem]);
-  };
-
-  const totalMaterials = items.filter(i => i.category === "Материалы").reduce((sum, i) => sum + i.total, 0);
-  const totalWorks = items.filter(i => i.category === "Работы").reduce((sum, i) => sum + i.total, 0);
-
-  const MATERIAL_COEFF = 1.3;
-  const minWorksFromMaterials = Math.round(totalMaterials * MATERIAL_COEFF);
-  const materialSurcharge = totalMaterials > 0 && totalWorks < minWorksFromMaterials
-    ? minWorksFromMaterials - totalWorks
-    : 0;
-  const adjustedWorks = totalWorks + materialSurcharge;
-  const grandTotal = totalMaterials + adjustedWorks;
-
-  // Расчёт доставки и подъёма материалов
-  // Базовая доставка + подъём: за каждый этаж выше 1-го
-  const DELIVERY_BASE = 3500; // базовая стоимость доставки
-  const LIFT_PER_FLOOR_ELEVATOR = 300;   // с лифтом: за этаж выше 1-го
-  const LIFT_PER_FLOOR_NO_ELEVATOR = 700; // без лифта: за этаж выше 1-го
-  const floorsAboveFirst = Math.max(0, deliveryFloor - 1);
-  const liftCost = floorsAboveFirst * (deliveryHasElevator ? LIFT_PER_FLOOR_ELEVATOR : LIFT_PER_FLOOR_NO_ELEVATOR);
-  const deliveryCost = deliveryEnabled ? DELIVERY_BASE + liftCost : 0;
-  const totalWithDelivery = grandTotal + deliveryCost;
-
-  const currentRegion = regions.find(r => r.code === selectedRegion);
+  const state = useCalculatorState();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -274,249 +91,76 @@ export default function Calculator() {
         keywords="калькуляторы ремонта, расчёт ремонта онлайн, смета ремонта онлайн бесплатно"
         path="/calculator"
       />
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-                <Icon name="ArrowLeft" className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold">Калькулятор стоимости</h1>
-                <p className="text-sm text-gray-600 flex items-center gap-1.5">
-                  {currentRegion ? currentRegion.name : "Загрузка..."}
-                  {userId && items.length > 0 && (
-                    <span className={`text-xs ${savedToDb ? "text-green-500" : "text-gray-400"}`}>
-                      · {savedToDb ? "сохранено" : "сохраняем..."}
-                    </span>
-                  )}
-                  {" · "}{items.length} позиций
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="hidden sm:flex" onClick={() => navigate("/prices")}>
-                <Icon name="ClipboardList" className="mr-2 h-4 w-4" />
-                Прайс-лист
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowTemplates(true)} disabled={loading}>
-                <Icon name={loading ? "Loader2" : "LayoutTemplate"} className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                Шаблоны
-              </Button>
-              <div className="relative">
-                <Button onClick={() => canExport ? setShowExportDialog(true) : setShowPaywall(true)}>
-                  <Icon name={canExport ? "Download" : "Lock"} className="mr-2 h-4 w-4" />
-                  Скачать PDF
-                </Button>
-                {!hasPaidPlan && hasFreePrints && (
-                  <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
-                    {FREE_PRINTS_LIMIT - freePrintsUsed}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="p-6 mb-6">
-              <Tabs defaultValue="estimate">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="estimate">
-                    Смета
-                    {items.length > 0 && (
-                      <Badge className="ml-1.5 bg-purple-500 hover:bg-purple-500 text-white text-[10px] px-1.5 py-0 h-4">
-                        {items.length}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="lemanapro" className="relative">
-                    ЛеманаПро
-                    {lemanaItems.length > 0 && (
-                      <Badge className="ml-1.5 bg-green-500 hover:bg-green-500 text-white text-[10px] px-1.5 py-0 h-4">
-                        {lemanaItems.length}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="docs">
-                    <Icon name="FileText" size={13} className="mr-1" />
-                    Документы
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="estimate" className="mt-6">
-                  <EstimateTab
-                    items={items}
-                    totalMaterials={totalMaterials}
-                    totalWorks={totalWorks}
-                    adjustedWorks={adjustedWorks}
-                    materialSurcharge={materialSurcharge}
-                    grandTotal={grandTotal}
-                    deliveryCost={deliveryCost}
-                    priceCatalog={priceCatalog}
-                    loading={loading}
-                    onAddFromPriceList={addFromPriceList}
-                    onRemoveItem={removeItem}
-                    onUpdateItem={updateItem}
-                    onAddItem={addItem}
-                    regionName={currentRegion?.name}
-                    selectedRegion={selectedRegion}
-                  />
-                </TabsContent>
-
-                <TabsContent value="lemanapro" className="mt-6">
-                  <LemanaProTab
-                    lemanaItems={lemanaItems}
-                    setLemanaItems={setLemanaItems}
-                  />
-                </TabsContent>
-
-                <TabsContent value="docs" className="mt-6">
-                  <DocsTab
-                    items={items}
-                    lemanaItems={lemanaItems}
-                    grandTotal={grandTotal}
-                    materialSurcharge={materialSurcharge}
-                    totalMaterials={totalMaterials}
-                    totalWorks={totalWorks}
-                    adjustedWorks={adjustedWorks}
-                  />
-                </TabsContent>
-              </Tabs>
-            </Card>
-          </div>
-
-          <CalculatorSidebar
-            lemanaItemsCount={lemanaItems.length}
-            onExportPdf={() => setShowExportDialog(true)}
-            regions={regions}
-            selectedRegion={selectedRegion}
-            onRegionChange={setSelectedRegion}
-            grandTotal={totalWithDelivery}
-            materialSurcharge={materialSurcharge}
-            deliveryEnabled={deliveryEnabled}
-            deliveryFloor={deliveryFloor}
-            deliveryHasElevator={deliveryHasElevator}
-            deliveryCost={deliveryCost}
-            onDeliveryEnabledChange={setDeliveryEnabled}
-            onDeliveryFloorChange={setDeliveryFloor}
-            onDeliveryElevatorChange={setDeliveryHasElevator}
-          />
-        </div>
-      </div>
-
-      <div className="bg-white border-t mt-10 py-10">
-        <div className="container mx-auto px-4">
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Калькулятор ремонта по городам</h2>
-          <p className="text-sm text-gray-500 mb-5">Цены на ремонт с учётом региональных особенностей</p>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { slug: "moskva", name: "Москва" },
-              { slug: "sankt_peterburg", name: "Санкт-Петербург" },
-              { slug: "novosibirsk", name: "Новосибирск" },
-              { slug: "ekaterinburg", name: "Екатеринбург" },
-              { slug: "kazan", name: "Казань" },
-              { slug: "nizhniy_novgorod", name: "Нижний Новгород" },
-              { slug: "chelyabinsk", name: "Челябинск" },
-              { slug: "samara", name: "Самара" },
-              { slug: "omsk", name: "Омск" },
-              { slug: "rostov_na_donu", name: "Ростов-на-Дону" },
-              { slug: "ufa", name: "Уфа" },
-              { slug: "krasnoyarsk", name: "Красноярск" },
-              { slug: "perm", name: "Пермь" },
-              { slug: "voronezh", name: "Воронеж" },
-              { slug: "volgograd", name: "Волгоград" },
-            ].map(city => (
-              <a
-                key={city.slug}
-                href={`/city/${city.slug}`}
-                className="inline-block px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-700 hover:border-blue-400 hover:text-blue-600 transition-colors"
-              >
-                {city.name}
-              </a>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <TemplatesDialog
-        open={showTemplates}
-        onClose={() => setShowTemplates(false)}
-        currentItems={items}
-        priceCatalog={priceCatalog}
-        onApply={(newItems, mode) =>
-          setItems(mode === "append" ? [...items, ...newItems] : newItems)
-        }
+      <CalculatorHeader
+        currentRegionName={state.currentRegion?.name}
+        userId={state.userId}
+        itemsCount={state.items.length}
+        savedToDb={state.savedToDb}
+        loading={state.loading}
+        hasPaidPlan={state.hasPaidPlan}
+        hasFreePrints={state.hasFreePrints}
+        freePrintsUsed={state.freePrintsUsed}
+        canExport={state.canExport}
+        onShowTemplates={() => state.setShowTemplates(true)}
+        onExport={() => state.canExport ? state.setShowExportDialog(true) : state.setShowPaywall(true)}
       />
 
-      {showExportDialog && (
-        <ExportDialog
-          onCancel={() => setShowExportDialog(false)}
-          onConfirm={({ customer, contractor, address, phone, email, validDays, docType, inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount }) => {
-            setShowExportDialog(false);
-            if (!hasPaidPlan) incrementFreePrints();
-            const docNum = Date.now().toString().slice(-6);
-            const date = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
-            navigate("/estimate/print", {
-              state: {
-                items,
-                lemanaItems,
-                materialSurcharge,
-                customer,
-                contractor,
-                address,
-                phone,
-                email,
-                validDays,
-                docType,
-                inn,
-                kpp,
-                ogrn,
-                legalAddress,
-                bank,
-                bik,
-                checkingAccount,
-                totalMaterials,
-                totalWorks,
-                adjustedWorks,
-                grandTotal,
-                deliveryCost,
-                deliveryFloor,
-                deliveryHasElevator,
-                docNum,
-                date,
-              },
-            });
-          }}
-        />
-      )}
+      <CalculatorBody
+        items={state.items}
+        lemanaItems={state.lemanaItems}
+        setLemanaItems={state.setLemanaItems}
+        priceCatalog={state.priceCatalog}
+        loading={state.loading}
+        regions={state.regions}
+        selectedRegion={state.selectedRegion}
+        onRegionChange={state.setSelectedRegion}
+        currentRegionName={state.currentRegion?.name}
+        totalMaterials={state.totalMaterials}
+        totalWorks={state.totalWorks}
+        adjustedWorks={state.adjustedWorks}
+        materialSurcharge={state.materialSurcharge}
+        grandTotal={state.grandTotal}
+        totalWithDelivery={state.totalWithDelivery}
+        deliveryCost={state.deliveryCost}
+        deliveryEnabled={state.deliveryEnabled}
+        deliveryFloor={state.deliveryFloor}
+        deliveryHasElevator={state.deliveryHasElevator}
+        onDeliveryEnabledChange={state.setDeliveryEnabled}
+        onDeliveryFloorChange={state.setDeliveryFloor}
+        onDeliveryElevatorChange={state.setDeliveryHasElevator}
+        onAddFromPriceList={state.addFromPriceList}
+        onRemoveItem={state.removeItem}
+        onUpdateItem={state.updateItem}
+        onAddItem={state.addItem}
+        onExportPdf={() => state.setShowExportDialog(true)}
+      />
 
-      {showPaywall && (
-        <PaywallModal
-          onClose={() => setShowPaywall(false)}
-          onSuccess={() => {
-            setShowPaywall(false);
-            reloadSub();
-            setShowExportDialog(true);
-          }}
-        />
-      )}
+      <CalculatorCities />
 
-      <CalcTour />
-
-      <SalesWidget
-        calcContext={{
-          calcName: "Калькулятор ремонта",
-          totalPrice: totalWithDelivery,
-          region: currentRegion?.name,
-          items: items.slice(0, 8).map(i => ({ name: i.name, total: i.total })),
-          summary: items.length > 0
-            ? `${items.filter(i => i.category === "Работы").length} видов работ, ${items.filter(i => i.category === "Материалы").length} видов материалов`
-            : undefined,
-        }}
+      <CalculatorModals
+        items={state.items}
+        setItems={state.setItems}
+        lemanaItems={state.lemanaItems}
+        priceCatalog={state.priceCatalog}
+        showTemplates={state.showTemplates}
+        setShowTemplates={state.setShowTemplates}
+        showExportDialog={state.showExportDialog}
+        setShowExportDialog={state.setShowExportDialog}
+        showPaywall={state.showPaywall}
+        setShowPaywall={state.setShowPaywall}
+        hasPaidPlan={state.hasPaidPlan}
+        reloadSub={state.reloadSub}
+        totalWithDelivery={state.totalWithDelivery}
+        currentRegionName={state.currentRegion?.name}
+        totalMaterials={state.totalMaterials}
+        totalWorks={state.totalWorks}
+        materialSurcharge={state.materialSurcharge}
+        adjustedWorks={state.adjustedWorks}
+        grandTotal={state.grandTotal}
+        deliveryCost={state.deliveryCost}
+        deliveryFloor={state.deliveryFloor}
+        deliveryHasElevator={state.deliveryHasElevator}
       />
     </div>
   );
