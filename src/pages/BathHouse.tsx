@@ -9,6 +9,7 @@ import BathHouseTabConfig from "@/components/bathhouse/BathHouseTabConfig";
 import BathHouseTabScheme from "@/components/bathhouse/BathHouseTabScheme";
 import BathHouseTabResult from "@/components/bathhouse/BathHouseTabResult";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const REGION_KEY = "bathhouse_region";
@@ -151,6 +152,7 @@ export default function BathHouse() {
           />
         )}
       </div>
+      <SalesWidget calcContext={{ calcName: "Калькулятор бани", totalPrice: bd.total }} />
     </div>
     </CalcAuthGate>
   );

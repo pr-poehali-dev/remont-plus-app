@@ -9,6 +9,7 @@ import type { ViewTab } from "@/components/framehouse/FrameHouseHeader";
 import FrameHouseTabConfig from "@/components/framehouse/FrameHouseTabConfig";
 import FrameHouseTabResult from "@/components/framehouse/FrameHouseTabResult";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const REGION_KEY = "framehouse_region";
@@ -144,6 +145,7 @@ export default function FrameHouse() {
           />
         )}
       </div>
+      <SalesWidget calcContext={{ calcName: "Калькулятор каркасного дома", totalPrice: bd.total }} />
     </div>
     </CalcAuthGate>
   );

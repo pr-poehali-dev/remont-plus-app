@@ -249,6 +249,7 @@ export default function Ceilings() {
           totalSum={totalSum}
         />
       )}
+      <SalesWidget calcContext={{ calcName: "Калькулятор потолков", totalPrice: totalSum }} />
     </div>
     </CalcAuthGate>
   );

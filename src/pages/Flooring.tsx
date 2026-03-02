@@ -6,6 +6,7 @@ import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTy
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import FlooringHeader from "@/components/calculator/flooring/FlooringHeader";
 import FlooringZoneList from "@/components/calculator/flooring/FlooringZoneList";
@@ -198,6 +199,7 @@ export default function Flooring() {
             onCancel={() => setShowExport(false)}
           />
         )}
+        <SalesWidget calcContext={{ calcName: "Калькулятор напольных покрытий", totalPrice: totalSum }} />
       </div>
     </CalcAuthGate>
   );

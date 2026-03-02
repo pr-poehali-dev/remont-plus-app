@@ -7,6 +7,7 @@ import { calcElectricsPrice } from "@/components/calculator/electrics/electricsU
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import ElectricsHeader from "@/components/calculator/electrics/ElectricsHeader";
 import ElectricsZoneList from "@/components/calculator/electrics/ElectricsZoneList";
@@ -199,6 +200,7 @@ export default function Electrics() {
             onCancel={() => setShowExport(false)}
           />
         )}
+        <SalesWidget calcContext={{ calcName: "Калькулятор электрики", totalPrice: totalSum }} />
       </div>
     </CalcAuthGate>
   );

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -598,6 +599,7 @@ export default function NewbuildRenovation() {
           onCancel={() => setShowExport(false)}
         />
       )}
+      <SalesWidget calcContext={{ calcName: "Калькулятор новостройки", totalPrice: totalSum }} />
     </div>
     </CalcAuthGate>
   );

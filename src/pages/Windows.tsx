@@ -19,6 +19,7 @@ import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import DocsTab from "@/components/calculator/DocsTab";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const MARKUP_KEY = "windows_markup_pct";
@@ -373,6 +374,7 @@ export default function Windows() {
           onCancel={() => setShowExport(false)}
         />
       )}
+      <SalesWidget calcContext={{ calcName: "Калькулятор окон", totalPrice: totalSum }} />
     </div>
     </CalcAuthGate>
   );
