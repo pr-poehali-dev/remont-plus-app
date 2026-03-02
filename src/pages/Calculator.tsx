@@ -17,6 +17,7 @@ import ExportDialog from "@/components/calculator/ExportDialog";
 import TemplatesDialog from "@/components/calculator/TemplatesDialog";
 import PaywallModal from "@/components/calculator/PaywallModal";
 import CalcTour from "@/components/calculator/CalcTour";
+import SalesWidget from "@/components/calculator/SalesWidget";
 
 const FREE_PRINTS_KEY = "calc_free_prints_used";
 const FREE_PRINTS_LIMIT = 3;
@@ -464,6 +465,18 @@ export default function Calculator() {
       )}
 
       <CalcTour />
+
+      <SalesWidget
+        calcContext={{
+          calcName: "Калькулятор ремонта",
+          totalPrice: totalWithDelivery,
+          region: currentRegion?.name,
+          items: items.slice(0, 8).map(i => ({ name: i.name, total: i.total })),
+          summary: items.length > 0
+            ? `${items.filter(i => i.category === "Работы").length} видов работ, ${items.filter(i => i.category === "Материалы").length} видов материалов`
+            : undefined,
+        }}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import Icon from "@/components/ui/icon";
 import { calcPrice, makeZone, fmtPrice, REGIONS, ZoneConfig } from "./office/officeCalcTypes";
 import OfficeZoneEditor from "./office/OfficeZoneEditor";
 import OfficeSidebar from "./office/OfficeSidebar";
+import SalesWidget from "@/components/calculator/SalesWidget";
 
 const MARKUP_KEY = "office_calc_markup";
 const REGION_KEY = "office_calc_region";
@@ -204,6 +205,16 @@ export default function OfficeCalc() {
           />
         </div>
       </div>
+
+      <SalesWidget
+        calcContext={{
+          calcName: "Калькулятор офиса / коммерческих помещений",
+          totalPrice: totalAll,
+          region: REGIONS.find(r => r.id === regionId)?.label,
+          items: zones.map(z => ({ name: z.name, total: z.totalPrice })),
+          summary: `${zones.length} зон: ${zones.map(z => `${z.name} ${z.area}м²`).join(", ")}`,
+        }}
+      />
     </div>
   );
 }
