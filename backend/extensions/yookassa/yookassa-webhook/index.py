@@ -163,7 +163,7 @@ def handler(event, context):
                     WHERE id = %s
                 """, (now, now, order_id))
 
-                # Активация тарифа если это покупка подписки
+                # Активация тарифа дизайнера если это покупка user_subscriptions
                 user_id_meta = metadata.get('user_id')
                 plan_code_meta = metadata.get('plan_code')
                 if user_id_meta and plan_code_meta:
@@ -178,6 +178,22 @@ def handler(event, context):
                         INSERT INTO {S}user_subscriptions (user_id, plan_code, status, expires_at)
                         VALUES (%s, %s, 'active', {expires_sql})
                     """, (int(user_id_meta), plan_code_meta))
+
+                # Активация тарифа строительной компании (builder_subscriptions)
+                contractor_id_meta = metadata.get('contractor_id')
+                builder_plan_meta = metadata.get('builder_plan_code')
+                months_meta = int(metadata.get('months', 1))
+                if contractor_id_meta and builder_plan_meta:
+                    cur.execute(f"""
+                        UPDATE {S}builder_subscriptions
+                        SET status = 'cancelled', updated_at = NOW()
+                        WHERE contractor_id = %s AND status = 'active'
+                    """, (int(contractor_id_meta),))
+                    cur.execute(f"""
+                        INSERT INTO {S}builder_subscriptions
+                        (contractor_id, plan_code, status, leads_used, activated_at, expires_at)
+                        VALUES (%s, %s, 'active', 0, NOW(), NOW() + INTERVAL '{months_meta} months')
+                    """, (int(contractor_id_meta), builder_plan_meta))
 
                 conn.commit()
 

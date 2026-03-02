@@ -171,6 +171,7 @@ def handler(event, context):
     return_url = data.get('return_url', '').strip()
     description = data.get('description', 'Оплата заказа')
     cart_items = data.get('cart_items', [])
+    extra_metadata = data.get('metadata', {})
 
     if amount < MIN_AMOUNT or amount > MAX_AMOUNT:
         return {
@@ -251,7 +252,10 @@ def handler(event, context):
         # Create YooKassa payment
         metadata = {
             "order_id": str(order_id),
-            "order_number": order_number
+            "order_number": order_number,
+            **{k: str(v) for k, v in extra_metadata.items() if k in (
+                "user_id", "plan_code", "contractor_id", "builder_plan_code", "months"
+            )}
         }
 
         payment_response = create_yookassa_payment(

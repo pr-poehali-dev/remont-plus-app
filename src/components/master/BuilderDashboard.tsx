@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import { User } from "@/components/master/masterTypes";
+import BuilderPaymentModal from "@/components/master/BuilderPaymentModal";
 
 const BUILDER_LEADS_URL = "https://functions.poehali.dev/69fd9787-d0eb-4342-b94b-9d14bb3f36e7";
 const BUILDER_SUBS_URL = "https://functions.poehali.dev/9993e0fc-25ac-4a65-b8be-49aa089d1585";
-const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
 
 interface BuilderPlan {
   code: string;
@@ -69,7 +69,7 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
   const [plans, setPlans] = useState<BuilderPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [revealedPhones, setRevealedPhones] = useState<Record<number, string>>({});
-  const [activating, setActivating] = useState<string | null>(null);
+  const [payingPlan, setPayingPlan] = useState<BuilderPlan | null>(null);
 
   useEffect(() => {
     if (!contractorId) return;
@@ -112,23 +112,8 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
     }
   };
 
-  const activatePlan = async (planCode: string) => {
-    if (!contractorId) return;
-    setActivating(planCode);
-    try {
-      const res = await fetch(BUILDER_SUBS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "activate", contractor_id: contractorId, plan_code: planCode, months: 1 }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        await loadData();
-        setTab("leads");
-      }
-    } finally {
-      setActivating(null);
-    }
+  const openPayment = (plan: BuilderPlan) => {
+    setPayingPlan(plan);
   };
 
   const formatBudget = (b: number | null) => {
@@ -408,14 +393,10 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
                           className={`w-full font-semibold ${
                             popular ? "bg-blue-500 hover:bg-blue-600 text-white" : "bg-orange-500 hover:bg-orange-600 text-white"
                           }`}
-                          disabled={activating === plan.code}
-                          onClick={() => activatePlan(plan.code)}
+                          onClick={() => openPayment(plan)}
                         >
-                          {activating === plan.code ? (
-                            <><Icon name="Loader2" size={15} className="animate-spin mr-2" />Подключаем...</>
-                          ) : (
-                            <>Подключить {plan.name}</>
-                          )}
+                          <Icon name="CreditCard" size={15} className="mr-2" />
+                          Оплатить и подключить
                         </Button>
                       )}
                     </div>
@@ -451,6 +432,21 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
           </>
         )}
       </div>
+
+      {/* Модаль оплаты тарифа */}
+      {payingPlan && contractorId && (
+        <BuilderPaymentModal
+          plan={payingPlan}
+          contractorId={contractorId}
+          contractorName={user.name}
+          contractorEmail={user.email}
+          onClose={() => setPayingPlan(null)}
+          onSuccess={() => {
+            setPayingPlan(null);
+            setTab("leads");
+          }}
+        />
+      )}
     </div>
   );
 }
