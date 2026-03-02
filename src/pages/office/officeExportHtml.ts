@@ -674,6 +674,107 @@ export function buildKS3(s: OfficeExportState, zones: ZoneConfig[], totalAll: nu
   </body></html>`;
 }
 
+export function buildMaterials(s: OfficeExportState, zones: ZoneConfig[], regionId: string, markupPct: number, regionLabel: string, dateStr: string): string {
+  const { customer, contractor, address, contractNumber, contractDate } = s;
+
+  // Собираем все позиции материалов по всем зонам
+  interface MatRow { zone: string; name: string; unit: string; qty: number; unitPrice: number; total: number; }
+  const allRows: MatRow[] = [];
+
+  for (const z of zones) {
+    if (!z.blockMaterials) continue;
+    const lines = getZoneLines(z, regionId, markupPct);
+    const matLines = lines.filter(l => l.section === "Материалы и расходники");
+    for (const l of matLines) {
+      allRows.push({ zone: z.name, name: l.name, unit: l.unit, qty: l.qty, unitPrice: l.unitPrice, total: l.total });
+    }
+  }
+
+  // Группируем одинаковые позиции по всем зонам
+  const grouped: Map<string, { name: string; unit: string; unitPrice: number; byZone: { zone: string; qty: number; total: number }[]; totalQty: number; totalSum: number }> = new Map();
+  for (const r of allRows) {
+    const key = `${r.name}||${r.unit}||${r.unitPrice}`;
+    if (!grouped.has(key)) {
+      grouped.set(key, { name: r.name, unit: r.unit, unitPrice: r.unitPrice, byZone: [], totalQty: 0, totalSum: 0 });
+    }
+    const g = grouped.get(key)!;
+    g.byZone.push({ zone: r.zone, qty: r.qty, total: r.total });
+    g.totalQty += r.qty;
+    g.totalSum += r.total;
+  }
+
+  const grandTotal = Array.from(grouped.values()).reduce((s, g) => s + g.totalSum, 0);
+  const multiZone = zones.filter(z => z.blockMaterials).length > 1;
+
+  let n = 1;
+  const rows = Array.from(grouped.values()).map((g, i) => {
+    const zoneNote = multiZone && g.byZone.length > 1
+      ? `<br><span style="color:#888;font-size:9px">${g.byZone.map(bz => `${bz.zone}: ${bz.qty} ${g.unit}`).join(" · ")}</span>`
+      : "";
+    return `<tr style="background:${i % 2 === 0 ? "#fff" : "#f5f7fa"}">
+      <td style="color:#555;text-align:center">${n++}</td>
+      <td>${g.name}${zoneNote}</td>
+      <td class="r">${g.totalQty}</td>
+      <td>${g.unit}</td>
+      <td class="r">${g.unitPrice.toLocaleString("ru-RU")}</td>
+      <td class="r"><b>${g.totalSum.toLocaleString("ru-RU")}</b></td>
+    </tr>`;
+  }).join("");
+
+  const noMaterials = allRows.length === 0
+    ? `<p style="color:#888;text-align:center;padding:20px">Нет зон с включённым разделом «Материалы». Активируйте раздел материалов в настройках зоны.</p>`
+    : "";
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Ведомость материалов</title><style>${CSS}
+    .num-col{width:30px;text-align:center;color:#555}
+  </style></head><body>
+    <h1>ВЕДОМОСТЬ МАТЕРИАЛОВ И РАСХОДНИКОВ</h1>
+    <p class="sub">на выполнение работ по коммерческому помещению · ${dateStr}</p>
+
+    <div class="ks-box">
+      <table>
+        ${customer ? `<tr><td>Заказчик:</td><td><b>${customer}</b></td></tr>` : ""}
+        ${contractor ? `<tr><td>Подрядчик / снабженец:</td><td><b>${contractor}</b></td></tr>` : ""}
+        ${address ? `<tr><td>Адрес объекта:</td><td>${address}</td></tr>` : ""}
+        ${contractNumber ? `<tr><td>Договор №:</td><td>${contractNumber}${contractDate ? " от " + contractDate : ""}</td></tr>` : ""}
+        <tr><td>Регион:</td><td>${regionLabel}</td></tr>
+        <tr><td>Дата:</td><td>${dateStr}</td></tr>
+        <tr><td>Зоны:</td><td>${zones.filter(z => z.blockMaterials).map(z => `${z.name} (${z.area} м²)`).join(", ") || "—"}</td></tr>
+      </table>
+    </div>
+
+    ${noMaterials}
+
+    ${allRows.length > 0 ? `
+    <table style="margin-bottom:14px">
+      <thead><tr>
+        <th style="width:30px;text-align:center">№</th>
+        <th>Наименование материала / расходника</th>
+        <th class="r">Кол-во</th>
+        <th>Ед.</th>
+        <th class="r">Цена за ед., ₽</th>
+        <th class="r">Сумма, ₽</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr class="total-row">
+        <td colspan="5">ИТОГО К ЗАКУПКЕ</td>
+        <td class="r">${fmtPrice(grandTotal)}</td>
+      </tr></tfoot>
+    </table>
+
+    <p style="font-size:9px;color:#888;margin-top:4px">
+      * Количество рассчитано по нормам расхода. При закупке рекомендуется добавить 5–10% запаса.
+      Цены ориентировочные — уточняйте у поставщиков.
+    </p>
+    ` : ""}
+
+    <div class="signs" style="margin-top:24px">
+      <div class="sign">Составил${contractor ? ": " + contractor : ""}<br><br>_____________ / ______________</div>
+      <div class="sign">Принял${customer ? ": " + customer : ""}<br><br>_____________ / ______________</div>
+    </div>
+  </body></html>`;
+}
+
 export function buildAct(s: OfficeExportState, zones: ZoneConfig[], totalAll: number, regionId: string, markupPct: number, regionLabel: string, dateStr: string): string {
   const { customer, contractor, address, contractNumber, contractDate, actNumber, actDateFrom, actDateTo } = s;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Акт выполненных работ</title><style>${CSS}</style></head><body>
