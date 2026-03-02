@@ -13,6 +13,8 @@ import {
   fmtPrice,
 } from "./officeCalcTypes";
 import OfficeExportPanel, { OfficeExportState, makeExportState } from "./OfficeExportPanel";
+import SalesAdvisor from "@/components/SalesAdvisor";
+import { REGIONS } from "./officeCalcTypes";
 
 // ─── LEAD FORM ────────────────────────────────────────────────────────────────
 
@@ -185,6 +187,17 @@ export default function OfficeSidebar({ zones, activeId, totalAll, markupPct, re
         totalAll={totalAll}
         regionId={regionId}
         markupPct={markupPct}
+      />
+
+      {/* Советник по продажам — Алексей */}
+      <SalesAdvisor
+        context={{
+          calcType: "Офисный ремонт",
+          totalPrice: totalAll,
+          regionLabel: REGIONS.find(r => r.id === regionId)?.label,
+          zones: zones.map(z => ({ name: z.name, area: z.area, price: z.totalPrice })),
+          details: markupPct > 0 ? `Наценка ${markupPct}%` : undefined,
+        }}
       />
 
       {/* Форма заявки */}

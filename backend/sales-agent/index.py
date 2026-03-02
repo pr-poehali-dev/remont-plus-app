@@ -107,11 +107,17 @@ def handler(event: dict, context) -> dict:
         body = json.loads(event.get("body") or "{}")
         history = body.get("history", [])
         user_message = body.get("message", "").strip()
+        calc_context = body.get("calc_context", "")  # контекст сметы из калькулятора
 
         if not user_message:
             return resp(400, {"error": "message required"})
 
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        # Расширяем системный промпт контекстом расчёта, если он передан
+        system = SYSTEM_PROMPT
+        if calc_context:
+            system += f"\n\n{calc_context}\n\nИспользуй эти данные для точных советов по продаже и допродажам."
+
+        messages = [{"role": "system", "content": system}]
         for msg in history[-20:]:
             if msg.get("role") in ("user", "assistant") and msg.get("content"):
                 messages.append({"role": msg["role"], "content": msg["content"]})
