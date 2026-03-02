@@ -290,7 +290,22 @@ export default function SalesWidget({ calcContext }: Props) {
                       : <MarkdownText text={msg.content} />
                     }
                   </div>
-                  <span className="text-[9px] text-gray-400 mt-0.5 px-1">{fmtTime(msg.ts)}</span>
+                  <div className="flex items-center gap-2 mt-0.5 px-1">
+                    <span className="text-[9px] text-gray-400">{fmtTime(msg.ts)}</span>
+                    {msg.role === "assistant" && (
+                      <button
+                        onClick={() => {
+                          const url = "https://t.me/share/url?url=%20&text=" + encodeURIComponent(msg.content);
+                          window.open(url, "_blank");
+                        }}
+                        title="Отправить в Telegram"
+                        className="flex items-center gap-1 text-[9px] text-blue-400 hover:text-blue-600 transition-colors"
+                      >
+                        <Icon name="Send" size={10} />
+                        <span>Telegram</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
