@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { ZoneConfig, REGIONS } from "./officeCalcTypes";
 import { DocFormat, OfficeExportState, DOC_TABS } from "./officeExportTypes";
-import { buildSmeta, buildKS2, buildKS3, buildAct, buildMaterials } from "./officeExportHtml";
+import { buildSmeta, buildKS2, buildKS3, buildAct } from "./officeExportHtml";
 import OfficeExportForm from "./OfficeExportForm";
+import OfficeMatEditor from "./OfficeMatEditor";
 
 export type { DocFormat };
 export type { OfficeExportState };
@@ -22,7 +23,7 @@ interface Props {
 
 export default function OfficeExportPanel({ exportState, onChange, zones, totalAll, regionId, markupPct }: Props) {
   const [printing, setPrinting] = useState(false);
-  const [printingMat, setPrintingMat] = useState(false);
+  const [matEditorOpen, setMatEditorOpen] = useState(false);
   const { docType, showForm } = exportState;
 
   const regionLabel = REGIONS.find(r => r.id === regionId)?.label ?? regionId;
@@ -43,13 +44,6 @@ export default function OfficeExportPanel({ exportState, onChange, zones, totalA
     }
 
     openWindow(html, () => setPrinting(false));
-  };
-
-  const handlePrintMaterials = () => {
-    setPrintingMat(true);
-    const dateStr = new Date().toLocaleDateString("ru-RU");
-    const html = buildMaterials(exportState, zones, regionId, markupPct, regionLabel, dateStr);
-    openWindow(html, () => setPrintingMat(false));
   };
 
   const openWindow = (html: string, cb: () => void) => {
@@ -114,16 +108,22 @@ export default function OfficeExportPanel({ exportState, onChange, zones, totalA
         <Button
           variant="outline"
           className="w-full border-green-500 text-green-700 hover:bg-green-50"
-          onClick={handlePrintMaterials}
-          disabled={printing || printingMat}
+          onClick={() => setMatEditorOpen(true)}
+          disabled={printing}
         >
-          {printingMat
-            ? <Icon name="Loader2" size={15} className="animate-spin mr-2" />
-            : <Icon name="Package" size={15} className="mr-2" />
-          }
+          <Icon name="Package" size={15} className="mr-2" />
           Ведомость материалов
         </Button>
       </div>
+
+      <OfficeMatEditor
+        open={matEditorOpen}
+        onClose={() => setMatEditorOpen(false)}
+        exportState={exportState}
+        zones={zones}
+        regionId={regionId}
+        markupPct={markupPct}
+      />
     </Card>
   );
 }
