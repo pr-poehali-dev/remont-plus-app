@@ -1,0 +1,41 @@
+{
+  "tests": [
+    {
+      "name": "CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Create lead",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "create",
+        "city": "Москва",
+        "budget": 2500000,
+        "name": "Иван Петров",
+        "phone": "+79001234567",
+        "comment": "Ремонт квартиры 80м2",
+        "work_types": ["Отделка стен", "Полы"],
+        "calc_type": "calculator",
+        "source": "calculator"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get my leads - no contractor_id",
+      "method": "GET",
+      "path": "/?action=my_leads",
+      "expectedStatus": 400
+    },
+    {
+      "name": "Get stats - no contractor_id",
+      "method": "GET",
+      "path": "/?action=stats",
+      "expectedStatus": 400
+    }
+  ]
+}

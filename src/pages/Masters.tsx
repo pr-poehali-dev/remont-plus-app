@@ -8,6 +8,8 @@ import { AUTH_URL, DEMO_MASTERS, Master, User } from "@/components/master/master
 import MasterCard from "@/components/master/MasterCard";
 import MastersFilters from "@/components/master/MastersFilters";
 import MasterCabinet from "@/components/master/MasterCabinet";
+import BuilderPlans from "@/components/master/BuilderPlans";
+import BuilderCabinet from "@/components/master/BuilderCabinet";
 
 export default function Masters() {
   const navigate = useNavigate();
@@ -85,6 +87,7 @@ export default function Masters() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("rating");
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [showBuilderCabinet, setShowBuilderCabinet] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [contractorId, setContractorId] = useState<number | null>(null);
 
@@ -118,10 +121,21 @@ export default function Masters() {
     })
       .then((r) => r.json())
       .then((data) => {
-        if (data.profile?.id) setContractorId(data.profile.id);
+        if (data.profile?.id) {
+          setContractorId(data.profile.id);
+          if (user.user_type === "builder") {
+            setShowBuilderCabinet(true);
+            return;
+          }
+        }
+        setShowQuestionnaire(true);
       })
-      .catch(() => {});
-    setShowQuestionnaire(true);
+      .catch(() => setShowQuestionnaire(true));
+  };
+
+  const handleBuilderConnect = () => {
+    if (!user) { navigate("/login"); return; }
+    handleBecomeMaster();
   };
 
   const filtered = masters
@@ -169,6 +183,16 @@ export default function Masters() {
         contractorId={contractorId}
         onBack={() => setShowQuestionnaire(false)}
         onComplete={() => setCompleted(true)}
+      />
+    );
+  }
+
+  if (showBuilderCabinet && user && contractorId) {
+    return (
+      <BuilderCabinet
+        contractorId={contractorId}
+        companyName={user.name}
+        onBack={() => setShowBuilderCabinet(false)}
       />
     );
   }
@@ -233,6 +257,9 @@ export default function Masters() {
           </div>
         </div>
       </div>
+
+      {/* Тарифный блок для строительных компаний */}
+      <BuilderPlans onConnect={handleBuilderConnect} />
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <MastersFilters

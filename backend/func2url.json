@@ -1,4 +1,6 @@
 {
+  "builder-leads": "https://functions.poehali.dev/69fd9787-d0eb-4342-b94b-9d14bb3f36e7",
+  "builder-subscriptions": "https://functions.poehali.dev/9993e0fc-25ac-4a65-b8be-49aa089d1585",
   "rbc-parser": "https://functions.poehali.dev/f301a75f-bbd1-4c9d-91ee-b7346d13d460",
   "calc-events": "https://functions.poehali.dev/85d1f13f-3446-417d-85a1-7cc975466f50",
   "calc-lead": "https://functions.poehali.dev/e155a53f-72bf-4c18-8aec-b9bd60565215",
