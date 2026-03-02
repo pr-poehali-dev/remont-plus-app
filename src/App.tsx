@@ -53,6 +53,7 @@ import FrameHouse from "./pages/FrameHouse";
 import FrameHousePrint from "./pages/FrameHousePrint";
 import RbcParser from "./pages/RbcParser";
 import OfficeCalc from "./pages/OfficeCalc";
+import CityLanding from "./pages/CityLanding";
 import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
@@ -117,6 +118,7 @@ const App = () => {
             <Route path="/auth/yandex/callback" element={<YandexCallback />} />
             <Route path="/rbc-parser" element={<RbcParser />} />
             <Route path="/office" element={<OfficeCalc />} />
+            <Route path="/city/:slug" element={<CityLanding />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
