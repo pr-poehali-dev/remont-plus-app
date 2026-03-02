@@ -122,6 +122,7 @@ export default function SalesWidget({ calcContext }: Props) {
         body: JSON.stringify({
           message: text,
           history: newMessages.slice(-20).map(m => ({ role: m.role, content: m.content })),
+          calc_context: calcContext ? buildContextMessage(calcContext) : "",
         }),
       });
       const data = await res.json();
