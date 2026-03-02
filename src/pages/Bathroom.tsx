@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import { DEFAULT_BATHROOM_CONFIG } from "@/components/calculator/bathroom/BathroomTypes";
 import type { BathroomConfig } from "@/components/calculator/bathroom/BathroomTypes";
 import { calcBathroomPrice } from "@/components/calculator/bathroom/bathroomUtils";
@@ -153,6 +154,16 @@ export default function Bathroom() {
 
   return (
     <CalcAuthGate calcName="Ремонт санузла" calcPath="/bathroom">
+    <SEOMeta
+      title="Калькулятор ремонта ванной комнаты онлайн 2026"
+      description="Рассчитайте стоимость ремонта ванной комнаты онлайн бесплатно. Точный расчёт плитки, сантехники, отделки по вашим размерам. Смета за 5 минут."
+      keywords="калькулятор ремонта ванной комнаты, стоимость ремонта ванной, расчёт плитки ванная"
+      path="/bathroom"
+      jsonLd={[
+        calcJsonLd("Калькулятор ремонта ванной комнаты", "Онлайн расчёт стоимости ремонта ванной комнаты с учётом плитки, сантехники и отделки", "/bathroom"),
+        breadcrumbJsonLd([{name:"Главная",url:"/"},{name:"Калькуляторы",url:"/calculator"},{name:"Ванная комната",url:"/bathroom"}])
+      ]}
+    />
     <div className="min-h-screen bg-gray-50">
       <BathroomHeader
         zonesCount={zones.length}

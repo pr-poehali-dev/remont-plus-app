@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta from "@/components/SEOMeta";
 import { AUTH_URL, DEMO_MASTERS, Master, User } from "@/components/master/masterTypes";
 import MasterCard from "@/components/master/MasterCard";
 import MastersFilters from "@/components/master/MastersFilters";
@@ -174,6 +175,12 @@ export default function Masters() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOMeta
+        title="Найти мастера по ремонту — строители и отделочники"
+        description="Найдите проверенного мастера по ремонту квартиры, дома или офиса. Строители, отделочники, электрики, сантехники с опытом и отзывами."
+        keywords="найти мастера по ремонту, строители отделочники, нанять строителя"
+        path="/masters"
+      />
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <button

@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import { DEFAULT_BATHHOUSE_CONFIG } from "@/components/calculator/bathhouse/BathHouseTypes";
 import type { BathHouseConfig } from "@/components/calculator/bathhouse/BathHouseTypes";
 import { calcBathHousePrice } from "@/components/calculator/bathhouse/bathHouseUtils";
@@ -111,6 +112,16 @@ export default function BathHouse() {
 
   return (
     <CalcAuthGate calcName="Баня под ключ" calcPath="/bathhouse">
+    <SEOMeta
+      title="Калькулятор строительства бани онлайн 2026"
+      description="Рассчитайте стоимость строительства бани онлайн бесплатно. Каркасная, брусовая, из бревна — точный расчёт материалов и работ."
+      keywords="калькулятор строительства бани, стоимость бани под ключ, расчёт бани из бруса"
+      path="/bathhouse"
+      jsonLd={[
+        calcJsonLd("Калькулятор строительства бани", "Онлайн расчёт стоимости строительства бани из бруса, каркаса и бревна", "/bathhouse"),
+        breadcrumbJsonLd([{name:"Главная",url:"/"},{name:"Калькуляторы",url:"/calculator"},{name:"Строительство бани",url:"/bathhouse"}])
+      ]}
+    />
     <div className="min-h-screen bg-[#fafaf8]">
       <BathHouseHeader
         config={config}

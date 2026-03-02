@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -127,6 +128,16 @@ export default function TurnkeyRenovation() {
 
   return (
     <CalcAuthGate calcName="Ремонт под ключ" calcPath="/turnkey">
+    <SEOMeta
+      title="Калькулятор ремонта под ключ онлайн 2026"
+      description="Рассчитайте стоимость ремонта квартиры под ключ онлайн. Черновые и чистовые работы, материалы, сантехника, электрика — полная смета бесплатно."
+      keywords="ремонт квартиры под ключ калькулятор, стоимость ремонта под ключ, расчёт ремонта квартиры"
+      path="/turnkey"
+      jsonLd={[
+        calcJsonLd("Калькулятор ремонта под ключ", "Онлайн расчёт полной стоимости ремонта квартиры под ключ", "/turnkey"),
+        breadcrumbJsonLd([{name:"Главная",url:"/"},{name:"Калькуляторы",url:"/calculator"},{name:"Ремонт под ключ",url:"/turnkey"}])
+      ]}
+    />
     <div className="min-h-screen bg-gray-50">
       {/* Шапка */}
       <header className="bg-white border-b sticky top-0 z-10">

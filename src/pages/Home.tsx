@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta from "@/components/SEOMeta";
 import HomeHero from "@/components/home/HomeHero";
 import HomeHowItWorks from "@/components/home/HomeHowItWorks";
 import HomeProjects from "@/components/home/HomeProjects";
@@ -96,6 +97,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0f0f13]">
+      <SEOMeta
+        title="Бесплатные калькуляторы ремонта и строительства онлайн"
+        description="Рассчитайте стоимость ремонта квартиры, дома, бани онлайн бесплатно. Калькуляторы ванной, потолков, пола, окон, электрики, каркасного дома. Точная смета за 5 минут."
+        keywords="калькулятор ремонта онлайн, расчёт стоимости ремонта квартиры, смета на ремонт бесплатно"
+        path="/"
+      />
       <HomeHero user={user} regionLabel={region.label} onLogout={handleLogout} />
       <HomeHowItWorks />
 

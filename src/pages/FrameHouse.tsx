@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import { DEFAULT_FRAMEHOUSE_CONFIG } from "@/components/calculator/framehouse/FrameHouseTypes";
 import type { FrameHouseConfig } from "@/components/calculator/framehouse/FrameHouseTypes";
 import { calcFrameHousePrice } from "@/components/calculator/framehouse/frameHouseUtils";
@@ -109,6 +110,16 @@ export default function FrameHouse() {
 
   return (
     <CalcAuthGate calcName="Каркасный дом" calcPath="/framehouse">
+    <SEOMeta
+      title="Калькулятор каркасного дома онлайн 2026"
+      description="Рассчитайте стоимость каркасного дома онлайн бесплатно. Точный расчёт стройматериалов, работ и отделки по вашему проекту."
+      keywords="калькулятор каркасного дома, стоимость каркасного дома, расчёт строительства дома"
+      path="/framehouse"
+      jsonLd={[
+        calcJsonLd("Калькулятор каркасного дома", "Онлайн расчёт стоимости строительства каркасного дома под ключ", "/framehouse"),
+        breadcrumbJsonLd([{name:"Главная",url:"/"},{name:"Калькуляторы",url:"/calculator"},{name:"Каркасный дом",url:"/framehouse"}])
+      ]}
+    />
     <div className="min-h-screen bg-[#f7faf7]">
       <FrameHouseHeader
         config={config}

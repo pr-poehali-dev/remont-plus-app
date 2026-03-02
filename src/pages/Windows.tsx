@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -120,6 +121,16 @@ export default function Windows() {
 
   return (
     <CalcAuthGate calcName="Окна и остекление" calcPath="/windows">
+    <SEOMeta
+      title="Калькулятор окон ПВХ онлайн 2026"
+      description="Рассчитайте стоимость пластиковых окон онлайн бесплатно. Расчёт ПВХ окон по размерам, профилю и фурнитуре. Точная смета за 2 минуты."
+      keywords="калькулятор окон ПВХ, стоимость пластиковых окон, расчёт окон онлайн"
+      path="/windows"
+      jsonLd={[
+        calcJsonLd("Калькулятор окон ПВХ", "Онлайн расчёт стоимости пластиковых окон по размерам и конфигурации", "/windows"),
+        breadcrumbJsonLd([{name:"Главная",url:"/"},{name:"Калькуляторы",url:"/calculator"},{name:"Окна ПВХ",url:"/windows"}])
+      ]}
+    />
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">

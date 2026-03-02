@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import { DEFAULT_CONFIG, calcFlooringPrice } from "@/components/calculator/flooring/flooringUtils";
 import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTypes";
 import ExportDialog from "@/components/calculator/ExportDialog";
@@ -150,6 +151,16 @@ export default function Flooring() {
 
   return (
     <CalcAuthGate calcName="Напольные покрытия" calcPath="/flooring">
+      <SEOMeta
+        title="Калькулятор напольных покрытий онлайн 2026"
+        description="Рассчитайте стоимость укладки напольных покрытий онлайн. Ламинат, паркет, плитка, линолеум — точный расчёт по площади и типу покрытия."
+        keywords="калькулятор напольных покрытий, стоимость укладки ламината, расчёт плитки пол"
+        path="/flooring"
+        jsonLd={[
+          calcJsonLd("Калькулятор напольных покрытий", "Онлайн расчёт стоимости укладки ламината, паркета, плитки и линолеума", "/flooring"),
+          breadcrumbJsonLd([{name:"Главная",url:"/"},{name:"Калькуляторы",url:"/calculator"},{name:"Напольные покрытия",url:"/flooring"}])
+        ]}
+      />
       <div className="min-h-screen bg-gray-50">
         <FlooringHeader
           totalArea={totalArea}

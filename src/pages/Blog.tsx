@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta from "@/components/SEOMeta";
 
 const POSTS_URL = "https://functions.poehali.dev/60baa083-841b-461e-9edb-8460b28e7076";
 
@@ -135,6 +136,13 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOMeta
+        title="Блог о ремонте и строительстве — советы и статьи"
+        description="Статьи о ремонте квартир, домов и отделке: советы экспертов, обзоры материалов, пошаговые инструкции. Всё о ремонте в одном блоге."
+        keywords="блог о ремонте, статьи о ремонте квартиры, советы по ремонту, отделочные материалы"
+        path="/blog"
+        type="article"
+      />
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta from "@/components/SEOMeta";
 import { type Region, type Category, type PriceCategory } from "@/components/prices/PricesTypes";
 import PriceListTable from "@/components/prices/PriceListTable";
 import PageTour from "@/components/ui/PageTour";
@@ -101,6 +102,12 @@ export default function Prices() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOMeta
+        title="Цены на ремонт квартир и домов 2026 — прайс-лист"
+        description="Актуальный прайс-лист на ремонт квартир, домов и офисов. Цены на отделочные работы, электрику, сантехнику и монтаж потолков в 2026 году."
+        keywords="цены на ремонт квартиры 2026, прайс лист ремонт, стоимость отделочных работ"
+        path="/prices"
+      />
       <header className="bg-white border-b shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">

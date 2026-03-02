@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
@@ -174,6 +175,16 @@ export default function NewbuildRenovation() {
 
   return (
     <CalcAuthGate calcName="Новостройка" calcPath="/newbuild">
+    <SEOMeta
+      title="Калькулятор ремонта новостройки онлайн 2026"
+      description="Рассчитайте стоимость ремонта квартиры в новостройке онлайн. Черновой и чистовой ремонт, отделка под ключ. Смета по всем комнатам."
+      keywords="калькулятор ремонта новостройки, стоимость ремонта квартиры, расчёт отделки новостройка"
+      path="/newbuild"
+      jsonLd={[
+        calcJsonLd("Калькулятор ремонта новостройки", "Онлайн расчёт стоимости ремонта квартиры в новостройке под ключ", "/newbuild"),
+        breadcrumbJsonLd([{name:"Главная",url:"/"},{name:"Калькуляторы",url:"/calculator"},{name:"Ремонт новостройки",url:"/newbuild"}])
+      ]}
+    />
     <div className="min-h-screen bg-gray-50">
       {/* Шапка */}
       <header className="bg-white border-b sticky top-0 z-10">

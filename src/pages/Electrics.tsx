@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import { DEFAULT_ELECTRICS_CONFIG } from "@/components/calculator/electrics/ElectricsTypes";
 import type { ElectricsConfig } from "@/components/calculator/electrics/ElectricsTypes";
 import { calcElectricsPrice } from "@/components/calculator/electrics/electricsUtils";
@@ -151,6 +152,16 @@ export default function Electrics() {
 
   return (
     <CalcAuthGate calcName="Электромонтаж" calcPath="/electrics">
+      <SEOMeta
+        title="Калькулятор электрики в квартире онлайн 2026"
+        description="Рассчитайте стоимость электрики в квартире онлайн бесплатно. Расчёт проводки, розеток, щитка и светильников по комнатам."
+        keywords="калькулятор электрики, стоимость электрики в квартире, расчёт проводки онлайн"
+        path="/electrics"
+        jsonLd={[
+          calcJsonLd("Калькулятор электрики", "Онлайн расчёт стоимости электромонтажных работ в квартире", "/electrics"),
+          breadcrumbJsonLd([{name:"Главная",url:"/"},{name:"Калькуляторы",url:"/calculator"},{name:"Электрика",url:"/electrics"}])
+        ]}
+      />
       <div className="min-h-screen bg-gray-50">
         <ElectricsHeader
           totalArea={totalArea}

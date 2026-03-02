@@ -6,6 +6,7 @@ import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta from "@/components/SEOMeta";
 import { getEstimateItems, type EstimateSavedItem } from "@/lib/lemanapro-data";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -267,6 +268,12 @@ export default function Calculator() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOMeta
+        title="Калькуляторы ремонта онлайн — все виды работ"
+        description="Все калькуляторы ремонта в одном месте: ванная, потолки, полы, электрика, окна, новостройка, баня, каркасный дом. Бесплатный расчёт онлайн."
+        keywords="калькуляторы ремонта, расчёт ремонта онлайн, смета ремонта онлайн бесплатно"
+        path="/calculator"
+      />
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">

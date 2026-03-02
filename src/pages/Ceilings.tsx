@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import { CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS } from "@/components/calculator/ceilings/CeilingTypes";
 import type { CeilingConfig } from "@/components/calculator/ceilings/CeilingTypes";
 import { calcPrice, DEFAULT_CONFIG, fmt } from "@/components/calculator/ceilings/ceilingUtils";
@@ -179,6 +180,16 @@ export default function Ceilings() {
 
   return (
     <CalcAuthGate calcName="Натяжные потолки" calcPath="/ceilings">
+    <SEOMeta
+      title="Калькулятор натяжных потолков онлайн 2026"
+      description="Рассчитайте стоимость натяжного потолка онлайн бесплатно. Точный расчёт по площади, типу полотна и освещению. Смета за 3 минуты."
+      keywords="калькулятор натяжных потолков, стоимость натяжного потолка, расчёт потолка онлайн"
+      path="/ceilings"
+      jsonLd={[
+        calcJsonLd("Калькулятор натяжных потолков", "Онлайн расчёт стоимости натяжных потолков по площади и типу полотна", "/ceilings"),
+        breadcrumbJsonLd([{name:"Главная",url:"/"},{name:"Калькуляторы",url:"/calculator"},{name:"Натяжные потолки",url:"/ceilings"}])
+      ]}
+    />
     <div className="min-h-screen bg-gray-50">
       <CeilingsHeader
         zoneCount={zones.length}

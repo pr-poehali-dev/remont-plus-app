@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
+import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -86,6 +87,16 @@ export default function OfficeCalc() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOMeta
+        title="Калькулятор ремонта офиса онлайн 2026"
+        description="Рассчитайте стоимость ремонта офиса онлайн бесплатно. Отделка, электрика, сети, мебель — точная смета по площади и классу отделки."
+        keywords="калькулятор ремонта офиса, стоимость ремонта офиса, расчёт отделки офиса"
+        path="/office"
+        jsonLd={[
+          calcJsonLd("Калькулятор ремонта офиса", "Онлайн расчёт стоимости ремонта и отделки офиса", "/office"),
+          breadcrumbJsonLd([{name:"Главная",url:"/"},{name:"Калькуляторы",url:"/calculator"},{name:"Ремонт офиса",url:"/office"}])
+        ]}
+      />
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-20">
         <div className="container mx-auto px-4 py-3 flex items-center gap-3">
