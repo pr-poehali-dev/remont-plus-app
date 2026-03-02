@@ -261,19 +261,172 @@ export function getZoneLines(z: ZoneConfig, regionId: string, markupPct: number)
     }
   }
 
-  // Материалы
+  // Материалы — детализированный расчёт расходников по разделам
   if (z.blockMaterials && matSupply.coeff > 0) {
     const laborSubtotal = lines.reduce((s, l) => s + l.total, 0);
-    const matTotal = Math.round(laborSubtotal * matSupply.coeff * z.materialsCoeffCustom);
-    if (matTotal > 0) {
-      lines.push({
-        section: "Материалы",
-        name: `${matSupply.label}`,
-        unit: "компл.",
-        qty: 1,
-        unitPrice: matTotal,
-        total: matTotal,
-      });
+    const matBudget = Math.round(laborSubtotal * matSupply.coeff * z.materialsCoeffCustom);
+    if (matBudget > 0) {
+      const sec = "Материалы и расходники";
+      const addM = (name: string, unit: string, qty: number, unitPrice: number) => {
+        const total = Math.round(qty * unitPrice);
+        if (qty > 0 && total > 0) lines.push({ section: sec, name, unit, qty, unitPrice, total });
+      };
+
+      // ── Отделочные работы (грунт, шпатлёвка, краска) ──────────────────
+      if (z.blockFinish && finish.pricePerM2 > 0) {
+        addM("Грунтовка универсальная", "л", Math.ceil(z.area * 0.2), 180);
+        addM("Шпатлёвка финишная", "кг", Math.ceil(z.area * 1.2), 55);
+        addM("Краска интерьерная (2 слоя)", "л", Math.ceil(z.area * 0.35), 320);
+        addM("Малярная лента 50 мм", "рул.", Math.ceil(z.area / 15), 90);
+        addM("Валик малярный 200 мм", "шт.", Math.max(1, Math.ceil(z.area / 80)), 350);
+        addM("Кювета малярная", "шт.", Math.max(1, Math.ceil(z.area / 80)), 120);
+        addM("Кисть-флейц 100 мм", "шт.", Math.max(1, Math.ceil(z.area / 100)), 280);
+        addM("Шпатель стальной 400 мм", "шт.", Math.max(1, Math.ceil(z.area / 120)), 380);
+      }
+
+      // ── Полы ───────────────────────────────────────────────────────────
+      if (z.blockFlooring && flooring.pricePerM2 > 0) {
+        if (z.flooring === "porcelain") {
+          addM("Клей плиточный (25 кг/меш.)", "меш.", Math.ceil(z.area / 4), 620);
+          addM("Затирка для швов (2 кг/уп.)", "уп.", Math.ceil(z.area / 8), 380);
+          addM("Крестики для плитки 2 мм", "уп.", Math.ceil(z.area / 3), 95);
+          addM("Грунтовка для основания", "л", Math.ceil(z.area * 0.15), 180);
+        } else if (z.flooring === "linoleum" || z.flooring === "carpet") {
+          addM("Клей-мастика для покрытия", "л", Math.ceil(z.area * 0.3), 420);
+          addM("Малярная лента 50 мм", "рул.", Math.ceil(z.area / 20), 90);
+          addM("Нож монтажный + лезвия", "компл.", 1, 350);
+        } else if (z.flooring === "epoxy") {
+          addM("Грунтовка эпоксидная (компл.)", "компл.", Math.ceil(z.area / 20), 1800);
+          addM("Растворитель технический", "л", Math.ceil(z.area / 15), 220);
+          addM("Валик игольчатый 400 мм", "шт.", Math.max(1, Math.ceil(z.area / 50)), 850);
+        } else if (z.flooring === "raised_floor") {
+          addM("Саморезы 4×25 мм (200 шт/уп)", "уп.", Math.ceil(z.area / 5), 280);
+          addM("Дюбель-гвоздь 6×40 мм (100 шт/уп)", "уп.", Math.ceil(z.area / 8), 190);
+        }
+        addM("Подложка под покрытие 3 мм", "м²", Math.ceil(z.area * 1.05), 55);
+        addM("Плинтус напольный 60 мм", "пм", Math.ceil(Math.sqrt(z.area) * 4), 180);
+      }
+
+      // ── Потолок ────────────────────────────────────────────────────────
+      if (z.blockCeiling && ceiling.pricePerM2 > 0) {
+        if (z.ceiling === "armstrong") {
+          addM("Профиль подвесной (тройник/крест)", "пм", Math.ceil(z.area * 0.8), 95);
+          addM("Подвес прямой потолочный", "шт.", Math.ceil(z.area / 0.6), 22);
+          addM("Саморезы 3.5×9 мм (500 шт/уп)", "уп.", Math.ceil(z.area / 20), 210);
+        } else if (z.ceiling === "gypsum") {
+          addM("Профиль CD 60/27 (3м)", "шт.", Math.ceil(z.area / 1.5), 145);
+          addM("Профиль UD 27/28 (3м)", "шт.", Math.ceil(Math.sqrt(z.area) * 1.5), 120);
+          addM("Саморезы 3.5×25 мм (500 шт/уп)", "уп.", Math.ceil(z.area / 12), 210);
+          addM("Лента бандажная армирующая", "м", Math.ceil(z.area * 1.5), 18);
+          addM("Шпатлёвка стартовая (20 кг/меш.)", "меш.", Math.ceil(z.area / 10), 580);
+          addM("Шпатлёвка финишная (20 кг/меш.)", "меш.", Math.ceil(z.area / 15), 620);
+          addM("Грунтовка глубокого проникновения", "л", Math.ceil(z.area * 0.2), 180);
+          addM("Краска потолочная (2 слоя)", "л", Math.ceil(z.area * 0.3), 340);
+          addM("Валик малярный 150 мм", "шт.", Math.max(1, Math.ceil(z.area / 80)), 280);
+        } else if (z.ceiling === "stretch") {
+          addM("Багет пристенный (ПВХ)", "пм", Math.ceil(Math.sqrt(z.area) * 4), 210);
+        } else if (z.ceiling === "grillato") {
+          addM("Подвес для грильято", "шт.", Math.ceil(z.area / 0.5), 85);
+          addM("Саморезы 3.5×9 мм (500 шт/уп)", "уп.", Math.ceil(z.area / 25), 210);
+        }
+      }
+
+      // ── Перегородки ────────────────────────────────────────────────────
+      if (z.blockPartitions && partition.pricePerLM > 0 && z.partitionLinearM > 0) {
+        const lm = z.partitionLinearM;
+        const h = z.height;
+        if (z.partitions === "gypsum") {
+          addM("Профиль CW 75 мм (3м)", "шт.", Math.ceil(lm * h / 1.5), 145);
+          addM("Профиль UW 75 мм (3м)", "шт.", Math.ceil(lm * 2 / 3), 120);
+          addM("ГКЛ 12,5 мм (лист 1,2×2,5м)", "шт.", Math.ceil(lm * h / 3 * 2), 680);
+          addM("Минвата 50 мм (6 м²/уп)", "уп.", Math.ceil(lm * h / 6), 1200);
+          addM("Саморезы 3.5×25 мм (500 шт/уп)", "уп.", Math.ceil(lm * h / 8), 210);
+          addM("Саморезы 3.5×9 мм (500 шт/уп)", "уп.", Math.ceil(lm / 5), 210);
+          addM("Дюбель-гвоздь 6×40 мм (100 шт/уп)", "уп.", Math.ceil(lm / 4), 190);
+          addM("Лента демпферная (10м/рул.)", "рул.", Math.ceil(lm / 5), 280);
+          addM("Серпянка армирующая (50м/рул.)", "рул.", Math.ceil(lm * h * 0.3 / 50), 380);
+          addM("Шпатлёвка финишная (20 кг/меш.)", "меш.", Math.ceil(lm * h / 15), 620);
+          addM("Грунтовка глубокого проникновения", "л", Math.ceil(lm * h * 0.25), 180);
+        } else if (z.partitions === "glass" || z.partitions === "glass_full") {
+          addM("Герметик силиконовый прозрачный (310 мл)", "шт.", Math.ceil(lm / 5), 320);
+          addM("Уплотнительная резина (10м/рул.)", "рул.", Math.ceil(lm / 8), 480);
+          addM("Анкер-болт 8×80 мм (10 шт/уп)", "уп.", Math.ceil(lm / 0.6), 190);
+        }
+      }
+
+      // ── Отопление ──────────────────────────────────────────────────────
+      if (z.blockHeating && heating.pricePerM2 > 0) {
+        addM("Лента герметизирующая алюм. 50 мм", "рул.", Math.max(1, Math.ceil(z.area / 60)), 180);
+        addM("Хомут монтажный пластиковый (100 шт/уп)", "уп.", Math.ceil(z.area / 20), 95);
+        if (z.heating === "underfloor") {
+          addM("Монтажная лента для тёплого пола (50м)", "рул.", Math.ceil(z.area / 50), 320);
+          addM("Демпферная лента (25м/рул.)", "рул.", Math.ceil(Math.sqrt(z.area) * 4 / 25), 280);
+        }
+      }
+
+      // ── Вентиляция ─────────────────────────────────────────────────────
+      if (z.blockVentilation && (vent.pricePerM2 > 0 || z.airConditioners > 0)) {
+        addM("Герметик для воздуховодов (310 мл)", "шт.", Math.max(1, Math.ceil(z.area / 40)), 340);
+        addM("Алюминиевая самоклеящаяся лента 50 мм", "рул.", Math.ceil(z.area / 30), 180);
+        addM("Хомут монтажный пластиковый (100 шт/уп)", "уп.", Math.ceil(z.area / 15), 95);
+        if (z.airConditioners > 0) {
+          addM("Монтажная пена (850 мл)", "балл.", z.airConditioners, 280);
+          addM("Кабельный канал 40×16 мм (2м)", "шт.", z.airConditioners * 2, 120);
+        }
+      }
+
+      // ── Электрика ──────────────────────────────────────────────────────
+      if (z.blockElectric) {
+        if (z.electricPoints > 0) {
+          addM("Кабель ВВГнг 3×2.5 мм² (50м/бух.)", "бух.", Math.ceil(z.electricPoints / 8), 2800);
+          addM("Кабель ВВГнг 3×1.5 мм² (50м/бух.)", "бух.", Math.ceil(z.electricPoints / 12), 1900);
+          addM("Гофротруба ПВД 20 мм (50м/бух.)", "бух.", Math.ceil(z.electricPoints / 6), 480);
+          addM("Распаечная коробка ОП 65×65", "шт.", Math.ceil(z.electricPoints / 3), 55);
+          addM("Клеммник WAGO 5×2.5 (100 шт/уп)", "уп.", Math.ceil(z.electricPoints / 8), 680);
+          addM("Изолента ПВХ (10м/рул.)", "рул.", Math.ceil(z.electricPoints / 10), 65);
+          addM("Дюбель-гвоздь 6×40 мм (100 шт/уп)", "уп.", Math.ceil(z.electricPoints / 5), 190);
+        }
+        if (z.lighting) {
+          addM("Кабель ВВГнг 3×1.5 мм² (50м/бух.)", "бух.", Math.ceil(z.area / 25), 1900);
+          addM("Гофротруба ПВД 16 мм (50м/бух.)", "бух.", Math.ceil(z.area / 30), 360);
+        }
+      }
+
+      // ── Пожарная безопасность ──────────────────────────────────────────
+      if (z.blockFire && (z.fireSignaling || z.fireSensors > 0)) {
+        addM("Кабель КСПВ 2×0.5 (200м/бух.)", "бух.", Math.ceil(z.fireSensors / 10), 980);
+        addM("Дюбель-гвоздь 6×40 мм (100 шт/уп)", "уп.", Math.ceil(z.fireSensors / 8), 190);
+        addM("Хомут монтажный белый (100 шт/уп)", "уп.", Math.ceil(z.fireSensors / 12), 95);
+      }
+
+      // ── Итог материалов: если детализация превышает бюджет — пропускаем
+      // Считаем фактическую сумму детализации
+      const detailLines = lines.filter(l => l.section === sec);
+      const detailTotal = detailLines.reduce((s, l) => s + l.total, 0);
+
+      // Если детализация < бюджета — добавляем остаток как "прочие расходники"
+      const remainder = matBudget - detailTotal;
+      if (remainder > 500) {
+        lines.push({
+          section: sec,
+          name: "Прочие расходные материалы (герметики, метизы, крепёж)",
+          unit: "компл.",
+          qty: 1,
+          unitPrice: remainder,
+          total: remainder,
+        });
+      }
+      // Если детализация > бюджета — добавляем корректирующую строку (скидка)
+      if (detailTotal > matBudget && detailTotal - matBudget > 500) {
+        lines.push({
+          section: sec,
+          name: "Корректировка (оптовая закупка / скидка подрядчика)",
+          unit: "компл.",
+          qty: 1,
+          unitPrice: -(detailTotal - matBudget),
+          total: -(detailTotal - matBudget),
+        });
+      }
     }
   }
 
