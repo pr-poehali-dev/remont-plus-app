@@ -6,7 +6,7 @@ import {
 } from "@/components/calculator/turnkey/TurnkeyTypes";
 import type { TurnkeyConfig } from "@/components/calculator/turnkey/TurnkeyTypes";
 import { calcTurnkeyPrice, calcTurnkeyMaterials, fmt } from "@/components/calculator/turnkey/turnkeyUtils";
-import SharePanel from "@/components/print/SharePanel";
+import PrintPaywall from "@/components/print/PrintPaywall";
 
 interface PrintState {
   cfg: TurnkeyConfig;
@@ -36,7 +36,6 @@ export default function TurnkeyPrint() {
       document.title = isKp
         ? `КП-${state.docNum} (Под ключ) от ${state.date}`
         : `Смета под ключ № С-${state.docNum} от ${state.date}`;
-      setTimeout(() => window.print(), 500);
     }
   }, [state]);
 
@@ -137,30 +136,7 @@ export default function TurnkeyPrint() {
         body { font-family: Arial, sans-serif; background: #f9fafb; }
       `}</style>
 
-      <div className="no-print bg-emerald-50 border-b border-emerald-200 px-6 py-3">
-        <SharePanel
-          docTitle={isKp ? `КП-${docNum} (Под ключ) от ${date}` : `Смета под ключ № С-${docNum} от ${date}`}
-          totalSum={totalSum}
-          customerEmail={email}
-          customerPhone={phone}
-          docType={docType}
-        />
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={() => window.print()}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
-          >
-            Печать / PDF
-          </button>
-          <button
-            onClick={() => window.history.back()}
-            className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-          >
-            Назад
-          </button>
-        </div>
-      </div>
-
+      <PrintPaywall>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         {/* Шапка */}
         <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-800">
@@ -333,6 +309,7 @@ export default function TurnkeyPrint() {
           </div>
         )}
       </div>
+      </PrintPaywall>
     </>
   );
 }

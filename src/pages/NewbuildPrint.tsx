@@ -6,7 +6,7 @@ import {
 } from "@/components/calculator/newbuild/NewbuildTypes";
 import type { NewbuildConfig } from "@/components/calculator/newbuild/NewbuildTypes";
 import { calcNewbuildPrice, calcNewbuildProjectTotals, calcNewbuildMaterials, fmt } from "@/components/calculator/newbuild/newbuildUtils";
-import SharePanel from "@/components/print/SharePanel";
+import PrintPaywall from "@/components/print/PrintPaywall";
 
 interface PrintState {
   zones: NewbuildConfig[];
@@ -40,7 +40,6 @@ export default function NewbuildPrint() {
       document.title = isKp
         ? `КП-${state.docNum} (Новостройка) от ${state.date}`
         : `Смета на ремонт № С-${state.docNum} от ${state.date}`;
-      setTimeout(() => window.print(), 500);
     }
   }, [state]);
 
@@ -91,30 +90,7 @@ export default function NewbuildPrint() {
         body { font-family: Arial, sans-serif; background: #f9fafb; }
       `}</style>
 
-      <div className="no-print bg-orange-50 border-b border-orange-200 px-6 py-3">
-        <SharePanel
-          docTitle={isKp ? `КП-${docNum} (Новостройка) от ${date}` : `Смета на ремонт № С-${docNum} от ${date}`}
-          totalSum={totalSum}
-          customerEmail={email}
-          customerPhone={phone}
-          docType={docType}
-        />
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={() => window.print()}
-            className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors"
-          >
-            Печать / PDF
-          </button>
-          <button
-            onClick={() => window.history.back()}
-            className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-          >
-            Назад
-          </button>
-        </div>
-      </div>
-
+      <PrintPaywall>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         {/* Шапка */}
         <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-800">
@@ -365,6 +341,7 @@ export default function NewbuildPrint() {
           </div>
         )}
       </div>
+      </PrintPaywall>
     </>
   );
 }

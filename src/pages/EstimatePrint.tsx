@@ -1,24 +1,27 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { COMMON_STYLES } from "@/components/print/PrintTypes";
 import type { PrintData } from "@/components/print/PrintTypes";
 import SmetaView from "@/components/print/SmetaView";
 import KpView from "@/components/print/KpView";
+import PrintPaywall from "@/components/print/PrintPaywall";
 
 export default function EstimatePrint() {
   const location = useLocation();
   const data: PrintData | null = location.state ?? null;
+  const [unlocked, setUnlocked] = useState(false);
+
+  const docTitle = data
+    ? data.docType === "kp"
+      ? `КП-${data.docNum} от ${data.date}`
+      : `Смета № С-${data.docNum} от ${data.date}`
+    : "";
+
+  const totalSum = data ? (data.grandTotal ?? 0) + (data.deliveryCost ?? 0) : 0;
 
   useEffect(() => {
-    if (data) {
-      const isKp = data.docType === "kp";
-      document.title = isKp
-        ? `КП-${data.docNum} от ${data.date}`
-        : `Смета № С-${data.docNum} от ${data.date}`;
-      setTimeout(() => window.print(), 400);
-    }
+    if (data) document.title = docTitle;
 
-    // Защита от скриншотов
     const blockKey = (e: KeyboardEvent) => {
       if (
         e.key === "PrintScreen" ||
@@ -38,10 +41,8 @@ export default function EstimatePrint() {
 
     document.addEventListener("keyup", (e) => { if (e.key === "PrintScreen") showOverlay(); });
     document.addEventListener("keydown", blockKey);
-    return () => {
-      document.removeEventListener("keydown", blockKey);
-    };
-  }, [data]);
+    return () => { document.removeEventListener("keydown", blockKey); };
+  }, [data, docTitle]);
 
   if (!data) {
     return (
@@ -51,7 +52,7 @@ export default function EstimatePrint() {
     );
   }
 
-  return (
+  const docContent = (
     <>
       <style>{COMMON_STYLES + `
         #screenshot-block {
@@ -63,16 +64,26 @@ export default function EstimatePrint() {
         body { -webkit-user-select: none; user-select: none; }
         @media print { #screenshot-block { display: none !important; } }
       `}</style>
-
       <div id="screenshot-block">
         <div style={{ fontSize: 48 }}>🚫</div>
         <div style={{ fontWeight: 700 }}>Скриншот заблокирован</div>
         <div style={{ fontSize: 13, opacity: 0.7, maxWidth: 300 }}>
-          Для сохранения документа используйте кнопку «Распечатать / PDF»
+          Для сохранения используйте кнопку «Распечатать / PDF»
         </div>
       </div>
-
       {data.docType === "kp" ? <KpView data={data} /> : <SmetaView data={data} />}
     </>
+  );
+
+  if (unlocked) return docContent;
+
+  return (
+    <PrintPaywall
+      docTitle={docTitle}
+      totalSum={totalSum}
+      onSuccess={() => { setUnlocked(true); setTimeout(() => window.print(), 400); }}
+    >
+      {docContent}
+    </PrintPaywall>
   );
 }
