@@ -76,13 +76,14 @@ export function calcBathHouseMaterials(
     items.push({ name: wallMat.label, unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(wallMat.pricePerM2 * rc), total: Math.round(wallArea * wallMat.pricePerM2 * rc) });
   }
 
-  // Кровля — стропила
+  // Кровля — стропила (60% от roofStructure)
+  const roofStructureWithRc = Math.round(bd.roofStructure * rc);
   const boardRoofVol = +(roofArea * 0.04).toFixed(2);
-  items.push({ name: "Доска обрезная 50×200мм", spec: "стропила, сосна 1 сорт", unit: "м³", qty: boardRoofVol, pricePerUnit: Math.round(18000 * rc), total: Math.round(boardRoofVol * 18000 * rc) });
+  items.push({ name: "Доска обрезная 50×200мм", spec: "стропила, сосна 1 сорт", unit: "м³", qty: boardRoofVol, pricePerUnit: Math.round(roofStructureWithRc * 0.6 / boardRoofVol), total: Math.round(roofStructureWithRc * 0.6) });
 
-  // Обрешётка
+  // Обрешётка (40% от roofStructure)
   const latVol = +(roofArea * 0.02).toFixed(2);
-  items.push({ name: "Доска 25×100мм", spec: "обрешётка, сосна", unit: "м³", qty: latVol, pricePerUnit: Math.round(14000 * rc), total: Math.round(latVol * 14000 * rc) });
+  items.push({ name: "Доска 25×100мм", spec: "обрешётка, сосна", unit: "м³", qty: latVol, pricePerUnit: Math.round(roofStructureWithRc * 0.4 / latVol), total: Math.round(roofStructureWithRc * 0.4) });
 
   // Кровельный материал
   const roofQty = +roofArea.toFixed(1);
@@ -101,10 +102,10 @@ export function calcBathHouseMaterials(
   if (cfg.underfloorHeating) items.push({ name: "Тёплый пол электрический", spec: "Теплолюкс, 150Вт/м²", unit: "м²", qty: area, pricePerUnit: Math.round(2420 * rc), total: Math.round(area * 2420 * rc) });
 
   // Печь
-  items.push({ name: stoveData.label, spec: stoveData.power, unit: "шт.", qty: 1, pricePerUnit: Math.round(stoveData.price * rc), total: Math.round(stoveData.price * rc) });
+  items.push({ name: stoveData.label, spec: stoveData.power, unit: "шт.", qty: 1, pricePerUnit: Math.round(bd.stove * rc), total: Math.round(bd.stove * rc) });
 
   // Вентиляция
-  items.push({ name: ventData.label, unit: "компл.", qty: 1, pricePerUnit: Math.round(ventData.price * rc), total: Math.round(ventData.price * rc) });
+  items.push({ name: ventData.label, unit: "компл.", qty: 1, pricePerUnit: Math.round(bd.ventilation * rc), total: Math.round(bd.ventilation * rc) });
 
   // Полок
   if (shelfArea > 0) items.push({ name: `Полок из ${shelfMat.label.toLowerCase()}`, spec: `${cfg.shelfTiers} яруса, ш. ${cfg.shelfWidth}м`, unit: "м²", qty: +shelfArea.toFixed(1), pricePerUnit: Math.round(shelfMat.pricePerM2 * rc), total: Math.round(shelfArea * shelfMat.pricePerM2 * rc) });
@@ -122,6 +123,9 @@ export function calcBathHouseMaterials(
   // Терраса
   if (cfg.terrace && cfg.terraceArea > 0) items.push({ name: "Терраса (материалы + монтаж)", spec: "доска лиственница, перила", unit: "м²", qty: cfg.terraceArea, pricePerUnit: Math.round(5280 * rc), total: Math.round(cfg.terraceArea * 5280 * rc) });
 
+  // Электрика
+  if (bd.electrical > 0) items.push({ name: cfg.electricalFull ? "Электрика (полная)" : "Электрика (базовая)", spec: "кабель, автоматы, розетки", unit: "компл.", qty: 1, pricePerUnit: Math.round(bd.electrical * rc), total: Math.round(bd.electrical * rc) });
+
   // --- РАСХОДНИКИ ---
   const paroQty = +(wallArea * 1.15).toFixed(1);
   items.push({ name: "Пароизоляция", spec: "Ютафол Д 96, ТЕХНОНИКОЛЬ Паробарьер", unit: "м²", qty: paroQty, pricePerUnit: Math.round(38 * rc), total: Math.round(paroQty * 38 * rc), isConsumable: true });
@@ -138,7 +142,7 @@ export function calcBathHouseMaterials(
   items.push({ name: "Монтажная пена + герметик", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 80 * rc), total: Math.round(area * 80 * rc), isConsumable: true });
 
   // --- РАБОТЫ ---
-  const workTotal = bd.assembly;
+  const workTotal = Math.round(bd.assembly * rc);
   const workShare = (v: number) => Math.round(workTotal * v);
 
   items.push({ name: "Устройство фундамента", unit: "компл.", qty: 1, pricePerUnit: workShare(0.18), total: workShare(0.18), isWork: true });

@@ -76,11 +76,19 @@ export default function MaterialsTable({ items, accentColor = "teal" }: Props) {
       {renderSection(consumables, "Расходники", "FlaskConical")}
       {renderSection(works,       "Работы",     "Hammer")}
 
+      {consumables.length > 0 && (
+        <div className={`border-t ${c.border} pt-2 mt-1 mb-1 grid grid-cols-[1fr_auto_auto_auto] gap-x-2 text-xs text-gray-400`}>
+          <span>Расходники (справочно, входят в смету)</span>
+          <span></span>
+          <span></span>
+          <span>{fmtRub(consumables.reduce((s, i) => s + i.total, 0))} ₽</span>
+        </div>
+      )}
       <div className={`border-t ${c.border} pt-2 mt-2 grid grid-cols-[1fr_auto_auto_auto] gap-x-2 text-xs font-bold ${c.text}`}>
-        <span>ИТОГО</span>
+        <span>ИТОГО (материалы + работы)</span>
         <span></span>
         <span></span>
-        <span>{fmtRub(items.reduce((s, i) => s + i.total, 0))} ₽</span>
+        <span>{fmtRub(items.filter(i => !i.isConsumable).reduce((s, i) => s + i.total, 0))} ₽</span>
       </div>
     </div>
   );
