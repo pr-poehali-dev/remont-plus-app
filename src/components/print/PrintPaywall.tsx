@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 const YK_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
 const SUBS_URL = "https://functions.poehali.dev/52ea78ee-5f41-4904-b547-d60063d9da0a";
 
-const SINGLE_PRICE = 149;
+const SINGLE_PRICE = 399;
+const FREE_LIMIT = 1;
+const FREE_KEY = "avangard_free_prints";
 
 const PLANS = [
   {
@@ -56,13 +58,29 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"single" | "plans">("single");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const freeUsed = useRef(parseInt(localStorage.getItem(FREE_KEY) || "0", 10));
 
   const fmt = (n: number) =>
     n.toLocaleString("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 });
 
   useEffect(() => {
-    if (!userId) { setHasPaid(false); return; }
-    checkSubscription(userId).then(active => setHasPaid(active));
+    if (!userId) {
+      if (freeUsed.current < FREE_LIMIT) {
+        localStorage.setItem(FREE_KEY, String(freeUsed.current + 1));
+        setHasPaid(true);
+      } else {
+        setHasPaid(false);
+      }
+      return;
+    }
+    checkSubscription(userId).then(active => {
+      if (!active && freeUsed.current < FREE_LIMIT) {
+        localStorage.setItem(FREE_KEY, String(freeUsed.current + 1));
+        setHasPaid(true);
+      } else {
+        setHasPaid(active);
+      }
+    });
   }, [userId]);
 
   useEffect(() => () => {
