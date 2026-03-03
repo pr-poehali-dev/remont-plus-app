@@ -46,9 +46,9 @@ export const ROOM_TYPES: RoomType[] = [
 ];
 
 export const CABLING_TYPES: CablingType[] = [
-  { id: "open",        label: "Открытая проводка",       description: "Кабель-канал / ретро",     pricePerM: 150 },
-  { id: "corrugated",  label: "В гофре / трубе",         description: "Поверх стен в гофре",      pricePerM: 220 },
-  { id: "hidden",      label: "Скрытая (в штробах)",     description: "Штробление + шпаклёвка",   pricePerM: 390 },
+  { id: "open",        label: "Открытая проводка",       description: "Кабель-канал / ретро",     pricePerM: 280 },
+  { id: "corrugated",  label: "В гофре / трубе",         description: "Поверх стен в гофре",      pricePerM: 420 },
+  { id: "hidden",      label: "Скрытая (в штробах)",     description: "Штробление + шпаклёвка",   pricePerM: 750 },
 ];
 
 export { CALC_REGIONS as REGIONS, DEFAULT_REGION_ID } from "@/components/calculator/shared/regions";
