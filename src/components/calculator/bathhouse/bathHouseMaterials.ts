@@ -76,14 +76,15 @@ export function calcBathHouseMaterials(
     items.push({ name: wallMat.label, unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(wallMat.pricePerM2 * rc), total: Math.round(wallArea * wallMat.pricePerM2 * rc) });
   }
 
-  // Кровля — стропила (60% от roofStructure)
-  const roofStructureWithRc = Math.round(bd.roofStructure * rc);
+  // Кровля — стропила
   const boardRoofVol = +(roofArea * 0.04).toFixed(2);
-  items.push({ name: "Доска обрезная 50×200мм", spec: "стропила, сосна 1 сорт", unit: "м³", qty: boardRoofVol, pricePerUnit: Math.round(roofStructureWithRc * 0.6 / boardRoofVol), total: Math.round(roofStructureWithRc * 0.6) });
+  const boardRoofPrice = Math.round(18000 * rc);
+  items.push({ name: "Доска обрезная 50×200мм", spec: "стропила, сосна 1 сорт", unit: "м³", qty: boardRoofVol, pricePerUnit: boardRoofPrice, total: Math.round(boardRoofVol * boardRoofPrice) });
 
-  // Обрешётка (40% от roofStructure)
+  // Обрешётка
   const latVol = +(roofArea * 0.02).toFixed(2);
-  items.push({ name: "Доска 25×100мм", spec: "обрешётка, сосна", unit: "м³", qty: latVol, pricePerUnit: Math.round(roofStructureWithRc * 0.4 / latVol), total: Math.round(roofStructureWithRc * 0.4) });
+  const latPrice = Math.round(18000 * rc);
+  items.push({ name: "Доска 25×100мм", spec: "обрешётка, сосна", unit: "м³", qty: latVol, pricePerUnit: latPrice, total: Math.round(latVol * latPrice) });
 
   // Кровельный материал
   const roofQty = +roofArea.toFixed(1);
