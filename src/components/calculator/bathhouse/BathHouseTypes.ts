@@ -148,12 +148,12 @@ export const ROOFING_MATERIALS: Record<RoofingMaterial, { label: string; pricePe
 };
 
 export const INSULATION_MATERIALS: Record<InsulationMaterial, { label: string; pricePerM3: number }> = {
-  mineral_wool:  { label: "Минеральная вата (Rockwool, Knauf)", pricePerM3: 2420 },
-  basalt_wool:   { label: "Базальтовая вата (ISOVER, ТехноНиколь)", pricePerM3: 3080 },
-  ecowool:       { label: "Эковата (целлюлоза)", pricePerM3: 2090 },
-  penoizol:      { label: "Пеноизол (жидкий пенопласт)", pricePerM3: 3410 },
-  foil_penofol:  { label: "Пенофол фольгированный", pricePerM3: 4950 },
-  pir_panel:     { label: "PIR-панели (современные)", pricePerM3: 9350 },
+  mineral_wool:  { label: "Минеральная вата (Rockwool, Knauf)", pricePerM3: 3000 },
+  basalt_wool:   { label: "Базальтовая вата (ISOVER, ТехноНиколь)", pricePerM3: 3300 },
+  ecowool:       { label: "Эковата (целлюлоза)", pricePerM3: 2500 },
+  penoizol:      { label: "Пеноизол (жидкий пенопласт)", pricePerM3: 4000 },
+  foil_penofol:  { label: "Пенофол фольгированный", pricePerM3: 5500 },
+  pir_panel:     { label: "PIR-панели (современные)", pricePerM3: 55000 },
 };
 
 export const WALL_FINISHES: Record<WallFinishInterior, { label: string; pricePerM2: number; suitsSteam: boolean }> = {
@@ -197,12 +197,12 @@ export const SHELF_MATERIALS: Record<ShelfMaterial, { label: string; pricePerM2:
 };
 
 export const FLOOR_MATERIALS: Record<FloorMaterial, { label: string; pricePerM2: number }> = {
-  ceramic_tile:   { label: "Керамическая плитка", pricePerM2: 1980 },
-  porcelain_tile: { label: "Керамогранит anti-slip", pricePerM2: 2640 },
-  wood_larch:     { label: "Доска лиственница (разборная)", pricePerM2: 3520 },
-  thermo_wood:    { label: "Термодерево (скандинавский стиль)", pricePerM2: 6380 },
-  concrete_screed:{ label: "Бетонная стяжка + слив", pricePerM2: 1045 },
-  anti_slip_tile: { label: "Нескользящая мозаика", pricePerM2: 4180 },
+  ceramic_tile:   { label: "Керамическая плитка", pricePerM2: 1200 },
+  porcelain_tile: { label: "Керамогранит anti-slip", pricePerM2: 1800 },
+  wood_larch:     { label: "Доска лиственница (разборная)", pricePerM2: 1500 },
+  thermo_wood:    { label: "Термодерево (скандинавский стиль)", pricePerM2: 4500 },
+  concrete_screed:{ label: "Бетонная стяжка + слив", pricePerM2: 700 },
+  anti_slip_tile: { label: "Нескользящая мозаика", pricePerM2: 2800 },
 };
 
 export const BATH_STYLES: Record<BathStyle, { label: string; desc: string; emoji: string }> = {
