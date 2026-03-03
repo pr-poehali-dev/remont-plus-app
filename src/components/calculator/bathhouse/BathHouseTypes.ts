@@ -139,12 +139,12 @@ export const ROOF_TYPES: Record<RoofType, { label: string; desc: string; priceCo
 };
 
 export const ROOFING_MATERIALS: Record<RoofingMaterial, { label: string; pricePerM2: number }> = {
-  metal_tile:        { label: "Металлочерепица", pricePerM2: 935 },
-  corrugated_sheet:  { label: "Профнастил", pricePerM2: 605 },
-  soft_bitumen:      { label: "Мягкая черепица (Шинглас)", pricePerM2: 1540 },
+  metal_tile:        { label: "Металлочерепица", pricePerM2: 1150 },
+  corrugated_sheet:  { label: "Профнастил", pricePerM2: 800 },
+  soft_bitumen:      { label: "Мягкая черепица (Шинглас)", pricePerM2: 950 },
   ceramic_tile:      { label: "Керамическая черепица", pricePerM2: 3080 },
-  ondulin:           { label: "Ондулин", pricePerM2: 462 },
-  seam_roof:         { label: "Фальцевая кровля (металл)", pricePerM2: 1980 },
+  ondulin:           { label: "Ондулин", pricePerM2: 500 },
+  seam_roof:         { label: "Фальцевая кровля (металл)", pricePerM2: 1500 },
 };
 
 export const INSULATION_MATERIALS: Record<InsulationMaterial, { label: string; pricePerM3: number }> = {
