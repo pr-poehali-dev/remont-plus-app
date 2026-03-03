@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { COMMON_STYLES } from "@/components/print/PrintTypes";
 import type { PrintData } from "@/components/print/PrintTypes";
@@ -9,15 +9,11 @@ import PrintPaywall from "@/components/print/PrintPaywall";
 export default function EstimatePrint() {
   const location = useLocation();
   const data: PrintData | null = location.state ?? null;
-  const [unlocked, setUnlocked] = useState(false);
-
   const docTitle = data
     ? data.docType === "kp"
       ? `КП-${data.docNum} от ${data.date}`
       : `Смета № С-${data.docNum} от ${data.date}`
     : "";
-
-  const totalSum = data ? (data.grandTotal ?? 0) + (data.deliveryCost ?? 0) : 0;
 
   useEffect(() => {
     if (data) document.title = docTitle;
@@ -75,14 +71,8 @@ export default function EstimatePrint() {
     </>
   );
 
-  if (unlocked) return docContent;
-
   return (
-    <PrintPaywall
-      docTitle={docTitle}
-      totalSum={totalSum}
-      onSuccess={() => { setUnlocked(true); setTimeout(() => window.print(), 400); }}
-    >
+    <PrintPaywall>
       {docContent}
     </PrintPaywall>
   );

@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS, CEILING_COLORS, LIGHTING_OPTIONS, PROFILE_OPTIONS } from "@/components/calculator/ceilings/CeilingTypes";
 import { fmt, CEILING_PRINT_STYLES } from "@/components/print/CeilingPrintTypes";
 import type { CeilingPrintState } from "@/components/print/CeilingPrintTypes";
-import SharePanel from "@/components/print/SharePanel";
+import PrintPaywall from "@/components/print/PrintPaywall";
 
 export default function CeilingPrint() {
   const location = useLocation();
@@ -15,7 +15,6 @@ export default function CeilingPrint() {
       document.title = isKp
         ? `КП-${state.docNum} (Потолки) от ${state.date}`
         : `Смета на потолки № С-${state.docNum} от ${state.date}`;
-      setTimeout(() => window.print(), 500);
     }
     const blockKey = (e: KeyboardEvent) => {
       if (e.key === "PrintScreen" || (e.ctrlKey && e.key === "p")) {
@@ -45,31 +44,8 @@ export default function CeilingPrint() {
     <>
       <style>{CEILING_PRINT_STYLES}</style>
 
+      <PrintPaywall>
       <div className="page">
-        {/* Панель шаринга и кнопки */}
-        <div className="no-print" style={{ marginBottom: 16 }}>
-          <SharePanel
-            docTitle={isKp ? `КП-${docNum} от ${date} (Потолки)` : `Смета на потолки № С-${docNum} от ${date}`}
-            totalSum={totalSum}
-            customerEmail={email}
-            customerPhone={phone}
-            docType={docType}
-          />
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-            <button
-              onClick={() => window.history.back()}
-              style={{ background: "#fff", color: "#333", border: "1px solid #ccc", borderRadius: 4, padding: "7px 16px", fontFamily: "inherit", fontSize: 12, cursor: "pointer" }}
-            >
-              ← Назад
-            </button>
-            <button
-              onClick={() => window.print()}
-              style={{ background: "#111", color: "#fff", border: "none", borderRadius: 4, padding: "7px 18px", fontFamily: "inherit", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
-            >
-              🖨 Распечатать / PDF
-            </button>
-          </div>
-        </div>
 
         {/* Шапка */}
         {isKp ? (
@@ -257,6 +233,7 @@ export default function CeilingPrint() {
           Документ сформирован с помощью АВАНГАРД · avangard-ai.ru
         </div>
       </div>
+      </PrintPaywall>
     </>
   );
 }

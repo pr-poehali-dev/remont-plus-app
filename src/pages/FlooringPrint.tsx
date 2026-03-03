@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { FLOORING_PRODUCTS, FLOORING_CATEGORIES, SUBSTRATE_OPTIONS, INSTALL_PATTERNS, SKIRTING_OPTIONS, REGIONS } from "@/components/calculator/flooring/FlooringTypes";
 import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTypes";
 import { calcFlooringPrice, fmt } from "@/components/calculator/flooring/flooringUtils";
-import SharePanel from "@/components/print/SharePanel";
+import PrintPaywall from "@/components/print/PrintPaywall";
 
 interface PrintState {
   zones: FlooringConfig[];
@@ -38,7 +38,6 @@ export default function FlooringPrint() {
       document.title = isKp
         ? `КП-${state.docNum} (Полы) от ${state.date}`
         : `Смета на полы № С-${state.docNum} от ${state.date}`;
-      setTimeout(() => window.print(), 500);
     }
   }, [state]);
 
@@ -78,25 +77,7 @@ export default function FlooringPrint() {
         body { font-family: 'Arial', sans-serif; background: #f9fafb; }
       `}</style>
 
-      {/* Кнопки — только на экране */}
-      <div className="no-print bg-amber-50 border-b border-amber-200 px-6 py-3">
-        <SharePanel
-          docTitle={isKp ? `КП-${docNum} (Полы) от ${date}` : `Смета на полы № С-${docNum} от ${date}`}
-          totalSum={totalSum}
-          customerEmail={email}
-          customerPhone={phone}
-          docType={docType}
-        />
-        <div className="flex gap-2 mt-2">
-          <button onClick={() => window.print()} className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors">
-            🖨 Печать / PDF
-          </button>
-          <button onClick={() => window.history.back()} className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-50 transition-colors">
-            ← Назад
-          </button>
-        </div>
-      </div>
-
+      <PrintPaywall>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         {/* Шапка */}
         <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-800">
@@ -296,6 +277,7 @@ export default function FlooringPrint() {
           Документ сформирован {date} · АВАНГАРД · avangard-ai.ru
         </p>
       </div>
+      </PrintPaywall>
     </>
   );
 }

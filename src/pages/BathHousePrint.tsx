@@ -10,6 +10,7 @@ import type { BathHouseConfig } from "@/components/calculator/bathhouse/BathHous
 import type { BathHouseBreakdown } from "@/components/calculator/bathhouse/bathHouseUtils";
 import { fmt, calcBathHouseMaterials } from "@/components/calculator/bathhouse/bathHouseUtils";
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
+import PrintPaywall from "@/components/print/PrintPaywall";
 
 interface PrintState {
   config: BathHouseConfig;
@@ -60,7 +61,6 @@ export default function BathHousePrint() {
       document.title = isKp
         ? `КП-${state.docNum} (Баня) от ${state.date}`
         : `Смета на строительство бани № Б-${state.docNum} от ${state.date}`;
-      setTimeout(() => window.print(), 600);
     }
   }, [state]);
 
@@ -112,27 +112,7 @@ export default function BathHousePrint() {
         th, td { border: 1px solid #e5e7eb; }
       `}</style>
 
-      {/* Панель управления — только на экране */}
-      <div className="no-print bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center gap-3 flex-wrap">
-        <span className="text-sm font-semibold text-amber-900">
-          {isKp ? `КП-${docNum} (Баня)` : `Смета Б-${docNum}`} от {date}
-        </span>
-        <div className="flex gap-2 ml-auto">
-          <button
-            onClick={() => window.print()}
-            className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
-          >
-            🖨 Печать / PDF
-          </button>
-          <button
-            onClick={() => window.history.back()}
-            className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-          >
-            ← Назад
-          </button>
-        </div>
-      </div>
-
+      <PrintPaywall>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
 
         {/* Шапка документа */}
@@ -388,6 +368,7 @@ export default function BathHousePrint() {
           <span>{date}</span>
         </div>
       </div>
+      </PrintPaywall>
     </>
   );
 }

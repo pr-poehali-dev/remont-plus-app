@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { REGIONS, ROOM_TYPES, CABLING_TYPES } from "@/components/calculator/electrics/ElectricsTypes";
 import type { ElectricsConfig } from "@/components/calculator/electrics/ElectricsTypes";
 import { calcElectricsPrice, fmt } from "@/components/calculator/electrics/electricsUtils";
-import SharePanel from "@/components/print/SharePanel";
+import PrintPaywall from "@/components/print/PrintPaywall";
 
 interface PrintState {
   zones: ElectricsConfig[];
@@ -33,7 +33,6 @@ export default function ElectricsPrint() {
       document.title = isKp
         ? `КП-${state.docNum} (Электрика) от ${state.date}`
         : `Смета на электрику № С-${state.docNum} от ${state.date}`;
-      setTimeout(() => window.print(), 500);
     }
   }, [state]);
 
@@ -69,24 +68,7 @@ export default function ElectricsPrint() {
         body { font-family: 'Arial', sans-serif; background: #f9fafb; }
       `}</style>
 
-      <div className="no-print bg-blue-50 border-b border-blue-200 px-6 py-3">
-        <SharePanel
-          docTitle={isKp ? `КП-${docNum} (Электрика) от ${date}` : `Смета на электрику № С-${docNum} от ${date}`}
-          totalSum={totalSum}
-          customerEmail={email}
-          customerPhone={phone}
-          docType={docType}
-        />
-        <div className="flex gap-2 mt-2">
-          <button onClick={() => window.print()} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-            Печать / PDF
-          </button>
-          <button onClick={() => window.history.back()} className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-50 transition-colors">
-            Назад
-          </button>
-        </div>
-      </div>
-
+      <PrintPaywall>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         {/* Шапка */}
         <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-800">
@@ -255,6 +237,7 @@ export default function ElectricsPrint() {
           </div>
         </div>
       </div>
+      </PrintPaywall>
     </>
   );
 }

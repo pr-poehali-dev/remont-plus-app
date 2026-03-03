@@ -9,6 +9,7 @@ import type { FrameHouseConfig } from "@/components/calculator/framehouse/FrameH
 import type { FrameHouseBreakdown } from "@/components/calculator/framehouse/frameHouseUtils";
 import { fmt, calcFrameHouseMaterials } from "@/components/calculator/framehouse/frameHouseUtils";
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
+import PrintPaywall from "@/components/print/PrintPaywall";
 
 interface PrintState {
   config: FrameHouseConfig;
@@ -58,7 +59,6 @@ export default function FrameHousePrint() {
       document.title = isKp
         ? `КП-${state.docNum} (Каркасный дом) от ${state.date}`
         : `Смета на строительство каркасного дома № КД-${state.docNum} от ${state.date}`;
-      setTimeout(() => window.print(), 600);
     }
   }, [state]);
 
@@ -109,27 +109,7 @@ export default function FrameHousePrint() {
         th, td { border: 1px solid #e5e7eb; }
       `}</style>
 
-      {/* Панель — только экран */}
-      <div className="no-print bg-green-50 border-b border-green-200 px-6 py-3 flex items-center gap-3 flex-wrap">
-        <span className="text-sm font-semibold text-green-900">
-          {isKp ? `КП-${docNum} (Каркасный дом)` : `Смета КД-${docNum}`} от {date}
-        </span>
-        <div className="flex gap-2 ml-auto">
-          <button
-            onClick={() => window.print()}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-          >
-            🖨 Печать / PDF
-          </button>
-          <button
-            onClick={() => window.history.back()}
-            className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-50 transition-colors"
-          >
-            ← Назад
-          </button>
-        </div>
-      </div>
-
+      <PrintPaywall>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         {/* Шапка */}
         <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-800">
@@ -303,6 +283,7 @@ export default function FrameHousePrint() {
           {isKp && validDays && <p className="mt-1">* Коммерческое предложение действительно {validDays} дней с даты составления.</p>}
         </div>
       </div>
+      </PrintPaywall>
     </>
   );
 }
