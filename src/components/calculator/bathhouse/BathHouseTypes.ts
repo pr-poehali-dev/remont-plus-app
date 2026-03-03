@@ -123,12 +123,12 @@ export const WALL_MATERIALS: Record<WallMaterial, { label: string; desc: string;
 };
 
 export const FOUNDATION_TYPES: Record<FoundationType, { label: string; desc: string; basePrice: number }> = {
-  strip_shallow: { label: "Ленточный мелкозаглублённый", desc: "30–50 см, для лёгких строений, дренаж обязателен", basePrice: 93500 },
-  strip_deep:    { label: "Ленточный заглублённый", desc: "Ниже глубины промерзания, надёжно для кирпича/блоков", basePrice: 159500 },
-  piles_screw:   { label: "Сваи винтовые", desc: "Быстро, любой грунт, незаменим на склонах и воде", basePrice: 71500 },
-  piles_bored:   { label: "Сваи буронабивные (ТИСЭ)", desc: "Надёжно на любом грунте, морозоустойчиво", basePrice: 99000 },
-  slab:          { label: "Монолитная плита 200 мм", desc: "Самый надёжный вариант, подходит для слабых грунтов", basePrice: 203500 },
-  columnar:      { label: "Столбчатый", desc: "Бюджетно для лёгких каркасных бань", basePrice: 46200 },
+  strip_shallow: { label: "Ленточный мелкозаглублённый", desc: "30–50 см, для лёгких строений, дренаж обязателен", basePrice: 110000 },
+  strip_deep:    { label: "Ленточный заглублённый", desc: "Ниже глубины промерзания, надёжно для кирпича/блоков", basePrice: 180000 },
+  piles_screw:   { label: "Сваи винтовые", desc: "Быстро, любой грунт, незаменим на склонах и воде", basePrice: 95000 },
+  piles_bored:   { label: "Сваи буронабивные (ТИСЭ)", desc: "Надёжно на любом грунте, морозоустойчиво", basePrice: 130000 },
+  slab:          { label: "Монолитная плита 200 мм", desc: "Самый надёжный вариант, подходит для слабых грунтов", basePrice: 260000 },
+  columnar:      { label: "Столбчатый", desc: "Бюджетно для лёгких каркасных бань", basePrice: 55000 },
 };
 
 export const ROOF_TYPES: Record<RoofType, { label: string; desc: string; priceCoeff: number }> = {

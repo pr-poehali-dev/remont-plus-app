@@ -112,7 +112,7 @@ export function calcBathHouseMaterials(
   if (shelfArea > 0) items.push({ name: `Полок из ${shelfMat.label.toLowerCase()}`, spec: `${cfg.shelfTiers} яруса, ш. ${cfg.shelfWidth}м`, unit: "м²", qty: +shelfArea.toFixed(1), pricePerUnit: Math.round(shelfMat.pricePerM2 * rc), total: Math.round(shelfArea * shelfMat.pricePerM2 * rc) });
 
   // Окна
-  const winPrice = cfg.window_pvc ? 9350 : 15400;
+  const winPrice = cfg.window_pvc ? 12000 : 20000;
   if (cfg.windowCount > 0) items.push({ name: cfg.window_pvc ? "Окно ПВХ 600×600мм" : "Окно деревянное 600×600мм", spec: cfg.window_pvc ? "двойной стеклопакет" : "со стеклопакетом", unit: "шт.", qty: cfg.windowCount, pricePerUnit: Math.round(winPrice * rc), total: Math.round(cfg.windowCount * winPrice * rc) });
 
   // Дымоход

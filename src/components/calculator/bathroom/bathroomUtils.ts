@@ -67,12 +67,12 @@ export function calcBathroomPrice(
 
   // Сантехника
   let plumbingBase = 0;
-  if (cfg.toiletInstall) plumbingBase += 4500;
-  if (cfg.sinkInstall) plumbingBase += 3500;
-  if (cfg.bathInstall) plumbingBase += 7000;
-  if (cfg.showerCabinInstall) plumbingBase += 8500;
-  plumbingBase += cfg.mixersCount * 2500;
-  if (cfg.installationSystemIncluded) plumbingBase += 12000;
+  if (cfg.toiletInstall) plumbingBase += 12000;
+  if (cfg.sinkInstall) plumbingBase += 8000;
+  if (cfg.bathInstall) plumbingBase += 20000;
+  if (cfg.showerCabinInstall) plumbingBase += 28000;
+  plumbingBase += cfg.mixersCount * 4500;
+  if (cfg.installationSystemIncluded) plumbingBase += 20000;
   const plumbingCost = Math.round(plumbingBase * rc);
 
   // Тёплый пол
@@ -87,8 +87,8 @@ export function calcBathroomPrice(
 
   // Мебель и аксессуары
   let furnitureBase = 0;
-  if (cfg.vanityInstall) furnitureBase += 4000;
-  if (cfg.mirrorInstall) furnitureBase += 2500;
+  if (cfg.vanityInstall) furnitureBase += 12000;
+  if (cfg.mirrorInstall) furnitureBase += 5000;
   const furnitureCost = Math.round(furnitureBase * rc);
 
   const accessoriesCost = cfg.accessoriesIncluded ? Math.round(2800 * rc) : 0;

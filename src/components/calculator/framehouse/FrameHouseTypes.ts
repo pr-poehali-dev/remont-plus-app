@@ -40,11 +40,11 @@ export const FRAME_WALL_TECHS: Record<FrameWallTech, { label: string; desc: stri
 };
 
 export const FRAME_INSULATIONS: Record<FrameInsulation, { label: string; thickness: number; pricePerM2: number }> = {
-  mineral_wool_150: { label: "Минвата 150 мм (Rockwool / Knauf)",  thickness: 150, pricePerM2: 880 },
-  mineral_wool_200: { label: "Минвата 200 мм (Rockwool / Knauf)",  thickness: 200, pricePerM2: 1100 },
-  basalt_wool_200:  { label: "Базальтовая вата 200 мм (ТехноНиколь)", thickness: 200, pricePerM2: 1350 },
-  ecowool_200:      { label: "Эковата 200 мм (задувная)",           thickness: 200, pricePerM2: 1200 },
-  pir_panel_150:    { label: "PIR-панели 150 мм (премиум)",         thickness: 150, pricePerM2: 2200 },
+  mineral_wool_150: { label: "Минвата 150 мм (Rockwool / Knauf)",  thickness: 150, pricePerM2: 450 },
+  mineral_wool_200: { label: "Минвата 200 мм (Rockwool / Knauf)",  thickness: 200, pricePerM2: 600 },
+  basalt_wool_200:  { label: "Базальтовая вата 200 мм (ТехноНиколь)", thickness: 200, pricePerM2: 660 },
+  ecowool_200:      { label: "Эковата 200 мм (задувная)",           thickness: 200, pricePerM2: 500 },
+  pir_panel_150:    { label: "PIR-панели 150 мм (премиум)",         thickness: 150, pricePerM2: 8250 },
 };
 
 export const FOUNDATION_TYPES: Record<FoundationType, { label: string; desc: string; basePrice: number }> = {
@@ -64,10 +64,10 @@ export const ROOF_TYPES: Record<RoofType, { label: string; desc: string; priceCo
 };
 
 export const ROOFING_MATERIALS: Record<RoofingMaterial, { label: string; pricePerM2: number }> = {
-  metal_tile:       { label: "Металлочерепица",             pricePerM2: 980 },
-  corrugated_sheet: { label: "Профнастил",                  pricePerM2: 650 },
-  soft_bitumen:     { label: "Мягкая черепица (Шинглас)",   pricePerM2: 1650 },
-  seam_roof:        { label: "Фальцевая кровля (металл)",   pricePerM2: 2200 },
+  metal_tile:       { label: "Металлочерепица",             pricePerM2: 1150 },
+  corrugated_sheet: { label: "Профнастил",                  pricePerM2: 800 },
+  soft_bitumen:     { label: "Мягкая черепица (Шинглас)",   pricePerM2: 950 },
+  seam_roof:        { label: "Фальцевая кровля (металл)",   pricePerM2: 1500 },
 };
 
 export const FACADE_TYPES: Record<FacadeType, { label: string; desc: string; pricePerM2: number }> = {
@@ -80,12 +80,12 @@ export const FACADE_TYPES: Record<FacadeType, { label: string; desc: string; pri
 };
 
 export const FLOOR_TYPES: Record<FloorType, { label: string; pricePerM2: number }> = {
-  laminate:         { label: "Ламинат (33 класс)",           pricePerM2: 880 },
-  parquet_board:    { label: "Паркетная доска",              pricePerM2: 1980 },
-  ceramic_tile:     { label: "Керамическая плитка",          pricePerM2: 1450 },
-  porcelain_tile:   { label: "Керамогранит",                 pricePerM2: 2200 },
-  lvt:              { label: "LVT (виниловая плитка)",       pricePerM2: 1200 },
-  linoleum:         { label: "Линолеум коммерческий",        pricePerM2: 550 },
+  laminate:         { label: "Ламинат (33 класс)",           pricePerM2: 1400 },
+  parquet_board:    { label: "Паркетная доска",              pricePerM2: 3800 },
+  ceramic_tile:     { label: "Керамическая плитка",          pricePerM2: 1200 },
+  porcelain_tile:   { label: "Керамогранит",                 pricePerM2: 1800 },
+  lvt:              { label: "LVT (виниловая плитка)",       pricePerM2: 1500 },
+  linoleum:         { label: "Линолеум коммерческий",        pricePerM2: 650 },
 };
 
 export const WINDOW_TYPES: Record<WindowType, { label: string; pricePerUnit: number }> = {

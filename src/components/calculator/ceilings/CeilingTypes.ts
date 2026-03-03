@@ -119,5 +119,5 @@ export interface CeilingConfig {
 
 // ─── Базовые цены ─────────────────────────────────────────────────────────────
 
-export const BASE_PRICE_PER_M2 = 650; // руб/м² (матовый стандарт)
-export const INSTALLATION_PRICE_PER_M2 = 200; // руб/м²
+export const BASE_PRICE_PER_M2 = 1400; // руб/м² (матовый стандарт)
+export const INSTALLATION_PRICE_PER_M2 = 350; // руб/м²

@@ -87,7 +87,7 @@ export function calcBathHousePrice(cfg: BathHouseConfig, regionId: string, marku
   const shelfArea = cfg.steamRoomArea * 0.35 * cfg.shelfTiers * (cfg.shelfWidth / 0.6);
   const shelves = shelfArea * shelfMat.pricePerM2;
 
-  const windowsBase = cfg.window_pvc ? 9350 : 15400;
+  const windowsBase = cfg.window_pvc ? 12000 : 20000;
   const windows = cfg.windowCount * windowsBase;
 
   const chimney = cfg.chimney ? 30800 : 0;

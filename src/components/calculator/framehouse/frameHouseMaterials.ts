@@ -42,7 +42,7 @@ export function calcFrameHouseMaterials(
   // Каркас стен
   if (cfg.wallTech === "frame_osb") {
     const boardVol = +(wallArea * 0.05).toFixed(2);
-    items.push({ name: "Доска обрезная 50×150мм", spec: "сосна 1 сорт, каркас стен", unit: "м³", qty: boardVol, pricePerUnit: Math.round(16500 * rc), total: Math.round(boardVol * 16500 * rc) });
+    items.push({ name: "Доска обрезная 50×150мм", spec: "сосна 1 сорт, каркас стен", unit: "м³", qty: boardVol, pricePerUnit: Math.round(18000 * rc), total: Math.round(boardVol * 18000 * rc) });
     const osbSheets = Math.ceil(wallArea * 2 / 2.98);
     items.push({ name: "OSB-3 плита 15мм", spec: "2440×1220, Kronospan/Egger", unit: "лист", qty: osbSheets, pricePerUnit: Math.round(1150 * rc), total: Math.round(osbSheets * 1150 * rc) });
     const floorBeamVol = +(area * 0.035).toFixed(2);
@@ -64,7 +64,7 @@ export function calcFrameHouseMaterials(
   items.push({ name: "Доска обрезная 50×200мм", spec: "стропила, сосна 1 сорт", unit: "м³", qty: roofBoardVol, pricePerUnit: Math.round(18000 * rc), total: Math.round(roofBoardVol * 18000 * rc) });
 
   const latVol = +(roofArea * 0.018).toFixed(2);
-  items.push({ name: "Доска 25×100мм", spec: "обрешётка кровли", unit: "м³", qty: latVol, pricePerUnit: Math.round(14000 * rc), total: Math.round(latVol * 14000 * rc) });
+  items.push({ name: "Доска 25×100мм", spec: "обрешётка кровли", unit: "м³", qty: latVol, pricePerUnit: Math.round(18000 * rc), total: Math.round(latVol * 18000 * rc) });
 
   items.push({ name: roofMat.label, spec: roofMat.label.includes("Металлочерепица") ? "МП Монтеррей, 0.5мм" : roofMat.label.includes("Профнастил") ? "С20, оц. 0.5мм" : roofMat.label.includes("Мягкая") ? "Шинглас Ранчо, 3D" : "", unit: "м²", qty: +roofArea.toFixed(1), pricePerUnit: Math.round(roofMat.pricePerM2 * rc), total: Math.round(roofArea * roofMat.pricePerM2 * rc) });
 
