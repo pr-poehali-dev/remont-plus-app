@@ -157,27 +157,27 @@ export const INSULATION_MATERIALS: Record<InsulationMaterial, { label: string; p
 };
 
 export const WALL_FINISHES: Record<WallFinishInterior, { label: string; pricePerM2: number; suitsSteam: boolean }> = {
-  linden:         { label: "Вагонка липа", pricePerM2: 1078, suitsSteam: true },
-  aspen:          { label: "Вагонка осина", pricePerM2: 935, suitsSteam: true },
-  cedar:          { label: "Вагонка кедр (сибирский)", pricePerM2: 2640, suitsSteam: true },
-  abash:          { label: "Абаши (африканский дуб)", pricePerM2: 3520, suitsSteam: true },
-  thermo_aspen:   { label: "Термоосина", pricePerM2: 1980, suitsSteam: true },
-  spruce:         { label: "Вагонка ель", pricePerM2: 748, suitsSteam: false },
-  pine:           { label: "Вагонка сосна", pricePerM2: 682, suitsSteam: false },
-  tile_ceramic:   { label: "Плитка керамическая", pricePerM2: 2310, suitsSteam: false },
-  tile_porcelain: { label: "Керамогранит", pricePerM2: 3080, suitsSteam: false },
-  plaster_decor:  { label: "Декоративная штукатурка", pricePerM2: 1760, suitsSteam: false },
+  linden:         { label: "Вагонка липа", pricePerM2: 1200, suitsSteam: true },
+  aspen:          { label: "Вагонка осина", pricePerM2: 900, suitsSteam: true },
+  cedar:          { label: "Вагонка кедр (сибирский)", pricePerM2: 3000, suitsSteam: true },
+  abash:          { label: "Абаши (африканский дуб)", pricePerM2: 13000, suitsSteam: true },
+  thermo_aspen:   { label: "Термоосина", pricePerM2: 3500, suitsSteam: true },
+  spruce:         { label: "Вагонка ель", pricePerM2: 800, suitsSteam: false },
+  pine:           { label: "Вагонка сосна", pricePerM2: 700, suitsSteam: false },
+  tile_ceramic:   { label: "Плитка керамическая", pricePerM2: 1200, suitsSteam: false },
+  tile_porcelain: { label: "Керамогранит", pricePerM2: 1800, suitsSteam: false },
+  plaster_decor:  { label: "Декоративная штукатурка", pricePerM2: 1200, suitsSteam: false },
 };
 
 export const STOVE_TYPES: Record<StoveType, { label: string; desc: string; price: number; power: string }> = {
-  metal_sauna:      { label: "Металлическая дровяная (эконом)", desc: "Harvia, TMF, Термофор — надёжно и бюджетно", price: 30800, power: "12–18 кВт" },
-  metal_hakka:      { label: "Финская металлическая (премиум)", desc: "Harvia Legend, Helo — медленный нагрев, мягкий пар", price: 93500, power: "20–36 кВт" },
+  metal_sauna:      { label: "Металлическая дровяная (эконом)", desc: "Harvia, TMF, Термофор — надёжно и бюджетно", price: 45000, power: "12–18 кВт" },
+  metal_hakka:      { label: "Финская металлическая (премиум)", desc: "Harvia Legend, Helo — медленный нагрев, мягкий пар", price: 85000, power: "20–36 кВт" },
   brick_classic:    { label: "Кирпичная классическая", desc: "Долго нагревается, долго держит тепло, аутентично", price: 159500, power: "до 30 кВт" },
   brick_heater:     { label: "Кирпичная с каменкой", desc: "Максимальная теплоёмкость, премиальный пар", price: 231000, power: "40–60 кВт" },
-  electric_sauna:   { label: "Электрокаменка (сухая)", desc: "Быстрый нагрев 30 мин, никаких дров, точный контроль", price: 38500, power: "6–18 кВт" },
-  electric_infrared:{ label: "ИК-кабина (инфракрасная)", desc: "Низкая температура, лечебный эффект, экономично", price: 104500, power: "2–4 кВт" },
-  gas_sauna:        { label: "Газовая печь", desc: "Экономично при наличии газа, автоматика", price: 74800, power: "18–30 кВт" },
-  steam_generator:  { label: "Парогенератор (хамам/паровая)", desc: "Для турецкой бани, влажность 100%, 40–50°C", price: 82500, power: "3–18 кВт" },
+  electric_sauna:   { label: "Электрокаменка (сухая)", desc: "Быстрый нагрев 30 мин, никаких дров, точный контроль", price: 45000, power: "6–18 кВт" },
+  electric_infrared:{ label: "ИК-кабина (инфракрасная)", desc: "Низкая температура, лечебный эффект, экономично", price: 110000, power: "2–4 кВт" },
+  gas_sauna:        { label: "Газовая печь", desc: "Экономично при наличии газа, автоматика", price: 75000, power: "18–30 кВт" },
+  steam_generator:  { label: "Парогенератор (хамам/паровая)", desc: "Для турецкой бани, влажность 100%, 40–50°C", price: 90000, power: "3–18 кВт" },
 };
 
 export const VENTILATION_TYPES: Record<VentilationType, { label: string; desc: string; price: number }> = {
@@ -189,11 +189,11 @@ export const VENTILATION_TYPES: Record<VentilationType, { label: string; desc: s
 };
 
 export const SHELF_MATERIALS: Record<ShelfMaterial, { label: string; pricePerM2: number }> = {
-  linden:       { label: "Липа", pricePerM2: 4950 },
-  aspen:        { label: "Осина", pricePerM2: 4180 },
-  cedar:        { label: "Кедр", pricePerM2: 10450 },
-  abash:        { label: "Абаши", pricePerM2: 13200 },
-  thermo_aspen: { label: "Термоосина", pricePerM2: 7920 },
+  linden:       { label: "Липа", pricePerM2: 2200 },
+  aspen:        { label: "Осина", pricePerM2: 1800 },
+  cedar:        { label: "Кедр", pricePerM2: 5000 },
+  abash:        { label: "Абаши", pricePerM2: 4000 },
+  thermo_aspen: { label: "Термоосина", pricePerM2: 3000 },
 };
 
 export const FLOOR_MATERIALS: Record<FloorMaterial, { label: string; pricePerM2: number }> = {
