@@ -110,10 +110,10 @@ export const DEFAULT_BATHHOUSE_CONFIG: BathHouseConfig = {
 };
 
 export const WALL_MATERIALS: Record<WallMaterial, { label: string; desc: string; pricePerM2: number; category: string }> = {
-  timber_profiled:   { label: "Брус профилированный 150×150", desc: "Классика. Экологично, быстро, хорошая теплоёмкость", pricePerM2: 4620, category: "Дерево" },
-  timber_glued:      { label: "Брус клеёный 150×150", desc: "Премиум. Не деформируется, не трескается, идеальная геометрия", pricePerM2: 8580, category: "Дерево" },
-  log_rounded:       { label: "Бревно оцилиндрованное ∅200", desc: "Традиционный русский вид, хорошая теплоёмкость", pricePerM2: 6160, category: "Дерево" },
-  log_hand:          { label: "Бревно ручной рубки ∅220+", desc: "Премиум-ручная работа, максимальная аутентичность", pricePerM2: 10450, category: "Дерево" },
+  timber_profiled:   { label: "Брус профилированный 150×150", desc: "Классика. Экологично, быстро, хорошая теплоёмкость", pricePerM2: 2700, category: "Дерево" },
+  timber_glued:      { label: "Брус клеёный 150×150", desc: "Премиум. Не деформируется, не трескается, идеальная геометрия", pricePerM2: 4500, category: "Дерево" },
+  log_rounded:       { label: "Бревно оцилиндрованное ∅200", desc: "Традиционный русский вид, хорошая теплоёмкость", pricePerM2: 3600, category: "Дерево" },
+  log_hand:          { label: "Бревно ручной рубки ∅220+", desc: "Премиум-ручная работа, максимальная аутентичность", pricePerM2: 6300, category: "Дерево" },
   brick:             { label: "Кирпич полнотелый", desc: "Долговечно, не горит, требует мощного утепления", pricePerM2: 6820, category: "Камень" },
   block_gas:         { label: "Газобетонный блок D400", desc: "Лёгкий, тёплый, требует пароизоляции", pricePerM2: 3740, category: "Камень" },
   block_foam:        { label: "Пенобетонный блок D600", desc: "Доступно, но чуть хуже по теплу чем газобетон", pricePerM2: 3190, category: "Камень" },

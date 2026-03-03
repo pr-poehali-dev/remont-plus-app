@@ -67,7 +67,7 @@ export function calcBathHouseMaterials(
     items.push({ name: "Пенобетон D600", spec: "600×300×200", unit: "м³", qty, pricePerUnit: Math.round(4400 * rc), total: Math.round(qty * 4400 * rc) });
   } else if (cfg.wallMaterial === "frame_osb") {
     const boardVol = +(wallArea * 0.045).toFixed(2);
-    items.push({ name: "Доска обрезная 50×150мм", spec: "сосна, 1 сорт", unit: "м³", qty: boardVol, pricePerUnit: Math.round(16500 * rc), total: Math.round(boardVol * 16500 * rc) });
+    items.push({ name: "Доска обрезная 50×150мм", spec: "сосна, 1 сорт", unit: "м³", qty: boardVol, pricePerUnit: Math.round(18000 * rc), total: Math.round(boardVol * 18000 * rc) });
     const osbSheets = Math.ceil(wallArea / 2.88);
     items.push({ name: "OSB-3 плита 12мм", spec: "2440×1220, Kronospan", unit: "лист", qty: osbSheets, pricePerUnit: Math.round(950 * rc), total: Math.round(osbSheets * 950 * rc) });
   } else if (cfg.wallMaterial === "frame_sip") {
