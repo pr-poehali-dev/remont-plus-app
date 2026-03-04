@@ -4,6 +4,8 @@ import { FLOORING_PRODUCTS, FLOORING_CATEGORIES, SUBSTRATE_OPTIONS, INSTALL_PATT
 import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTypes";
 import { calcFlooringPrice, fmt } from "@/components/calculator/flooring/flooringUtils";
 import PrintPaywall from "@/components/print/PrintPaywall";
+import UniversalDocView from "@/components/print/UniversalDocView";
+import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
 interface PrintState {
   zones: FlooringConfig[];
@@ -65,6 +67,42 @@ export default function FlooringPrint() {
 
   const totalSum = rowsData.reduce((s, r) => s + r.bd.total, 0);
   const totalArea = zones.reduce((s, z) => s + (z.area || 0), 0);
+
+  if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
+    const universalItems = rowsData.map(({ z, product, cat, bd }, idx) => ({
+      num: idx + 1,
+      name: `${cat?.label || "Покрытие"}: ${product?.brand || ""} ${product?.name || ""}, ${z.roomName || `Помещение ${idx + 1}`}, ${z.area} м²`,
+      unit: "м²",
+      qty: z.area || 0,
+      pricePerUnit: z.area ? Math.round(bd.total / z.area) : 0,
+      total: bd.total,
+    }));
+    const grandTotal = totalSum;
+    const docData: UniversalDocData = {
+      docType,
+      docNum,
+      date,
+      startDate: (state as Record<string, unknown>).startDate ? new Date((state as Record<string, unknown>).startDate as string).toLocaleDateString("ru-RU") : undefined,
+      endDate: (state as Record<string, unknown>).endDate ? new Date((state as Record<string, unknown>).endDate as string).toLocaleDateString("ru-RU") : undefined,
+      contractNum: (state as Record<string, unknown>).contractNum as string | undefined,
+      contractDate: (state as Record<string, unknown>).contractDate ? new Date((state as Record<string, unknown>).contractDate as string).toLocaleDateString("ru-RU") : undefined,
+      customer: { name: customer || "", inn: undefined, phone, email },
+      contractor: { name: contractor || "", inn: inn || undefined, phone, email },
+      objectAddress: address || "",
+      items: universalItems,
+      totalWorks: Math.round(grandTotal * 0.4),
+      totalMaterials: Math.round(grandTotal * 0.6),
+      grandTotal,
+      advancePct: parseFloat((state as Record<string, unknown>).advancePct as string || "30"),
+      warrantyMonths: parseInt((state as Record<string, unknown>).warrantyMonths as string || "12"),
+      projectTitle: "Укладка напольных покрытий",
+    };
+    return (
+      <PrintPaywall>
+        <UniversalDocView data={docData} />
+      </PrintPaywall>
+    );
+  }
 
   return (
     <>

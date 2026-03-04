@@ -7,6 +7,8 @@ import {
 import type { NewbuildConfig } from "@/components/calculator/newbuild/NewbuildTypes";
 import { calcNewbuildPrice, calcNewbuildProjectTotals, calcNewbuildMaterials, fmt } from "@/components/calculator/newbuild/newbuildUtils";
 import PrintPaywall from "@/components/print/PrintPaywall";
+import UniversalDocView from "@/components/print/UniversalDocView";
+import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
 interface PrintState {
   zones: NewbuildConfig[];
@@ -78,6 +80,42 @@ export default function NewbuildPrint() {
   const allBreakdowns = rowsData.map(r => r.bd);
   const projectTotals = calcNewbuildProjectTotals(allBreakdowns, foremanIncluded, foremanPct, supplierIncluded, supplierPct, markupPct);
   const totalSum = projectTotals.total;
+
+  if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
+    const universalItems = rowsData.map(({ z, roomType, level, bd }, idx) => ({
+      num: idx + 1,
+      name: `${roomType?.label || "Помещение"}: ${z.roomName || `Помещение ${idx + 1}`}${level ? `, ${level.label}` : ""}, ${z.area} м²`,
+      unit: "компл.",
+      qty: 1,
+      pricePerUnit: bd.subtotal,
+      total: bd.subtotal,
+    }));
+    const grandTotal = totalSum;
+    const docData: UniversalDocData = {
+      docType,
+      docNum,
+      date,
+      startDate: (state as Record<string, unknown>).startDate ? new Date((state as Record<string, unknown>).startDate as string).toLocaleDateString("ru-RU") : undefined,
+      endDate: (state as Record<string, unknown>).endDate ? new Date((state as Record<string, unknown>).endDate as string).toLocaleDateString("ru-RU") : undefined,
+      contractNum: (state as Record<string, unknown>).contractNum as string | undefined,
+      contractDate: (state as Record<string, unknown>).contractDate ? new Date((state as Record<string, unknown>).contractDate as string).toLocaleDateString("ru-RU") : undefined,
+      customer: { name: customer || "", phone: phone || undefined, email: email || undefined },
+      contractor: { name: contractor || "", inn: inn || undefined, phone: phone || undefined, email: email || undefined },
+      objectAddress: address || "",
+      items: universalItems,
+      totalWorks: Math.round(grandTotal * 0.45),
+      totalMaterials: Math.round(grandTotal * 0.55),
+      grandTotal,
+      advancePct: parseFloat((state as Record<string, unknown>).advancePct as string || "30"),
+      warrantyMonths: parseInt((state as Record<string, unknown>).warrantyMonths as string || "12"),
+      projectTitle: "Ремонт в новостройке",
+    };
+    return (
+      <PrintPaywall>
+        <UniversalDocView data={docData} />
+      </PrintPaywall>
+    );
+  }
 
   return (
     <>

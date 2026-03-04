@@ -4,6 +4,8 @@ import { REGIONS, ROOM_TYPES, CABLING_TYPES } from "@/components/calculator/elec
 import type { ElectricsConfig } from "@/components/calculator/electrics/ElectricsTypes";
 import { calcElectricsPrice, fmt } from "@/components/calculator/electrics/electricsUtils";
 import PrintPaywall from "@/components/print/PrintPaywall";
+import UniversalDocView from "@/components/print/UniversalDocView";
+import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
 interface PrintState {
   zones: ElectricsConfig[];
@@ -56,6 +58,42 @@ export default function ElectricsPrint() {
   });
 
   const totalSum = rowsData.reduce((s, r) => s + r.bd.total, 0);
+
+  if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
+    const universalItems = rowsData.map(({ z, roomType, bd }, idx) => ({
+      num: idx + 1,
+      name: `Электромонтаж: ${z.roomName || `Помещение ${idx + 1}`}${roomType ? `, ${roomType.label}` : ""}, ${z.area} м²`,
+      unit: "компл.",
+      qty: 1,
+      pricePerUnit: bd.total,
+      total: bd.total,
+    }));
+    const grandTotal = totalSum;
+    const docData: UniversalDocData = {
+      docType,
+      docNum,
+      date,
+      startDate: (state as Record<string, unknown>).startDate ? new Date((state as Record<string, unknown>).startDate as string).toLocaleDateString("ru-RU") : undefined,
+      endDate: (state as Record<string, unknown>).endDate ? new Date((state as Record<string, unknown>).endDate as string).toLocaleDateString("ru-RU") : undefined,
+      contractNum: (state as Record<string, unknown>).contractNum as string | undefined,
+      contractDate: (state as Record<string, unknown>).contractDate ? new Date((state as Record<string, unknown>).contractDate as string).toLocaleDateString("ru-RU") : undefined,
+      customer: { name: customer || "", inn: undefined, phone, email },
+      contractor: { name: contractor || "", inn: inn || undefined, phone, email },
+      objectAddress: address || "",
+      items: universalItems,
+      totalWorks: Math.round(grandTotal * 0.4),
+      totalMaterials: Math.round(grandTotal * 0.6),
+      grandTotal,
+      advancePct: parseFloat((state as Record<string, unknown>).advancePct as string || "30"),
+      warrantyMonths: parseInt((state as Record<string, unknown>).warrantyMonths as string || "12"),
+      projectTitle: "Электромонтажные работы",
+    };
+    return (
+      <PrintPaywall>
+        <UniversalDocView data={docData} />
+      </PrintPaywall>
+    );
+  }
 
   return (
     <>

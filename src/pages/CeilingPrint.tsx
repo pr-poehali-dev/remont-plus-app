@@ -4,6 +4,8 @@ import { CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS, CEILING_COLORS, LIGHTING
 import { fmt, CEILING_PRINT_STYLES } from "@/components/print/CeilingPrintTypes";
 import type { CeilingPrintState } from "@/components/print/CeilingPrintTypes";
 import PrintPaywall from "@/components/print/PrintPaywall";
+import UniversalDocView from "@/components/print/UniversalDocView";
+import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
 export default function CeilingPrint() {
   const location = useLocation();
@@ -39,6 +41,47 @@ export default function CeilingPrint() {
 
   const isKp = docType === "kp";
   const hasReq = inn || kpp || ogrn || legalAddress || bank;
+
+  if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
+    const universalItems = configs.map((cfg, idx) => {
+      const ct = CEILING_TYPES.find(t => t.value === cfg.ceilingType);
+      const lv = CEILING_LEVELS.find(l => l.value === cfg.level);
+      const br = CEILING_BRANDS.find(b => b.id === cfg.brandId);
+      return {
+        num: idx + 1,
+        name: `${ct?.label || "Потолок"} (${lv?.label || ""})${br ? `, ${br.name}` : ""}, ${cfg.area} м²`,
+        unit: "м²",
+        qty: cfg.area,
+        pricePerUnit: Math.round(cfg.totalPrice / cfg.area),
+        total: cfg.totalPrice,
+      };
+    });
+    const grandTotal = totalSum;
+    const docData: UniversalDocData = {
+      docType,
+      docNum,
+      date,
+      startDate: (state as Record<string, unknown>).startDate ? new Date((state as Record<string, unknown>).startDate as string).toLocaleDateString("ru-RU") : undefined,
+      endDate: (state as Record<string, unknown>).endDate ? new Date((state as Record<string, unknown>).endDate as string).toLocaleDateString("ru-RU") : undefined,
+      contractNum: (state as Record<string, unknown>).contractNum as string | undefined,
+      contractDate: (state as Record<string, unknown>).contractDate ? new Date((state as Record<string, unknown>).contractDate as string).toLocaleDateString("ru-RU") : undefined,
+      customer: { name: customer || "", inn: undefined, phone, email },
+      contractor: { name: contractor || "", inn: inn || undefined, phone, email },
+      objectAddress: address || "",
+      items: universalItems,
+      totalWorks: Math.round(grandTotal * 0.4),
+      totalMaterials: Math.round(grandTotal * 0.6),
+      grandTotal,
+      advancePct: parseFloat((state as Record<string, unknown>).advancePct as string || "30"),
+      warrantyMonths: parseInt((state as Record<string, unknown>).warrantyMonths as string || "12"),
+      projectTitle: "Монтаж натяжных потолков",
+    };
+    return (
+      <PrintPaywall>
+        <UniversalDocView data={docData} />
+      </PrintPaywall>
+    );
+  }
 
   return (
     <>

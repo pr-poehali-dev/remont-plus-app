@@ -32,8 +32,15 @@ interface ExportState {
   address: string;
   phone: string;
   email: string;
-  docType: "smeta" | "kp";
+  inn: string;
+  docType: "smeta" | "kp" | "contract" | "ks2" | "ks3" | "act";
   validDays: string;
+  startDate: string;
+  endDate: string;
+  contractNum: string;
+  contractDate: string;
+  advancePct: string;
+  warrantyMonths: string;
 }
 
 export default function BathHouse() {
@@ -52,6 +59,7 @@ export default function BathHouse() {
   const [markupPct, setMarkupPct] = useState<number>(loadMarkup);
   const [viewTab, setViewTab] = useState<ViewTab>("config");
 
+  const today = new Date().toISOString().slice(0, 10);
   const [exportState, setExportState] = useState<ExportState>({
     showExportPanel: false,
     customer: "",
@@ -59,8 +67,15 @@ export default function BathHouse() {
     address: "",
     phone: "",
     email: "",
+    inn: "",
     docType: "smeta",
     validDays: "30",
+    startDate: today,
+    endDate: "",
+    contractNum: "",
+    contractDate: today,
+    advancePct: "30",
+    warrantyMonths: "12",
   });
 
   const handleChange = useCallback((patch: Partial<BathHouseConfig>) => {
@@ -100,7 +115,14 @@ export default function BathHouse() {
         address: exportState.address,
         phone: exportState.phone,
         email: exportState.email,
+        inn: exportState.inn,
         validDays: exportState.validDays,
+        startDate: exportState.startDate,
+        endDate: exportState.endDate,
+        contractNum: exportState.contractNum,
+        contractDate: exportState.contractDate,
+        advancePct: exportState.advancePct,
+        warrantyMonths: exportState.warrantyMonths,
       },
     });
   };

@@ -5,6 +5,8 @@ import { fmt, WINDOW_PRINT_STYLES } from "@/components/print/WindowPrintTypes";
 import type { WindowPrintState } from "@/components/print/WindowPrintTypes";
 import WindowCard from "@/components/print/WindowCard";
 import PrintPaywall from "@/components/print/PrintPaywall";
+import UniversalDocView from "@/components/print/UniversalDocView";
+import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
 export default function WindowPrint() {
   const location = useLocation();
@@ -40,6 +42,46 @@ export default function WindowPrint() {
 
   const isKp = docType === "kp";
   const hasReq = inn || kpp || ogrn || legalAddress || bank;
+
+  if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
+    const universalItems = configs.map((cfg, idx) => {
+      const ct = CONSTRUCTION_TYPES.find(c => c.value === cfg.constructionType);
+      const pf = PROFILE_SYSTEMS.find(p => p.id === cfg.profileSystemId);
+      const gl = GLASS_UNITS.find(g => g.id === cfg.glassUnitId);
+      return {
+        num: idx + 1,
+        name: `${ct?.label || "Конструкция"}, ${cfg.width}×${cfg.height} мм${pf ? `, ${pf.brand} ${pf.series}` : ""}${gl ? `, ${gl.name}` : ""}`,
+        unit: "шт.",
+        qty: cfg.quantity,
+        pricePerUnit: Math.round(cfg.totalPrice / cfg.quantity),
+        total: cfg.totalPrice,
+      };
+    });
+    const docData: UniversalDocData = {
+      docType,
+      docNum,
+      date,
+      startDate: (state as { startDate?: string }).startDate ? new Date((state as { startDate?: string }).startDate!).toLocaleDateString("ru-RU") : undefined,
+      endDate: (state as { endDate?: string }).endDate ? new Date((state as { endDate?: string }).endDate!).toLocaleDateString("ru-RU") : undefined,
+      contractNum: (state as { contractNum?: string }).contractNum,
+      contractDate: (state as { contractDate?: string }).contractDate ? new Date((state as { contractDate?: string }).contractDate!).toLocaleDateString("ru-RU") : undefined,
+      customer: { name: customer || "", inn: undefined, phone, email },
+      contractor: { name: contractor || "", inn: inn || undefined, phone, email },
+      objectAddress: address || "",
+      items: universalItems,
+      totalWorks: Math.round(totalSum * 0.3),
+      totalMaterials: Math.round(totalSum * 0.7),
+      grandTotal: totalSum,
+      advancePct: parseFloat((state as { advancePct?: string }).advancePct || "30"),
+      warrantyMonths: parseInt((state as { warrantyMonths?: string }).warrantyMonths || "12"),
+      projectTitle: "Поставка и монтаж окон",
+    };
+    return (
+      <PrintPaywall>
+        <UniversalDocView data={docData} />
+      </PrintPaywall>
+    );
+  }
 
   return (
     <>

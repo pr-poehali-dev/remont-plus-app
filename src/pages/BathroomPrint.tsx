@@ -4,6 +4,8 @@ import { REGIONS, BATHROOM_TYPES, FLOOR_TILES, WALL_TILES, WATERPROOFING_TYPES }
 import type { BathroomConfig } from "@/components/calculator/bathroom/BathroomTypes";
 import { calcBathroomPrice, fmt } from "@/components/calculator/bathroom/bathroomUtils";
 import PrintPaywall from "@/components/print/PrintPaywall";
+import UniversalDocView from "@/components/print/UniversalDocView";
+import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
 interface PrintState {
   zones: BathroomConfig[];
@@ -58,6 +60,42 @@ export default function BathroomPrint() {
   });
 
   const totalSum = rowsData.reduce((s, r) => s + r.bd.total, 0);
+
+  if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
+    const universalItems = rowsData.map(({ z, bathroomType, bd }, idx) => ({
+      num: idx + 1,
+      name: `${bathroomType?.label || "Санузел"}: ${z.roomName || `Санузел ${idx + 1}`}, ${z.area} м² пол / ${z.wallArea} м² стены`,
+      unit: "компл.",
+      qty: 1,
+      pricePerUnit: bd.total,
+      total: bd.total,
+    }));
+    const grandTotal = totalSum;
+    const docData: UniversalDocData = {
+      docType,
+      docNum,
+      date,
+      startDate: (state as Record<string, unknown>).startDate ? new Date((state as Record<string, unknown>).startDate as string).toLocaleDateString("ru-RU") : undefined,
+      endDate: (state as Record<string, unknown>).endDate ? new Date((state as Record<string, unknown>).endDate as string).toLocaleDateString("ru-RU") : undefined,
+      contractNum: (state as Record<string, unknown>).contractNum as string | undefined,
+      contractDate: (state as Record<string, unknown>).contractDate ? new Date((state as Record<string, unknown>).contractDate as string).toLocaleDateString("ru-RU") : undefined,
+      customer: { name: customer || "", phone: phone || undefined, email: email || undefined },
+      contractor: { name: contractor || "", inn: inn || undefined, phone: phone || undefined, email: email || undefined },
+      objectAddress: address || "",
+      items: universalItems,
+      totalWorks: Math.round(grandTotal * 0.45),
+      totalMaterials: Math.round(grandTotal * 0.55),
+      grandTotal,
+      advancePct: parseFloat((state as Record<string, unknown>).advancePct as string || "30"),
+      warrantyMonths: parseInt((state as Record<string, unknown>).warrantyMonths as string || "12"),
+      projectTitle: "Ремонт санузла",
+    };
+    return (
+      <PrintPaywall>
+        <UniversalDocView data={docData} />
+      </PrintPaywall>
+    );
+  }
 
   return (
     <>

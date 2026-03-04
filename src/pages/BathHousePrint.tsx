@@ -11,6 +11,8 @@ import type { BathHouseBreakdown } from "@/components/calculator/bathhouse/bathH
 import { fmt, calcBathHouseMaterials } from "@/components/calculator/bathhouse/bathHouseUtils";
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
 import PrintPaywall from "@/components/print/PrintPaywall";
+import UniversalDocView from "@/components/print/UniversalDocView";
+import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
 interface PrintState {
   config: BathHouseConfig;
@@ -19,13 +21,20 @@ interface PrintState {
   bd: BathHouseBreakdown;
   docNum: string;
   date: string;
-  docType: "smeta" | "kp";
+  docType: "smeta" | "kp" | "ks2" | "ks3" | "act" | "contract";
   customer?: string;
   contractor?: string;
   address?: string;
   phone?: string;
   email?: string;
+  inn?: string;
   validDays?: string;
+  startDate?: string;
+  endDate?: string;
+  contractNum?: string;
+  contractDate?: string;
+  advancePct?: string;
+  warrantyMonths?: string;
 }
 
 const BREAKDOWN_ROWS: { key: keyof BathHouseBreakdown; label: string; unit: string; getQty: (c: BathHouseConfig) => string }[] = [
@@ -72,7 +81,8 @@ export default function BathHousePrint() {
     );
   }
 
-  const { config, regionId, markupPct, bd, docNum, date, docType, customer, contractor, address, phone, email, validDays } = state;
+  const { config, regionId, markupPct, bd, docNum, date, docType, customer, contractor, address, phone, email, inn, validDays,
+    startDate, endDate, contractNum, contractDate, advancePct, warrantyMonths } = state;
   const isKp = docType === "kp";
   const region = REGIONS[regionId] ?? REGIONS["moscow"];
   const style = BATH_STYLES[config.style];
@@ -96,6 +106,45 @@ export default function BathHousePrint() {
   function fmtN(n: number) {
     if (Number.isInteger(n)) return n.toLocaleString("ru-RU");
     return n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
+  }
+
+  // Для КС-2, КС-3, Акта и Договора — универсальный рендер
+  if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
+    const matItems = calcBathHouseMaterials(config, bd, regionId);
+    const universalItems = matItems.map((item: MaterialItem, idx: number) => ({
+      num: idx + 1,
+      name: item.name,
+      unit: item.unit,
+      qty: item.qty,
+      pricePerUnit: item.pricePerUnit,
+      total: item.total,
+    }));
+    const totalWorks = matItems.filter((i: MaterialItem) => i.isWork).reduce((s: number, i: MaterialItem) => s + i.total, 0);
+    const totalMaterials = matItems.filter((i: MaterialItem) => !i.isWork).reduce((s: number, i: MaterialItem) => s + i.total, 0);
+    const docData: UniversalDocData = {
+      docType,
+      docNum,
+      date,
+      startDate: startDate ? new Date(startDate).toLocaleDateString("ru-RU") : undefined,
+      endDate: endDate ? new Date(endDate).toLocaleDateString("ru-RU") : undefined,
+      contractNum,
+      contractDate: contractDate ? new Date(contractDate).toLocaleDateString("ru-RU") : undefined,
+      customer: { name: customer || "", inn: undefined, address: undefined, phone: undefined, email: undefined },
+      contractor: { name: contractor || "", inn: inn || undefined, address: undefined, phone: phone || undefined, email: email || undefined },
+      objectAddress: address || "",
+      items: universalItems,
+      totalWorks,
+      totalMaterials,
+      grandTotal: bd.total,
+      advancePct: parseFloat(advancePct || "30"),
+      warrantyMonths: parseInt(warrantyMonths || "12"),
+      projectTitle: "Строительство бани под ключ",
+    };
+    return (
+      <PrintPaywall>
+        <UniversalDocView data={docData} />
+      </PrintPaywall>
+    );
   }
 
   return (
