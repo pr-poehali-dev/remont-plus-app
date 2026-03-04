@@ -2,9 +2,24 @@ import json
 import os
 import smtplib
 import ssl
+import urllib.request
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import psycopg2
+
+
+def send_telegram(message: str) -> None:
+    token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
+    if not token or not chat_id:
+        return
+    data = json.dumps({'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'}).encode('utf-8')
+    req = urllib.request.Request(
+        f'https://api.telegram.org/bot{token}/sendMessage',
+        data=data,
+        headers={'Content-Type': 'application/json'}
+    )
+    urllib.request.urlopen(req, timeout=10)
 
 
 def send_email(to_email: str, subject: str, html_body: str) -> bool:
@@ -174,6 +189,15 @@ def handler(event: dict, context) -> dict:
   </div>
 </body></html>"""
         ok = send_email(admin_email, f'Новая заявка: {lead_name} · {lead_phone}', html)
+        try:
+            send_telegram(
+                f"💎 <b>Заявка с тарифной страницы</b>\n\n"
+                f"👤 Имя: {lead_name or '—'}\n"
+                f"📞 Телефон: {lead_phone or '—'}\n"
+                f"💬 Комментарий: {lead_comment or '—'}"
+            )
+        except Exception as e:
+            print(f'TELEGRAM ERROR: {e}')
         return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'success': ok}, ensure_ascii=False)}
 
     elif action == 'send_design_brief':
@@ -206,6 +230,15 @@ def handler(event: dict, context) -> dict:
   </div>
 </body></html>"""
         ok = send_email(admin_email, f'ТЗ на дизайн-проект: {client_name} · {client_phone}', html)
+        try:
+            send_telegram(
+                f"🎨 <b>Запрос на дизайн-проект</b>\n\n"
+                f"👤 Имя: {client_name or '—'}\n"
+                f"📞 Телефон: {client_phone or '—'}\n"
+                f"📝 ТЗ: {(brief_text or '—')[:300]}"
+            )
+        except Exception as e:
+            print(f'TELEGRAM ERROR: {e}')
         return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'success': ok}, ensure_ascii=False)}
 
     return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Invalid action'})}

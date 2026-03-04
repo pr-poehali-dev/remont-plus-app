@@ -7,10 +7,21 @@ import uuid
 import base64
 import psycopg2
 from psycopg2.extras import RealDictCursor
-try:
-    import urllib.request as urlreq
-except ImportError:
-    urlreq = None
+import urllib.request as urlreq
+
+
+def send_telegram(message: str) -> None:
+    token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
+    if not token or not chat_id:
+        return
+    data = json.dumps({'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'}).encode('utf-8')
+    req = urlreq.Request(
+        f'https://api.telegram.org/bot{token}/sendMessage',
+        data=data,
+        headers={'Content-Type': 'application/json'}
+    )
+    urlreq.urlopen(req, timeout=10)
 
 CORS = {
     'Access-Control-Allow-Origin': '*',
@@ -165,6 +176,17 @@ def handler(event: dict, context) -> dict:
 
             if status == 'succeeded' and user_id and plan_code:
                 activate_plan(cur, conn, user_id, plan_code)
+                try:
+                    plan_name = PLAN_NAMES.get(plan_code, plan_code.upper())
+                    amount = PLAN_PRICES.get(plan_code, 0)
+                    send_telegram(
+                        f"💳 <b>Оплата подписки</b>\n\n"
+                        f"📦 Тариф: {plan_name}\n"
+                        f"💰 Сумма: {amount:,} ₽".replace(',', ' ') + f"\n"
+                        f"👤 Пользователь ID: {user_id}"
+                    )
+                except Exception as e:
+                    print(f'TELEGRAM ERROR: {e}')
             else:
                 conn.commit()
 
@@ -188,6 +210,17 @@ def handler(event: dict, context) -> dict:
 
             if event_type == 'payment.succeeded' and user_id and plan_code:
                 activate_plan(cur, conn, user_id, plan_code)
+                try:
+                    plan_name = PLAN_NAMES.get(plan_code, plan_code.upper())
+                    amount = PLAN_PRICES.get(plan_code, 0)
+                    send_telegram(
+                        f"💳 <b>Оплата подписки</b>\n\n"
+                        f"📦 Тариф: {plan_name}\n"
+                        f"💰 Сумма: {amount:,} ₽".replace(',', ' ') + f"\n"
+                        f"👤 Пользователь ID: {user_id}"
+                    )
+                except Exception as e:
+                    print(f'TELEGRAM ERROR: {e}')
             else:
                 conn.commit()
 

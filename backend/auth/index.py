@@ -2,7 +2,22 @@ import json
 import os
 import hashlib
 import secrets
+import urllib.request
 import psycopg2
+
+
+def send_telegram(message: str) -> None:
+    token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
+    if not token or not chat_id:
+        return
+    data = json.dumps({'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'}).encode('utf-8')
+    req = urllib.request.Request(
+        f'https://api.telegram.org/bot{token}/sendMessage',
+        data=data,
+        headers={'Content-Type': 'application/json'}
+    )
+    urllib.request.urlopen(req, timeout=10)
 
 def hash_password(password: str) -> str:
     salt = secrets.token_hex(16)
@@ -78,6 +93,18 @@ def handler(event: dict, context) -> dict:
         conn.commit()
 
         token = secrets.token_hex(32)
+
+        try:
+            user_type_label = {'customer': 'Клиент', 'contractor': 'Подрядчик', 'designer': 'Дизайнер'}.get(user_type, user_type)
+            send_telegram(
+                f"🆕 <b>Новый пользователь</b>\n\n"
+                f"👤 Имя: {name}\n"
+                f"📧 Email: {email}\n"
+                f"📞 Телефон: {phone or '—'}\n"
+                f"🏷 Тип: {user_type_label}"
+            )
+        except Exception as e:
+            print(f'TELEGRAM ERROR: {e}')
 
         cursor.close()
         conn.close()

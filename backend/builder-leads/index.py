@@ -8,9 +8,24 @@
 import json
 import os
 import smtplib
+import urllib.request
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import psycopg2
+
+
+def send_telegram(message: str) -> None:
+    token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
+    if not token or not chat_id:
+        return
+    data = json.dumps({'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'}).encode('utf-8')
+    req = urllib.request.Request(
+        f'https://api.telegram.org/bot{token}/sendMessage',
+        data=data,
+        headers={'Content-Type': 'application/json'}
+    )
+    urllib.request.urlopen(req, timeout=10)
 
 SCHEMA = os.environ.get("MAIN_DB_SCHEMA", "public")
 S = f"{SCHEMA}."
@@ -211,6 +226,23 @@ def handler(event: dict, context) -> dict:
         for a in assigned:
             if a.get("email"):
                 send_email_notification(a["email"], a["name"] or "партнёр", lead_data)
+
+        try:
+            budget_str = f"{budget:,} ₽".replace(",", " ") if budget else "не указан"
+            work_str = ", ".join(work_types) if work_types else "не указаны"
+            tg_text = (
+                f"🏗 <b>Новая заявка на ремонт</b> (№{lead_id})\n\n"
+                f"📍 Город: {city or '—'}\n"
+                f"💰 Бюджет: {budget_str}\n"
+                f"🔧 Работы: {work_str}\n"
+                f"👤 Имя: {customer_name or '—'}\n"
+                f"📞 Телефон: {customer_phone or '—'}\n"
+                f"💬 Комментарий: {customer_comment or '—'}\n"
+                f"📋 Назначено подрядчиков: {len(assigned)}"
+            )
+            send_telegram(tg_text)
+        except Exception as e:
+            print(f'TELEGRAM ERROR: {e}')
 
         conn.close()
         return resp(200, {"success": True, "lead_id": lead_id, "assigned_count": len(assigned)})
