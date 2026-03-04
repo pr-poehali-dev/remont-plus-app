@@ -35,90 +35,104 @@ export function calcFrameHouseMaterials(
 
   // === МАТЕРИАЛЫ ===
 
-  // Фундамент
+  // Фундамент (bd.foundation уже с rc)
   const foundData = FOUNDATION_TYPES[cfg.foundation];
   items.push({ name: foundData.label, spec: "под ключ", unit: "компл.", qty: 1, pricePerUnit: bd.foundation, total: bd.foundation });
 
-  // Каркас стен
+  // Каркас стен (bd.frame уже с rc)
   if (cfg.wallTech === "frame_osb") {
     const boardVol = +(wallArea * 0.05).toFixed(2);
-    items.push({ name: "Доска обрезная 50×150мм", spec: "сосна 1 сорт, каркас стен", unit: "м³", qty: boardVol, pricePerUnit: Math.round(18000 * rc), total: Math.round(boardVol * 18000 * rc) });
-    const osbSheets = Math.ceil(wallArea * 2 / 2.98);
-    items.push({ name: "OSB-3 плита 15мм", spec: "2440×1220, Kronospan/Egger", unit: "лист", qty: osbSheets, pricePerUnit: Math.round(1150 * rc), total: Math.round(osbSheets * 1150 * rc) });
+    const boardPriceM3 = Math.round(18000 * rc);
+    const boardTotal = Math.round(boardVol * boardPriceM3);
+
     const floorBeamVol = +(area * 0.035).toFixed(2);
-    items.push({ name: "Доска 50×200мм", spec: "перекрытие, сосна", unit: "м³", qty: floorBeamVol, pricePerUnit: Math.round(18000 * rc), total: Math.round(floorBeamVol * 18000 * rc) });
+    const floorBeamTotal = Math.round(floorBeamVol * boardPriceM3);
+
+    const osbSheets = Math.ceil(wallArea * 2 / 2.98);
+    const osbTotal = Math.round(osbSheets * 1150 * rc);
+
+    items.push({ name: "Доска обрезная 50×150мм", spec: "сосна 1 сорт, каркас стен", unit: "м³", qty: boardVol, pricePerUnit: boardPriceM3, total: boardTotal });
+    items.push({ name: "OSB-3 плита 15мм", spec: "2440×1220, Kronospan/Egger", unit: "лист", qty: osbSheets, pricePerUnit: Math.round(1150 * rc), total: osbTotal });
+    items.push({ name: "Доска 50×200мм", spec: "перекрытие, сосна", unit: "м³", qty: floorBeamVol, pricePerUnit: boardPriceM3, total: floorBeamTotal });
+
+    const frameRest = bd.frame - boardTotal - osbTotal - floorBeamTotal;
+    if (frameRest > 0) {
+      items.push({ name: "Материалы каркаса (обвязка, стойки, уголки)", spec: "крепёж, доборные элементы", unit: "компл.", qty: 1, pricePerUnit: frameRest, total: frameRest });
+    }
   } else if (cfg.wallTech === "frame_sip") {
-    items.push({ name: "SIP-панель 224мм (OSB-3 + ПСБ-С25)", spec: "2500×1250, завод", unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(5500 * rc), total: Math.round(wallArea * 5500 * rc) });
-    items.push({ name: "СИП-панель перекрытие 174мм", spec: "2500×1250", unit: "м²", qty: area, pricePerUnit: Math.round(4950 * rc), total: Math.round(area * 4950 * rc) });
+    items.push({ name: "SIP-панель 224мм (OSB-3 + ПСБ-С25)", spec: "2500×1250, завод", unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(bd.frame / wallArea), total: bd.frame });
+    const sipFloor = Math.round(area * 4950 * rc);
+    items.push({ name: "СИП-панель перекрытие 174мм", spec: "2500×1250", unit: "м²", qty: area, pricePerUnit: Math.round(4950 * rc), total: sipFloor });
   } else {
-    items.push({ name: frameTech.label, unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(frameTech.pricePerM2 * rc), total: Math.round(wallArea * frameTech.pricePerM2 * rc) });
+    items.push({ name: frameTech.label, unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(bd.frame / wallArea), total: bd.frame });
   }
 
-  // Утепление
+  // Утепление (bd.insulation уже с rc)
   const insulThick = insulData.thickness;
   const insulVol = +(insulArea * insulThick / 1000).toFixed(2);
-  items.push({ name: insulData.label, spec: `${insulThick}мм, плиты`, unit: "м³", qty: insulVol, pricePerUnit: Math.round((insulData.pricePerM2 / (insulThick / 1000)) * rc), total: Math.round(insulArea * insulData.pricePerM2 * rc) });
+  items.push({ name: insulData.label, spec: `${insulThick}мм, плиты`, unit: "м³", qty: insulVol, pricePerUnit: Math.round(bd.insulation / insulVol), total: bd.insulation });
 
-  // Кровля
+  // Кровля — стропила
   const roofBoardVol = +(roofArea * 0.042).toFixed(2);
-  items.push({ name: "Доска обрезная 50×200мм", spec: "стропила, сосна 1 сорт", unit: "м³", qty: roofBoardVol, pricePerUnit: Math.round(18000 * rc), total: Math.round(roofBoardVol * 18000 * rc) });
+  const roofBoardPrice = Math.round(18000 * rc);
+  items.push({ name: "Доска обрезная 50×200мм", spec: "стропила, сосна 1 сорт", unit: "м³", qty: roofBoardVol, pricePerUnit: roofBoardPrice, total: Math.round(roofBoardVol * roofBoardPrice) });
 
   const latVol = +(roofArea * 0.018).toFixed(2);
-  items.push({ name: "Доска 25×100мм", spec: "обрешётка кровли", unit: "м³", qty: latVol, pricePerUnit: Math.round(18000 * rc), total: Math.round(latVol * 18000 * rc) });
+  items.push({ name: "Доска 25×100мм", spec: "обрешётка кровли", unit: "м³", qty: latVol, pricePerUnit: roofBoardPrice, total: Math.round(latVol * roofBoardPrice) });
 
-  items.push({ name: roofMat.label, spec: roofMat.label.includes("Металлочерепица") ? "МП Монтеррей, 0.5мм" : roofMat.label.includes("Профнастил") ? "С20, оц. 0.5мм" : roofMat.label.includes("Мягкая") ? "Шинглас Ранчо, 3D" : "", unit: "м²", qty: +roofArea.toFixed(1), pricePerUnit: Math.round(roofMat.pricePerM2 * rc), total: Math.round(roofArea * roofMat.pricePerM2 * rc) });
+  items.push({ name: roofMat.label, spec: roofMat.label.includes("Металлочерепица") ? "МП Монтеррей, 0.5мм" : roofMat.label.includes("Профнастил") ? "С20, оц. 0.5мм" : roofMat.label.includes("Мягкая") ? "Шинглас Ранчо, 3D" : "", unit: "м²", qty: +roofArea.toFixed(1), pricePerUnit: Math.round(bd.roofing / roofArea), total: bd.roofing });
 
-  // Фасад
-  items.push({ name: facadeData.label, unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(facadeData.pricePerM2 * rc), total: Math.round(wallArea * facadeData.pricePerM2 * rc) });
+  // Фасад (bd.facade уже с rc)
+  items.push({ name: facadeData.label, unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(bd.facade / wallArea), total: bd.facade });
 
-  // Окна
+  // Окна (bd.windows уже с rc)
   if (cfg.windowCount > 0) {
-    items.push({ name: winData.label, spec: "с монтажом, откосы", unit: "шт.", qty: cfg.windowCount, pricePerUnit: Math.round(winData.pricePerUnit * rc), total: Math.round(cfg.windowCount * winData.pricePerUnit * rc) });
+    items.push({ name: winData.label, spec: "с монтажом, откосы", unit: "шт.", qty: cfg.windowCount, pricePerUnit: Math.round(bd.windows / cfg.windowCount), total: bd.windows });
   }
 
-  // Полы
-  items.push({ name: floorData.label, spec: floorData.label.includes("Ламинат") ? "Quick-Step, 33 класс" : floorData.label.includes("Паркет") ? "15мм, дуб" : "", unit: "м²", qty: area, pricePerUnit: Math.round(floorData.pricePerM2 * rc), total: Math.round(area * floorData.pricePerM2 * rc) });
+  // Полы (bd.floor уже с rc)
+  items.push({ name: floorData.label, spec: floorData.label.includes("Ламинат") ? "Quick-Step, 33 класс" : floorData.label.includes("Паркет") ? "15мм, дуб" : "", unit: "м²", qty: area, pricePerUnit: Math.round(bd.floor / area), total: bd.floor });
 
   if (bd.underfloorHeating > 0) {
-    items.push({ name: "Тёплый пол водяной (коллектор+трубы)", spec: "PE-RT ∅16, шаг 150мм", unit: "м²", qty: area, pricePerUnit: Math.round(2800 * rc), total: Math.round(area * 2800 * rc) });
+    items.push({ name: "Тёплый пол водяной (коллектор+трубы)", spec: "PE-RT ∅16, шаг 150мм", unit: "м²", qty: area, pricePerUnit: Math.round(bd.underfloorHeating / area), total: bd.underfloorHeating });
   }
 
-  // Отопление
+  // Отопление (bd.heating уже с rc)
   if (cfg.heating !== "none") {
     items.push({ name: heatData.label, spec: "под ключ", unit: "компл.", qty: 1, pricePerUnit: bd.heating, total: bd.heating });
   }
 
-  // Электрика
+  // Электрика (bd.electrical уже с rc)
   if (cfg.electricalIncluded) {
     items.push({ name: "Кабель ВВГнг-LS 3×2,5мм²", spec: "розетки, свет", unit: "м.п.", qty: Math.round(area * 5), pricePerUnit: Math.round(68 * rc), total: Math.round(area * 5 * 68 * rc) });
     items.push({ name: "Щиток ABB/IEK + автоматы", spec: "16–32А, 8–16 позиций", unit: "компл.", qty: 1, pricePerUnit: Math.round(18500 * rc), total: Math.round(18500 * rc) });
   }
 
-  // Водоснабжение
+  // Водоснабжение (bd.plumbing уже с rc)
   if (cfg.plumbingIncluded) {
     items.push({ name: "Труба полипропилен ∅25мм", spec: "Valtec/Ekoplastik, ХВС+ГВС", unit: "м.п.", qty: Math.round(area * 1.8), pricePerUnit: Math.round(85 * rc), total: Math.round(area * 1.8 * 85 * rc) });
     items.push({ name: "Сантехника (смесители, унитаз, ванна)", spec: "Grohe/Iddis", unit: "компл.", qty: 1, pricePerUnit: Math.round(45000 * rc), total: Math.round(45000 * rc) });
   }
 
-  // Канализация
+  // Канализация (bd.sewage уже с rc)
   if (cfg.sewageIncluded) {
     items.push({ name: "Септик энергонезависимый", spec: "Тритон / Росток, 2–4 чел.", unit: "шт.", qty: 1, pricePerUnit: Math.round(75000 * rc), total: Math.round(75000 * rc) });
     items.push({ name: "Труба канализационная ∅110мм", spec: "ПВХ серая, OSTENDORF", unit: "м.п.", qty: Math.round(area * 0.6), pricePerUnit: Math.round(250 * rc), total: Math.round(area * 0.6 * 250 * rc) });
   }
 
-  // Внутренняя отделка
+  // Внутренняя отделка (bd.interiorFinish уже с rc)
   if (finishData.pricePerM2 > 0) {
-    items.push({ name: finishData.label, spec: "по всей площади дома", unit: "м²", qty: area, pricePerUnit: Math.round(finishData.pricePerM2 * rc), total: Math.round(area * finishData.pricePerM2 * rc) });
+    items.push({ name: finishData.label, spec: "по всей площади дома", unit: "м²", qty: area, pricePerUnit: Math.round(bd.interiorFinish / area), total: bd.interiorFinish });
   }
 
-  // Терраса
+  // Терраса (bd.terrace уже с rc)
   if (cfg.terrace && cfg.terraceArea > 0) {
-    items.push({ name: "Терраса (материалы + монтаж)", spec: "доска ДПК, перила", unit: "м²", qty: cfg.terraceArea, pricePerUnit: Math.round(6800 * rc), total: Math.round(cfg.terraceArea * 6800 * rc) });
+    items.push({ name: "Терраса (материалы + монтаж)", spec: "доска ДПК, перила", unit: "м²", qty: cfg.terraceArea, pricePerUnit: Math.round(bd.terrace / cfg.terraceArea), total: bd.terrace });
   }
 
-  // Гараж
+  // Гараж (bd.garage уже с rc)
   if (cfg.garage && cfg.garageArea > 0) {
-    items.push({ name: "Гараж (каркас + сэндвич-панели)", spec: "секционные ворота", unit: "м²", qty: cfg.garageArea, pricePerUnit: Math.round(22000 * rc), total: Math.round(cfg.garageArea * 22000 * rc) });
+    items.push({ name: "Гараж (каркас + сэндвич-панели)", spec: "секционные ворота", unit: "м²", qty: cfg.garageArea, pricePerUnit: Math.round(bd.garage / cfg.garageArea), total: bd.garage });
   }
 
   // === РАСХОДНИКИ ===
@@ -134,7 +148,7 @@ export function calcFrameHouseMaterials(
 
   items.push({ name: "Антисептик для дерева (огне-биозащита)", spec: "Сенеж Огнебио / Неомид 530", unit: "л", qty: Math.round(area * 0.5), pricePerUnit: Math.round(280 * rc), total: Math.round(area * 0.5 * 280 * rc), isConsumable: true });
 
-  // === РАБОТЫ ===
+  // === РАБОТЫ === (bd.assembly уже с rc)
   const workTotal = bd.assembly;
   const ws = (v: number) => Math.round(workTotal * v);
 
@@ -145,6 +159,18 @@ export function calcFrameHouseMaterials(
   items.push({ name: "Монтаж фасада и окон", unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(ws(0.12) / wallArea), total: ws(0.12), isWork: true });
   items.push({ name: "Внутренняя отделка и полы", unit: "м²", qty: area, pricePerUnit: Math.round(ws(0.12) / area), total: ws(0.12), isWork: true });
   items.push({ name: "Инженерные системы (электрика, отопление, сантехника)", unit: "компл.", qty: 1, pricePerUnit: ws(0.05), total: ws(0.05), isWork: true });
+
+  if (bd.foreman > 0) {
+    items.push({ name: `Прораб — технический надзор (${cfg.foremanPct}%)`, spec: "% от работ+материалов", unit: "компл.", qty: 1, pricePerUnit: bd.foreman, total: bd.foreman, isWork: true });
+  }
+  if (bd.supplier > 0) {
+    items.push({ name: `Снабженец — закупка и логистика (${cfg.supplierPct}%)`, spec: "% от материалов", unit: "компл.", qty: 1, pricePerUnit: bd.supplier, total: bd.supplier, isWork: true });
+  }
+  if (bd.markupAmount > 0) {
+    const base = bd.subtotal - bd.markupAmount;
+    const markupPctDisplay = base > 0 ? Math.round(bd.markupAmount / base * 100) : 0;
+    items.push({ name: `Наценка (${markupPctDisplay}%)`, spec: "коммерческая маржа", unit: "компл.", qty: 1, pricePerUnit: bd.markupAmount, total: bd.markupAmount, isWork: true });
+  }
 
   return items;
 }

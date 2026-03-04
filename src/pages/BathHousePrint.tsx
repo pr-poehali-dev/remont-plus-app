@@ -227,14 +227,6 @@ export default function BathHousePrint() {
             <tbody>
               <tr>
                 <td className="py-1.5 text-gray-600">Материалы + монтаж</td>
-                <td className="py-1.5 text-right font-medium tabular-nums">{fmt((bd.subtotal - bd.foreman - bd.supplier) / bd.regionCoeff)} ₽</td>
-              </tr>
-              <tr>
-                <td className="py-1 text-gray-400 text-xs">Региональный коэффициент ×{bd.regionCoeff}</td>
-                <td className="py-1 text-right text-xs text-gray-400">{region.label}</td>
-              </tr>
-              <tr>
-                <td className="py-1.5 text-gray-600">С учётом региона</td>
                 <td className="py-1.5 text-right font-medium tabular-nums">{fmt(bd.subtotal - bd.foreman - bd.supplier)} ₽</td>
               </tr>
               {bd.foreman > 0 && (

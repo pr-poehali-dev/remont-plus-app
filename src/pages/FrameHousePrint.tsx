@@ -271,7 +271,7 @@ export default function FrameHousePrint() {
 
           <div className="flex justify-end mt-2">
             <div className="text-xs text-gray-400">
-              Итого по ведомости: <span className="font-bold text-green-700 text-sm">{fmt(matItems.reduce((s: number, i: MaterialItem) => s + i.total, 0))} ₽</span>
+              Итого по ведомости: <span className="font-bold text-green-700 text-sm">{fmt(bd.total)} ₽</span>
             </div>
           </div>
         </div>
@@ -279,7 +279,7 @@ export default function FrameHousePrint() {
         {/* Примечание */}
         <div className="mt-8 pt-4 border-t text-xs text-gray-400">
           <p>* Расчёт является ориентировочным. Окончательная стоимость определяется после осмотра участка, согласования проекта и подписания договора.</p>
-          <p className="mt-1">* Цены указаны с учётом регионального коэффициента для {region.label} (×{bd.regionCoeff}). Дата расчёта: {date}.</p>
+          <p className="mt-1">* Цены указаны для региона {region.label}. Дата расчёта: {date}.</p>
           {isKp && validDays && <p className="mt-1">* Коммерческое предложение действительно {validDays} дней с даты составления.</p>}
         </div>
       </div>
