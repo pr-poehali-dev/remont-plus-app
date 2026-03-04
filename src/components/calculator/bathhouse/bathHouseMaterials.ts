@@ -67,9 +67,16 @@ export function calcBathHouseMaterials(
     items.push({ name: "Пенобетон D600", spec: "600×300×200", unit: "м³", qty, pricePerUnit: Math.round(4400 * rc), total: Math.round(qty * 4400 * rc) });
   } else if (cfg.wallMaterial === "frame_osb") {
     const boardVol = +(wallArea * 0.045).toFixed(2);
-    items.push({ name: "Доска обрезная 50×150мм", spec: "сосна, 1 сорт", unit: "м³", qty: boardVol, pricePerUnit: Math.round(18000 * rc), total: Math.round(boardVol * 18000 * rc) });
+    const boardPriceM3 = Math.round(18000 * rc);
+    const boardTotal = Math.round(boardVol * boardPriceM3);
+    items.push({ name: "Доска обрезная 50×150мм", spec: "сосна, 1 сорт, каркас стен", unit: "м³", qty: boardVol, pricePerUnit: boardPriceM3, total: boardTotal });
     const osbSheets = Math.ceil(wallArea / 2.88);
-    items.push({ name: "OSB-3 плита 12мм", spec: "2440×1220, Kronospan", unit: "лист", qty: osbSheets, pricePerUnit: Math.round(950 * rc), total: Math.round(osbSheets * 950 * rc) });
+    const osbTotal = Math.round(osbSheets * 950 * rc);
+    items.push({ name: "OSB-3 плита 12мм", spec: "2440×1220, Kronospan", unit: "лист", qty: osbSheets, pricePerUnit: Math.round(950 * rc), total: osbTotal });
+    const frameRest = Math.round(bd.walls * rc) - boardTotal - osbTotal;
+    if (frameRest > 0) {
+      items.push({ name: "Материалы каркаса (обвязка, стойки, уголки)", spec: "крепёж, доборные элементы", unit: "компл.", qty: 1, pricePerUnit: frameRest, total: frameRest });
+    }
   } else if (cfg.wallMaterial === "frame_sip") {
     items.push({ name: "SIP-панель 174мм", spec: "2500×1250, ПСБ-С25", unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(4950 * rc), total: Math.round(wallArea * 4950 * rc) });
   } else {
@@ -153,6 +160,18 @@ export function calcBathHouseMaterials(
   items.push({ name: "Внутренняя отделка (вагонка, пол)", unit: "м²", qty: area, pricePerUnit: Math.round(workShare(0.15) / area), total: workShare(0.15), isWork: true });
   items.push({ name: "Монтаж печи, дымохода, вентиляции", unit: "компл.", qty: 1, pricePerUnit: workShare(0.10), total: workShare(0.10), isWork: true });
   items.push({ name: "Прочие работы (двери, окна, сантехника)", unit: "компл.", qty: 1, pricePerUnit: workShare(0.05), total: workShare(0.05), isWork: true });
+
+  if (bd.foreman > 0) {
+    items.push({ name: `Прораб — технический надзор (${cfg.foremanPct}%)`, spec: "% от работ+материалов", unit: "компл.", qty: 1, pricePerUnit: bd.foreman, total: bd.foreman, isWork: true });
+  }
+  if (bd.supplier > 0) {
+    items.push({ name: `Снабженец — закупка и логистика (${cfg.supplierPct}%)`, spec: "% от материалов", unit: "компл.", qty: 1, pricePerUnit: bd.supplier, total: bd.supplier, isWork: true });
+  }
+  if (bd.markupAmount > 0) {
+    const base = bd.subtotal - bd.markupAmount;
+    const markupPctDisplay = base > 0 ? Math.round(bd.markupAmount / base * 100) : 0;
+    items.push({ name: `Наценка (${markupPctDisplay}%)`, spec: "коммерческая маржа", unit: "компл.", qty: 1, pricePerUnit: bd.markupAmount, total: bd.markupAmount, isWork: true });
+  }
 
   return items;
 }

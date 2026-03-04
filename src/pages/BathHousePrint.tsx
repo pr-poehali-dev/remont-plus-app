@@ -308,7 +308,7 @@ export default function BathHousePrint() {
 
           <div className="flex justify-end mt-2">
             <div className="text-xs text-gray-400">
-              Итого по ведомости: <span className="font-bold text-amber-700 text-sm">{fmt(matItems.reduce((s: number, i: MaterialItem) => s + i.total, 0))} ₽</span>
+              Итого по ведомости: <span className="font-bold text-amber-700 text-sm">{fmt(bd.total)} ₽</span>
             </div>
           </div>
         </div>
