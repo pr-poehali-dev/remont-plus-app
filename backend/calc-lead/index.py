@@ -4,6 +4,21 @@ import smtplib
 import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import urllib.request
+
+
+def send_telegram(message: str) -> None:
+    token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
+    if not token or not chat_id:
+        return
+    data = json.dumps({'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'}).encode('utf-8')
+    req = urllib.request.Request(
+        f'https://api.telegram.org/bot{token}/sendMessage',
+        data=data,
+        headers={'Content-Type': 'application/json'}
+    )
+    urllib.request.urlopen(req, timeout=10)
 
 
 def send_email(to_email: str, subject: str, html_body: str) -> bool:
@@ -116,6 +131,19 @@ def handler(event: dict, context) -> dict:
     except Exception as e:
         print(f'SMTP ERROR: {e}')
         ok = False
+
+    try:
+        tg_text = (
+            f"📋 <b>Новая заявка с калькулятора</b>\n\n"
+            f"🔧 Калькулятор: {calc_type}\n"
+            f"👤 Имя: {name or '—'}\n"
+            f"📞 Телефон: {phone}\n"
+            f"💰 Сумма: {total or '—'}\n"
+            f"💬 Комментарий: {comment or '—'}"
+        )
+        send_telegram(tg_text)
+    except Exception as e:
+        print(f'TELEGRAM ERROR: {e}')
 
     return {
         'statusCode': 200,

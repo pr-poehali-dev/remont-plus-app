@@ -9,7 +9,22 @@ import smtplib
 import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import urllib.request
 import psycopg2
+
+
+def send_telegram(message: str) -> None:
+    token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
+    if not token or not chat_id:
+        return
+    data = json.dumps({'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'}).encode('utf-8')
+    req = urllib.request.Request(
+        f'https://api.telegram.org/bot{token}/sendMessage',
+        data=data,
+        headers={'Content-Type': 'application/json'}
+    )
+    urllib.request.urlopen(req, timeout=10)
 
 
 ADMIN_TOKEN = "admin2025"
@@ -211,6 +226,21 @@ def handler(event: dict, context) -> dict:
                                       partner_type, region, comment, lead_id)
         except Exception:
             pass
+
+        try:
+            type_label = PARTNER_TYPE_LABELS.get(partner_type, partner_type)
+            tg_text = (
+                f"🤝 <b>Новая заявка от партнёра</b> (№{lead_id})\n\n"
+                f"🏢 Компания: {company_name}\n"
+                f"👤 Контакт: {contact_name}\n"
+                f"📞 Телефон: {phone}\n"
+                f"🔖 Тип: {type_label}\n"
+                f"📍 Регион: {region or '—'}\n"
+                f"💬 Комментарий: {comment or '—'}"
+            )
+            send_telegram(tg_text)
+        except Exception as e:
+            print(f'TELEGRAM ERROR: {e}')
 
         return {"statusCode": 200, "headers": headers, "body": json.dumps({"ok": True, "id": lead_id, "message": "Заявка принята"})}
 
