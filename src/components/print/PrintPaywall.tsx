@@ -53,7 +53,7 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
   const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
   const userId: number | null = storedUser?.id ?? null;
 
-  const isAdmin = storedUser?.role === "admin";
+  const isAdmin = storedUser?.role === "admin" || storedUser?.role === "yukassa_staff";
 
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [paying, setPaying] = useState<string | null>(null);

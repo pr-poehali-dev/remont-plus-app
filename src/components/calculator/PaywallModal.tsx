@@ -42,11 +42,17 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
   const userId: number | null = storedUser?.id ?? null;
+  const isAdmin = storedUser?.role === "admin" || storedUser?.role === "yukassa_staff";
 
   const [paying, setPaying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"single" | "plans">("single");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  if (isAdmin) {
+    onSuccess();
+    return null;
+  }
 
   const stopPoll = () => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
