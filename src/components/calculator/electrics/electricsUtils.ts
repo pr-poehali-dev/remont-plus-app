@@ -36,20 +36,20 @@ export function calcElectricsPrice(
 
   // Розетки и выключатели
   const outletBase =
-    cfg.outletsCount * 550 +
-    cfg.doubleOutletsCount * 700 +
-    cfg.groundedOutletsCount * 650;
+    cfg.outletsCount * 720 +
+    cfg.doubleOutletsCount * 920 +
+    cfg.groundedOutletsCount * 850;
   const switchBase =
-    cfg.switchesCount * 450 +
-    cfg.doubleSwitchesCount * 600 +
-    cfg.dimmersCount * 900;
+    cfg.switchesCount * 590 +
+    cfg.doubleSwitchesCount * 780 +
+    cfg.dimmersCount * 1200;
   const outletsCost = Math.round(outletBase * typeCoeff * rc);
   const switchesCost = Math.round(switchBase * typeCoeff * rc);
 
   // Освещение
   const lightingBase =
-    cfg.lightGroupsCount * 950 +
-    cfg.spotLightsCount * 280;
+    cfg.lightGroupsCount * 1250 +
+    cfg.spotLightsCount * 380;
   const lightingCost = Math.round(lightingBase * typeCoeff * rc);
 
   // Прокладка кабеля
@@ -58,14 +58,14 @@ export function calcElectricsPrice(
 
   // Щиток и автоматы
   const panelCost = cfg.panelIncluded
-    ? Math.round((3500 + cfg.breakersCount * 550) * rc)
+    ? Math.round((4800 + cfg.breakersCount * 720) * rc)
     : 0;
 
   // Заземление
-  const groundingCost = cfg.groundingIncluded ? Math.round(5500 * rc) : 0;
+  const groundingCost = cfg.groundingIncluded ? Math.round(7500 * rc) : 0;
 
   // Тестирование
-  const testingCost = cfg.testingIncluded ? Math.round(3000 * rc) : 0;
+  const testingCost = cfg.testingIncluded ? Math.round(4200 * rc) : 0;
 
   const subtotal =
     outletsCost +
@@ -128,24 +128,24 @@ export function calcElectricsMaterials(
       spec: "IP20, скрытый монтаж",
       unit: "шт.",
       qty: cfg.outletsCount,
-      pricePerUnit: Math.round(550 * 0.50),
-      total: Math.round(cfg.outletsCount * 550 * 0.50 * tc * rc),
+      pricePerUnit: Math.round(720 * 0.50),
+      total: Math.round(cfg.outletsCount * 720 * 0.50 * tc * rc),
     });
     if (cfg.doubleOutletsCount > 0) items.push({
       name: "Розетка двойная",
       spec: "IP20, евростандарт",
       unit: "шт.",
       qty: cfg.doubleOutletsCount,
-      pricePerUnit: Math.round(700 * 0.50),
-      total: Math.round(cfg.doubleOutletsCount * 700 * 0.50 * tc * rc),
+      pricePerUnit: Math.round(920 * 0.50),
+      total: Math.round(cfg.doubleOutletsCount * 920 * 0.50 * tc * rc),
     });
     if (cfg.groundedOutletsCount > 0) items.push({
       name: "Розетка с заземлением",
       spec: "IP44, для кухни/ванной",
       unit: "шт.",
       qty: cfg.groundedOutletsCount,
-      pricePerUnit: Math.round(650 * 0.50),
-      total: Math.round(cfg.groundedOutletsCount * 650 * 0.50 * tc * rc),
+      pricePerUnit: Math.round(850 * 0.50),
+      total: Math.round(cfg.groundedOutletsCount * 850 * 0.50 * tc * rc),
     });
   }
 
@@ -154,23 +154,23 @@ export function calcElectricsMaterials(
     name: "Выключатель одноклавишный",
     unit: "шт.",
     qty: cfg.switchesCount,
-    pricePerUnit: Math.round(450 * 0.50),
-    total: Math.round(cfg.switchesCount * 450 * 0.50 * tc * rc),
+    pricePerUnit: Math.round(590 * 0.50),
+    total: Math.round(cfg.switchesCount * 590 * 0.50 * tc * rc),
   });
   if (cfg.doubleSwitchesCount > 0) items.push({
     name: "Выключатель двухклавишный",
     unit: "шт.",
     qty: cfg.doubleSwitchesCount,
-    pricePerUnit: Math.round(600 * 0.50),
-    total: Math.round(cfg.doubleSwitchesCount * 600 * 0.50 * tc * rc),
+    pricePerUnit: Math.round(780 * 0.50),
+    total: Math.round(cfg.doubleSwitchesCount * 780 * 0.50 * tc * rc),
   });
   if (cfg.dimmersCount > 0) items.push({
     name: "Диммер",
     spec: "регулятор яркости, 300 Вт",
     unit: "шт.",
     qty: cfg.dimmersCount,
-    pricePerUnit: Math.round(900 * 0.50),
-    total: Math.round(cfg.dimmersCount * 900 * 0.50 * tc * rc),
+    pricePerUnit: Math.round(1200 * 0.50),
+    total: Math.round(cfg.dimmersCount * 1200 * 0.50 * tc * rc),
   });
 
   // ── МАТЕРИАЛЫ: Кабель ────────────────────────────────────────────────────
@@ -200,16 +200,16 @@ export function calcElectricsMaterials(
       spec: `на ${cfg.breakersCount} мест`,
       unit: "шт.",
       qty: 1,
-      pricePerUnit: Math.round(3500 * 0.6 * rc),
-      total: Math.round(3500 * 0.6 * rc),
+      pricePerUnit: Math.round(4800 * 0.6 * rc),
+      total: Math.round(4800 * 0.6 * rc),
     });
     items.push({
       name: "Автоматический выключатель",
       spec: "16/25 А, однополюсный",
       unit: "шт.",
       qty: cfg.breakersCount,
-      pricePerUnit: Math.round(550 * 0.6 * rc),
-      total: Math.round(cfg.breakersCount * 550 * 0.6 * rc),
+      pricePerUnit: Math.round(720 * 0.6 * rc),
+      total: Math.round(cfg.breakersCount * 720 * 0.6 * rc),
     });
   }
 

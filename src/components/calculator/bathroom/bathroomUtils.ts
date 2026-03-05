@@ -83,15 +83,15 @@ export function calcBathroomPrice(
   }
 
   // Вентиляция
-  const ventilationCost = cfg.ventilationIncluded ? Math.round(3200 * rc) : 0;
+  const ventilationCost = cfg.ventilationIncluded ? Math.round(4500 * rc) : 0;
 
   // Мебель и аксессуары
   let furnitureBase = 0;
-  if (cfg.vanityInstall) furnitureBase += 12000;
-  if (cfg.mirrorInstall) furnitureBase += 5000;
+  if (cfg.vanityInstall) furnitureBase += 16000;
+  if (cfg.mirrorInstall) furnitureBase += 7000;
   const furnitureCost = Math.round(furnitureBase * rc);
 
-  const accessoriesCost = cfg.accessoriesIncluded ? Math.round(2800 * rc) : 0;
+  const accessoriesCost = cfg.accessoriesIncluded ? Math.round(3800 * rc) : 0;
 
   const subtotal =
     demolitionCost +
