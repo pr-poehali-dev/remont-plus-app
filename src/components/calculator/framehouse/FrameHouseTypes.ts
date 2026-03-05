@@ -34,25 +34,25 @@ export const HOUSE_LAYOUTS: Record<HouseLayout, { label: string; bedrooms: numbe
 };
 
 export const FRAME_WALL_TECHS: Record<FrameWallTech, { label: string; desc: string; pricePerM2: number }> = {
-  frame_osb:  { label: "Каркас + OSB-3 (15мм)",         desc: "Классический каркас, доступно, проверено годами", pricePerM2: 3850 },
-  frame_sip:  { label: "SIP-панели (OSB + пенополистирол)", desc: "Заводская точность, отличное утепление, быстрый монтаж", pricePerM2: 5500 },
-  frame_lsts: { label: "ЛСТК (лёгкий металлокаркас)",   desc: "Долговечно, не горит, не гниёт, точные размеры", pricePerM2: 6200 },
+  frame_osb:  { label: "Каркас + OSB-3 (15мм)",         desc: "Классический каркас, доступно, проверено годами", pricePerM2: 4800 },
+  frame_sip:  { label: "SIP-панели (OSB + пенополистирол)", desc: "Заводская точность, отличное утепление, быстрый монтаж", pricePerM2: 6800 },
+  frame_lsts: { label: "ЛСТК (лёгкий металлокаркас)",   desc: "Долговечно, не горит, не гниёт, точные размеры", pricePerM2: 7800 },
 };
 
 export const FRAME_INSULATIONS: Record<FrameInsulation, { label: string; thickness: number; pricePerM2: number }> = {
-  mineral_wool_150: { label: "Минвата 150 мм (Rockwool / Knauf)",  thickness: 150, pricePerM2: 450 },
-  mineral_wool_200: { label: "Минвата 200 мм (Rockwool / Knauf)",  thickness: 200, pricePerM2: 600 },
-  basalt_wool_200:  { label: "Базальтовая вата 200 мм (ТехноНиколь)", thickness: 200, pricePerM2: 660 },
-  ecowool_200:      { label: "Эковата 200 мм (задувная)",           thickness: 200, pricePerM2: 500 },
-  pir_panel_150:    { label: "PIR-панели 150 мм (премиум)",         thickness: 150, pricePerM2: 8250 },
+  mineral_wool_150: { label: "Минвата 150 мм (Rockwool / Knauf)",  thickness: 150, pricePerM2: 580 },
+  mineral_wool_200: { label: "Минвата 200 мм (Rockwool / Knauf)",  thickness: 200, pricePerM2: 760 },
+  basalt_wool_200:  { label: "Базальтовая вата 200 мм (ТехноНиколь)", thickness: 200, pricePerM2: 840 },
+  ecowool_200:      { label: "Эковата 200 мм (задувная)",           thickness: 200, pricePerM2: 640 },
+  pir_panel_150:    { label: "PIR-панели 150 мм (премиум)",         thickness: 150, pricePerM2: 10500 },
 };
 
 export const FOUNDATION_TYPES: Record<FoundationType, { label: string; desc: string; basePrice: number }> = {
-  piles_screw:  { label: "Сваи винтовые",                  desc: "Быстро, любой грунт, сезонность не важна, от 3 дней", basePrice: 88000 },
-  strip_shallow:{ label: "Ленточный мелкозаглублённый",     desc: "30–50 см, хороший дренаж, популярно для каркасников", basePrice: 115000 },
-  strip_deep:   { label: "Ленточный заглублённый",          desc: "Ниже глубины промерзания, для тяжёлых проектов", basePrice: 185000 },
-  slab:         { label: "Монолитная плита 200 мм",         desc: "Самый надёжный, подходит для слабых грунтов", basePrice: 230000 },
-  columnar:     { label: "Столбчатый",                      desc: "Бюджетно для лёгких строений, быстрый монтаж", basePrice: 55000 },
+  piles_screw:  { label: "Сваи винтовые",                  desc: "Быстро, любой грунт, сезонность не важна, от 3 дней", basePrice: 115000 },
+  strip_shallow:{ label: "Ленточный мелкозаглублённый",     desc: "30–50 см, хороший дренаж, популярно для каркасников", basePrice: 148000 },
+  strip_deep:   { label: "Ленточный заглублённый",          desc: "Ниже глубины промерзания, для тяжёлых проектов", basePrice: 235000 },
+  slab:         { label: "Монолитная плита 200 мм",         desc: "Самый надёжный, подходит для слабых грунтов", basePrice: 295000 },
+  columnar:     { label: "Столбчатый",                      desc: "Бюджетно для лёгких строений, быстрый монтаж", basePrice: 72000 },
 };
 
 export const ROOF_TYPES: Record<RoofType, { label: string; desc: string; priceCoeff: number }> = {
@@ -64,50 +64,50 @@ export const ROOF_TYPES: Record<RoofType, { label: string; desc: string; priceCo
 };
 
 export const ROOFING_MATERIALS: Record<RoofingMaterial, { label: string; pricePerM2: number }> = {
-  metal_tile:       { label: "Металлочерепица",             pricePerM2: 1150 },
-  corrugated_sheet: { label: "Профнастил",                  pricePerM2: 800 },
-  soft_bitumen:     { label: "Мягкая черепица (Шинглас)",   pricePerM2: 950 },
-  seam_roof:        { label: "Фальцевая кровля (металл)",   pricePerM2: 1500 },
+  metal_tile:       { label: "Металлочерепица",             pricePerM2: 1450 },
+  corrugated_sheet: { label: "Профнастил",                  pricePerM2: 1050 },
+  soft_bitumen:     { label: "Мягкая черепица (Шинглас)",   pricePerM2: 1250 },
+  seam_roof:        { label: "Фальцевая кровля (металл)",   pricePerM2: 1950 },
 };
 
 export const FACADE_TYPES: Record<FacadeType, { label: string; desc: string; pricePerM2: number }> = {
-  scandinavian_board: { label: "Скандинавская доска",        desc: "Классика каркасника, долговечно, красиво", pricePerM2: 1950 },
-  imitation_timber:   { label: "Имитация бруса",             desc: "Деревянный вид, доступно", pricePerM2: 1300 },
-  osb_paint:          { label: "OSB + фасадная краска",      desc: "Бюджетно, современный минимализм", pricePerM2: 750 },
-  fiber_cement:       { label: "Фиброцементные панели",      desc: "Премиум, не горит, 50 лет без обслуживания", pricePerM2: 3200 },
-  vinyl_siding:       { label: "Виниловый сайдинг",          desc: "Доступно, не нужна покраска, большой выбор цветов", pricePerM2: 880 },
-  dspc:               { label: "ДСПК (доска из ДПК)",        desc: "Дерево-полимер, не гниёт, не трескается", pricePerM2: 2600 },
+  scandinavian_board: { label: "Скандинавская доска",        desc: "Классика каркасника, долговечно, красиво", pricePerM2: 2500 },
+  imitation_timber:   { label: "Имитация бруса",             desc: "Деревянный вид, доступно", pricePerM2: 1700 },
+  osb_paint:          { label: "OSB + фасадная краска",      desc: "Бюджетно, современный минимализм", pricePerM2: 980 },
+  fiber_cement:       { label: "Фиброцементные панели",      desc: "Премиум, не горит, 50 лет без обслуживания", pricePerM2: 4100 },
+  vinyl_siding:       { label: "Виниловый сайдинг",          desc: "Доступно, не нужна покраска, большой выбор цветов", pricePerM2: 1150 },
+  dspc:               { label: "ДСПК (доска из ДПК)",        desc: "Дерево-полимер, не гниёт, не трескается", pricePerM2: 3300 },
 };
 
 export const FLOOR_TYPES: Record<FloorType, { label: string; pricePerM2: number }> = {
-  laminate:         { label: "Ламинат (33 класс)",           pricePerM2: 1400 },
-  parquet_board:    { label: "Паркетная доска",              pricePerM2: 3800 },
-  ceramic_tile:     { label: "Керамическая плитка",          pricePerM2: 1200 },
-  porcelain_tile:   { label: "Керамогранит",                 pricePerM2: 1800 },
-  lvt:              { label: "LVT (виниловая плитка)",       pricePerM2: 1500 },
-  linoleum:         { label: "Линолеум коммерческий",        pricePerM2: 650 },
+  laminate:         { label: "Ламинат (33 класс)",           pricePerM2: 1800 },
+  parquet_board:    { label: "Паркетная доска",              pricePerM2: 4800 },
+  ceramic_tile:     { label: "Керамическая плитка",          pricePerM2: 1600 },
+  porcelain_tile:   { label: "Керамогранит",                 pricePerM2: 2400 },
+  lvt:              { label: "LVT (виниловая плитка)",       pricePerM2: 1950 },
+  linoleum:         { label: "Линолеум коммерческий",        pricePerM2: 850 },
 };
 
 export const WINDOW_TYPES: Record<WindowType, { label: string; pricePerUnit: number }> = {
-  pvc_double:  { label: "ПВХ двухкамерный (стандарт)",  pricePerUnit: 18500 },
-  pvc_triple:  { label: "ПВХ трёхкамерный (тёплый)",    pricePerUnit: 26500 },
-  wood_euro:   { label: "Деревянное евроокно",           pricePerUnit: 38000 },
+  pvc_double:  { label: "ПВХ двухкамерный (стандарт)",  pricePerUnit: 24000 },
+  pvc_triple:  { label: "ПВХ трёхкамерный (тёплый)",    pricePerUnit: 34000 },
+  wood_euro:   { label: "Деревянное евроокно",           pricePerUnit: 48000 },
 };
 
 export const HEATING_TYPES: Record<HeatingType, { label: string; desc: string; basePrice: number }> = {
-  none:               { label: "Без отопления (разводка только)", desc: "Только разводка труб, оборудование заказчика", basePrice: 45000 },
-  electric_convectors:{ label: "Электрические конвекторы",        desc: "Простой монтаж, зональный контроль, без трубопровода", basePrice: 85000 },
-  gas_boiler:         { label: "Газовый котёл + радиаторы",       desc: "Самое дешёвое в эксплуатации, требует газа на участке", basePrice: 145000 },
-  heat_pump:          { label: "Тепловой насос",                  desc: "Современно, COP 3–5, субсидии, тихо работает", basePrice: 320000 },
-  pellet_boiler:      { label: "Пеллетный котёл",                 desc: "Автономно, экономно, нет газа — не проблема", basePrice: 195000 },
+  none:               { label: "Без отопления (разводка только)", desc: "Только разводка труб, оборудование заказчика", basePrice: 58000 },
+  electric_convectors:{ label: "Электрические конвекторы",        desc: "Простой монтаж, зональный контроль, без трубопровода", basePrice: 110000 },
+  gas_boiler:         { label: "Газовый котёл + радиаторы",       desc: "Самое дешёвое в эксплуатации, требует газа на участке", basePrice: 185000 },
+  heat_pump:          { label: "Тепловой насос",                  desc: "Современно, COP 3–5, субсидии, тихо работает", basePrice: 420000 },
+  pellet_boiler:      { label: "Пеллетный котёл",                 desc: "Автономно, экономно, нет газа — не проблема", basePrice: 255000 },
 };
 
 export const INTERIOR_FINISHES: Record<InteriorFinish, { label: string; desc: string; pricePerM2: number }> = {
   rough:            { label: "Черновая (без отделки)",      desc: "OSB или гипсокартон, без финишного слоя", pricePerM2: 0 },
-  pre_finish:       { label: "Предчистовая (White Box)",    desc: "Штукатурка, стяжка, подготовка под отделку", pricePerM2: 3500 },
-  turnkey_econom:   { label: "Под ключ — Эконом",           desc: "Ламинат, обои, плитка в с/у, базовый сантехника", pricePerM2: 6800 },
-  turnkey_standard: { label: "Под ключ — Стандарт",         desc: "Паркетная доска, покраска, качественная плитка", pricePerM2: 11500 },
-  turnkey_premium:  { label: "Под ключ — Премиум",          desc: "Дизайнерская отделка, паркет, премиум-материалы", pricePerM2: 19000 },
+  pre_finish:       { label: "Предчистовая (White Box)",    desc: "Штукатурка, стяжка, подготовка под отделку", pricePerM2: 4500 },
+  turnkey_econom:   { label: "Под ключ — Эконом",           desc: "Ламинат, обои, плитка в с/у, базовый сантехника", pricePerM2: 8800 },
+  turnkey_standard: { label: "Под ключ — Стандарт",         desc: "Паркетная доска, покраска, качественная плитка", pricePerM2: 14500 },
+  turnkey_premium:  { label: "Под ключ — Премиум",          desc: "Дизайнерская отделка, паркет, премиум-материалы", pricePerM2: 24000 },
 };
 
 export const REGIONS: Record<string, { label: string; coeff: number }> = {
