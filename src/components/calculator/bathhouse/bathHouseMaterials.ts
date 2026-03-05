@@ -58,27 +58,27 @@ export function calcBathHouseMaterials(
     items.push({ name: wallMat.label, spec: "ГОСТ 8486", unit: "м³", qty: vol, pricePerUnit: Math.round(priceM3 * rc), total: Math.round(vol * priceM3 * rc) });
   } else if (cfg.wallMaterial === "brick") {
     const qty = +(wallArea * 0.5).toFixed(1);
-    items.push({ name: "Кирпич полнотелый M150", spec: "1NF, ГОСТ 530", unit: "тыс.шт.", qty, pricePerUnit: Math.round(19800 * rc), total: Math.round(qty * 19800 * rc) });
+    items.push({ name: "Кирпич полнотелый M150", spec: "1NF, ГОСТ 530", unit: "тыс.шт.", qty, pricePerUnit: Math.round(23500 * rc), total: Math.round(qty * 23500 * rc) });
   } else if (cfg.wallMaterial === "block_gas") {
     const qty = +(wallArea * 0.3).toFixed(1);
-    items.push({ name: "Газобетон D400", spec: "625×300×250, ГОСТ 31359", unit: "м³", qty, pricePerUnit: Math.round(5200 * rc), total: Math.round(qty * 5200 * rc) });
+    items.push({ name: "Газобетон D400", spec: "625×300×250, ГОСТ 31359", unit: "м³", qty, pricePerUnit: Math.round(6400 * rc), total: Math.round(qty * 6400 * rc) });
   } else if (cfg.wallMaterial === "block_foam") {
     const qty = +(wallArea * 0.3).toFixed(1);
-    items.push({ name: "Пенобетон D600", spec: "600×300×200", unit: "м³", qty, pricePerUnit: Math.round(4400 * rc), total: Math.round(qty * 4400 * rc) });
+    items.push({ name: "Пенобетон D600", spec: "600×300×200", unit: "м³", qty, pricePerUnit: Math.round(5100 * rc), total: Math.round(qty * 5100 * rc) });
   } else if (cfg.wallMaterial === "frame_osb") {
     const boardVol = +(wallArea * 0.045).toFixed(2);
     const boardPriceM3 = Math.round(22900 * rc);
     const boardTotal = Math.round(boardVol * boardPriceM3);
     items.push({ name: "Доска обрезная 50×150мм", spec: "сосна, 1 сорт, каркас стен", unit: "м³", qty: boardVol, pricePerUnit: boardPriceM3, total: boardTotal });
     const osbSheets = Math.ceil(wallArea / 2.88);
-    const osbTotal = Math.round(osbSheets * 950 * rc);
-    items.push({ name: "OSB-3 плита 12мм", spec: "2440×1220, Kronospan", unit: "лист", qty: osbSheets, pricePerUnit: Math.round(950 * rc), total: osbTotal });
+    const osbTotal = Math.round(osbSheets * 1350 * rc);
+    items.push({ name: "OSB-3 плита 12мм", spec: "2440×1220, Kronospan", unit: "лист", qty: osbSheets, pricePerUnit: Math.round(1350 * rc), total: osbTotal });
     const frameRest = Math.round(bd.walls * rc) - boardTotal - osbTotal;
     if (frameRest > 0) {
       items.push({ name: "Материалы каркаса (обвязка, стойки, уголки)", spec: "крепёж, доборные элементы", unit: "компл.", qty: 1, pricePerUnit: frameRest, total: frameRest });
     }
   } else if (cfg.wallMaterial === "frame_sip") {
-    items.push({ name: "SIP-панель 174мм", spec: "2500×1250, ПСБ-С25", unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(4950 * rc), total: Math.round(wallArea * 4950 * rc) });
+    items.push({ name: "SIP-панель 174мм", spec: "2500×1250, ПСБ-С25", unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(5800 * rc), total: Math.round(wallArea * 5800 * rc) });
   } else {
     items.push({ name: wallMat.label, unit: "м²", qty: +wallArea.toFixed(1), pricePerUnit: Math.round(wallMat.pricePerM2 * rc), total: Math.round(wallArea * wallMat.pricePerM2 * rc) });
   }
@@ -107,7 +107,7 @@ export function calcBathHouseMaterials(
 
   // Пол
   items.push({ name: floorMat.label, unit: "м²", qty: area, pricePerUnit: Math.round(floorMat.pricePerM2 * rc), total: Math.round(area * floorMat.pricePerM2 * rc) });
-  if (cfg.underfloorHeating) items.push({ name: "Тёплый пол электрический", spec: "Теплолюкс, 150Вт/м²", unit: "м²", qty: area, pricePerUnit: Math.round(2420 * rc), total: Math.round(area * 2420 * rc) });
+  if (cfg.underfloorHeating) items.push({ name: "Тёплый пол электрический", spec: "Теплолюкс, 150Вт/м²", unit: "м²", qty: area, pricePerUnit: Math.round(2900 * rc), total: Math.round(area * 2900 * rc) });
 
   // Печь
   items.push({ name: stoveData.label, spec: stoveData.power, unit: "шт.", qty: 1, pricePerUnit: Math.round(bd.stove * rc), total: Math.round(bd.stove * rc) });
@@ -119,35 +119,35 @@ export function calcBathHouseMaterials(
   if (shelfArea > 0) items.push({ name: `Полок из ${shelfMat.label.toLowerCase()}`, spec: `${cfg.shelfTiers} яруса, ш. ${cfg.shelfWidth}м`, unit: "м²", qty: +shelfArea.toFixed(1), pricePerUnit: Math.round(shelfMat.pricePerM2 * rc), total: Math.round(shelfArea * shelfMat.pricePerM2 * rc) });
 
   // Окна
-  const winPrice = cfg.window_pvc ? 12000 : 20000;
+  const winPrice = cfg.window_pvc ? 14500 : 24000;
   if (cfg.windowCount > 0) items.push({ name: cfg.window_pvc ? "Окно ПВХ 600×600мм" : "Окно деревянное 600×600мм", spec: cfg.window_pvc ? "двойной стеклопакет" : "со стеклопакетом", unit: "шт.", qty: cfg.windowCount, pricePerUnit: Math.round(winPrice * rc), total: Math.round(cfg.windowCount * winPrice * rc) });
 
   // Дымоход
-  if (cfg.chimney) items.push({ name: "Дымоход сэндвич-труба ∅115", spec: "нерж./оц., 8 секций", unit: "компл.", qty: 1, pricePerUnit: Math.round(30800 * rc), total: Math.round(30800 * rc) });
+  if (cfg.chimney) items.push({ name: "Дымоход сэндвич-труба ∅115", spec: "нерж./оц., 8 секций", unit: "компл.", qty: 1, pricePerUnit: Math.round(38500 * rc), total: Math.round(38500 * rc) });
 
   // Бак
-  if (cfg.tankVolume > 0) items.push({ name: `Бак для воды ${cfg.tankVolume}л`, spec: "нержавеющая сталь", unit: "шт.", qty: 1, pricePerUnit: Math.round((9350 + cfg.tankVolume * 50) * rc), total: Math.round((9350 + cfg.tankVolume * 50) * rc) });
+  if (cfg.tankVolume > 0) items.push({ name: `Бак для воды ${cfg.tankVolume}л`, spec: "нержавеющая сталь", unit: "шт.", qty: 1, pricePerUnit: Math.round((12000 + cfg.tankVolume * 65) * rc), total: Math.round((12000 + cfg.tankVolume * 65) * rc) });
 
   // Терраса
-  if (cfg.terrace && cfg.terraceArea > 0) items.push({ name: "Терраса (материалы + монтаж)", spec: "доска лиственница, перила", unit: "м²", qty: cfg.terraceArea, pricePerUnit: Math.round(5280 * rc), total: Math.round(cfg.terraceArea * 5280 * rc) });
+  if (cfg.terrace && cfg.terraceArea > 0) items.push({ name: "Терраса (материалы + монтаж)", spec: "доска лиственница, перила", unit: "м²", qty: cfg.terraceArea, pricePerUnit: Math.round(6800 * rc), total: Math.round(cfg.terraceArea * 6800 * rc) });
 
   // Электрика
   if (bd.electrical > 0) items.push({ name: cfg.electricalFull ? "Электрика (полная)" : "Электрика (базовая)", spec: "кабель, автоматы, розетки", unit: "компл.", qty: 1, pricePerUnit: Math.round(bd.electrical * rc), total: Math.round(bd.electrical * rc) });
 
   // --- РАСХОДНИКИ ---
   const paroQty = +(wallArea * 1.15).toFixed(1);
-  items.push({ name: "Пароизоляция", spec: "Ютафол Д 96, ТЕХНОНИКОЛЬ Паробарьер", unit: "м²", qty: paroQty, pricePerUnit: Math.round(38 * rc), total: Math.round(paroQty * 38 * rc), isConsumable: true });
+  items.push({ name: "Пароизоляция", spec: "Ютафол Д 96, ТЕХНОНИКОЛЬ Паробарьер", unit: "м²", qty: paroQty, pricePerUnit: Math.round(52 * rc), total: Math.round(paroQty * 52 * rc), isConsumable: true });
 
   const windQty = +(roofArea * 1.1).toFixed(1);
-  items.push({ name: "Ветрозащитная мембрана", spec: "Изоспан A, 1 слой", unit: "м²", qty: windQty, pricePerUnit: Math.round(22 * rc), total: Math.round(windQty * 22 * rc), isConsumable: true });
+  items.push({ name: "Ветрозащитная мембрана", spec: "Изоспан A, 1 слой", unit: "м²", qty: windQty, pricePerUnit: Math.round(32 * rc), total: Math.round(windQty * 32 * rc), isConsumable: true });
 
-  items.push({ name: "Крепёж (саморезы, нагели, анкеры)", spec: "ГОСТ, оцинк.", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 350 * rc), total: Math.round(area * 350 * rc), isConsumable: true });
+  items.push({ name: "Крепёж (саморезы, нагели, анкеры)", spec: "ГОСТ, оцинк.", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 420 * rc), total: Math.round(area * 420 * rc), isConsumable: true });
 
   const woodArea = wallArea + steamWallArea + washWallArea + restWallArea;
   const antisepticL = +(woodArea * 0.18).toFixed(0);
-  items.push({ name: "Антисептик для бани", spec: "Тиккурила Валтти / Сенеж", unit: "л", qty: +antisepticL, pricePerUnit: Math.round(320 * rc), total: Math.round(+antisepticL * 320 * rc), isConsumable: true });
+  items.push({ name: "Антисептик для бани", spec: "Тиккурила Валтти / Сенеж", unit: "л", qty: +antisepticL, pricePerUnit: Math.round(420 * rc), total: Math.round(+antisepticL * 420 * rc), isConsumable: true });
 
-  items.push({ name: "Монтажная пена + герметик", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 80 * rc), total: Math.round(area * 80 * rc), isConsumable: true });
+  items.push({ name: "Монтажная пена + герметик", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 110 * rc), total: Math.round(area * 110 * rc), isConsumable: true });
 
   // --- РАБОТЫ ---
   const workTotal = Math.round(bd.assembly * rc);
