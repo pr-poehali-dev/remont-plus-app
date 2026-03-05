@@ -61,10 +61,10 @@ export const CEILING_BRANDS: CeilingBrand[] = [
 
 export const CEILING_COLORS = [
   { id: "white",     label: "Белый",         priceAdd: 0    },
-  { id: "light",     label: "Светлые тона",  priceAdd: 150  },
-  { id: "dark",      label: "Тёмные тона",   priceAdd: 250  },
-  { id: "metallic",  label: "Металлик",      priceAdd: 350  },
-  { id: "custom",    label: "Под заказ",     priceAdd: 700  },
+  { id: "light",     label: "Светлые тона",  priceAdd: 200  },
+  { id: "dark",      label: "Тёмные тона",   priceAdd: 340  },
+  { id: "metallic",  label: "Металлик",      priceAdd: 480  },
+  { id: "custom",    label: "Под заказ",     priceAdd: 950  },
 ];
 
 // ─── Освещение ───────────────────────────────────────────────────────────────
@@ -79,10 +79,10 @@ export interface LightingOption {
 
 export const LIGHTING_OPTIONS: LightingOption[] = [
   { id: "none",        name: "Без подсветки",         description: "Без встроенного освещения",              pricePerUnit: 0,    unit: "" },
-  { id: "spot",        name: "Точечные светильники",  description: "Врезные споты (цена за отверстие)",      pricePerUnit: 350,  unit: "шт." },
-  { id: "led_perim",   name: "LED по периметру",      description: "Светодиодная лента по контуру (пм)",     pricePerUnit: 450,  unit: "пм" },
-  { id: "rgb_perim",   name: "RGB по периметру",      description: "Цветная RGB-лента + контроллер (пм)",    pricePerUnit: 650,  unit: "пм" },
-  { id: "backlight",   name: "Фоновая подсветка",     description: "Подсветка за потолком равномерная (м²)", pricePerUnit: 800,  unit: "м²" },
+  { id: "spot",        name: "Точечные светильники",  description: "Врезные споты (цена за отверстие)",      pricePerUnit: 480,  unit: "шт." },
+  { id: "led_perim",   name: "LED по периметру",      description: "Светодиодная лента по контуру (пм)",     pricePerUnit: 620,  unit: "пм" },
+  { id: "rgb_perim",   name: "RGB по периметру",      description: "Цветная RGB-лента + контроллер (пм)",    pricePerUnit: 890,  unit: "пм" },
+  { id: "backlight",   name: "Фоновая подсветка",     description: "Подсветка за потолком равномерная (м²)", pricePerUnit: 1100, unit: "м²" },
 ];
 
 // ─── Профиль крепления ───────────────────────────────────────────────────────
@@ -119,5 +119,5 @@ export interface CeilingConfig {
 
 // ─── Базовые цены ─────────────────────────────────────────────────────────────
 
-export const BASE_PRICE_PER_M2 = 1400; // руб/м² (матовый стандарт)
-export const INSTALLATION_PRICE_PER_M2 = 350; // руб/м²
+export const BASE_PRICE_PER_M2 = 1850; // руб/м² (матовый стандарт)
+export const INSTALLATION_PRICE_PER_M2 = 480; // руб/м²

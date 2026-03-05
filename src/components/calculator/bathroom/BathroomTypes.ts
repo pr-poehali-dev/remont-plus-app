@@ -27,23 +27,23 @@ export interface TileOption {
 }
 
 export const FLOOR_TILES: TileOption[] = [
-  { id: "ceramic-std",    label: "Керамика стандарт",     description: "20×20–30×30 см, глянец/матт",        materialPriceM2: 800,  installPriceM2: 900  },
-  { id: "ceramic-prem",   label: "Керамика премиум",      description: "60×60 см, ректификат",               materialPriceM2: 1600, installPriceM2: 1100 },
-  { id: "gres-std",       label: "Керамогранит базовый",  description: "60×60 см, матовый",                  materialPriceM2: 1400, installPriceM2: 1100 },
-  { id: "gres-prem",      label: "Керамогранит премиум",  description: "80×80 или 120×60 см, крупный формат", materialPriceM2: 2800, installPriceM2: 1500 },
-  { id: "mosaic",         label: "Мозаика",               description: "Стеклянная/каменная мозаика",         materialPriceM2: 3500, installPriceM2: 2000 },
-  { id: "marble",         label: "Натуральный камень",    description: "Мрамор/травертин, слэбы",             materialPriceM2: 6000, installPriceM2: 2500 },
+  { id: "ceramic-std",    label: "Керамика стандарт",     description: "20×20–30×30 см, глянец/матт",        materialPriceM2: 1050, installPriceM2: 1200 },
+  { id: "ceramic-prem",   label: "Керамика премиум",      description: "60×60 см, ректификат",               materialPriceM2: 2100, installPriceM2: 1450 },
+  { id: "gres-std",       label: "Керамогранит базовый",  description: "60×60 см, матовый",                  materialPriceM2: 1850, installPriceM2: 1450 },
+  { id: "gres-prem",      label: "Керамогранит премиум",  description: "80×80 или 120×60 см, крупный формат", materialPriceM2: 3700, installPriceM2: 2000 },
+  { id: "mosaic",         label: "Мозаика",               description: "Стеклянная/каменная мозаика",         materialPriceM2: 4600, installPriceM2: 2600 },
+  { id: "marble",         label: "Натуральный камень",    description: "Мрамор/травертин, слэбы",             materialPriceM2: 8000, installPriceM2: 3300 },
 ];
 
 // ─── Варианты плитки стен ────────────────────────────────────────────────────
 
 export const WALL_TILES: TileOption[] = [
-  { id: "wall-ceramic-std",  label: "Керамика стандарт",  description: "20×30–30×60 см, глянец",             materialPriceM2: 700,  installPriceM2: 800  },
-  { id: "wall-ceramic-prem", label: "Керамика премиум",   description: "30×90 см, прямоугольная",            materialPriceM2: 1500, installPriceM2: 1000 },
-  { id: "wall-gres",         label: "Керамогранит",       description: "60×120 см, крупный формат",          materialPriceM2: 2200, installPriceM2: 1400 },
-  { id: "wall-mosaic",       label: "Мозаика",            description: "Стеклянная, декоративная",           materialPriceM2: 3200, installPriceM2: 1800 },
-  { id: "wall-subway",       label: "Метро/кабанчик",     description: "10×20 см, метровая плитка",          materialPriceM2: 1000, installPriceM2: 950  },
-  { id: "wall-marble",       label: "Натуральный камень",  description: "Мраморные слябы",                   materialPriceM2: 5500, installPriceM2: 2200 },
+  { id: "wall-ceramic-std",  label: "Керамика стандарт",  description: "20×30–30×60 см, глянец",             materialPriceM2: 950,  installPriceM2: 1050 },
+  { id: "wall-ceramic-prem", label: "Керамика премиум",   description: "30×90 см, прямоугольная",            materialPriceM2: 2000, installPriceM2: 1300 },
+  { id: "wall-gres",         label: "Керамогранит",       description: "60×120 см, крупный формат",          materialPriceM2: 2900, installPriceM2: 1850 },
+  { id: "wall-mosaic",       label: "Мозаика",            description: "Стеклянная, декоративная",           materialPriceM2: 4200, installPriceM2: 2400 },
+  { id: "wall-subway",       label: "Метро/кабанчик",     description: "10×20 см, метровая плитка",          materialPriceM2: 1350, installPriceM2: 1250 },
+  { id: "wall-marble",       label: "Натуральный камень",  description: "Мраморные слябы",                   materialPriceM2: 7200, installPriceM2: 2900 },
 ];
 
 // ─── Гидроизоляция ───────────────────────────────────────────────────────────
@@ -57,8 +57,8 @@ export interface WaterproofingOption {
 
 export const WATERPROOFING_TYPES: WaterproofingOption[] = [
   { id: "none",     label: "Без гидроизоляции", description: "Для туалета или небольших санузлов",       priceM2: 0    },
-  { id: "coating",  label: "Обмазочная",         description: "Битумная или полимерная обмазка, 2 слоя", priceM2: 450  },
-  { id: "membrane", label: "Рулонная мембрана",  description: "Наплавляемая/самоклеящаяся мембрана",    priceM2: 750  },
+  { id: "coating",  label: "Обмазочная",         description: "Битумная или полимерная обмазка, 2 слоя", priceM2: 600  },
+  { id: "membrane", label: "Рулонная мембрана",  description: "Наплавляемая/самоклеящаяся мембрана",    priceM2: 980  },
 ];
 
 // ─── Регионы ─────────────────────────────────────────────────────────────────

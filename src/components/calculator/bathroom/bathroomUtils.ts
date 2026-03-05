@@ -42,12 +42,12 @@ export function calcBathroomPrice(
 
   // Демонтаж
   const demolitionCost = cfg.demolitionIncluded
-    ? Math.round((area * 2200 + wallArea * 900) * rc)
+    ? Math.round((area * 2900 + wallArea * 1200) * rc)
     : 0;
 
   // Стяжка
   const screedCost = cfg.screedIncluded
-    ? Math.round(area * 1600 * rc)
+    ? Math.round(area * 2100 * rc)
     : 0;
 
   // Гидроизоляция
@@ -67,18 +67,18 @@ export function calcBathroomPrice(
 
   // Сантехника
   let plumbingBase = 0;
-  if (cfg.toiletInstall) plumbingBase += 12000;
-  if (cfg.sinkInstall) plumbingBase += 8000;
-  if (cfg.bathInstall) plumbingBase += 20000;
-  if (cfg.showerCabinInstall) plumbingBase += 28000;
-  plumbingBase += cfg.mixersCount * 4500;
-  if (cfg.installationSystemIncluded) plumbingBase += 20000;
+  if (cfg.toiletInstall) plumbingBase += 16000;
+  if (cfg.sinkInstall) plumbingBase += 11000;
+  if (cfg.bathInstall) plumbingBase += 28000;
+  if (cfg.showerCabinInstall) plumbingBase += 38000;
+  plumbingBase += cfg.mixersCount * 6000;
+  if (cfg.installationSystemIncluded) plumbingBase += 28000;
   const plumbingCost = Math.round(plumbingBase * rc);
 
   // Тёплый пол
   let heatedFloorCost = 0;
   if (cfg.heatedFloorIncluded) {
-    const basePerM2 = cfg.heatedFloorType === "electric" ? 2200 : 3500;
+    const basePerM2 = cfg.heatedFloorType === "electric" ? 2900 : 4500;
     heatedFloorCost = Math.round(area * basePerM2 * rc);
   }
 
