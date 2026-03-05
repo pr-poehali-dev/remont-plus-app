@@ -67,7 +67,7 @@ export function calcBathHouseMaterials(
     items.push({ name: "Пенобетон D600", spec: "600×300×200", unit: "м³", qty, pricePerUnit: Math.round(4400 * rc), total: Math.round(qty * 4400 * rc) });
   } else if (cfg.wallMaterial === "frame_osb") {
     const boardVol = +(wallArea * 0.045).toFixed(2);
-    const boardPriceM3 = Math.round(18000 * rc);
+    const boardPriceM3 = Math.round(22900 * rc);
     const boardTotal = Math.round(boardVol * boardPriceM3);
     items.push({ name: "Доска обрезная 50×150мм", spec: "сосна, 1 сорт, каркас стен", unit: "м³", qty: boardVol, pricePerUnit: boardPriceM3, total: boardTotal });
     const osbSheets = Math.ceil(wallArea / 2.88);
@@ -85,12 +85,12 @@ export function calcBathHouseMaterials(
 
   // Кровля — стропила
   const boardRoofVol = +(roofArea * 0.04).toFixed(2);
-  const boardRoofPrice = Math.round(18000 * rc);
+  const boardRoofPrice = Math.round(22900 * rc);
   items.push({ name: "Доска обрезная 50×200мм", spec: "стропила, сосна 1 сорт", unit: "м³", qty: boardRoofVol, pricePerUnit: boardRoofPrice, total: Math.round(boardRoofVol * boardRoofPrice) });
 
   // Обрешётка
   const latVol = +(roofArea * 0.02).toFixed(2);
-  const latPrice = Math.round(18000 * rc);
+  const latPrice = Math.round(22900 * rc);
   items.push({ name: "Доска 25×100мм", spec: "обрешётка, сосна", unit: "м³", qty: latVol, pricePerUnit: latPrice, total: Math.round(latVol * latPrice) });
 
   // Кровельный материал
