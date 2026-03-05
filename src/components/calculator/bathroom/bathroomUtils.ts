@@ -42,12 +42,12 @@ export function calcBathroomPrice(
 
   // Демонтаж
   const demolitionCost = cfg.demolitionIncluded
-    ? Math.round((area * 2900 + wallArea * 1200) * rc)
+    ? Math.round((area * 3700 + wallArea * 1550) * rc)
     : 0;
 
   // Стяжка
   const screedCost = cfg.screedIncluded
-    ? Math.round(area * 2100 * rc)
+    ? Math.round(area * 2700 * rc)
     : 0;
 
   // Гидроизоляция
@@ -67,31 +67,31 @@ export function calcBathroomPrice(
 
   // Сантехника
   let plumbingBase = 0;
-  if (cfg.toiletInstall) plumbingBase += 16000;
-  if (cfg.sinkInstall) plumbingBase += 11000;
-  if (cfg.bathInstall) plumbingBase += 28000;
-  if (cfg.showerCabinInstall) plumbingBase += 38000;
-  plumbingBase += cfg.mixersCount * 6000;
-  if (cfg.installationSystemIncluded) plumbingBase += 28000;
+  if (cfg.toiletInstall) plumbingBase += 21000;
+  if (cfg.sinkInstall) plumbingBase += 14500;
+  if (cfg.bathInstall) plumbingBase += 36000;
+  if (cfg.showerCabinInstall) plumbingBase += 49000;
+  plumbingBase += cfg.mixersCount * 7800;
+  if (cfg.installationSystemIncluded) plumbingBase += 36000;
   const plumbingCost = Math.round(plumbingBase * rc);
 
   // Тёплый пол
   let heatedFloorCost = 0;
   if (cfg.heatedFloorIncluded) {
-    const basePerM2 = cfg.heatedFloorType === "electric" ? 2900 : 4500;
+    const basePerM2 = cfg.heatedFloorType === "electric" ? 3700 : 5800;
     heatedFloorCost = Math.round(area * basePerM2 * rc);
   }
 
   // Вентиляция
-  const ventilationCost = cfg.ventilationIncluded ? Math.round(4500 * rc) : 0;
+  const ventilationCost = cfg.ventilationIncluded ? Math.round(5800 * rc) : 0;
 
   // Мебель и аксессуары
   let furnitureBase = 0;
-  if (cfg.vanityInstall) furnitureBase += 16000;
-  if (cfg.mirrorInstall) furnitureBase += 7000;
+  if (cfg.vanityInstall) furnitureBase += 20500;
+  if (cfg.mirrorInstall) furnitureBase += 9000;
   const furnitureCost = Math.round(furnitureBase * rc);
 
-  const accessoriesCost = cfg.accessoriesIncluded ? Math.round(3800 * rc) : 0;
+  const accessoriesCost = cfg.accessoriesIncluded ? Math.round(4900 * rc) : 0;
 
   const subtotal =
     demolitionCost +
@@ -173,8 +173,8 @@ export function calcBathroomMaterials(
       spec: "C2 класс, эластичный",
       unit: "кг",
       qty: Math.ceil(area * 6),
-      pricePerUnit: 28,
-      total: Math.ceil(area * 6) * 28,
+      pricePerUnit: 38,
+      total: Math.ceil(area * 6) * 38,
       isConsumable: true,
     });
     items.push({
@@ -182,8 +182,8 @@ export function calcBathroomMaterials(
       spec: "влагостойкая, фугу",
       unit: "кг",
       qty: Math.ceil(area * 0.5),
-      pricePerUnit: 180,
-      total: Math.ceil(area * 0.5) * 180,
+      pricePerUnit: 230,
+      total: Math.ceil(area * 0.5) * 230,
       isConsumable: true,
     });
   }
@@ -204,8 +204,8 @@ export function calcBathroomMaterials(
       spec: "C1/C2, белый",
       unit: "кг",
       qty: Math.ceil(wallArea * 5),
-      pricePerUnit: 28,
-      total: Math.ceil(wallArea * 5) * 28,
+      pricePerUnit: 38,
+      total: Math.ceil(wallArea * 5) * 38,
       isConsumable: true,
     });
     items.push({
@@ -213,8 +213,8 @@ export function calcBathroomMaterials(
       spec: "влагостойкая",
       unit: "кг",
       qty: Math.ceil(wallArea * 0.4),
-      pricePerUnit: 180,
-      total: Math.ceil(wallArea * 0.4) * 180,
+      pricePerUnit: 230,
+      total: Math.ceil(wallArea * 0.4) * 230,
       isConsumable: true,
     });
   }
@@ -240,8 +240,8 @@ export function calcBathroomMaterials(
       spec: "М150/М200",
       unit: "кг",
       qty: screedKg,
-      pricePerUnit: 8,
-      total: screedKg * 8,
+      pricePerUnit: 12,
+      total: screedKg * 12,
     });
     items.push({
       name: "Грунтовка глубокого проникновения",
@@ -261,31 +261,31 @@ export function calcBathroomMaterials(
         spec: `~${Math.round(area * 150)} Вт, ${area} м²`,
         unit: "м²",
         qty: area,
-        pricePerUnit: Math.round(2200 * 0.6 * rc),
-        total: Math.round(area * 2200 * 0.6 * rc),
+        pricePerUnit: Math.round(2800 * 0.6 * rc),
+        total: Math.round(area * 2800 * 0.6 * rc),
       });
       items.push({
         name: "Терморегулятор",
         spec: "программируемый",
         unit: "шт.",
         qty: 1,
-        pricePerUnit: Math.round(2800 * rc),
-        total: Math.round(2800 * rc),
+        pricePerUnit: Math.round(3600 * rc),
+        total: Math.round(3600 * rc),
       });
     } else {
       items.push({
         name: "Труба тёплого пола ∅16 PE-Xa",
         unit: "м.п.",
         qty: Math.ceil(area * 8),
-        pricePerUnit: 60,
-        total: Math.ceil(area * 8) * 60,
+        pricePerUnit: 82,
+        total: Math.ceil(area * 8) * 82,
       });
       items.push({
         name: "Коллектор водяного тёплого пола",
         unit: "шт.",
         qty: 1,
-        pricePerUnit: Math.round(8500 * rc),
-        total: Math.round(8500 * rc),
+        pricePerUnit: Math.round(11000 * rc),
+        total: Math.round(11000 * rc),
       });
     }
   }
@@ -297,8 +297,8 @@ export function calcBathroomMaterials(
       spec: "IP44, 100 мм, таймер",
       unit: "шт.",
       qty: 1,
-      pricePerUnit: Math.round(3200 * 0.40 * rc),
-      total: Math.round(3200 * 0.40 * rc),
+      pricePerUnit: Math.round(4200 * 0.40 * rc),
+      total: Math.round(4200 * 0.40 * rc),
     });
   }
 
@@ -308,8 +308,8 @@ export function calcBathroomMaterials(
       name: "Набор аксессуаров (полотенцедержатель, крючки, мыльница)",
       unit: "компл.",
       qty: 1,
-      pricePerUnit: Math.round(2800 * 0.70 * rc),
-      total: Math.round(2800 * 0.70 * rc),
+      pricePerUnit: Math.round(3600 * 0.70 * rc),
+      total: Math.round(3600 * 0.70 * rc),
     });
   }
 
@@ -319,8 +319,8 @@ export function calcBathroomMaterials(
       name: "Крестики, клинья, уголки для плитки",
       unit: "уп.",
       qty: Math.ceil((area + wallArea) / 5),
-      pricePerUnit: 90,
-      total: Math.ceil((area + wallArea) / 5) * 90,
+      pricePerUnit: 115,
+      total: Math.ceil((area + wallArea) / 5) * 115,
       isConsumable: true,
     });
     items.push({
@@ -328,8 +328,8 @@ export function calcBathroomMaterials(
       spec: "для швов плинтуса и ванны",
       unit: "шт.",
       qty: 2,
-      pricePerUnit: 280,
-      total: 560,
+      pricePerUnit: 360,
+      total: 720,
       isConsumable: true,
     });
   }
@@ -338,8 +338,8 @@ export function calcBathroomMaterials(
       name: "Маяки для стяжки, плёнка",
       unit: "компл.",
       qty: 1,
-      pricePerUnit: Math.ceil(area * 35),
-      total: Math.ceil(area * 35),
+      pricePerUnit: Math.ceil(area * 45),
+      total: Math.ceil(area * 45),
       isConsumable: true,
     });
   }
@@ -350,7 +350,7 @@ export function calcBathroomMaterials(
       name: "Демонтаж плитки пола и стен",
       unit: "м²",
       qty: area + wallArea,
-      pricePerUnit: Math.round((area * 2200 + wallArea * 900) / (area + wallArea) * rc),
+      pricePerUnit: Math.round((area * 2800 + wallArea * 1150) / (area + wallArea) * rc),
       total: bd.demolitionCost,
       isWork: true,
     });
@@ -360,8 +360,8 @@ export function calcBathroomMaterials(
       name: "Устройство стяжки",
       unit: "м²",
       qty: area,
-      pricePerUnit: Math.round(1600 * 0.45 * rc),
-      total: Math.round(area * 1600 * 0.45 * rc),
+      pricePerUnit: Math.round(2050 * 0.45 * rc),
+      total: Math.round(area * 2050 * 0.45 * rc),
       isWork: true,
     });
   }
@@ -399,17 +399,17 @@ export function calcBathroomMaterials(
     });
   }
   if (bd.plumbingCost > 0) {
-    if (cfg.toiletInstall) items.push({ name: "Установка унитаза", unit: "шт.", qty: 1, pricePerUnit: Math.round(4500 * rc), total: Math.round(4500 * rc), isWork: true });
-    if (cfg.sinkInstall)   items.push({ name: "Установка раковины", unit: "шт.", qty: 1, pricePerUnit: Math.round(3500 * rc), total: Math.round(3500 * rc), isWork: true });
-    if (cfg.bathInstall)   items.push({ name: "Установка ванны", unit: "шт.", qty: 1, pricePerUnit: Math.round(7000 * rc), total: Math.round(7000 * rc), isWork: true });
-    if (cfg.showerCabinInstall) items.push({ name: "Установка душевой кабины", unit: "шт.", qty: 1, pricePerUnit: Math.round(8500 * rc), total: Math.round(8500 * rc), isWork: true });
-    if (cfg.mixersCount > 0) items.push({ name: "Установка смесителей", unit: "шт.", qty: cfg.mixersCount, pricePerUnit: Math.round(2500 * rc), total: Math.round(cfg.mixersCount * 2500 * rc), isWork: true });
+    if (cfg.toiletInstall) items.push({ name: "Установка унитаза", unit: "шт.", qty: 1, pricePerUnit: Math.round(5800 * rc), total: Math.round(5800 * rc), isWork: true });
+    if (cfg.sinkInstall)   items.push({ name: "Установка раковины", unit: "шт.", qty: 1, pricePerUnit: Math.round(4500 * rc), total: Math.round(4500 * rc), isWork: true });
+    if (cfg.bathInstall)   items.push({ name: "Установка ванны", unit: "шт.", qty: 1, pricePerUnit: Math.round(9000 * rc), total: Math.round(9000 * rc), isWork: true });
+    if (cfg.showerCabinInstall) items.push({ name: "Установка душевой кабины", unit: "шт.", qty: 1, pricePerUnit: Math.round(11000 * rc), total: Math.round(11000 * rc), isWork: true });
+    if (cfg.mixersCount > 0) items.push({ name: "Установка смесителей", unit: "шт.", qty: cfg.mixersCount, pricePerUnit: Math.round(3200 * rc), total: Math.round(cfg.mixersCount * 3200 * rc), isWork: true });
   }
   if (cfg.heatedFloorIncluded && bd.heatedFloorCost > 0) {
     items.push({ name: "Монтаж тёплого пола", unit: "м²", qty: area, pricePerUnit: Math.round(bd.heatedFloorCost * 0.4 / area), total: Math.round(bd.heatedFloorCost * 0.4), isWork: true });
   }
   if (cfg.ventilationIncluded && bd.ventilationCost > 0) {
-    items.push({ name: "Монтаж вентилятора", unit: "шт.", qty: 1, pricePerUnit: Math.round(3200 * 0.60 * rc), total: Math.round(3200 * 0.60 * rc), isWork: true });
+    items.push({ name: "Монтаж вентилятора", unit: "шт.", qty: 1, pricePerUnit: Math.round(4200 * 0.60 * rc), total: Math.round(4200 * 0.60 * rc), isWork: true });
   }
 
   return items;
