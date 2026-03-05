@@ -181,44 +181,44 @@ export function calcTurnkeyMaterials(
 
   if (cfg.plastersIncluded && bd.plasterCost > 0) {
     const plasterKg = Math.ceil(wallArea * 12);
-    items.push({ name: "Гипсовая штукатурка Knauf Rotband", spec: "мешки 30 кг", unit: "кг", qty: plasterKg, pricePerUnit: 12, total: plasterKg * 12 });
+    items.push({ name: "Гипсовая штукатурка Knauf Rotband", spec: "мешки 30 кг", unit: "кг", qty: plasterKg, pricePerUnit: 16, total: plasterKg * 16 });
     const screedKg = Math.ceil(area * 22);
-    items.push({ name: "ЦПС М200 для стяжки пола", spec: "мешки 50 кг", unit: "кг", qty: screedKg, pricePerUnit: 9, total: screedKg * 9 });
-    items.push({ name: "Шпаклёвка финишная Knauf", unit: "кг", qty: Math.ceil(wallArea * 1.2), pricePerUnit: 18, total: Math.ceil(wallArea * 1.2) * 18 });
-    items.push({ name: "Грунтовка (стены + пол)", unit: "л", qty: Math.ceil((wallArea + area) * 0.2), pricePerUnit: 90, total: Math.ceil((wallArea + area) * 0.2) * 90, isConsumable: true });
-    items.push({ name: "Маяки, профили, серпянка", unit: "компл.", qty: 1, pricePerUnit: Math.round((wallArea + area) * 45), total: Math.round((wallArea + area) * 45), isConsumable: true });
+    items.push({ name: "ЦПС М200 для стяжки пола", spec: "мешки 50 кг", unit: "кг", qty: screedKg, pricePerUnit: 12, total: screedKg * 12 });
+    items.push({ name: "Шпаклёвка финишная Knauf", unit: "кг", qty: Math.ceil(wallArea * 1.2), pricePerUnit: 24, total: Math.ceil(wallArea * 1.2) * 24 });
+    items.push({ name: "Грунтовка (стены + пол)", unit: "л", qty: Math.ceil((wallArea + area) * 0.2), pricePerUnit: 120, total: Math.ceil((wallArea + area) * 0.2) * 120, isConsumable: true });
+    items.push({ name: "Маяки, профили, серпянка", unit: "компл.", qty: 1, pricePerUnit: Math.round((wallArea + area) * 58), total: Math.round((wallArea + area) * 58), isConsumable: true });
   }
 
   if (cfg.electricsIncluded && bd.electricsCost > 0) {
-    items.push({ name: "Кабель ВВГнг-LS 3×2,5 мм²", spec: "силовой, для розеток", unit: "м.п.", qty: Math.round(area * 5), pricePerUnit: 55, total: Math.round(area * 5 * 55) });
-    items.push({ name: "Кабель ВВГнг-LS 3×1,5 мм²", spec: "для освещения", unit: "м.п.", qty: Math.round(area * 2), pricePerUnit: 38, total: Math.round(area * 2 * 38) });
-    items.push({ name: "Щиток распределительный", spec: `на ${Math.round(area / 5) + 4} мест`, unit: "шт.", qty: 1, pricePerUnit: Math.round(6500 * lc * rc), total: Math.round(6500 * lc * rc) });
-    items.push({ name: "Автоматы, УЗО, розетки, выключатели", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 280 * lc), total: Math.round(area * 280 * lc), isConsumable: true });
-    items.push({ name: "Гофра, подрозетники, стяжки", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 85), total: Math.round(area * 85), isConsumable: true });
+    items.push({ name: "Кабель ВВГнг-LS 3×2,5 мм²", spec: "силовой, для розеток", unit: "м.п.", qty: Math.round(area * 5), pricePerUnit: 72, total: Math.round(area * 5 * 72) });
+    items.push({ name: "Кабель ВВГнг-LS 3×1,5 мм²", spec: "для освещения", unit: "м.п.", qty: Math.round(area * 2), pricePerUnit: 50, total: Math.round(area * 2 * 50) });
+    items.push({ name: "Щиток распределительный", spec: `на ${Math.round(area / 5) + 4} мест`, unit: "шт.", qty: 1, pricePerUnit: Math.round(8500 * lc * rc), total: Math.round(8500 * lc * rc) });
+    items.push({ name: "Автоматы, УЗО, розетки, выключатели", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 360 * lc), total: Math.round(area * 360 * lc), isConsumable: true });
+    items.push({ name: "Гофра, подрозетники, стяжки", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 110), total: Math.round(area * 110), isConsumable: true });
   }
 
   if (cfg.plumbingIncluded && bd.plumbingCost > 0) {
-    items.push({ name: "Труба полипропиленовая ∅20/25 мм", spec: "ХВС/ГВС", unit: "м.п.", qty: Math.round(cfg.bathroomCount * 18), pricePerUnit: 95, total: Math.round(cfg.bathroomCount * 18 * 95) });
-    items.push({ name: "Фитинги PPR (муфты, тройники, угольники)", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: 3500, total: cfg.bathroomCount * 3500, isConsumable: true });
-    items.push({ name: "Гофра канализационная ∅50/110 мм", unit: "м.п.", qty: Math.round(cfg.bathroomCount * 8), pricePerUnit: 120, total: Math.round(cfg.bathroomCount * 8 * 120) });
+    items.push({ name: "Труба полипропиленовая ∅20/25 мм", spec: "ХВС/ГВС", unit: "м.п.", qty: Math.round(cfg.bathroomCount * 18), pricePerUnit: 125, total: Math.round(cfg.bathroomCount * 18 * 125) });
+    items.push({ name: "Фитинги PPR (муфты, тройники, угольники)", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: 4500, total: cfg.bathroomCount * 4500, isConsumable: true });
+    items.push({ name: "Гофра канализационная ∅50/110 мм", unit: "м.п.", qty: Math.round(cfg.bathroomCount * 8), pricePerUnit: 160, total: Math.round(cfg.bathroomCount * 8 * 160) });
   }
 
   if (cfg.floorsIncluded && bd.floorsCost > 0 && floorType) {
     const floorQty = Math.round(area * 1.08 * 10) / 10;
     items.push({ name: `Напольное покрытие: ${floorType.label}`, spec: "с учётом 8% отхода", unit: "м²", qty: floorQty, pricePerUnit: Math.round(floorType.priceM2 * lc * rc * 0.6), total: Math.round(floorQty * floorType.priceM2 * lc * rc * 0.6) });
-    items.push({ name: "Подложка под ламинат/паркет", unit: "м²", qty: Math.round(area * 1.05), pricePerUnit: 55, total: Math.round(area * 1.05 * 55) });
-    items.push({ name: "Плинтус напольный с кабель-каналом", unit: "м.п.", qty: Math.round(Math.sqrt(area) * 3.5), pricePerUnit: 180, total: Math.round(Math.sqrt(area) * 3.5 * 180) });
-    items.push({ name: "Клей для напольных покрытий, дюбели", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 35), total: Math.round(area * 35), isConsumable: true });
+    items.push({ name: "Подложка под ламинат/паркет", unit: "м²", qty: Math.round(area * 1.05), pricePerUnit: 75, total: Math.round(area * 1.05 * 75) });
+    items.push({ name: "Плинтус напольный с кабель-каналом", unit: "м.п.", qty: Math.round(Math.sqrt(area) * 3.5), pricePerUnit: 240, total: Math.round(Math.sqrt(area) * 3.5 * 240) });
+    items.push({ name: "Клей для напольных покрытий, дюбели", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 45), total: Math.round(area * 45), isConsumable: true });
   }
 
   if (cfg.ceilingsIncluded && bd.ceilingsCost > 0 && ceilingType) {
     if (ceilingType.id === "stretch") {
       items.push({ name: "Натяжное полотно ПВХ (глянец/матт)", unit: "м²", qty: Math.round(area * 1.05), pricePerUnit: Math.round(ceilingType.priceM2 * lc * 0.5), total: Math.round(area * 1.05 * ceilingType.priceM2 * lc * 0.5) });
-      items.push({ name: "Профиль для натяжного потолка", unit: "м.п.", qty: Math.round(Math.sqrt(area) * 3.5), pricePerUnit: 95, total: Math.round(Math.sqrt(area) * 3.5 * 95) });
+      items.push({ name: "Профиль для натяжного потолка", unit: "м.п.", qty: Math.round(Math.sqrt(area) * 3.5), pricePerUnit: 125, total: Math.round(Math.sqrt(area) * 3.5 * 125) });
     } else {
-      items.push({ name: "Шпаклёвка потолочная Bergauf", unit: "кг", qty: Math.ceil(area * 0.9), pricePerUnit: 22, total: Math.ceil(area * 0.9) * 22 });
-      items.push({ name: "Краска для потолков Dulux / Tikkurila", spec: "белая матовая", unit: "л", qty: Math.ceil(area * 0.18 * 2), pricePerUnit: Math.round(95 * lc), total: Math.ceil(area * 0.18 * 2) * Math.round(95 * lc) });
-      items.push({ name: "Грунтовка потолка", unit: "л", qty: Math.ceil(area * 0.15), pricePerUnit: 90, total: Math.ceil(area * 0.15) * 90, isConsumable: true });
+      items.push({ name: "Шпаклёвка потолочная Bergauf", unit: "кг", qty: Math.ceil(area * 0.9), pricePerUnit: 29, total: Math.ceil(area * 0.9) * 29 });
+      items.push({ name: "Краска для потолков Dulux / Tikkurila", spec: "белая матовая", unit: "л", qty: Math.ceil(area * 0.18 * 2), pricePerUnit: Math.round(125 * lc), total: Math.ceil(area * 0.18 * 2) * Math.round(125 * lc) });
+      items.push({ name: "Грунтовка потолка", unit: "л", qty: Math.ceil(area * 0.15), pricePerUnit: 120, total: Math.ceil(area * 0.15) * 120, isConsumable: true });
     }
   }
 
@@ -240,7 +240,7 @@ export function calcTurnkeyMaterials(
   if (cfg.windowslopeIncluded && bd.windowSlopesCost > 0) {
     const windowCount = cfg.balconyCount + Math.ceil(area / 18);
     items.push({ name: "Откосы оконные ПВХ (панель + уголок)", unit: "компл.", qty: windowCount, pricePerUnit: Math.round(bd.windowSlopesCost * 0.50 / windowCount), total: Math.round(bd.windowSlopesCost * 0.50) });
-    items.push({ name: "Монтажная пена, герметик", unit: "компл.", qty: 1, pricePerUnit: Math.round(windowCount * 380), total: Math.round(windowCount * 380), isConsumable: true });
+    items.push({ name: "Монтажная пена, герметик", unit: "компл.", qty: 1, pricePerUnit: Math.round(windowCount * 490), total: Math.round(windowCount * 490), isConsumable: true });
   }
 
   return items;
