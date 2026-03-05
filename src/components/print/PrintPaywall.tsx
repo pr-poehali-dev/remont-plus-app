@@ -53,6 +53,8 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
   const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
   const userId: number | null = storedUser?.id ?? null;
 
+  const isAdmin = storedUser?.role === "admin";
+
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [paying, setPaying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +66,10 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
     n.toLocaleString("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 });
 
   useEffect(() => {
+    if (isAdmin) {
+      setHasPaid(true);
+      return;
+    }
     if (!userId) {
       if (freeUsed.current < FREE_LIMIT) {
         localStorage.setItem(FREE_KEY, String(freeUsed.current + 1));
