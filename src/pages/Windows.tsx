@@ -90,16 +90,16 @@ export default function Windows() {
       : [{ ...cfg, id: `win-${Date.now()}`, totalPrice: price }];
     const exportTotal = exportConfigs.reduce((s, c) => s + c.totalPrice, 0);
 
-    navigate("/windows/print", {
-      state: {
-        configs: exportConfigs,
-        markupPct,
-        totalSum: exportTotal,
-        docNum,
-        date,
-        ...data,
-      },
-    });
+    const printState = {
+      configs: exportConfigs,
+      markupPct,
+      totalSum: exportTotal,
+      docNum,
+      date,
+      ...data,
+    };
+    sessionStorage.setItem("windows_print_state", JSON.stringify(printState));
+    window.open("/windows/print", "_blank");
   };
 
   // Преобразуем configs в EstimateItem[] для DocsTab

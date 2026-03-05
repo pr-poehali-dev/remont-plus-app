@@ -136,17 +136,17 @@ export default function Flooring() {
 
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
-    navigate("/flooring/print", {
-      state: {
-        zones,
-        markupPct,
-        regionId,
-        totalSum,
-        docNum: String(now.getTime()).slice(-6),
-        date: now.toLocaleDateString("ru-RU"),
-        ...data,
-      },
-    });
+    const printState = {
+      zones,
+      markupPct,
+      regionId,
+      totalSum,
+      docNum: String(now.getTime()).slice(-6),
+      date: now.toLocaleDateString("ru-RU"),
+      ...data,
+    };
+    sessionStorage.setItem("flooring_print_state", JSON.stringify(printState));
+    window.open("/flooring/print", "_blank");
   };
 
   return (

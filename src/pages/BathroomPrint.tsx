@@ -27,7 +27,9 @@ interface PrintState {
 
 export default function BathroomPrint() {
   const location = useLocation();
-  const state: PrintState | null = location.state ?? null;
+  const state: PrintState | null = location.state ?? (() => {
+    try { return JSON.parse(sessionStorage.getItem("bathroom_print_state") || "null"); } catch { return null; }
+  })();
 
   useEffect(() => {
     if (state) {

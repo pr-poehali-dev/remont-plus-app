@@ -9,7 +9,9 @@ import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
 export default function CeilingPrint() {
   const location = useLocation();
-  const state: CeilingPrintState | null = location.state ?? null;
+  const state: CeilingPrintState | null = location.state ?? (() => {
+    try { return JSON.parse(sessionStorage.getItem("ceilings_print_state") || "null"); } catch { return null; }
+  })();
 
   useEffect(() => {
     if (state) {

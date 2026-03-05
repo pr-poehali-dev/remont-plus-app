@@ -153,19 +153,19 @@ export default function NewbuildRenovation() {
 
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
-    navigate("/newbuild/print", {
-      state: {
-        zones,
-        markupPct,
-        regionId,
-        totalSum,
-        foremanIncluded, foremanPct,
-        supplierIncluded, supplierPct,
-        docNum: String(now.getTime()).slice(-6),
-        date: now.toLocaleDateString("ru-RU"),
-        ...data,
-      },
-    });
+    const printState = {
+      zones,
+      markupPct,
+      regionId,
+      totalSum,
+      foremanIncluded, foremanPct,
+      supplierIncluded, supplierPct,
+      docNum: String(now.getTime()).slice(-6),
+      date: now.toLocaleDateString("ru-RU"),
+      ...data,
+    };
+    sessionStorage.setItem("newbuild_print_state", JSON.stringify(printState));
+    window.open("/newbuild/print", "_blank");
   };
 
   const activeBreakdown = calcNewbuildPrice(activeZone, regionId, markupPct);

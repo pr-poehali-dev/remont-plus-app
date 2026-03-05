@@ -148,16 +148,16 @@ export default function Ceilings() {
 
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
-    navigate("/ceilings/print", {
-      state: {
-        configs: zones,
-        markupPct,
-        totalSum,
-        docNum: String(now.getTime()).slice(-6),
-        date: now.toLocaleDateString("ru-RU"),
-        ...data,
-      },
-    });
+    const printState = {
+      configs: zones,
+      markupPct,
+      totalSum,
+      docNum: String(now.getTime()).slice(-6),
+      date: now.toLocaleDateString("ru-RU"),
+      ...data,
+    };
+    sessionStorage.setItem("ceilings_print_state", JSON.stringify(printState));
+    window.open("/ceilings/print", "_blank");
   };
 
   const ceilingEstimateItems = zones.map(c => {

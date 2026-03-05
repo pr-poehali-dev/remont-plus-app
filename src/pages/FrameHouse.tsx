@@ -99,30 +99,30 @@ export default function FrameHouse() {
 
   const handlePrint = () => {
     const now = new Date();
-    navigate("/framehouse/print", {
-      state: {
-        config,
-        regionId,
-        markupPct,
-        bd,
-        docNum: String(now.getTime()).slice(-6),
-        date: now.toLocaleDateString("ru-RU"),
-        docType: exportState.docType,
-        customer: exportState.customer,
-        contractor: exportState.contractor,
-        address: exportState.address,
-        phone: exportState.phone,
-        email: exportState.email,
-        inn: exportState.inn,
-        validDays: exportState.validDays,
-        startDate: exportState.startDate,
-        endDate: exportState.endDate,
-        contractNum: exportState.contractNum,
-        contractDate: exportState.contractDate,
-        advancePct: exportState.advancePct,
-        warrantyMonths: exportState.warrantyMonths,
-      },
-    });
+    const printState = {
+      config,
+      regionId,
+      markupPct,
+      bd,
+      docNum: String(now.getTime()).slice(-6),
+      date: now.toLocaleDateString("ru-RU"),
+      docType: exportState.docType,
+      customer: exportState.customer,
+      contractor: exportState.contractor,
+      address: exportState.address,
+      phone: exportState.phone,
+      email: exportState.email,
+      inn: exportState.inn,
+      validDays: exportState.validDays,
+      startDate: exportState.startDate,
+      endDate: exportState.endDate,
+      contractNum: exportState.contractNum,
+      contractDate: exportState.contractDate,
+      advancePct: exportState.advancePct,
+      warrantyMonths: exportState.warrantyMonths,
+    };
+    sessionStorage.setItem("framehouse_print_state", JSON.stringify(printState));
+    window.open("/framehouse/print", "_blank");
   };
 
   const handlePrintClick = () => {

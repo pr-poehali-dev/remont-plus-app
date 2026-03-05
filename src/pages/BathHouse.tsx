@@ -101,30 +101,30 @@ export default function BathHouse() {
 
   const handlePrint = () => {
     const now = new Date();
-    navigate("/bathhouse/print", {
-      state: {
-        config,
-        regionId,
-        markupPct,
-        bd,
-        docNum: String(now.getTime()).slice(-6),
-        date: now.toLocaleDateString("ru-RU"),
-        docType: exportState.docType,
-        customer: exportState.customer,
-        contractor: exportState.contractor,
-        address: exportState.address,
-        phone: exportState.phone,
-        email: exportState.email,
-        inn: exportState.inn,
-        validDays: exportState.validDays,
-        startDate: exportState.startDate,
-        endDate: exportState.endDate,
-        contractNum: exportState.contractNum,
-        contractDate: exportState.contractDate,
-        advancePct: exportState.advancePct,
-        warrantyMonths: exportState.warrantyMonths,
-      },
-    });
+    const printState = {
+      config,
+      regionId,
+      markupPct,
+      bd,
+      docNum: String(now.getTime()).slice(-6),
+      date: now.toLocaleDateString("ru-RU"),
+      docType: exportState.docType,
+      customer: exportState.customer,
+      contractor: exportState.contractor,
+      address: exportState.address,
+      phone: exportState.phone,
+      email: exportState.email,
+      inn: exportState.inn,
+      validDays: exportState.validDays,
+      startDate: exportState.startDate,
+      endDate: exportState.endDate,
+      contractNum: exportState.contractNum,
+      contractDate: exportState.contractDate,
+      advancePct: exportState.advancePct,
+      warrantyMonths: exportState.warrantyMonths,
+    };
+    sessionStorage.setItem("bathhouse_print_state", JSON.stringify(printState));
+    window.open("/bathhouse/print", "_blank");
   };
 
   const handlePrintClick = () => {

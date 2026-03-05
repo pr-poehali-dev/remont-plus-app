@@ -62,7 +62,9 @@ const BREAKDOWN_ROWS: { key: keyof BathHouseBreakdown; label: string; unit: stri
 
 export default function BathHousePrint() {
   const location = useLocation();
-  const state: PrintState | null = location.state ?? null;
+  const state: PrintState | null = location.state ?? (() => {
+    try { return JSON.parse(sessionStorage.getItem("bathhouse_print_state") || "null"); } catch { return null; }
+  })();
 
   useEffect(() => {
     if (state) {

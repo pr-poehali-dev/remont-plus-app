@@ -136,17 +136,17 @@ export default function Bathroom() {
 
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
-    navigate("/bathroom/print", {
-      state: {
-        zones,
-        markupPct,
-        regionId,
-        totalSum,
-        docNum: String(now.getTime()).slice(-6),
-        date: now.toLocaleDateString("ru-RU"),
-        ...data,
-      },
-    });
+    const printState = {
+      zones,
+      markupPct,
+      regionId,
+      totalSum,
+      docNum: String(now.getTime()).slice(-6),
+      date: now.toLocaleDateString("ru-RU"),
+      ...data,
+    };
+    sessionStorage.setItem("bathroom_print_state", JSON.stringify(printState));
+    window.open("/bathroom/print", "_blank");
   };
 
   const activeBreakdown = calcBathroomPrice(activeZone, regionId, markupPct);

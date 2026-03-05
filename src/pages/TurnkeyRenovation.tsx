@@ -89,17 +89,17 @@ export default function TurnkeyRenovation() {
 
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
-    navigate("/turnkey/print", {
-      state: {
-        cfg,
-        markupPct,
-        regionId,
-        totalSum: cfg.totalPrice,
-        docNum: String(now.getTime()).slice(-6),
-        date: now.toLocaleDateString("ru-RU"),
-        ...data,
-      },
-    });
+    const printState = {
+      cfg,
+      markupPct,
+      regionId,
+      totalSum: cfg.totalPrice,
+      docNum: String(now.getTime()).slice(-6),
+      date: now.toLocaleDateString("ru-RU"),
+      ...data,
+    };
+    sessionStorage.setItem("turnkey_print_state", JSON.stringify(printState));
+    window.open("/turnkey/print", "_blank");
   };
 
   const breakdown = calcTurnkeyPrice(cfg, regionId, markupPct);
