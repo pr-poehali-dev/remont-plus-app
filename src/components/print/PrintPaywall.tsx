@@ -50,8 +50,9 @@ function checkSubscription(userId: number): Promise<boolean> {
 
 export default function PrintPaywall({ children, docTitle = "Смета", totalSum = 0 }: Props) {
   const navigate = useNavigate();
-  const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
-  const userId: number | null = storedUser?.id ?? null;
+  let storedUser: { id?: number; role?: string; email?: string } | null = null;
+  try { storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null"); } catch { storedUser = null; }
+  const userId: number | null = storedUser?.id != null ? storedUser.id : null;
 
   const isAdmin = storedUser?.role === "admin" || storedUser?.role === "yukassa_staff";
 
