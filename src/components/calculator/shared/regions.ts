@@ -10,7 +10,7 @@ export const CALC_REGIONS: CalcRegion[] = [
   { id: "ekb",         label: "Екатеринбург",          coeff: 1.1  },
   { id: "novosibirsk", label: "Новосибирск",           coeff: 1.05 },
   { id: "kazan",       label: "Казань",                coeff: 1.08 },
-  { id: "samara",      label: "Самара",                coeff: 1.05 },
+  { id: "samara",      label: "Самара",                coeff: 0.79 },
   { id: "nizhny",      label: "Нижний Новгород",       coeff: 1.06 },
   { id: "chelyabinsk", label: "Челябинск",             coeff: 1.0  },
   { id: "krasnodar",   label: "Краснодар",             coeff: 1.08 },
