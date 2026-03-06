@@ -14,9 +14,13 @@ function getThumb(v: PartnerVideo): string | null {
 }
 
 function getWatchUrl(v: PartnerVideo): string {
-  const ytId = getYoutubeId(v.embed_url || "");
+  const url = v.embed_url || "";
+  const ytId = getYoutubeId(url);
   if (ytId) return `https://www.youtube.com/watch?v=${ytId}`;
-  return v.embed_url || v.video_url || "#";
+  // VK: из video_ext.php?oid=-12345&id=67890 → https://vk.com/video-12345_67890
+  const vkMatch = url.match(/oid=(-?\d+)&id=(\d+)/);
+  if (vkMatch) return `https://vk.com/video${vkMatch[1]}_${vkMatch[2]}`;
+  return v.video_url || "#";
 }
 
 const API_URL = "https://functions.poehali.dev/241aa2b2-a69f-4f48-a343-59a4da14d0b4";

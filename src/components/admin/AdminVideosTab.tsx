@@ -81,8 +81,9 @@ function getPreviewInfo(raw: string): { label: string; thumb: string | null; hre
       href: `https://www.youtube.com/watch?v=${ytId}`,
     };
   }
-  if (raw.includes("vk.com")) {
-    return { label: "VK Видео", thumb: null, href: parsed };
+  const vkMatch = raw.match(/oid=(-?\d+)&id=(\d+)/);
+  if (vkMatch) {
+    return { label: "VK Видео", thumb: null, href: `https://vk.com/video${vkMatch[1]}_${vkMatch[2]}` };
   }
   return { label: "Видео", thumb: null, href: parsed };
 }
