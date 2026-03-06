@@ -11,6 +11,14 @@
       "method": "GET",
       "path": "/?action=stats",
       "expectedStatus": 200
+    },
+    {
+      "name": "POST parse Екатеринбург",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Admin-Token": "admin2025", "Content-Type": "application/json" },
+      "body": { "action": "parse", "city": "Екатеринбург" },
+      "expectedStatus": 200
     }
   ]
 }
