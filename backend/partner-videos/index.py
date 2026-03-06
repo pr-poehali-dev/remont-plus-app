@@ -49,19 +49,30 @@ def handler(event: dict, context) -> dict:
     method = event.get("httpMethod", "GET")
     params = event.get("queryStringParameters") or {}
 
-    # GET — публичный список активных видео
+    # GET — список видео (публичный или admin)
     if method == "GET":
+        is_admin_req = params.get("admin") == "1" and check_admin(event)
         conn = get_db()
         cur = conn.cursor()
-        cur.execute(
-            f"""
-            SELECT id, title, description, video_url, thumbnail_url,
-                   partner_name, is_own, is_active, sort_order, created_at
-            FROM {SCHEMA}.partner_videos
-            WHERE is_active = TRUE
-            ORDER BY sort_order ASC, created_at DESC
-            """
-        )
+        if is_admin_req:
+            cur.execute(
+                f"""
+                SELECT id, title, description, video_url, thumbnail_url,
+                       partner_name, is_own, is_active, sort_order, created_at
+                FROM {SCHEMA}.partner_videos
+                ORDER BY sort_order ASC, created_at DESC
+                """
+            )
+        else:
+            cur.execute(
+                f"""
+                SELECT id, title, description, video_url, thumbnail_url,
+                       partner_name, is_own, is_active, sort_order, created_at
+                FROM {SCHEMA}.partner_videos
+                WHERE is_active = TRUE
+                ORDER BY sort_order ASC, created_at DESC
+                """
+            )
         rows = cur.fetchall()
         cols = ["id", "title", "description", "video_url", "thumbnail_url",
                 "partner_name", "is_own", "is_active", "sort_order", "created_at"]
@@ -80,29 +91,6 @@ def handler(event: dict, context) -> dict:
     body = {}
     if event.get("body"):
         body = json.loads(event["body"])
-
-    # GET all (admin) — включая неактивные
-    if method == "GET" and params.get("admin") == "1":
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute(
-            f"""
-            SELECT id, title, description, video_url, thumbnail_url,
-                   partner_name, is_own, is_active, sort_order, created_at
-            FROM {SCHEMA}.partner_videos
-            ORDER BY sort_order ASC, created_at DESC
-            """
-        )
-        rows = cur.fetchall()
-        cols = ["id", "title", "description", "video_url", "thumbnail_url",
-                "partner_name", "is_own", "is_active", "sort_order", "created_at"]
-        videos = [dict(zip(cols, r)) for r in rows]
-        for v in videos:
-            if v["created_at"]:
-                v["created_at"] = v["created_at"].isoformat()
-        cur.close()
-        conn.close()
-        return {"statusCode": 200, "headers": CORS, "body": json.dumps({"videos": videos}, ensure_ascii=False)}
 
     # POST — загрузка нового видео
     if method == "POST":

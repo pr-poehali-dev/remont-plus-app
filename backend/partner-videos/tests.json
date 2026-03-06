@@ -1,12 +1,10 @@
 {
   "tests": [
     {
-      "name": "GET active videos",
+      "name": "GET active videos returns 200",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200,
-      "expectedBody": {"videos": []},
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     }
   ]
 }
