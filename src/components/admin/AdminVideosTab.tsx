@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 
+
 const API_URL = "https://functions.poehali.dev/241aa2b2-a69f-4f48-a343-59a4da14d0b4";
 const ADMIN_TOKEN = "admin2025";
 
@@ -32,14 +33,12 @@ const EMPTY: Omit<Video, "id"> = {
   sort_order: 0,
 };
 
-type SourceType = "file" | "link";
-
-async function uploadToS3(file: File, type: "video" | "thumb"): Promise<string> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || (type === "video" ? "mp4" : "jpg");
-  const contentType = file.type || (type === "video" ? "video/mp4" : "image/jpeg");
+async function uploadThumb(file: File, apiUrl: string, token: string): Promise<string> {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const contentType = file.type || "image/jpeg";
   const presignRes = await fetch(
-    `${API_URL}?action=presign&type=${type}&ext=${ext}&content_type=${encodeURIComponent(contentType)}`,
-    { headers: { "X-Admin-Token": ADMIN_TOKEN } }
+    `${apiUrl}?action=presign&type=thumb&ext=${ext}&content_type=${encodeURIComponent(contentType)}`,
+    { headers: { "X-Admin-Token": token } }
   );
   if (!presignRes.ok) throw new Error("Не удалось получить URL для загрузки");
   const { upload_url, cdn_url } = await presignRes.json();
@@ -48,25 +47,27 @@ async function uploadToS3(file: File, type: "video" | "thumb"): Promise<string> 
     headers: { "Content-Type": contentType },
     body: file,
   });
-  if (!uploadRes.ok) throw new Error(`Ошибка загрузки файла: ${uploadRes.status}`);
+  if (!uploadRes.ok) throw new Error(`Ошибка загрузки обложки: ${uploadRes.status}`);
   return cdn_url;
 }
 
-function getSourceType(v: Partial<Video>): SourceType {
-  return v.embed_url ? "link" : "file";
+function parseEmbedUrl(raw: string): string {
+  if (!raw) return "";
+  const vkMatch = raw.match(/src="([^"]+vk\.com[^"]+)"/);
+  if (vkMatch) return vkMatch[1];
+  const ytMatch = raw.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=))([\w-]+)/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  return raw;
 }
 
 export default function AdminVideosTab() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<(Partial<Video> & { id?: number }) | null>(null);
-  const [sourceType, setSourceType] = useState<SourceType>("link");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
-  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [thumbFile, setThumbFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState("");
-  const videoInputRef = useRef<HTMLInputElement>(null);
   const thumbInputRef = useRef<HTMLInputElement>(null);
 
   const load = () => {
@@ -81,16 +82,12 @@ export default function AdminVideosTab() {
   useEffect(() => { load(); }, []);
 
   const openNew = () => {
-    setVideoFile(null);
     setThumbFile(null);
-    setSourceType("link");
     setEditing({ ...EMPTY });
   };
 
   const openEdit = (v: Video) => {
-    setVideoFile(null);
     setThumbFile(null);
-    setSourceType(getSourceType(v));
     setEditing({ ...v });
   };
 
@@ -98,26 +95,16 @@ export default function AdminVideosTab() {
     if (!editing) return;
     setSaving(true);
     setSaveError("");
-    setUploadProgress("Подготовка...");
     try {
-      const payload: Record<string, unknown> = { ...editing };
-
-      if (sourceType === "link") {
-        payload.video_url = "";
-        payload.embed_url = editing.embed_url || "";
-      }
-
-      if (sourceType === "file") {
-        payload.embed_url = "";
-        if (videoFile) {
-          setUploadProgress("Загружаю видео в хранилище...");
-          payload.video_url = await uploadToS3(videoFile, "video");
-        }
-      }
+      const payload: Record<string, unknown> = {
+        ...editing,
+        embed_url: parseEmbedUrl(editing.embed_url || ""),
+        video_url: "",
+      };
 
       if (thumbFile) {
         setUploadProgress("Загружаю обложку...");
-        payload.thumbnail_url = await uploadToS3(thumbFile, "thumb");
+        payload.thumbnail_url = await uploadThumb(thumbFile, API_URL, ADMIN_TOKEN);
       }
 
       setUploadProgress("Сохраняю...");
@@ -240,85 +227,23 @@ export default function AdminVideosTab() {
             </div>
 
             <div className="space-y-4">
-              {/* Переключатель источника */}
+              {/* Ссылка на видео */}
               <div>
-                <label className="text-xs font-medium text-gray-600 mb-2 block">Источник видео</label>
-                <div className="flex rounded-xl border border-gray-200 overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => { setSourceType("link"); setVideoFile(null); }}
-                    className={`flex-1 py-2 text-sm font-medium transition ${
-                      sourceType === "link"
-                        ? "bg-orange-500 text-white"
-                        : "bg-white text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Icon name="Link" size={14} className="inline mr-1.5" />
-                    Ссылка (VK, YouTube)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setSourceType("file"); setEditing(p => ({ ...p!, embed_url: "" })); }}
-                    className={`flex-1 py-2 text-sm font-medium transition ${
-                      sourceType === "file"
-                        ? "bg-orange-500 text-white"
-                        : "bg-white text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Icon name="Upload" size={14} className="inline mr-1.5" />
-                    Файл MP4
-                  </button>
+                <label className="text-xs font-medium text-gray-600 mb-1 block">
+                  <Icon name="Link" size={12} className="inline mr-1" />
+                  Ссылка на видео (VK или YouTube) *
+                </label>
+                <Textarea
+                  value={editing.embed_url || ""}
+                  onChange={e => setEditing(p => ({ ...p!, embed_url: e.target.value }))}
+                  placeholder="Вставьте ссылку или код iframe..."
+                  rows={3}
+                />
+                <div className="mt-2 p-3 rounded-xl bg-blue-50 border border-blue-100 text-xs text-blue-700 space-y-1">
+                  <p><strong>VK:</strong> открой видео → «Поделиться» → «Код для вставки» → вставь весь код или только src из iframe</p>
+                  <p><strong>YouTube:</strong> вставь обычную ссылку типа youtube.com/watch?v=... — преобразуем автоматически</p>
                 </div>
               </div>
-
-              {/* Ссылка */}
-              {sourceType === "link" && (
-                <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">Ссылка для embed</label>
-                  <Input
-                    value={editing.embed_url || ""}
-                    onChange={e => setEditing(p => ({ ...p!, embed_url: e.target.value }))}
-                    placeholder="https://vk.com/video_ext.php?oid=...&id=...&hash=..."
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    VK: кнопка «Поделиться» → «Код для вставки» → скопировать src из iframe
-                  </p>
-                </div>
-              )}
-
-              {/* Файл */}
-              {sourceType === "file" && (
-                <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">Видеофайл (MP4)</label>
-                  <div
-                    className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-orange-300 transition"
-                    onClick={() => videoInputRef.current?.click()}
-                  >
-                    {videoFile ? (
-                      <p className="text-sm text-orange-600 font-medium">{videoFile.name}</p>
-                    ) : editing.video_url ? (
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Текущее видео загружено</p>
-                        <p className="text-xs text-gray-500 truncate">{editing.video_url.split("/").pop()}</p>
-                        <p className="text-xs text-orange-500 mt-1">Нажмите, чтобы заменить</p>
-                      </div>
-                    ) : (
-                      <div>
-                        <Icon name="Video" size={24} className="mx-auto text-gray-300 mb-2" />
-                        <p className="text-sm text-gray-500">Выбрать MP4-файл</p>
-                        <p className="text-xs text-gray-400">до 200 МБ</p>
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    ref={videoInputRef}
-                    type="file"
-                    accept="video/mp4,video/webm,video/mov"
-                    className="hidden"
-                    onChange={e => setVideoFile(e.target.files?.[0] || null)}
-                  />
-                </div>
-              )}
 
               {/* Обложка */}
               <div>
