@@ -1,0 +1,16 @@
+{
+  "tests": [
+    {
+      "name": "GET cities list",
+      "method": "GET",
+      "path": "/?action=cities",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET stats",
+      "method": "GET",
+      "path": "/?action=stats",
+      "expectedStatus": 200
+    }
+  ]
+}
