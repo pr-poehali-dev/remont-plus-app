@@ -1,6 +1,6 @@
 """
-Парсер строительных компаний (ремонт квартир) через Яндекс Геопоиск API.
-Ищет компании по городам, обогащает данные через DaData. Выгрузка в CSV.
+Парсер строительных компаний через DaData Suggest API.
+Ищет компании по ОКВЭД 43 (строительство/отделка) и городу, сохраняет в БД.
 """
 import json
 import os
@@ -20,30 +20,38 @@ CORS = {
 ADMIN_TOKEN = "admin2025"
 SCHEMA = "t_p46588937_remont_plus_app"
 
+# Коды регионов КЛАДР для фильтрации по городу
 CITIES = [
-    {"name": "Москва",          "ll": "37.617644,55.755819", "spn": "0.5,0.5"},
-    {"name": "Санкт-Петербург", "ll": "30.315868,59.939095", "spn": "0.5,0.5"},
-    {"name": "Новосибирск",     "ll": "82.934600,54.983200", "spn": "0.4,0.4"},
-    {"name": "Екатеринбург",    "ll": "60.612200,56.851900", "spn": "0.4,0.4"},
-    {"name": "Казань",          "ll": "49.122100,55.788700", "spn": "0.4,0.4"},
-    {"name": "Нижний Новгород", "ll": "44.002000,56.326900", "spn": "0.4,0.4"},
-    {"name": "Челябинск",       "ll": "61.429100,55.164400", "spn": "0.4,0.4"},
-    {"name": "Самара",          "ll": "50.160600,53.195900", "spn": "0.4,0.4"},
-    {"name": "Омск",            "ll": "73.368600,54.988500", "spn": "0.4,0.4"},
-    {"name": "Ростов-на-Дону",  "ll": "39.712500,47.235700", "spn": "0.4,0.4"},
-    {"name": "Уфа",             "ll": "55.972100,54.738800", "spn": "0.4,0.4"},
-    {"name": "Красноярск",      "ll": "92.893200,56.015300", "spn": "0.4,0.4"},
-    {"name": "Пермь",           "ll": "56.229100,58.010500", "spn": "0.4,0.4"},
-    {"name": "Воронеж",         "ll": "39.184300,51.672000", "spn": "0.4,0.4"},
+    {"name": "Москва",          "region": "77", "query_prefix": ""},
+    {"name": "Санкт-Петербург", "region": "78", "query_prefix": ""},
+    {"name": "Новосибирск",     "region": "54", "query_prefix": "Новосибирск"},
+    {"name": "Екатеринбург",    "region": "66", "query_prefix": "Екатеринбург"},
+    {"name": "Казань",          "region": "16", "query_prefix": "Казань"},
+    {"name": "Нижний Новгород", "region": "52", "query_prefix": "Нижний Новгород"},
+    {"name": "Челябинск",       "region": "74", "query_prefix": "Челябинск"},
+    {"name": "Самара",          "region": "63", "query_prefix": "Самара"},
+    {"name": "Омск",            "region": "55", "query_prefix": "Омск"},
+    {"name": "Ростов-на-Дону",  "region": "61", "query_prefix": "Ростов-на-Дону"},
+    {"name": "Уфа",             "region": "02", "query_prefix": "Уфа"},
+    {"name": "Красноярск",      "region": "24", "query_prefix": "Красноярск"},
+    {"name": "Пермь",           "region": "59", "query_prefix": "Пермь"},
+    {"name": "Воронеж",         "region": "36", "query_prefix": "Воронеж"},
 ]
 
+# ОКВЭД коды: строительство, отделка, ремонт
+OKVED_CODES = ["43.3", "43.31", "43.32", "43.33", "43.34", "43.39", "41.20", "43.1"]
+
+# Запросы для поиска по названию
 SEARCH_QUERIES = [
     "ремонт квартир",
-    "строительная компания ремонт",
+    "ремонтно-строительная",
     "отделочные работы",
+    "строительная компания",
+    "ремонт и отделка",
 ]
 
-YANDEX_GEOSEARCH_URL = "https://search-maps.yandex.ru/v1/"
+DADATA_SUGGEST_URL = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/party"
+DADATA_FIND_URL = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party"
 
 
 def get_db():
@@ -55,93 +63,65 @@ def check_admin(event):
     return (h.get("X-Admin-Token") or h.get("x-admin-token", "")) == ADMIN_TOKEN
 
 
-def fetch_yandex(query, ll, spn, skip, api_key):
-    """Поиск организаций через Яндекс Геопоиск API."""
-    params = urllib.parse.urlencode({
-        "text": query,
-        "ll": ll,
-        "spn": spn,
-        "type": "biz",
-        "lang": "ru_RU",
-        "results": 50,
-        "skip": skip,
-        "apikey": api_key,
-    })
-    url = f"{YANDEX_GEOSEARCH_URL}?{params}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=20) as r:
-        return json.loads(r.read().decode("utf-8"))
-
-
-def extract_company(feature):
-    """Извлекает данные компании из GeoJSON feature Яндекс Геопоиска."""
-    props = feature.get("properties", {})
-    meta = props.get("CompanyMetaData", {})
-
-    name = meta.get("name", "").strip()
-    if not name:
-        return None
-
-    address = meta.get("address", "")
-    phone = ""
-    email = ""
-    website = ""
-
-    for p in meta.get("Phones", []):
-        if not phone:
-            phone = p.get("formatted", "")
-
-    for link in meta.get("Links", []):
-        href = link.get("href", "")
-        if not email and "mailto:" in href:
-            email = href.replace("mailto:", "").strip()
-        elif not website and href.startswith("http"):
-            website = href.strip()
-
-    rubrics = ", ".join(r.get("name", "") for r in meta.get("Categories", []))
-
-    return {
-        "name": name,
-        "phone": phone,
-        "email": email,
-        "website": website,
-        "address": address,
-        "rubric": rubrics,
-    }
-
-
-def enrich_dadata(name):
-    """Поиск ФИО директора и ИНН через DaData."""
-    key = os.environ.get("DADATA_API_KEY", "")
-    if not key:
-        return None, None
-    data = json.dumps({"query": name, "count": 1}).encode()
+def dadata_suggest(query, region_code, okved, api_key):
+    """Поиск компаний через DaData Suggest с фильтром по региону и ОКВЭД."""
+    payload = json.dumps({
+        "query": query,
+        "count": 20,
+        "filters": [
+            {"status": ["ACTIVE"]},
+            {"type": ["LEGAL"]},
+            {"okved": okved},
+            {"region_code": [region_code]},
+        ]
+    }).encode("utf-8")
     req = urllib.request.Request(
-        "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/party",
-        data=data,
+        DADATA_SUGGEST_URL,
+        data=payload,
         headers={
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": f"Token {key}",
+            "Authorization": f"Token {api_key}",
         }
     )
-    try:
-        with urllib.request.urlopen(req, timeout=10) as r:
-            result = json.loads(r.read().decode())
-        suggestions = result.get("suggestions", [])
-        if not suggestions:
-            return None, None
-        d = suggestions[0].get("data", {})
-        inn = d.get("inn")
-        mgmt = d.get("management") or {}
-        director = mgmt.get("name")
-        return inn, director
-    except Exception:
-        return None, None
+    with urllib.request.urlopen(req, timeout=15) as r:
+        return json.loads(r.read().decode())
+
+
+def extract_company(suggestion):
+    """Извлекает данные компании из ответа DaData."""
+    d = suggestion.get("data", {})
+    name = suggestion.get("value", "").strip()
+    if not name:
+        return None
+
+    address = (d.get("address") or {}).get("value", "")
+    inn = d.get("inn", "")
+    ogrn = d.get("ogrn", "")
+    kpp = d.get("kpp", "")
+
+    mgmt = d.get("management") or {}
+    director = mgmt.get("name", "")
+
+    state = d.get("state") or {}
+    status = state.get("status", "")
+
+    okved = d.get("okved", "")
+
+    return {
+        "name": name,
+        "inn": inn,
+        "ogrn": ogrn,
+        "kpp": kpp,
+        "address": address,
+        "director": director,
+        "okved": okved,
+        "status": status,
+    }
 
 
 def handler(event: dict, context) -> dict:
-    """Парсер компаний через Яндекс Геопоиск + обогащение данных через DaData."""
+    """Сборщик компаний по ОКВЭД через DaData Suggest (ЕГРЮЛ)."""
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": CORS, "body": ""}
 
@@ -250,78 +230,102 @@ def handler(event: dict, context) -> dict:
         if not city_obj:
             return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Неизвестный город"})}
 
-        api_key = os.environ.get("YANDEX_GEOSEARCH_KEY", "")
+        api_key = os.environ.get("DADATA_API_KEY", "")
         if not api_key:
-            return {"statusCode": 500, "headers": CORS, "body": json.dumps({"error": "YANDEX_GEOSEARCH_KEY не настроен"})}
+            return {"statusCode": 500, "headers": CORS, "body": json.dumps({"error": "DADATA_API_KEY не настроен"})}
 
-        ll = city_obj["ll"]
-        spn = city_obj["spn"]
+        region = city_obj["region"]
+        query_prefix = city_obj["query_prefix"]
         collected = {}
         debug_info = []
 
+        # Перебираем запросы × ОКВЭД коды
         for query in SEARCH_QUERIES:
-            for skip in range(0, 200, 50):
+            full_query = f"{query_prefix} {query}".strip() if query_prefix else query
+            for okved in OKVED_CODES:
                 try:
-                    data = fetch_yandex(query, ll, spn, skip, api_key)
-                    features = data.get("features", [])
-                    debug_info.append(f"q={query} skip={skip} got={len(features)}")
-                    if not features:
-                        break
-                    for feature in features:
-                        company = extract_company(feature)
-                        if not company:
+                    data = dadata_suggest(full_query, region, okved, api_key)
+                    suggestions = data.get("suggestions", [])
+                    debug_info.append(f"q={full_query} okved={okved} got={len(suggestions)}")
+                    for s in suggestions:
+                        company = extract_company(s)
+                        if not company or company["status"] != "ACTIVE":
                             continue
-                        key = company["name"].lower()
+                        key = company["inn"] or company["name"].lower()
                         if key not in collected:
                             collected[key] = company
-                    if len(features) < 50:
-                        break
-                    time.sleep(0.3)
+                    time.sleep(0.1)
                 except Exception as e:
-                    debug_info.append(f"error q={query} skip={skip}: {str(e)[:120]}")
-                    break
+                    debug_info.append(f"error q={full_query} okved={okved}: {str(e)[:100]}")
 
         conn = get_db()
         cur = conn.cursor()
         inserted = 0
         for item in collected.values():
             cur.execute(
-                f"""INSERT INTO {SCHEMA}.parsed_companies (city, name, phone, email, address, website, rubric)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                f"""INSERT INTO {SCHEMA}.parsed_companies (city, name, address, director_name, inn)
+                    VALUES (%s, %s, %s, %s, %s)
                     ON CONFLICT DO NOTHING""",
-                (city_name, item["name"], item["phone"], item["email"],
-                 item["address"], item["website"], item.get("rubric", ""))
+                (city_name, item["name"], item["address"], item["director"], item["inn"])
             )
             if cur.rowcount > 0:
                 inserted += 1
         conn.commit()
         cur.close()
         conn.close()
-        return {"statusCode": 200, "headers": CORS, "body": json.dumps({"inserted": inserted, "found": len(collected), "debug": debug_info}, ensure_ascii=False)}
+        return {"statusCode": 200, "headers": CORS, "body": json.dumps({
+            "inserted": inserted,
+            "found": len(collected),
+            "debug": debug_info
+        }, ensure_ascii=False)}
 
-    # POST enrich
+    # POST enrich — дополняем телефон/email/сайт через DaData findById
     if method == "POST" and body.get("action") == "enrich":
         city = body.get("city", "")
+        api_key = os.environ.get("DADATA_API_KEY", "")
         conn = get_db()
         cur = conn.cursor()
         if city:
             cur.execute(
-                f"SELECT id, name FROM {SCHEMA}.parsed_companies WHERE (director_name IS NULL OR director_name = '') AND city = %s LIMIT 50",
+                f"SELECT id, name, inn FROM {SCHEMA}.parsed_companies WHERE (phone IS NULL OR phone = '') AND inn IS NOT NULL AND inn != '' AND city = %s LIMIT 50",
                 (city,)
             )
         else:
-            cur.execute(f"SELECT id, name FROM {SCHEMA}.parsed_companies WHERE director_name IS NULL OR director_name = '' LIMIT 50")
+            cur.execute(f"SELECT id, name, inn FROM {SCHEMA}.parsed_companies WHERE (phone IS NULL OR phone = '') AND inn IS NOT NULL AND inn != '' LIMIT 50")
         rows = cur.fetchall()
         enriched = 0
-        for row_id, name in rows:
-            inn, director = enrich_dadata(name)
-            if inn or director:
-                cur.execute(
-                    f"UPDATE {SCHEMA}.parsed_companies SET inn=%s, director_name=%s, enriched_at=NOW() WHERE id=%s",
-                    (inn, director, row_id)
+        for row_id, name, inn in rows:
+            try:
+                payload = json.dumps({"query": inn, "count": 1}).encode()
+                req = urllib.request.Request(
+                    DADATA_FIND_URL,
+                    data=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "Authorization": f"Token {api_key}",
+                    }
                 )
-                enriched += 1
-            time.sleep(0.1)
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    result = json.loads(r.read().decode())
+                suggestions = result.get("suggestions", [])
+                if suggestions:
+                    d = suggestions[0].get("data", {})
+                    phones = d.get("phones") or []
+                    emails = d.get("emails") or []
+                    sites = d.get("sites") or []
+                    phone = phones[0].get("value", "") if phones else ""
+                    email = emails[0].get("value", "") if emails else ""
+                    website = sites[0].get("value", "") if sites else ""
+                    if phone or email or website:
+                        cur.execute(
+                            f"UPDATE {SCHEMA}.parsed_companies SET phone=%s, email=%s, website=%s, enriched_at=NOW() WHERE id=%s",
+                            (phone, email, website, row_id)
+                        )
+                        enriched += 1
+                time.sleep(0.15)
+            except Exception:
+                pass
         conn.commit()
         cur.close()
         conn.close()
