@@ -60,6 +60,10 @@ function parseEmbedUrl(raw: string): string {
   return raw;
 }
 
+function isEmbeddable(url: string): boolean {
+  return url.includes("video_ext") || url.includes("/embed/") || url.includes("player.vimeo");
+}
+
 export default function AdminVideosTab() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
@@ -252,16 +256,34 @@ export default function AdminVideosTab() {
                     <Icon name="Play" size={12} className="inline mr-1" />
                     Превью
                   </label>
-                  <div className="rounded-xl overflow-hidden border border-gray-200 aspect-video bg-black">
-                    <iframe
-                      key={parseEmbedUrl(editing.embed_url || "")}
-                      src={parseEmbedUrl(editing.embed_url || "")}
-                      className="w-full h-full"
-                      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                      allowFullScreen
-                      frameBorder="0"
-                    />
-                  </div>
+                  {isEmbeddable(parseEmbedUrl(editing.embed_url || "")) ? (
+                    <div className="rounded-xl overflow-hidden border border-gray-200 aspect-video bg-black">
+                      <iframe
+                        key={parseEmbedUrl(editing.embed_url || "")}
+                        src={parseEmbedUrl(editing.embed_url || "")}
+                        className="w-full h-full"
+                        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                        allowFullScreen
+                        frameBorder="0"
+                      />
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-gray-200 aspect-video bg-gray-50 flex flex-col items-center justify-center gap-3">
+                      <Icon name="Video" size={32} className="text-gray-300" />
+                      <p className="text-xs text-gray-400 text-center px-4">
+                        Ссылка распознана. Встроенный плеер недоступен — проверить можно по кнопке ниже.
+                      </p>
+                      <a
+                        href={parseEmbedUrl(editing.embed_url || "")}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-orange-500 hover:underline flex items-center gap-1"
+                      >
+                        <Icon name="ExternalLink" size={12} />
+                        Открыть видео
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
 
