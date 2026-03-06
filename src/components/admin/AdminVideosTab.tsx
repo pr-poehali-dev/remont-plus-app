@@ -66,8 +66,25 @@ function parseEmbedUrl(raw: string): string {
   return raw;
 }
 
-function isEmbeddable(url: string): boolean {
-  return url.includes("video_ext") || url.includes("/embed/") || url.includes("player.vimeo");
+function getYoutubeId(raw: string): string | null {
+  const m = raw.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=))([\w-]+)/);
+  return m ? m[1] : null;
+}
+
+function getPreviewInfo(raw: string): { label: string; thumb: string | null; href: string } {
+  const parsed = parseEmbedUrl(raw);
+  const ytId = getYoutubeId(raw);
+  if (ytId) {
+    return {
+      label: "YouTube",
+      thumb: `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`,
+      href: `https://www.youtube.com/watch?v=${ytId}`,
+    };
+  }
+  if (raw.includes("vk.com")) {
+    return { label: "VK Видео", thumb: null, href: parsed };
+  }
+  return { label: "Видео", thumb: null, href: parsed };
 }
 
 export default function AdminVideosTab() {
@@ -256,42 +273,39 @@ export default function AdminVideosTab() {
               </div>
 
               {/* Превью */}
-              {parseEmbedUrl(editing.embed_url || "") && (
-                <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">
-                    <Icon name="Play" size={12} className="inline mr-1" />
-                    Превью
-                  </label>
-                  {isEmbeddable(parseEmbedUrl(editing.embed_url || "")) ? (
-                    <div className="rounded-xl overflow-hidden border border-gray-200 aspect-video bg-black">
-                      <iframe
-                        key={parseEmbedUrl(editing.embed_url || "")}
-                        src={parseEmbedUrl(editing.embed_url || "")}
-                        className="w-full h-full"
-                        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                        allowFullScreen
-                        frameBorder="0"
-                      />
-                    </div>
-                  ) : (
-                    <div className="rounded-xl border border-gray-200 aspect-video bg-gray-50 flex flex-col items-center justify-center gap-3">
-                      <Icon name="Video" size={32} className="text-gray-300" />
-                      <p className="text-xs text-gray-400 text-center px-4">
-                        Ссылка распознана. Встроенный плеер недоступен — проверить можно по кнопке ниже.
-                      </p>
-                      <a
-                        href={parseEmbedUrl(editing.embed_url || "")}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-orange-500 hover:underline flex items-center gap-1"
-                      >
-                        <Icon name="ExternalLink" size={12} />
-                        Открыть видео
-                      </a>
-                    </div>
-                  )}
-                </div>
-              )}
+              {editing.embed_url && (() => {
+                const { label, thumb, href } = getPreviewInfo(editing.embed_url);
+                return (
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">
+                      <Icon name="Play" size={12} className="inline mr-1" />
+                      Превью
+                    </label>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded-xl overflow-hidden border border-gray-200 aspect-video bg-gray-900 relative group"
+                    >
+                      {thumb ? (
+                        <img src={thumb} alt="" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Icon name="Video" size={40} className="text-gray-500" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                        <div className="w-14 h-14 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center group-hover:bg-black/70 transition">
+                          <Icon name="Play" size={28} className="text-white ml-1" />
+                        </div>
+                        <span className="px-3 py-1 rounded-full bg-black/50 text-white text-xs font-medium backdrop-blur-sm">
+                          Открыть {label}
+                        </span>
+                      </div>
+                    </a>
+                  </div>
+                );
+              })()}
 
               {/* Обложка */}
               <div>
