@@ -102,25 +102,24 @@ def handler(event: dict, context) -> dict:
         is_own = body.get("is_own", False)
         sort_order = body.get("sort_order", 0)
 
-        s3 = get_s3()
         video_url = ""
         thumbnail_url = ""
-
         embed_url = body.get("embed_url", "")
 
-        if video_b64:
-            ext = body.get("video_ext", "mp4")
-            key = f"partner-videos/{uuid.uuid4()}.{ext}"
-            data = base64.b64decode(video_b64)
-            s3.put_object(Bucket="files", Key=key, Body=data, ContentType=f"video/{ext}")
-            video_url = cdn_url(key)
-
-        if thumb_b64:
-            thumb_ext = body.get("thumb_ext", "jpg")
-            tkey = f"partner-videos/thumbs/{uuid.uuid4()}.{thumb_ext}"
-            tdata = base64.b64decode(thumb_b64)
-            s3.put_object(Bucket="files", Key=tkey, Body=tdata, ContentType=f"image/{thumb_ext}")
-            thumbnail_url = cdn_url(tkey)
+        if video_b64 or thumb_b64:
+            s3 = get_s3()
+            if video_b64:
+                ext = body.get("video_ext", "mp4")
+                key = f"partner-videos/{uuid.uuid4()}.{ext}"
+                data = base64.b64decode(video_b64)
+                s3.put_object(Bucket="files", Key=key, Body=data, ContentType=f"video/{ext}")
+                video_url = cdn_url(key)
+            if thumb_b64:
+                thumb_ext = body.get("thumb_ext", "jpg")
+                tkey = f"partner-videos/thumbs/{uuid.uuid4()}.{thumb_ext}"
+                tdata = base64.b64decode(thumb_b64)
+                s3.put_object(Bucket="files", Key=tkey, Body=tdata, ContentType=f"image/{thumb_ext}")
+                thumbnail_url = cdn_url(tkey)
 
         conn = get_db()
         cur = conn.cursor()
@@ -145,25 +144,25 @@ def handler(event: dict, context) -> dict:
         if not vid_id:
             return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "id required"})}
 
-        s3 = get_s3()
         video_b64 = body.get("video_data")
         thumb_b64 = body.get("thumbnail_data")
         video_url = body.get("video_url", "")
         thumbnail_url = body.get("thumbnail_url", "")
 
-        if video_b64:
-            ext = body.get("video_ext", "mp4")
-            key = f"partner-videos/{uuid.uuid4()}.{ext}"
-            data = base64.b64decode(video_b64)
-            s3.put_object(Bucket="files", Key=key, Body=data, ContentType=f"video/{ext}")
-            video_url = cdn_url(key)
-
-        if thumb_b64:
-            thumb_ext = body.get("thumb_ext", "jpg")
-            tkey = f"partner-videos/thumbs/{uuid.uuid4()}.{thumb_ext}"
-            tdata = base64.b64decode(thumb_b64)
-            s3.put_object(Bucket="files", Key=tkey, Body=tdata, ContentType=f"image/{thumb_ext}")
-            thumbnail_url = cdn_url(tkey)
+        if video_b64 or thumb_b64:
+            s3 = get_s3()
+            if video_b64:
+                ext = body.get("video_ext", "mp4")
+                key = f"partner-videos/{uuid.uuid4()}.{ext}"
+                data = base64.b64decode(video_b64)
+                s3.put_object(Bucket="files", Key=key, Body=data, ContentType=f"video/{ext}")
+                video_url = cdn_url(key)
+            if thumb_b64:
+                thumb_ext = body.get("thumb_ext", "jpg")
+                tkey = f"partner-videos/thumbs/{uuid.uuid4()}.{thumb_ext}"
+                tdata = base64.b64decode(thumb_b64)
+                s3.put_object(Bucket="files", Key=tkey, Body=tdata, ContentType=f"image/{thumb_ext}")
+                thumbnail_url = cdn_url(tkey)
 
         conn = get_db()
         cur = conn.cursor()
