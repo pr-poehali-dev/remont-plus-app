@@ -34,21 +34,27 @@ const EMPTY: Omit<Video, "id"> = {
 };
 
 async function uploadThumb(file: File, apiUrl: string, token: string): Promise<string> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const contentType = file.type || "image/jpeg";
-  const presignRes = await fetch(
-    `${apiUrl}?action=presign&type=thumb&ext=${ext}&content_type=${encodeURIComponent(contentType)}`,
-    { headers: { "X-Admin-Token": token } }
-  );
-  if (!presignRes.ok) throw new Error("Не удалось получить URL для загрузки");
-  const { upload_url, cdn_url } = await presignRes.json();
-  const uploadRes = await fetch(upload_url, {
-    method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: file,
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Не удалось прочитать файл"));
+    reader.onload = async () => {
+      try {
+        const base64 = (reader.result as string).split(",")[1];
+        const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+        const res = await fetch(`${apiUrl}?action=upload_thumb`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-Token": token },
+          body: JSON.stringify({ thumb_data: base64, thumb_ext: ext }),
+        });
+        if (!res.ok) throw new Error(`Ошибка загрузки обложки: ${res.status}`);
+        const { thumbnail_url } = await res.json();
+        resolve(thumbnail_url);
+      } catch (e) {
+        reject(e);
+      }
+    };
+    reader.readAsDataURL(file);
   });
-  if (!uploadRes.ok) throw new Error(`Ошибка загрузки обложки: ${uploadRes.status}`);
-  return cdn_url;
 }
 
 function parseEmbedUrl(raw: string): string {

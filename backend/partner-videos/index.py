@@ -5,6 +5,7 @@ API для управления видеороликами партнёров и
 import json
 import os
 import uuid
+import base64
 import psycopg2
 import boto3
 from botocore.config import Config
@@ -112,6 +113,19 @@ def handler(event: dict, context) -> dict:
             "headers": CORS,
             "body": json.dumps({"upload_url": presigned, "cdn_url": cdn_url(key), "key": key}),
         }
+
+    # POST ?action=upload_thumb — загрузить обложку через бэкенд (base64)
+    if method == "POST" and action == "upload_thumb":
+        thumb_b64 = body.get("thumb_data", "")
+        thumb_ext = body.get("thumb_ext", "jpg")
+        if not thumb_b64:
+            return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "thumb_data required"})}
+        s3 = get_s3()
+        tkey = f"partner-videos/thumbs/{uuid.uuid4()}.{thumb_ext}"
+        tdata = base64.b64decode(thumb_b64)
+        content_type = f"image/{thumb_ext}" if thumb_ext != "jpg" else "image/jpeg"
+        s3.put_object(Bucket="files", Key=tkey, Body=tdata, ContentType=content_type)
+        return {"statusCode": 200, "headers": CORS, "body": json.dumps({"thumbnail_url": cdn_url(tkey)})}
 
     # POST — создать запись (видео уже загружено напрямую в S3)
     if method == "POST":
