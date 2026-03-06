@@ -5,6 +5,22 @@
       "method": "GET",
       "path": "/",
       "expectedStatus": 200
+    },
+    {
+      "name": "POST create video with embed_url",
+      "method": "POST",
+      "path": "/",
+      "headers": { "X-Admin-Token": "admin2025", "Content-Type": "application/json" },
+      "body": {
+        "title": "Тест видео",
+        "description": "Тестовое описание",
+        "embed_url": "https://vk.com/video_ext.php?oid=1&id=1&hash=test",
+        "partner_name": "Тест",
+        "is_own": false,
+        "is_active": true,
+        "sort_order": 0
+      },
+      "expectedStatus": 201
     }
   ]
 }

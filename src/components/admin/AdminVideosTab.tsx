@@ -53,6 +53,7 @@ export default function AdminVideosTab() {
   const [editing, setEditing] = useState<(Partial<Video> & { id?: number }) | null>(null);
   const [sourceType, setSourceType] = useState<SourceType>("link");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [thumbFile, setThumbFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState("");
@@ -87,6 +88,7 @@ export default function AdminVideosTab() {
   const save = async () => {
     if (!editing) return;
     setSaving(true);
+    setSaveError("");
     setUploadProgress("Подготовка...");
     try {
       const payload: Record<string, unknown> = { ...editing };
@@ -115,15 +117,20 @@ export default function AdminVideosTab() {
 
       setUploadProgress("Сохраняю...");
       const method = editing.id ? "PUT" : "POST";
-      await fetch(API_URL, {
+      const res = await fetch(API_URL, {
         method,
         headers: { "Content-Type": "application/json", "X-Admin-Token": ADMIN_TOKEN },
         body: JSON.stringify(payload),
       });
+      if (!res.ok) {
+        const txt = await res.text();
+        setSaveError(`Ошибка сервера ${res.status}: ${txt}`);
+        return;
+      }
       setEditing(null);
       load();
-    } catch {
-      /* ignore */
+    } catch (e) {
+      setSaveError(`Ошибка: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setSaving(false);
       setUploadProgress("");
@@ -336,6 +343,12 @@ export default function AdminVideosTab() {
               </div>
             </div>
           </div>
+
+          {saveError && (
+            <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
+              {saveError}
+            </div>
+          )}
 
           <div className="flex gap-3 mt-5 pt-4 border-t border-gray-100">
             <Button
