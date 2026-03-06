@@ -34,13 +34,22 @@ const EMPTY: Omit<Video, "id"> = {
 
 type SourceType = "file" | "link";
 
-function toBase64(file: File): Promise<string> {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res((r.result as string).split(",")[1]);
-    r.onerror = rej;
-    r.readAsDataURL(file);
+async function uploadToS3(file: File, type: "video" | "thumb"): Promise<string> {
+  const ext = file.name.split(".").pop()?.toLowerCase() || (type === "video" ? "mp4" : "jpg");
+  const contentType = file.type || (type === "video" ? "video/mp4" : "image/jpeg");
+  const presignRes = await fetch(
+    `${API_URL}?action=presign&type=${type}&ext=${ext}&content_type=${encodeURIComponent(contentType)}`,
+    { headers: { "X-Admin-Token": ADMIN_TOKEN } }
+  );
+  if (!presignRes.ok) throw new Error("Не удалось получить URL для загрузки");
+  const { upload_url, cdn_url } = await presignRes.json();
+  const uploadRes = await fetch(upload_url, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body: file,
   });
+  if (!uploadRes.ok) throw new Error(`Ошибка загрузки файла: ${uploadRes.status}`);
+  return cdn_url;
 }
 
 function getSourceType(v: Partial<Video>): SourceType {
@@ -94,25 +103,21 @@ export default function AdminVideosTab() {
       const payload: Record<string, unknown> = { ...editing };
 
       if (sourceType === "link") {
-        payload.video_data = undefined;
         payload.video_url = "";
+        payload.embed_url = editing.embed_url || "";
       }
 
       if (sourceType === "file") {
         payload.embed_url = "";
         if (videoFile) {
-          setUploadProgress("Загружаю видео...");
-          const ext = videoFile.name.split(".").pop()?.toLowerCase() || "mp4";
-          payload.video_data = await toBase64(videoFile);
-          payload.video_ext = ext;
+          setUploadProgress("Загружаю видео в хранилище...");
+          payload.video_url = await uploadToS3(videoFile, "video");
         }
       }
 
       if (thumbFile) {
         setUploadProgress("Загружаю обложку...");
-        const ext = thumbFile.name.split(".").pop()?.toLowerCase() || "jpg";
-        payload.thumbnail_data = await toBase64(thumbFile);
-        payload.thumb_ext = ext;
+        payload.thumbnail_url = await uploadToS3(thumbFile, "thumb");
       }
 
       setUploadProgress("Сохраняю...");

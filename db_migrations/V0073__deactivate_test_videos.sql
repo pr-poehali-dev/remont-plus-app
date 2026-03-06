@@ -1,0 +1,1 @@
+UPDATE t_p46588937_remont_plus_app.partner_videos SET is_active = FALSE WHERE embed_url LIKE '%hash=test%';

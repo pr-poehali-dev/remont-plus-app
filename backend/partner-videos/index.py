@@ -1,13 +1,13 @@
 """
 API для управления видеороликами партнёров и собственными видео на главной странице.
-Поддерживает загрузку mp4, получение списка, создание, обновление и удаление.
+Поддерживает получение presigned URL для прямой загрузки в S3, создание, обновление и удаление.
 """
 import json
 import os
-import base64
 import uuid
 import psycopg2
 import boto3
+from botocore.config import Config
 
 CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -29,6 +29,7 @@ def get_s3():
         endpoint_url="https://bucket.poehali.dev",
         aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
         aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+        config=Config(signature_version="s3v4"),
     )
 
 
@@ -48,9 +49,10 @@ def handler(event: dict, context) -> dict:
 
     method = event.get("httpMethod", "GET")
     params = event.get("queryStringParameters") or {}
+    action = params.get("action", "")
 
     # GET — список видео (публичный или admin)
-    if method == "GET":
+    if method == "GET" and action != "presign":
         is_admin_req = params.get("admin") == "1" and check_admin(event)
         conn = get_db()
         cur = conn.cursor()
@@ -92,34 +94,35 @@ def handler(event: dict, context) -> dict:
     if event.get("body"):
         body = json.loads(event["body"])
 
-    # POST — загрузка нового видео
+    # GET ?action=presign — получить presigned URL для загрузки файла напрямую в S3
+    if method == "GET" and action == "presign":
+        file_type = params.get("type", "video")  # 'video' or 'thumb'
+        ext = params.get("ext", "mp4")
+        content_type = params.get("content_type", "video/mp4")
+        folder = "partner-videos/thumbs" if file_type == "thumb" else "partner-videos"
+        key = f"{folder}/{uuid.uuid4()}.{ext}"
+        s3 = get_s3()
+        presigned = s3.generate_presigned_url(
+            "put_object",
+            Params={"Bucket": "files", "Key": key, "ContentType": content_type},
+            ExpiresIn=3600,
+        )
+        return {
+            "statusCode": 200,
+            "headers": CORS,
+            "body": json.dumps({"upload_url": presigned, "cdn_url": cdn_url(key), "key": key}),
+        }
+
+    # POST — создать запись (видео уже загружено напрямую в S3)
     if method == "POST":
-        video_b64 = body.get("video_data")
-        thumb_b64 = body.get("thumbnail_data")
         title = body.get("title", "")
         description = body.get("description", "")
         partner_name = body.get("partner_name", "")
         is_own = body.get("is_own", False)
         sort_order = body.get("sort_order", 0)
-
-        video_url = ""
-        thumbnail_url = ""
+        video_url = body.get("video_url", "")
+        thumbnail_url = body.get("thumbnail_url", "")
         embed_url = body.get("embed_url", "")
-
-        if video_b64 or thumb_b64:
-            s3 = get_s3()
-            if video_b64:
-                ext = body.get("video_ext", "mp4")
-                key = f"partner-videos/{uuid.uuid4()}.{ext}"
-                data = base64.b64decode(video_b64)
-                s3.put_object(Bucket="files", Key=key, Body=data, ContentType=f"video/{ext}")
-                video_url = cdn_url(key)
-            if thumb_b64:
-                thumb_ext = body.get("thumb_ext", "jpg")
-                tkey = f"partner-videos/thumbs/{uuid.uuid4()}.{thumb_ext}"
-                tdata = base64.b64decode(thumb_b64)
-                s3.put_object(Bucket="files", Key=tkey, Body=tdata, ContentType=f"image/{thumb_ext}")
-                thumbnail_url = cdn_url(tkey)
 
         conn = get_db()
         cur = conn.cursor()
@@ -144,30 +147,12 @@ def handler(event: dict, context) -> dict:
         if not vid_id:
             return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "id required"})}
 
-        video_b64 = body.get("video_data")
-        thumb_b64 = body.get("thumbnail_data")
         video_url = body.get("video_url", "")
         thumbnail_url = body.get("thumbnail_url", "")
-
-        if video_b64 or thumb_b64:
-            s3 = get_s3()
-            if video_b64:
-                ext = body.get("video_ext", "mp4")
-                key = f"partner-videos/{uuid.uuid4()}.{ext}"
-                data = base64.b64decode(video_b64)
-                s3.put_object(Bucket="files", Key=key, Body=data, ContentType=f"video/{ext}")
-                video_url = cdn_url(key)
-            if thumb_b64:
-                thumb_ext = body.get("thumb_ext", "jpg")
-                tkey = f"partner-videos/thumbs/{uuid.uuid4()}.{thumb_ext}"
-                tdata = base64.b64decode(thumb_b64)
-                s3.put_object(Bucket="files", Key=tkey, Body=tdata, ContentType=f"image/{thumb_ext}")
-                thumbnail_url = cdn_url(tkey)
+        embed_url_put = body.get("embed_url", "")
 
         conn = get_db()
         cur = conn.cursor()
-        embed_url_put = body.get("embed_url", "")
-
         cur.execute(
             f"""
             UPDATE {SCHEMA}.partner_videos SET

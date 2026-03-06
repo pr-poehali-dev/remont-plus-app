@@ -7,12 +7,20 @@
       "expectedStatus": 200
     },
     {
+      "name": "GET presign URL for video",
+      "method": "GET",
+      "path": "/?action=presign&type=video&ext=mp4&content_type=video/mp4",
+      "headers": { "X-Admin-Token": "admin2025" },
+      "expectedStatus": 200,
+      "expectedStatus": 200
+    },
+    {
       "name": "POST create video with embed_url",
       "method": "POST",
       "path": "/",
       "headers": { "X-Admin-Token": "admin2025", "Content-Type": "application/json" },
       "body": {
-        "title": "Тест видео",
+        "title": "Тест видео presign",
         "description": "Тестовое описание",
         "embed_url": "https://vk.com/video_ext.php?oid=1&id=1&hash=test",
         "partner_name": "Тест",
