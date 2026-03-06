@@ -57,7 +57,7 @@ def handler(event: dict, context) -> dict:
         if is_admin_req:
             cur.execute(
                 f"""
-                SELECT id, title, description, video_url, thumbnail_url,
+                SELECT id, title, description, video_url, thumbnail_url, embed_url,
                        partner_name, is_own, is_active, sort_order, created_at
                 FROM {SCHEMA}.partner_videos
                 ORDER BY sort_order ASC, created_at DESC
@@ -66,7 +66,7 @@ def handler(event: dict, context) -> dict:
         else:
             cur.execute(
                 f"""
-                SELECT id, title, description, video_url, thumbnail_url,
+                SELECT id, title, description, video_url, thumbnail_url, embed_url,
                        partner_name, is_own, is_active, sort_order, created_at
                 FROM {SCHEMA}.partner_videos
                 WHERE is_active = TRUE
@@ -74,7 +74,7 @@ def handler(event: dict, context) -> dict:
                 """
             )
         rows = cur.fetchall()
-        cols = ["id", "title", "description", "video_url", "thumbnail_url",
+        cols = ["id", "title", "description", "video_url", "thumbnail_url", "embed_url",
                 "partner_name", "is_own", "is_active", "sort_order", "created_at"]
         videos = [dict(zip(cols, r)) for r in rows]
         for v in videos:
@@ -106,6 +106,8 @@ def handler(event: dict, context) -> dict:
         video_url = ""
         thumbnail_url = ""
 
+        embed_url = body.get("embed_url", "")
+
         if video_b64:
             ext = body.get("video_ext", "mp4")
             key = f"partner-videos/{uuid.uuid4()}.{ext}"
@@ -125,11 +127,11 @@ def handler(event: dict, context) -> dict:
         cur.execute(
             f"""
             INSERT INTO {SCHEMA}.partner_videos
-                (title, description, video_url, thumbnail_url, partner_name, is_own, sort_order)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (title, description, video_url, thumbnail_url, embed_url, partner_name, is_own, sort_order)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             """,
-            (title, description, video_url, thumbnail_url, partner_name, is_own, sort_order),
+            (title, description, video_url, thumbnail_url, embed_url, partner_name, is_own, sort_order),
         )
         new_id = cur.fetchone()[0]
         conn.commit()
@@ -165,11 +167,14 @@ def handler(event: dict, context) -> dict:
 
         conn = get_db()
         cur = conn.cursor()
+        embed_url_put = body.get("embed_url", "")
+
         cur.execute(
             f"""
             UPDATE {SCHEMA}.partner_videos SET
                 title = %s, description = %s, partner_name = %s,
                 is_own = %s, is_active = %s, sort_order = %s,
+                embed_url = %s,
                 video_url = CASE WHEN %s != '' THEN %s ELSE video_url END,
                 thumbnail_url = CASE WHEN %s != '' THEN %s ELSE thumbnail_url END,
                 updated_at = NOW()
@@ -178,6 +183,7 @@ def handler(event: dict, context) -> dict:
             (
                 body.get("title", ""), body.get("description", ""), body.get("partner_name", ""),
                 body.get("is_own", False), body.get("is_active", True), body.get("sort_order", 0),
+                embed_url_put,
                 video_url, video_url,
                 thumbnail_url, thumbnail_url,
                 vid_id,

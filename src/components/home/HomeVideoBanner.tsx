@@ -9,6 +9,7 @@ interface PartnerVideo {
   description: string;
   video_url: string;
   thumbnail_url: string;
+  embed_url: string;
   partner_name: string;
   is_own: boolean;
 }
@@ -41,6 +42,7 @@ export default function HomeVideoBanner() {
   if (loading || videos.length === 0) return null;
 
   const current = videos[active];
+  const isEmbed = !!current.embed_url;
 
   const handlePlay = () => {
     if (videoRef.current) {
@@ -54,8 +56,8 @@ export default function HomeVideoBanner() {
     }
   };
 
-  const prev = () => setActive(i => (i - 1 + videos.length) % videos.length);
-  const next = () => setActive(i => (i + 1) % videos.length);
+  const prev = () => { setActive(i => (i - 1 + videos.length) % videos.length); };
+  const next = () => { setActive(i => (i + 1) % videos.length); };
 
   return (
     <section className="mt-16">
@@ -93,41 +95,57 @@ export default function HomeVideoBanner() {
       </div>
 
       <div className="rounded-3xl overflow-hidden border border-gray-100 bg-white shadow-sm">
-        {/* Видео-плеер */}
+        {/* Плеер */}
         <div className="relative bg-black aspect-video">
-          <video
-            ref={videoRef}
-            src={current.video_url}
-            poster={current.thumbnail_url || undefined}
-            className="w-full h-full object-contain"
-            onEnded={() => setPlaying(false)}
-            playsInline
-          />
-
-          {/* Оверлей с кнопкой Play */}
-          {!playing && (
-            <div
-              className="absolute inset-0 flex items-center justify-center cursor-pointer"
-              onClick={handlePlay}
-            >
-              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center hover:bg-white/30 transition">
-                <Icon name="Play" size={28} className="text-white ml-1" />
-              </div>
-            </div>
+          {isEmbed ? (
+            <iframe
+              key={current.id}
+              src={current.embed_url}
+              className="w-full h-full"
+              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              allowFullScreen
+              frameBorder="0"
+            />
+          ) : (
+            <>
+              <video
+                ref={videoRef}
+                src={current.video_url}
+                poster={current.thumbnail_url || undefined}
+                className="w-full h-full object-contain"
+                onEnded={() => setPlaying(false)}
+                playsInline
+              />
+              {!playing && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                  onClick={handlePlay}
+                >
+                  {current.thumbnail_url && (
+                    <img
+                      src={current.thumbnail_url}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  )}
+                  <div className="relative w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center hover:bg-white/30 transition">
+                    <Icon name="Play" size={28} className="text-white ml-1" />
+                  </div>
+                </div>
+              )}
+              {playing && (
+                <button
+                  onClick={handlePlay}
+                  className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition"
+                >
+                  <Icon name="Pause" size={16} className="text-white" />
+                </button>
+              )}
+            </>
           )}
 
-          {/* Кнопка паузы (когда играет) */}
-          {playing && (
-            <button
-              onClick={handlePlay}
-              className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition"
-            >
-              <Icon name="Pause" size={16} className="text-white" />
-            </button>
-          )}
-
-          {/* Бейдж типа */}
-          <div className="absolute top-3 left-3">
+          {/* Бейдж */}
+          <div className="absolute top-3 left-3 pointer-events-none">
             {current.is_own ? (
               <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-500 text-white">
                 Наш ролик
@@ -156,7 +174,7 @@ export default function HomeVideoBanner() {
               )}
             </div>
 
-            {/* Мини-превью других видео */}
+            {/* Мини-превью */}
             {videos.length > 1 && (
               <div className="flex gap-2 shrink-0">
                 {videos.slice(0, 4).map((v, i) => (
