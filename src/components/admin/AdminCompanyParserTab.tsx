@@ -42,6 +42,11 @@ export default function AdminCompanyParserTab() {
   const [statusMsg, setStatusMsg] = useState("");
   const [activeTab, setActiveTab] = useState<"overview" | "list">("overview");
 
+  // Массовый сбор по всем городам
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkStop, setBulkStop] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number; city: string; log: string[] }>({ done: 0, total: 0, city: "", log: [] });
+
   const PAGE = 50;
 
   useEffect(() => {
@@ -125,6 +130,34 @@ export default function AdminCompanyParserTab() {
       });
   };
 
+  const handleBulkParse = async () => {
+    if (!cities.length) return;
+    setBulkRunning(true);
+    setBulkStop(false);
+    setBulkProgress({ done: 0, total: cities.length, city: "", log: [] });
+
+    for (let i = 0; i < cities.length; i++) {
+      if (bulkStop) break;
+      const city = cities[i].name;
+      setBulkProgress(p => ({ ...p, city, done: i }));
+      try {
+        const r = await fetch(API_URL, {
+          method: "POST", headers: HEADERS,
+          body: JSON.stringify({ action: "parse", city }),
+        });
+        const d = await r.json();
+        const line = `${city}: найдено ${d.found}, добавлено ${d.inserted}`;
+        setBulkProgress(p => ({ ...p, log: [...p.log, line] }));
+      } catch {
+        setBulkProgress(p => ({ ...p, log: [...p.log, `${city}: ошибка`] }));
+      }
+      setBulkProgress(p => ({ ...p, done: i + 1 }));
+    }
+
+    setBulkRunning(false);
+    loadStats();
+  };
+
   const handleDelete = async (city: string) => {
     if (!confirm(`Удалить все компании по городу "${city}"?`)) return;
     await fetch(API_URL, {
@@ -165,6 +198,76 @@ export default function AdminCompanyParserTab() {
           <p className="text-3xl font-extrabold text-blue-500">{stats.length}</p>
           <p className="text-sm text-gray-500 mt-1">Городов собрано</p>
         </div>
+      </div>
+
+      {/* Массовый сбор */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div>
+            <p className="font-semibold text-gray-900 text-sm">Собрать все города сразу</p>
+            <p className="text-xs text-gray-400">Поочерёдно обойдёт все 14 городов-миллионников</p>
+          </div>
+          <div className="flex gap-2 ml-auto">
+            {bulkRunning ? (
+              <Button
+                onClick={() => setBulkStop(true)}
+                variant="outline"
+                className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <Icon name="Square" size={14} />
+                Остановить
+              </Button>
+            ) : (
+              <Button
+                onClick={handleBulkParse}
+                disabled={parsing || enriching || !cities.length}
+                className="bg-gray-900 hover:bg-gray-800 text-white gap-2"
+              >
+                <Icon name="Zap" size={16} />
+                Собрать все {cities.length} городов
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {(bulkRunning || bulkProgress.log.length > 0) && (
+          <div className="mt-4">
+            {/* Прогресс-бар */}
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-orange-500 rounded-full transition-all duration-500"
+                  style={{ width: `${bulkProgress.total > 0 ? Math.round(bulkProgress.done / bulkProgress.total * 100) : 0}%` }}
+                />
+              </div>
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                {bulkProgress.done} / {bulkProgress.total}
+              </span>
+            </div>
+            {bulkRunning && bulkProgress.city && (
+              <p className="text-xs text-orange-600 flex items-center gap-1 mb-2">
+                <Icon name="Loader2" size={12} className="animate-spin" />
+                Обрабатываю: {bulkProgress.city}...
+              </p>
+            )}
+            {/* Лог */}
+            <div className="bg-gray-50 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1">
+              {bulkProgress.log.length === 0 ? (
+                <p className="text-xs text-gray-400">Ожидаю результатов...</p>
+              ) : (
+                [...bulkProgress.log].reverse().map((line, i) => (
+                  <p key={i} className="text-xs text-gray-600 font-mono">{line}</p>
+                ))
+              )}
+            </div>
+            {!bulkRunning && bulkProgress.done === bulkProgress.total && bulkProgress.total > 0 && (
+              <p className="text-sm text-green-600 font-medium mt-2 flex items-center gap-1">
+                <Icon name="CheckCircle2" size={14} />
+                Готово! Все города обработаны.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Вкладки */}
