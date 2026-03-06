@@ -102,7 +102,6 @@ export default function CompaniesTable({ companies, doneCount }: Props) {
                     <td className="px-3 py-2 text-gray-400 text-xs">{i + 1}</td>
                     <td className="px-3 py-2 max-w-[180px]">
                       <div className="font-medium text-gray-900 truncate">{c.egrul?.full_name || c.name}</div>
-                      {c.address && <div className="text-xs text-gray-400 truncate">{c.address}</div>}
                     </td>
                     <td className="px-3 py-2">
                       {c.egrul_status === "loading" ? (
@@ -113,7 +112,6 @@ export default function CompaniesTable({ companies, doneCount }: Props) {
                     </td>
                     <td className="px-3 py-2 text-gray-600 max-w-[160px]">
                       <div className="truncate text-xs">{c.egrul?.manager_name || ""}</div>
-                      <div className="truncate text-xs text-gray-400">{c.egrul?.manager_post || ""}</div>
                     </td>
                     <td className="px-3 py-2 text-gray-600 whitespace-nowrap">
                       {c.status === "loading" ? (
@@ -137,17 +135,23 @@ export default function CompaniesTable({ companies, doneCount }: Props) {
                       </a>
                     </td>
                   </tr>
-                  {expandedRow === c.url && c.egrul && !c.egrul.error && (
+                  {expandedRow === c.url && (
                     <tr className="bg-indigo-50/60 border-t border-indigo-100">
                       <td colSpan={9} className="px-4 py-3">
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1.5 text-xs">
-                          {c.egrul.full_name && <div><span className="text-gray-400">Полное название:</span> <span className="font-medium">{c.egrul.full_name}</span></div>}
-                          {c.egrul.ogrn && <div><span className="text-gray-400">ОГРН:</span> <span className="font-medium">{c.egrul.ogrn}</span></div>}
-                          {c.egrul.kpp && <div><span className="text-gray-400">КПП:</span> <span className="font-medium">{c.egrul.kpp}</span></div>}
-                          {c.egrul.type && <div><span className="text-gray-400">Форма:</span> <span className="font-medium">{c.egrul.type}</span></div>}
-                          {c.egrul.reg_date && <div><span className="text-gray-400">Зарегистрирована:</span> <span className="font-medium">{c.egrul.reg_date}</span></div>}
-                          {c.egrul.okved && <div><span className="text-gray-400">ОКВЭД:</span> <span className="font-medium">{c.egrul.okved}</span></div>}
-                          {c.egrul.address_full && <div className="col-span-2"><span className="text-gray-400">Юридический адрес:</span> <span className="font-medium">{c.egrul.address_full}</span></div>}
+                          {c.phone && <div><span className="text-gray-400">Телефон:</span> <span className="font-medium">{c.phone}</span></div>}
+                          {c.email && <div><span className="text-gray-400">Email:</span> <span className="font-medium">{c.email}</span></div>}
+                          {c.address && <div className="col-span-2"><span className="text-gray-400">Адрес:</span> <span className="font-medium">{c.address}</span></div>}
+                          {c.egrul && !c.egrul.error && <>
+                            {c.egrul.full_name && <div><span className="text-gray-400">Полное название:</span> <span className="font-medium">{c.egrul.full_name}</span></div>}
+                            {c.egrul.ogrn && <div><span className="text-gray-400">ОГРН:</span> <span className="font-medium">{c.egrul.ogrn}</span></div>}
+                            {c.egrul.kpp && <div><span className="text-gray-400">КПП:</span> <span className="font-medium">{c.egrul.kpp}</span></div>}
+                            {c.egrul.type && <div><span className="text-gray-400">Форма:</span> <span className="font-medium">{c.egrul.type}</span></div>}
+                            {c.egrul.manager_post && <div><span className="text-gray-400">Должность:</span> <span className="font-medium">{c.egrul.manager_post}</span></div>}
+                            {c.egrul.reg_date && <div><span className="text-gray-400">Зарегистрирована:</span> <span className="font-medium">{c.egrul.reg_date}</span></div>}
+                            {c.egrul.okved && <div><span className="text-gray-400">ОКВЭД:</span> <span className="font-medium">{c.egrul.okved}</span></div>}
+                            {c.egrul.address_full && <div className="col-span-2"><span className="text-gray-400">Юридический адрес:</span> <span className="font-medium">{c.egrul.address_full}</span></div>}
+                          </>}
                         </div>
                       </td>
                     </tr>
