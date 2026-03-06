@@ -256,14 +256,17 @@ def handler(event: dict, context) -> dict:
             for page in range(1, 6):
                 try:
                     data = fetch_2gis(query, location, page, api_key)
+                    print(f"[2GIS] q={query} p={page} raw_keys={list(data.keys())} meta={data.get('meta')} result_keys={list((data.get('result') or {}).keys())}")
                     meta_code = data.get("meta", {}).get("code", 200)
                     if meta_code != 200:
                         err_msg = data.get("meta", {}).get("error", {}).get("message", "")
                         debug_info.append(f"meta_code={meta_code} q={query} p={page} err={err_msg}")
+                        print(f"[2GIS ERROR] meta_code={meta_code} err={err_msg}")
                         break
                     items = (data.get("result") or {}).get("items", [])
                     if not items:
-                        debug_info.append(f"empty q={query} p={page}")
+                        debug_info.append(f"empty q={query} p={page} result={data.get('result')}")
+                        print(f"[2GIS EMPTY] result={data.get('result')}")
                         break
                     debug_info.append(f"got {len(items)} items q={query} p={page} first_type={items[0].get('type')} first_name={items[0].get('name')}")
                     for item in items:
