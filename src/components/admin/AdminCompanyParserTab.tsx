@@ -431,6 +431,7 @@ export default function AdminCompanyParserTab() {
                     <th className="text-left px-4 py-3 font-medium text-gray-600 min-w-[200px]">Название</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Город</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Телефон</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Директор</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">ИНН</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Сайт</th>
@@ -444,6 +445,11 @@ export default function AdminCompanyParserTab() {
                       <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
                         {c.phone ? (
                           <a href={`tel:${c.phone}`} className="hover:text-orange-500">{c.phone}</a>
+                        ) : <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                        {c.email ? (
+                          <a href={`mailto:${c.email}`} className="hover:text-orange-500">{c.email}</a>
                         ) : <span className="text-gray-300">—</span>}
                       </td>
                       <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
