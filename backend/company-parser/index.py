@@ -1,6 +1,6 @@
 """
-Парсер строительных компаний (ремонт квартир) через orgpage.ru.
-Собирает компании по городам, обогащает данные через DaData. Выгрузка в CSV.
+Парсер строительных компаний (ремонт квартир) через Яндекс Геопоиск API.
+Ищет компании по городам, обогащает данные через DaData. Выгрузка в CSV.
 """
 import json
 import os
@@ -8,7 +8,6 @@ import time
 import csv
 import io
 import base64
-import re
 import psycopg2
 import urllib.request
 import urllib.parse
@@ -21,31 +20,30 @@ CORS = {
 ADMIN_TOKEN = "admin2025"
 SCHEMA = "t_p46588937_remont_plus_app"
 
-# slug города на orgpage.ru → название
 CITIES = [
-    {"name": "Москва",          "slug": "moskva"},
-    {"name": "Санкт-Петербург", "slug": "sankt-peterburg"},
-    {"name": "Новосибирск",     "slug": "novosibirsk"},
-    {"name": "Екатеринбург",    "slug": "ekaterinburg"},
-    {"name": "Казань",          "slug": "kazan"},
-    {"name": "Нижний Новгород", "slug": "nizhnij-novgorod"},
-    {"name": "Челябинск",       "slug": "chelyabinsk"},
-    {"name": "Самара",          "slug": "samara"},
-    {"name": "Омск",            "slug": "omsk"},
-    {"name": "Ростов-на-Дону",  "slug": "rostov-na-donu"},
-    {"name": "Уфа",             "slug": "ufa"},
-    {"name": "Красноярск",      "slug": "krasnoyarsk"},
-    {"name": "Пермь",           "slug": "perm"},
-    {"name": "Воронеж",         "slug": "voronezh"},
+    {"name": "Москва",          "ll": "37.617644,55.755819", "spn": "0.5,0.5"},
+    {"name": "Санкт-Петербург", "ll": "30.315868,59.939095", "spn": "0.5,0.5"},
+    {"name": "Новосибирск",     "ll": "82.934600,54.983200", "spn": "0.4,0.4"},
+    {"name": "Екатеринбург",    "ll": "60.612200,56.851900", "spn": "0.4,0.4"},
+    {"name": "Казань",          "ll": "49.122100,55.788700", "spn": "0.4,0.4"},
+    {"name": "Нижний Новгород", "ll": "44.002000,56.326900", "spn": "0.4,0.4"},
+    {"name": "Челябинск",       "ll": "61.429100,55.164400", "spn": "0.4,0.4"},
+    {"name": "Самара",          "ll": "50.160600,53.195900", "spn": "0.4,0.4"},
+    {"name": "Омск",            "ll": "73.368600,54.988500", "spn": "0.4,0.4"},
+    {"name": "Ростов-на-Дону",  "ll": "39.712500,47.235700", "spn": "0.4,0.4"},
+    {"name": "Уфа",             "ll": "55.972100,54.738800", "spn": "0.4,0.4"},
+    {"name": "Красноярск",      "ll": "92.893200,56.015300", "spn": "0.4,0.4"},
+    {"name": "Пермь",           "ll": "56.229100,58.010500", "spn": "0.4,0.4"},
+    {"name": "Воронеж",         "ll": "39.184300,51.672000", "spn": "0.4,0.4"},
 ]
 
-CATEGORY_SLUG = "%D1%80%D0%B5%D0%BC%D0%BE%D0%BD%D1%82_%D0%BA%D0%B2%D0%B0%D1%80%D1%82%D0%B8%D1%80"  # ремонт_квартир
+SEARCH_QUERIES = [
+    "ремонт квартир",
+    "строительная компания ремонт",
+    "отделочные работы",
+]
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "ru-RU,ru;q=0.9",
-}
+YANDEX_GEOSEARCH_URL = "https://search-maps.yandex.ru/v1/"
 
 
 def get_db():
@@ -57,106 +55,59 @@ def check_admin(event):
     return (h.get("X-Admin-Token") or h.get("x-admin-token", "")) == ADMIN_TOKEN
 
 
-def http_get_html(url):
-    req = urllib.request.Request(url, headers=HEADERS)
+def fetch_yandex(query, ll, spn, skip, api_key):
+    """Поиск организаций через Яндекс Геопоиск API."""
+    params = urllib.parse.urlencode({
+        "text": query,
+        "ll": ll,
+        "spn": spn,
+        "type": "biz",
+        "lang": "ru_RU",
+        "results": 50,
+        "skip": skip,
+        "apikey": api_key,
+    })
+    url = f"{YANDEX_GEOSEARCH_URL}?{params}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req, timeout=20) as r:
-        return r.read().decode("utf-8", errors="ignore")
+        return json.loads(r.read().decode("utf-8"))
 
 
-def clean(s):
-    s = re.sub(r"<[^>]+>", " ", s)
-    s = re.sub(r"&amp;", "&", s)
-    s = re.sub(r"&nbsp;", " ", s)
-    s = re.sub(r"&#\d+;", "", s)
-    return re.sub(r"\s+", " ", s).strip()
+def extract_company(feature):
+    """Извлекает данные компании из GeoJSON feature Яндекс Геопоиска."""
+    props = feature.get("properties", {})
+    meta = props.get("CompanyMetaData", {})
 
+    name = meta.get("name", "").strip()
+    if not name:
+        return None
 
-def parse_orgpage_list(city_slug, page):
-    """Парсит страницу списка компаний на orgpage.ru."""
-    if page == 1:
-        url = f"https://www.orgpage.ru/{city_slug}/{CATEGORY_SLUG}/"
-    else:
-        url = f"https://www.orgpage.ru/{city_slug}/{CATEGORY_SLUG}/?page={page}"
+    address = meta.get("address", "")
+    phone = ""
+    email = ""
+    website = ""
 
-    html = http_get_html(url)
-    print(f"[ORGPAGE] city={city_slug} page={page} html_len={len(html)}")
+    for p in meta.get("Phones", []):
+        if not phone:
+            phone = p.get("formatted", "")
 
-    companies = []
+    for link in meta.get("Links", []):
+        href = link.get("href", "")
+        if not email and "mailto:" in href:
+            email = href.replace("mailto:", "").strip()
+        elif not website and href.startswith("http"):
+            website = href.strip()
 
-    # Ищем блоки компаний — div с классом содержащим "org" или "company" или "item"
-    # Orgpage использует структуру: <div class="org-item"> или <article>
-    # Парсим ссылки на компании вида /city/slug-компании/
-    # Паттерн ссылок на компании: href="/{city_slug}/название-компании-цифры/"
-    company_links = re.findall(
-        rf'href="(/{city_slug}/[^/"]+/)"[^>]*>',
-        html
-    )
-    # Убираем служебные ссылки (категории, пагинация)
-    seen = set()
-    for href in company_links:
-        # Исключаем саму категорию и страницы пагинации
-        if CATEGORY_SLUG.lower() in urllib.parse.unquote(href).lower():
-            continue
-        if "page=" in href or href == f"/{city_slug}/":
-            continue
-        if href not in seen:
-            seen.add(href)
-            companies.append(f"https://www.orgpage.ru{href}")
+    rubrics = ", ".join(r.get("name", "") for r in meta.get("Categories", []))
 
-    # Проверяем наличие следующей страницы
-    has_next = bool(re.search(rf'/{city_slug}/{CATEGORY_SLUG}/\?page={page + 1}', html))
-
-    print(f"[ORGPAGE] found {len(companies)} company links, has_next={has_next}")
-    print(f"[ORGPAGE] sample html snippet: {html[2000:3000]}")
-
-    return companies, has_next
-
-
-def parse_orgpage_company(url):
-    """Парсит страницу отдельной компании на orgpage.ru."""
-    html = http_get_html(url)
-    result = {"url": url}
-
-    # Название
-    title_m = re.search(r'<h1[^>]*>([^<]+)</h1>', html)
-    if not title_m:
-        title_m = re.search(r'<meta[^>]+property="og:title"[^>]+content="([^"]+)"', html)
-    if title_m:
-        result["name"] = clean(title_m.group(1)).split(" — ")[0].split(" | ")[0].strip()
-
-    # Телефон
-    tel_links = re.findall(r'href="tel:([^"]+)"', html)
-    if tel_links:
-        result["phone"] = tel_links[0].strip()
-    else:
-        ph = re.findall(r'(?<!\d)(\+7[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2})(?!\d)', html)
-        result["phone"] = ph[0].strip() if ph else ""
-
-    # Email
-    emails = re.findall(r'href="mailto:([^"]+)"', html)
-    if not emails:
-        emails = re.findall(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}', html)
-        skip = ["orgpage", "example", "sentry", "noreply", "support@", ".png", ".jpg"]
-        emails = [e for e in emails if not any(x in e.lower() for x in skip)]
-    result["email"] = emails[0] if emails else ""
-
-    # Сайт
-    site_m = re.search(r'href="(https?://(?!(?:www\.)?orgpage\.ru)[^"]{4,})"', html)
-    result["website"] = site_m.group(1) if site_m else ""
-
-    # Адрес
-    addr_patterns = [
-        r'itemprop="streetAddress"[^>]*>([^<]+)<',
-        r'"address"[^:]*:[^"]*"([^"]{10,})"',
-        r'г\.\s*[А-Яа-я][^<"]{5,80}',
-    ]
-    for pat in addr_patterns:
-        addr_m = re.search(pat, html)
-        if addr_m:
-            result["address"] = clean(addr_m.group(1) if addr_m.lastindex else addr_m.group(0))
-            break
-
-    return result
+    return {
+        "name": name,
+        "phone": phone,
+        "email": email,
+        "website": website,
+        "address": address,
+        "rubric": rubrics,
+    }
 
 
 def enrich_dadata(name):
@@ -190,7 +141,7 @@ def enrich_dadata(name):
 
 
 def handler(event: dict, context) -> dict:
-    """Парсер компаний с orgpage.ru + обогащение через DaData."""
+    """Парсер компаний через Яндекс Геопоиск + обогащение данных через DaData."""
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": CORS, "body": ""}
 
@@ -199,7 +150,11 @@ def handler(event: dict, context) -> dict:
 
     # GET cities
     if method == "GET" and params.get("action") == "cities":
-        return {"statusCode": 200, "headers": CORS, "body": json.dumps({"cities": [{"name": c["name"], "id": c["slug"]} for c in CITIES]}, ensure_ascii=False)}
+        return {
+            "statusCode": 200,
+            "headers": CORS,
+            "body": json.dumps({"cities": [{"name": c["name"], "id": c["name"]} for c in CITIES]}, ensure_ascii=False),
+        }
 
     # GET list
     if method == "GET" and params.get("action") == "list":
@@ -295,52 +250,54 @@ def handler(event: dict, context) -> dict:
         if not city_obj:
             return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Неизвестный город"})}
 
-        city_slug = city_obj["slug"]
+        api_key = os.environ.get("YANDEX_GEOSEARCH_KEY", "")
+        if not api_key:
+            return {"statusCode": 500, "headers": CORS, "body": json.dumps({"error": "YANDEX_GEOSEARCH_KEY не настроен"})}
+
+        ll = city_obj["ll"]
+        spn = city_obj["spn"]
         collected = {}
         debug_info = []
 
-        for page in range(1, 6):
-            try:
-                company_urls, has_next = parse_orgpage_list(city_slug, page)
-                debug_info.append(f"page={page} urls={len(company_urls)}")
-                if not company_urls:
-                    break
-                for comp_url in company_urls[:20]:
-                    try:
-                        detail = parse_orgpage_company(comp_url)
-                        name = detail.get("name", "").strip()
-                        if not name:
+        for query in SEARCH_QUERIES:
+            for skip in range(0, 200, 50):
+                try:
+                    data = fetch_yandex(query, ll, spn, skip, api_key)
+                    features = data.get("features", [])
+                    debug_info.append(f"q={query} skip={skip} got={len(features)}")
+                    if not features:
+                        break
+                    for feature in features:
+                        company = extract_company(feature)
+                        if not company:
                             continue
-                        key = name.lower()
+                        key = company["name"].lower()
                         if key not in collected:
-                            collected[key] = detail
-                        time.sleep(0.3)
-                    except Exception as e:
-                        debug_info.append(f"detail_error {comp_url}: {str(e)[:80]}")
-                if not has_next:
+                            collected[key] = company
+                    if len(features) < 50:
+                        break
+                    time.sleep(0.3)
+                except Exception as e:
+                    debug_info.append(f"error q={query} skip={skip}: {str(e)[:120]}")
                     break
-                time.sleep(0.5)
-            except Exception as e:
-                debug_info.append(f"page_error p={page}: {str(e)[:100]}")
-                break
 
         conn = get_db()
         cur = conn.cursor()
         inserted = 0
         for item in collected.values():
             cur.execute(
-                f"""INSERT INTO {SCHEMA}.parsed_companies (city, name, phone, email, address, website)
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                f"""INSERT INTO {SCHEMA}.parsed_companies (city, name, phone, email, address, website, rubric)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT DO NOTHING""",
-                (city_name, item.get("name", ""), item.get("phone", ""),
-                 item.get("email", ""), item.get("address", ""), item.get("website", ""))
+                (city_name, item["name"], item["phone"], item["email"],
+                 item["address"], item["website"], item.get("rubric", ""))
             )
             if cur.rowcount > 0:
                 inserted += 1
         conn.commit()
         cur.close()
         conn.close()
-        return {"statusCode": 200, "headers": CORS, "body": json.dumps({"inserted": inserted, "found": len(collected), "debug": debug_info[:20]}, ensure_ascii=False)}
+        return {"statusCode": 200, "headers": CORS, "body": json.dumps({"inserted": inserted, "found": len(collected), "debug": debug_info}, ensure_ascii=False)}
 
     # POST enrich
     if method == "POST" and body.get("action") == "enrich":
