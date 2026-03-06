@@ -1,6 +1,24 @@
 import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
 
+function getYoutubeId(url: string): string | null {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=))([\w-]+)/);
+  return m ? m[1] : null;
+}
+
+function getThumb(v: PartnerVideo): string | null {
+  if (v.thumbnail_url) return v.thumbnail_url;
+  const ytId = getYoutubeId(v.embed_url || "");
+  if (ytId) return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+  return null;
+}
+
+function getWatchUrl(v: PartnerVideo): string {
+  const ytId = getYoutubeId(v.embed_url || "");
+  if (ytId) return `https://www.youtube.com/watch?v=${ytId}`;
+  return v.embed_url || v.video_url || "#";
+}
+
 const API_URL = "https://functions.poehali.dev/241aa2b2-a69f-4f48-a343-59a4da14d0b4";
 
 interface PartnerVideo {
@@ -98,14 +116,27 @@ export default function HomeVideoBanner() {
         {/* Плеер */}
         <div className="relative bg-black aspect-video">
           {isEmbed ? (
-            <iframe
-              key={current.id}
-              src={current.embed_url}
-              className="w-full h-full"
-              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-              allowFullScreen
-              frameBorder="0"
-            />
+            <a
+              href={getWatchUrl(current)}
+              target="_blank"
+              rel="noreferrer"
+              className="block w-full h-full group"
+            >
+              {getThumb(current) ? (
+                <img
+                  src={getThumb(current)!}
+                  alt={current.title}
+                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-900" />
+              )}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center group-hover:bg-black/70 group-hover:scale-105 transition-all">
+                  <Icon name="Play" size={36} className="text-white ml-1.5" />
+                </div>
+              </div>
+            </a>
           ) : (
             <>
               <video
