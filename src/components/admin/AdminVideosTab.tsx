@@ -245,6 +245,26 @@ export default function AdminVideosTab() {
                 </div>
               </div>
 
+              {/* Превью */}
+              {parseEmbedUrl(editing.embed_url || "") && (
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1 block">
+                    <Icon name="Play" size={12} className="inline mr-1" />
+                    Превью
+                  </label>
+                  <div className="rounded-xl overflow-hidden border border-gray-200 aspect-video bg-black">
+                    <iframe
+                      key={parseEmbedUrl(editing.embed_url || "")}
+                      src={parseEmbedUrl(editing.embed_url || "")}
+                      className="w-full h-full"
+                      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                      allowFullScreen
+                      frameBorder="0"
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Обложка */}
               <div>
                 <label className="text-xs font-medium text-gray-600 mb-1 block">Обложка (картинка)</label>
