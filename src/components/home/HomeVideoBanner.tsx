@@ -66,13 +66,15 @@ export default function HomeVideoBanner() {
   const current = videos[active];
   const isEmbed = !!current.embed_url;
 
-  const handlePlay = () => {
+  const handlePlay = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (videoRef.current) {
       if (playing) {
         videoRef.current.pause();
         setPlaying(false);
       } else {
-        videoRef.current.play();
+        videoRef.current.play().catch(() => {});
         setPlaying(true);
       }
     }
@@ -98,6 +100,7 @@ export default function HomeVideoBanner() {
         {videos.length > 1 && (
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={prev}
               className="w-9 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition"
             >
@@ -107,6 +110,7 @@ export default function HomeVideoBanner() {
               {active + 1} / {videos.length}
             </span>
             <button
+              type="button"
               onClick={next}
               className="w-9 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition"
             >
@@ -170,6 +174,7 @@ export default function HomeVideoBanner() {
               )}
               {playing && (
                 <button
+                  type="button"
                   onClick={handlePlay}
                   className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition"
                 >
