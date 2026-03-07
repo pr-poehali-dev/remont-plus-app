@@ -29,6 +29,9 @@ export default function AdminMediaTab() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [lightbox, setLightbox] = useState<MediaItem | null>(null);
+  const [urlInput, setUrlInput] = useState("");
+  const [urlAdding, setUrlAdding] = useState(false);
+  const [urlError, setUrlError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadItems = useCallback(async () => {
@@ -84,6 +87,32 @@ export default function AdminMediaTab() {
     setUploadProgress("");
     if (fileInputRef.current) fileInputRef.current.value = "";
     loadItems();
+  };
+
+  const addByUrl = async () => {
+    const url = urlInput.trim();
+    if (!url) return;
+    setUrlError("");
+    setUrlAdding(true);
+    try {
+      const lower = url.toLowerCase();
+      const isVideo = lower.includes(".mp4") || lower.includes(".webm") || lower.includes(".mov") || lower.includes("video");
+      const media_type: "photo" | "video" = isVideo ? "video" : "photo";
+      const filename = url.split("/").pop()?.split("?")[0] || "file";
+
+      const res = await fetch(LIBRARY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Token": ADMIN_TOKEN },
+        body: JSON.stringify({ url, media_type, filename, title: "" }),
+      });
+      if (!res.ok) throw new Error(`Ошибка ${res.status}`);
+      setUrlInput("");
+      loadItems();
+    } catch (e) {
+      setUrlError(e instanceof Error ? e.message : "Не удалось добавить");
+    } finally {
+      setUrlAdding(false);
+    }
   };
 
   const fileToBase64 = (file: File): Promise<string> => {
@@ -157,6 +186,32 @@ export default function AdminMediaTab() {
             <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP, GIF, MP4, WebM, MOV</p>
           </>
         )}
+      </div>
+
+      {/* Add by URL */}
+      <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
+        <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
+          <Icon name="Link" className="h-3.5 w-3.5" />
+          Добавить по ссылке (из Telegram, облака и др.)
+        </p>
+        <div className="flex gap-2">
+          <Input
+            value={urlInput}
+            onChange={e => { setUrlInput(e.target.value); setUrlError(""); }}
+            onKeyDown={e => e.key === "Enter" && addByUrl()}
+            placeholder="https://... (прямая ссылка на фото или видео)"
+            className="flex-1 text-sm"
+          />
+          <Button
+            type="button"
+            onClick={addByUrl}
+            disabled={urlAdding || !urlInput.trim()}
+            className="shrink-0"
+          >
+            {urlAdding ? "..." : "Добавить"}
+          </Button>
+        </div>
+        {urlError && <p className="text-xs text-red-500 mt-1.5">{urlError}</p>}
       </div>
 
       {/* Filter tabs */}
