@@ -8,6 +8,7 @@ import time
 import csv
 import io
 import base64
+import re
 import psycopg2
 import urllib.request
 import urllib.parse
@@ -52,6 +53,35 @@ SEARCH_QUERIES = [
 
 DADATA_SUGGEST_URL = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/party"
 DADATA_FIND_URL = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party"
+
+EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}", re.ASCII)
+EMAIL_EXCLUDE = re.compile(r"(example|test|noreply|no-reply|support@sentry|yandex-team|@2gis|@dadata|\.png|\.jpg|\.gif|@w3)", re.I)
+
+
+def scrape_email_from_site(url: str) -> str:
+    if not url:
+        return ""
+    if not url.startswith("http"):
+        url = "https://" + url
+    try:
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "Mozilla/5.0", "Accept": "text/html"}
+        )
+        with urllib.request.urlopen(req, timeout=8) as r:
+            raw = r.read(80000).decode("utf-8", errors="ignore")
+        # mailto: в первую очередь
+        mailto = re.findall(r'mailto:([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})', raw)
+        for em in mailto:
+            if not EMAIL_EXCLUDE.search(em):
+                return em.lower()
+        # обычный текст
+        found = EMAIL_RE.findall(raw)
+        for em in found:
+            if not EMAIL_EXCLUDE.search(em):
+                return em.lower()
+    except Exception:
+        pass
+    return ""
 
 
 def get_db():
@@ -280,7 +310,7 @@ def handler(event: dict, context) -> dict:
             "debug": debug_info
         }, ensure_ascii=False)}
 
-    # POST enrich — дополняем телефон/email/сайт через DaData findById
+    # POST enrich — дополняем телефон/email/сайт через DaData + парсинг сайта
     if method == "POST" and body.get("action") == "enrich":
         city = body.get("city", "")
         api_key = os.environ.get("DADATA_API_KEY", "")
@@ -288,14 +318,16 @@ def handler(event: dict, context) -> dict:
         cur = conn.cursor()
         if city:
             cur.execute(
-                f"SELECT id, name, inn FROM {SCHEMA}.parsed_companies WHERE (email IS NULL OR email = '') AND inn IS NOT NULL AND inn != '' AND city = %s LIMIT 50",
+                f"SELECT id, name, inn, website FROM {SCHEMA}.parsed_companies WHERE (email IS NULL OR email = '') AND inn IS NOT NULL AND inn != '' AND city = %s LIMIT 50",
                 (city,)
             )
         else:
-            cur.execute(f"SELECT id, name, inn FROM {SCHEMA}.parsed_companies WHERE (email IS NULL OR email = '') AND inn IS NOT NULL AND inn != '' LIMIT 50")
+            cur.execute(f"SELECT id, name, inn, website FROM {SCHEMA}.parsed_companies WHERE (email IS NULL OR email = '') AND inn IS NOT NULL AND inn != '' LIMIT 50")
         rows = cur.fetchall()
         enriched = 0
-        for row_id, name, inn in rows:
+        for row_id, name, inn, existing_website in rows:
+            phone, email, website = "", "", existing_website or ""
+            # 1. DaData findById
             try:
                 payload = json.dumps({"query": inn, "count": 1}).encode()
                 req = urllib.request.Request(
@@ -317,21 +349,26 @@ def handler(event: dict, context) -> dict:
                     sites = d.get("sites") or []
                     phone = phones[0].get("value", "") if phones else ""
                     email = emails[0].get("value", "") if emails else ""
-                    website = sites[0].get("value", "") if sites else ""
-                    if phone or email or website:
-                        cur.execute(
-                            f"""UPDATE {SCHEMA}.parsed_companies SET
-                                phone = CASE WHEN %s != '' THEN %s ELSE phone END,
-                                email = CASE WHEN %s != '' THEN %s ELSE email END,
-                                website = CASE WHEN %s != '' THEN %s ELSE website END,
-                                enriched_at = NOW()
-                            WHERE id = %s""",
-                            (phone, phone, email, email, website, website, row_id)
-                        )
-                        enriched += 1
+                    if not website:
+                        website = sites[0].get("value", "") if sites else ""
                 time.sleep(0.15)
             except Exception:
                 pass
+            # 2. Парсим сайт если email не нашли в DaData, но есть сайт
+            if not email and website:
+                email = scrape_email_from_site(website)
+            # 3. Сохраняем если есть что-то новое
+            if phone or email or website:
+                cur.execute(
+                    f"""UPDATE {SCHEMA}.parsed_companies SET
+                        phone = CASE WHEN %s != '' THEN %s ELSE phone END,
+                        email = CASE WHEN %s != '' THEN %s ELSE email END,
+                        website = CASE WHEN %s != '' THEN %s ELSE website END,
+                        enriched_at = NOW()
+                    WHERE id = %s""",
+                    (phone, phone, email, email, website, website, row_id)
+                )
+                enriched += 1
         conn.commit()
         cur.close()
         conn.close()
