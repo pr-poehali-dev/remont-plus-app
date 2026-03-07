@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
+import CompanyParserSummary from "./CompanyParserSummary";
+import CompanyParserBulkPanel from "./CompanyParserBulkPanel";
+import CompanyParserCityTable from "./CompanyParserCityTable";
+import CompanyParserCompanyList from "./CompanyParserCompanyList";
 
 const API_URL = "https://functions.poehali.dev/40dd0e7a-86a9-4379-aae6-93556483a8bd";
 const ADMIN_TOKEN = "admin2025";
@@ -44,7 +48,6 @@ export default function AdminCompanyParserTab() {
   const [statusMsg, setStatusMsg] = useState("");
   const [activeTab, setActiveTab] = useState<"overview" | "list">("overview");
 
-  // Массовый сбор по всем городам
   const [bulkRunning, setBulkRunning] = useState(false);
   const [bulkStop, setBulkStop] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number; city: string; log: string[] }>({ done: 0, total: 0, city: "", log: [] });
@@ -188,9 +191,6 @@ export default function AdminCompanyParserTab() {
     if (selectedCity === city) setCompanies([]);
   };
 
-  const totalAll = stats.reduce((s, c) => s + c.count, 0);
-  const enrichedAll = stats.reduce((s, c) => s + c.enriched, 0);
-
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -204,95 +204,15 @@ export default function AdminCompanyParserTab() {
         </Button>
       </div>
 
-      {/* Сводка */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
-          <p className="text-3xl font-extrabold text-gray-900">{totalAll.toLocaleString()}</p>
-          <p className="text-sm text-gray-500 mt-1">Всего компаний</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
-          <p className="text-3xl font-extrabold text-orange-500">{enrichedAll.toLocaleString()}</p>
-          <p className="text-sm text-gray-500 mt-1">С ФИО директора</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
-          <p className="text-3xl font-extrabold text-green-600">{stats.reduce((s, c) => s + (c.with_email || 0), 0).toLocaleString()}</p>
-          <p className="text-sm text-gray-500 mt-1">С email</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
-          <p className="text-3xl font-extrabold text-blue-500">{stats.length}</p>
-          <p className="text-sm text-gray-500 mt-1">Городов собрано</p>
-        </div>
-      </div>
+      <CompanyParserSummary stats={stats} />
 
-      {/* Массовый сбор */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div>
-            <p className="font-semibold text-gray-900 text-sm">Собрать все города сразу</p>
-            <p className="text-xs text-gray-400">Поочерёдно обойдёт все 14 городов-миллионников</p>
-          </div>
-          <div className="flex gap-2 ml-auto">
-            {bulkRunning ? (
-              <Button
-                onClick={() => setBulkStop(true)}
-                variant="outline"
-                className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
-              >
-                <Icon name="Square" size={14} />
-                Остановить
-              </Button>
-            ) : (
-              <Button
-                onClick={handleBulkParse}
-                disabled={parsing || enriching || !cities.length}
-                className="bg-gray-900 hover:bg-gray-800 text-white gap-2"
-              >
-                <Icon name="Zap" size={16} />
-                Собрать все {cities.length} городов
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {(bulkRunning || bulkProgress.log.length > 0) && (
-          <div className="mt-4">
-            {/* Прогресс-бар */}
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-orange-500 rounded-full transition-all duration-500"
-                  style={{ width: `${bulkProgress.total > 0 ? Math.round(bulkProgress.done / bulkProgress.total * 100) : 0}%` }}
-                />
-              </div>
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                {bulkProgress.done} / {bulkProgress.total}
-              </span>
-            </div>
-            {bulkRunning && bulkProgress.city && (
-              <p className="text-xs text-orange-600 flex items-center gap-1 mb-2">
-                <Icon name="Loader2" size={12} className="animate-spin" />
-                Обрабатываю: {bulkProgress.city}...
-              </p>
-            )}
-            {/* Лог */}
-            <div className="bg-gray-50 rounded-xl p-3 max-h-40 overflow-y-auto space-y-1">
-              {bulkProgress.log.length === 0 ? (
-                <p className="text-xs text-gray-400">Ожидаю результатов...</p>
-              ) : (
-                [...bulkProgress.log].reverse().map((line, i) => (
-                  <p key={i} className="text-xs text-gray-600 font-mono">{line}</p>
-                ))
-              )}
-            </div>
-            {!bulkRunning && bulkProgress.done === bulkProgress.total && bulkProgress.total > 0 && (
-              <p className="text-sm text-green-600 font-medium mt-2 flex items-center gap-1">
-                <Icon name="CheckCircle2" size={14} />
-                Готово! Все города обработаны.
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+      <CompanyParserBulkPanel
+        cities={cities}
+        bulkRunning={bulkRunning}
+        bulkProgress={bulkProgress}
+        onStart={handleBulkParse}
+        onStop={() => setBulkStop(true)}
+      />
 
       {/* Вкладки */}
       <div className="flex gap-2 mb-4">
@@ -355,157 +275,24 @@ export default function AdminCompanyParserTab() {
         )}
       </div>
 
-      {/* Обзор по городам */}
       {activeTab === "overview" && (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          {stats.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
-              <Icon name="DatabaseZap" size={40} className="mx-auto mb-3 opacity-30" />
-              <p className="font-medium">База пустая</p>
-              <p className="text-sm mt-1">Выбери город и нажми «Собрать из 2ГИС»</p>
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Город</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Компаний</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">С email</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">С директором</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">% обогащено</th>
-                  <th className="px-4 py-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.map((s, i) => (
-                  <tr key={s.city} className={`border-b border-gray-100 hover:bg-gray-50 ${i % 2 === 0 ? "" : "bg-gray-50/50"}`}>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => handleCitySelect(s.city)}
-                        className="font-medium text-orange-600 hover:underline"
-                      >
-                        {s.city}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 text-right font-semibold">{s.count}</td>
-                    <td className="px-4 py-3 text-right text-green-600">{s.with_email || 0}</td>
-                    <td className="px-4 py-3 text-right text-orange-500">{s.enriched}</td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-green-500 rounded-full"
-                            style={{ width: `${s.count > 0 ? Math.round(s.enriched / s.count * 100) : 0}%` }}
-                          />
-                        </div>
-                        <span className="text-gray-500 text-xs w-8 text-right">
-                          {s.count > 0 ? Math.round(s.enriched / s.count * 100) : 0}%
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => handleDelete(s.city)}
-                        className="text-gray-400 hover:text-red-500 transition"
-                        title="Удалить данные по городу"
-                      >
-                        <Icon name="Trash2" size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+        <CompanyParserCityTable
+          stats={stats}
+          onCitySelect={handleCitySelect}
+          onDelete={handleDelete}
+        />
       )}
 
-      {/* Список компаний */}
       {activeTab === "list" && (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-            <span className="text-sm text-gray-500">
-              {selectedCity ? `${selectedCity} — ` : ""}
-              {total.toLocaleString()} компаний
-            </span>
-            <div className="flex gap-2">
-              <Button
-                size="sm" variant="outline"
-                disabled={offset === 0}
-                onClick={() => loadList(selectedCity, offset - PAGE)}
-                className="h-8 text-xs"
-              >
-                <Icon name="ChevronLeft" size={14} />
-              </Button>
-              <span className="text-xs text-gray-500 self-center px-1">
-                {offset + 1}–{Math.min(offset + PAGE, total)} из {total}
-              </span>
-              <Button
-                size="sm" variant="outline"
-                disabled={offset + PAGE >= total}
-                onClick={() => loadList(selectedCity, offset + PAGE)}
-                className="h-8 text-xs"
-              >
-                <Icon name="ChevronRight" size={14} />
-              </Button>
-            </div>
-          </div>
-
-          {loadingList ? (
-            <div className="flex justify-center py-12">
-              <Icon name="Loader2" size={24} className="animate-spin text-gray-400" />
-            </div>
-          ) : companies.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <p>Нет данных. Выберите город и запустите сбор.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600 min-w-[200px]">Название</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Город</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Телефон</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Директор</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">ИНН</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Сайт</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {companies.map((c, i) => (
-                    <tr key={c.id} className={`border-b border-gray-100 hover:bg-gray-50 ${i % 2 === 0 ? "" : "bg-gray-50/30"}`}>
-                      <td className="px-4 py-3 font-medium text-gray-900 max-w-[250px] truncate">{c.name}</td>
-                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{c.city}</td>
-                      <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                        {c.phone ? (
-                          <a href={`tel:${c.phone}`} className="hover:text-orange-500">{c.phone}</a>
-                        ) : <span className="text-gray-300">—</span>}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                        {c.email ? (
-                          <a href={`mailto:${c.email}`} className="hover:text-orange-500">{c.email}</a>
-                        ) : <span className="text-gray-300">—</span>}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
-                        {c.director_name || <span className="text-gray-300">—</span>}
-                      </td>
-                      <td className="px-4 py-3 text-gray-500">{c.inn || <span className="text-gray-300">—</span>}</td>
-                      <td className="px-4 py-3">
-                        {c.website ? (
-                          <a href={c.website} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline text-xs truncate max-w-[120px] block">
-                            {c.website.replace(/^https?:\/\//, "")}
-                          </a>
-                        ) : <span className="text-gray-300">—</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <CompanyParserCompanyList
+          companies={companies}
+          total={total}
+          offset={offset}
+          page={PAGE}
+          selectedCity={selectedCity}
+          loading={loadingList}
+          onPageChange={(newOffset) => loadList(selectedCity, newOffset)}
+        />
       )}
     </div>
   );
