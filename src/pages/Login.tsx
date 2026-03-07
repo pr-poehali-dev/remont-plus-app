@@ -63,6 +63,8 @@ export default function Login() {
 
       if (data.user.role === "admin") {
         navigate("/admin");
+      } else if (data.user.role === "yukassa_staff") {
+        navigate("/yukassa");
       } else {
         navigate(redirectTo || "/");
       }
