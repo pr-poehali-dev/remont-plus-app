@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -96,7 +96,9 @@ export default function AdminVideosTab() {
   const [saveError, setSaveError] = useState("");
   const [thumbFile, setThumbFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState("");
+  const [quickThumbId, setQuickThumbId] = useState<number | null>(null);
   const thumbInputRef = useRef<HTMLInputElement>(null);
+  const quickThumbRef = useRef<HTMLInputElement>(null);
 
   const load = () => {
     setLoading(true);
@@ -180,6 +182,25 @@ export default function AdminVideosTab() {
     if (v.video_url) return "Файл";
     return "—";
   };
+
+  const handleQuickThumb = useCallback(async (file: File) => {
+    if (!quickThumbId) return;
+    const video = videos.find(v => v.id === quickThumbId);
+    if (!video) return;
+    try {
+      setUploadProgress("Загружаю обложку...");
+      const thumbUrl = await uploadThumb(file, API_URL, ADMIN_TOKEN);
+      await fetch(API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-Admin-Token": ADMIN_TOKEN },
+        body: JSON.stringify({ ...video, thumbnail_url: thumbUrl, video_url: "" }),
+      });
+      load();
+    } catch (e) { void e; } finally {
+      setUploadProgress("");
+      setQuickThumbId(null);
+    }
+  }, [quickThumbId, videos]);
 
   return (
     <div>
@@ -336,6 +357,18 @@ export default function AdminVideosTab() {
                   className="hidden"
                   onChange={e => setThumbFile(e.target.files?.[0] || null)}
                 />
+                {(editing.thumbnail_url || thumbFile) && (
+                  <button
+                    type="button"
+                    className="mt-2 text-xs text-gray-400 hover:text-red-500 transition"
+                    onClick={() => {
+                      setThumbFile(null);
+                      setEditing(p => ({ ...p!, thumbnail_url: "" }));
+                    }}
+                  >
+                    Сбросить обложку (сгенерируется автоматически при следующем открытии)
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -421,6 +454,15 @@ export default function AdminVideosTab() {
                   <Button
                     size="sm"
                     variant="outline"
+                    title="Сменить обложку"
+                    onClick={() => { setQuickThumbId(v.id); setTimeout(() => quickThumbRef.current?.click(), 50); }}
+                    className="text-xs h-8"
+                  >
+                    <Icon name="Image" size={12} />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => toggleActive(v)}
                     className="text-xs h-8"
                   >
@@ -438,6 +480,21 @@ export default function AdminVideosTab() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Скрытый input для быстрой смены обложки */}
+      <input
+        ref={quickThumbRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleQuickThumb(f); e.target.value = ""; }}
+      />
+      {uploadProgress && (
+        <div className="fixed bottom-6 right-6 bg-gray-900 text-white text-sm px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg">
+          <Icon name="Loader2" size={14} className="animate-spin" />
+          {uploadProgress}
         </div>
       )}
     </div>
