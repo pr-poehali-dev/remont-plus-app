@@ -99,9 +99,8 @@ export default function AdminCompanyParserTab() {
   };
 
   const handleEnrich = async () => {
-    if (!selectedCity) return;
     setEnriching(true);
-    setStatusMsg("Обогащаю данные через DaData (ФИО директора)...");
+    setStatusMsg(selectedCity ? `Ищу email и телефоны для ${selectedCity}...` : "Ищу email и телефоны по всей базе...");
     try {
       const r = await fetch(API_URL, {
         method: "POST", headers: HEADERS,
@@ -313,7 +312,7 @@ export default function AdminCompanyParserTab() {
 
         <Button
           onClick={handleEnrich}
-          disabled={!selectedCity || parsing || enriching}
+          disabled={parsing || enriching}
           variant="outline"
           className="gap-2"
         >
