@@ -1,0 +1,1 @@
+UPDATE t_p46588937_remont_plus_app.partner_videos SET thumbnail_url = 'https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/ea301201-564f-4552-8797-6bfde8431ac9.jpg' WHERE id = 5;
