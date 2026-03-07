@@ -1,0 +1,1 @@
+UPDATE t_p46588937_remont_plus_app.partner_videos SET embed_url = 'https://vk.com/video-196506189_456239041' WHERE id = 4;
