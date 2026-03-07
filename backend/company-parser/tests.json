@@ -13,11 +13,19 @@
       "expectedStatus": 200
     },
     {
-      "name": "POST parse Екатеринбург",
+      "name": "POST scrape_contacts",
       "method": "POST",
       "path": "/",
-      "headers": { "X-Admin-Token": "admin2025", "Content-Type": "application/json" },
-      "body": { "action": "parse", "city": "Екатеринбург" },
+      "headers": { "Content-Type": "application/json" },
+      "body": { "action": "scrape_contacts", "city": "Москва", "limit": 1 },
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST find_websites",
+      "method": "POST",
+      "path": "/",
+      "headers": { "Content-Type": "application/json" },
+      "body": { "action": "find_websites", "city": "Москва", "limit": 1 },
       "expectedStatus": 200
     }
   ]
