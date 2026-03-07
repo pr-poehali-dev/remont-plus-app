@@ -42,6 +42,37 @@ function getWatchUrl(v: PartnerVideo): string {
 
 const API_URL = "https://functions.poehali.dev/241aa2b2-a69f-4f48-a343-59a4da14d0b4";
 const COUNTDOWN = 5;
+const ADMIN_HEADERS = { "Content-Type": "application/json", "X-Admin-Token": "admin2025" };
+
+async function uploadAndSaveThumb(videoId: number, dataUrl: string, videoData: PartnerVideo) {
+  try {
+    const base64 = dataUrl.split(",")[1];
+    const uploadRes = await fetch(`${API_URL}?action=upload_thumb`, {
+      method: "POST",
+      headers: ADMIN_HEADERS,
+      body: JSON.stringify({ thumb_data: base64, thumb_ext: "jpg" }),
+    });
+    const { thumbnail_url } = await uploadRes.json();
+    if (!thumbnail_url) return;
+    await fetch(API_URL, {
+      method: "PUT",
+      headers: ADMIN_HEADERS,
+      body: JSON.stringify({
+        id: videoId,
+        title: videoData.title,
+        description: videoData.description,
+        partner_name: videoData.partner_name,
+        is_own: videoData.is_own,
+        is_active: true,
+        sort_order: 0,
+        embed_url: videoData.embed_url,
+        thumbnail_url,
+        video_url: "",
+      }),
+    });
+    return thumbnail_url;
+  } catch (e) { void e; }
+}
 
 interface PartnerVideo {
   id: number;
@@ -128,7 +159,7 @@ export default function HomeVideoBanner() {
     return () => window.removeEventListener("message", handleMessage);
   }, [startCountdown]);
 
-  // Генерация заставки из кадра mp4 видео через canvas
+  // Генерация заставки из кадра mp4 видео через canvas + сохранение в S3/БД
   const generateThumb = useCallback((video: PartnerVideo) => {
     if (!video.video_url || video.thumbnail_url || generatedThumbs[video.id]) return;
     const vid = document.createElement("video");
@@ -136,14 +167,21 @@ export default function HomeVideoBanner() {
     vid.src = video.video_url;
     vid.currentTime = 3;
     vid.muted = true;
-    vid.addEventListener("seeked", () => {
+    vid.addEventListener("seeked", async () => {
       try {
         const canvas = document.createElement("canvas");
         canvas.width = vid.videoWidth || 1280;
         canvas.height = vid.videoHeight || 720;
         canvas.getContext("2d")?.drawImage(vid, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        // Сразу показываем локально
         setGeneratedThumbs(prev => ({ ...prev, [video.id]: dataUrl }));
+        // Загружаем в S3 и сохраняем URL в БД
+        const savedUrl = await uploadAndSaveThumb(video.id, dataUrl, video);
+        if (savedUrl) {
+          // Обновляем videos — чтобы thumbnail_url появился и больше не регенерировался
+          setVideos(prev => prev.map(v => v.id === video.id ? { ...v, thumbnail_url: savedUrl } : v));
+        }
       } catch (e) { void e; }
     }, { once: true });
     vid.load();
