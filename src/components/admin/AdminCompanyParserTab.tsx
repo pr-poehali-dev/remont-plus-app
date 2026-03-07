@@ -67,6 +67,11 @@ export default function AdminCompanyParserTab() {
   });
   const enrichStopRef = useRef(false);
 
+  const [websiteProgress, setWebsiteProgress] = useState<EnrichProgress>({
+    running: false, cycle: 0, totalEnriched: 0, lastResult: "", log: [],
+  });
+  const websiteStopRef = useRef(false);
+
   const PAGE = 50;
 
   useEffect(() => {
@@ -177,23 +182,68 @@ export default function AdminCompanyParserTab() {
     setEnrichProgress(p => ({ ...p, running: false, lastResult: `Остановлено. Всего обогащено: ${p.totalEnriched}` }));
   };
 
-  const handleFindWebsites = async () => {
+  const handleFindWebsites = () => {
+    handleWebsiteCycle();
+  };
+
+  const handleWebsiteCycle = async () => {
+    websiteStopRef.current = false;
+    setWebsiteProgress({ running: true, cycle: 0, totalEnriched: 0, lastResult: "", log: [] });
     setFindingWebsites(true);
-    setStatusMsg(selectedCity ? `Ищу сайты для ${selectedCity}...` : "Ищу сайты по всей базе...");
-    try {
-      const r = await fetch(API_URL, {
-        method: "POST", headers: HEADERS,
-        body: JSON.stringify({ action: "find_websites", city: selectedCity, limit: ENRICH_BATCH }),
-      });
-      const d = await r.json();
-      setStatusMsg(`Найдено сайтов: ${d.found} из ${d.total} компаний`);
-      loadStats();
-      loadList(selectedCity, offset);
-    } catch {
-      setStatusMsg("Ошибка при поиске сайтов");
-    } finally {
-      setFindingWebsites(false);
+
+    let cycle = 0;
+    let totalFound = 0;
+
+    while (!websiteStopRef.current) {
+      cycle++;
+      const cityLabel = selectedCity || "все города";
+      setWebsiteProgress(p => ({ ...p, cycle, lastResult: `Цикл ${cycle}: ищу сайты (${cityLabel})...` }));
+
+      try {
+        const r = await fetch(API_URL, {
+          method: "POST", headers: HEADERS,
+          body: JSON.stringify({ action: "find_websites", city: selectedCity, limit: ENRICH_BATCH }),
+        });
+        const d = await r.json();
+        totalFound += d.found || 0;
+        const line = `Цикл ${cycle} (${cityLabel}): найдено ${d.found} из ${d.total}`;
+
+        setWebsiteProgress(p => ({
+          ...p,
+          cycle,
+          totalEnriched: totalFound,
+          lastResult: line,
+          log: [line, ...p.log].slice(0, 50),
+        }));
+
+        if (d.total === 0) {
+          setWebsiteProgress(p => ({
+            ...p,
+            running: false,
+            lastResult: `Готово. Все компании обработаны. Всего найдено сайтов: ${totalFound}`,
+          }));
+          break;
+        }
+
+        loadStats();
+        await new Promise(res => setTimeout(res, 1500));
+      } catch {
+        const line = `Цикл ${cycle}: ошибка запроса`;
+        setWebsiteProgress(p => ({ ...p, log: [line, ...p.log].slice(0, 50), lastResult: line }));
+        await new Promise(res => setTimeout(res, 3000));
+      }
     }
+
+    setWebsiteProgress(p => ({ ...p, running: false }));
+    setFindingWebsites(false);
+    loadStats();
+    if (selectedCity) loadList(selectedCity, offset);
+  };
+
+  const handleWebsiteStop = () => {
+    websiteStopRef.current = true;
+    setWebsiteProgress(p => ({ ...p, running: false, lastResult: `Остановлено. Всего найдено сайтов: ${p.totalEnriched}` }));
+    setFindingWebsites(false);
   };
 
   const handleExport = () => {
@@ -299,19 +349,30 @@ export default function AdminCompanyParserTab() {
               className="border-red-300 text-red-600 hover:bg-red-50 gap-2"
             >
               <Icon name="Square" size={16} />
-              Остановить
+              Остановить обогащение
             </Button>
           )}
 
-          <Button
-            onClick={handleFindWebsites}
-            disabled={parsing || enrichProgress.running || findingWebsites}
-            variant="outline"
-            className="gap-2"
-          >
-            {findingWebsites ? <Icon name="Loader2" size={16} className="animate-spin" /> : <Icon name="Globe" size={16} />}
-            {findingWebsites ? "Ищу сайты..." : "Найти сайты"}
-          </Button>
+          {!websiteProgress.running ? (
+            <Button
+              onClick={handleFindWebsites}
+              disabled={parsing || enrichProgress.running}
+              variant="outline"
+              className="gap-2 border-blue-300 text-blue-600 hover:bg-blue-50"
+            >
+              <Icon name="Globe" size={16} />
+              Найти сайты{selectedCity ? ` (${selectedCity})` : ""}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleWebsiteStop}
+              variant="outline"
+              className="border-red-300 text-red-600 hover:bg-red-50 gap-2"
+            >
+              <Icon name="Square" size={16} />
+              Остановить сайты
+            </Button>
+          )}
 
           {statusMsg && (
             <span className="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-xl">{statusMsg}</span>
@@ -335,6 +396,30 @@ export default function AdminCompanyParserTab() {
             {enrichProgress.log.length > 0 && (
               <div className="bg-gray-50 rounded-xl p-3 max-h-32 overflow-y-auto space-y-1">
                 {enrichProgress.log.map((line, i) => (
+                  <p key={i} className="text-xs text-gray-500 font-mono">{line}</p>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Прогресс поиска сайтов */}
+        {(websiteProgress.running || websiteProgress.lastResult) && (
+          <div className="border-t border-gray-100 pt-3 mt-1">
+            <div className="flex items-center gap-3 mb-2">
+              {websiteProgress.running && (
+                <Icon name="Loader2" size={14} className="animate-spin text-blue-500" />
+              )}
+              <span className="text-sm font-medium text-gray-700">{websiteProgress.lastResult}</span>
+              {websiteProgress.totalEnriched > 0 && (
+                <span className="ml-auto text-sm text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded-lg">
+                  +{websiteProgress.totalEnriched} сайтов
+                </span>
+              )}
+            </div>
+            {websiteProgress.log.length > 0 && (
+              <div className="bg-gray-50 rounded-xl p-3 max-h-32 overflow-y-auto space-y-1">
+                {websiteProgress.log.map((line, i) => (
                   <p key={i} className="text-xs text-gray-500 font-mono">{line}</p>
                 ))}
               </div>
