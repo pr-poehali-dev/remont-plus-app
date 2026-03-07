@@ -6,24 +6,24 @@ function getYoutubeId(url: string): string | null {
   return m ? m[1] : null;
 }
 
-function getThumb(v: PartnerVideo): string | null {
+function getThumb(v: PartnerVideo, generated?: string | null): string | null {
   if (v.thumbnail_url) return v.thumbnail_url;
+  if (generated) return generated;
   const ytId = getYoutubeId(v.embed_url || "");
   if (ytId) return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+  // VK thumbnail через открытое API
+  const vkVideo = (v.embed_url || "").match(/(?:vk\.com|vkvideo\.ru)\/video(-?\d+)_(\d+)/);
+  if (vkVideo) return `https://vk.com/images/video_thumb/video${vkVideo[1]}_${vkVideo[2]}.jpg`;
   return null;
 }
 
 function getEmbedSrc(v: PartnerVideo): string | null {
   const url = v.embed_url || "";
-  // YouTube
   const ytId = getYoutubeId(url);
   if (ytId) return `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&enablejsapi=1`;
-  // VK embed (video_ext.php)
   if (url.includes("vk.com/video_ext.php")) return url;
-  // VK clip → конвертируем в embed
   const vkClip = url.match(/(?:vk\.com|vkvideo\.ru)\/clip(-?\d+)_(\d+)/);
   if (vkClip) return `https://vk.com/video_ext.php?oid=${vkClip[1]}&id=${vkClip[2]}&hd=2&js_api=1`;
-  // VK video (vk.com или vkvideo.ru)
   const vkVideo = url.match(/(?:vk\.com|vkvideo\.ru)\/video(-?\d+)_(\d+)/);
   if (vkVideo) return `https://vk.com/video_ext.php?oid=${vkVideo[1]}&id=${vkVideo[2]}&hd=2&js_api=1`;
   return null;
@@ -41,6 +41,7 @@ function getWatchUrl(v: PartnerVideo): string {
 }
 
 const API_URL = "https://functions.poehali.dev/241aa2b2-a69f-4f48-a343-59a4da14d0b4";
+const COUNTDOWN = 5;
 
 interface PartnerVideo {
   id: number;
@@ -59,7 +60,11 @@ export default function HomeVideoBanner() {
   const [playing, setPlaying] = useState(false);
   const [embedStarted, setEmbedStarted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [generatedThumbs, setGeneratedThumbs] = useState<Record<number, string>>({});
   const videoRef = useRef<HTMLVideoElement>(null);
+  const thumbVideoRef = useRef<HTMLVideoElement>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     fetch(API_URL)
@@ -74,39 +79,89 @@ export default function HomeVideoBanner() {
   useEffect(() => {
     setPlaying(false);
     setEmbedStarted(false);
+    setCountdown(null);
+    if (countdownRef.current) clearInterval(countdownRef.current);
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
   }, [active]);
 
-  const prev = () => { setActive(i => (i - 1 + videos.length) % videos.length); };
-  const next = useCallback(() => { setActive(i => (i + 1) % videos.length); }, [videos.length]);
+  const next = useCallback(() => {
+    setCountdown(null);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    setActive(i => (i + 1) % videos.length);
+  }, [videos.length]);
 
-  // Слушаем postMessage от VK и YouTube плееров — переключаем на следующий ролик по окончании
+  const prev = () => {
+    setCountdown(null);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    setActive(i => (i - 1 + videos.length) % videos.length);
+  };
+
+  const startCountdown = useCallback(() => {
+    if (videos.length <= 1) return;
+    setCountdown(COUNTDOWN);
+    let c = COUNTDOWN;
+    countdownRef.current = setInterval(() => {
+      c -= 1;
+      if (c <= 0) {
+        clearInterval(countdownRef.current!);
+        setActive(i => (i + 1) % videos.length);
+        setCountdown(null);
+      } else {
+        setCountdown(c);
+      }
+    }, 1000);
+  }, [videos.length]);
+
+  // postMessage от VK и YouTube
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       try {
         const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
-        if (data?.type === "vid_end" || data?.event === "ended") {
-          next();
-        }
-        if (data?.event === "infoDelivery" && data?.info?.playerState === 0) {
-          next();
-        }
-      } catch (_) {
-        // ignore parse errors
-      }
+        if (data?.type === "vid_end" || data?.event === "ended") startCountdown();
+        if (data?.event === "infoDelivery" && data?.info?.playerState === 0) startCountdown();
+      } catch (e) { void e; }
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [next]);
+  }, [startCountdown]);
+
+  // Генерация заставки из кадра mp4 видео через canvas
+  const generateThumb = useCallback((video: PartnerVideo) => {
+    if (!video.video_url || video.thumbnail_url || generatedThumbs[video.id]) return;
+    const vid = document.createElement("video");
+    vid.crossOrigin = "anonymous";
+    vid.src = video.video_url;
+    vid.currentTime = 3;
+    vid.muted = true;
+    vid.addEventListener("seeked", () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = vid.videoWidth || 1280;
+        canvas.height = vid.videoHeight || 720;
+        canvas.getContext("2d")?.drawImage(vid, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        setGeneratedThumbs(prev => ({ ...prev, [video.id]: dataUrl }));
+      } catch (e) { void e; }
+    }, { once: true });
+    vid.load();
+  }, [generatedThumbs]);
+
+  useEffect(() => {
+    if (videos.length === 0) return;
+    videos.forEach(v => {
+      if (v.video_url && !v.thumbnail_url && !generatedThumbs[v.id]) generateThumb(v);
+    });
+  }, [videos, generateThumb, generatedThumbs]);
 
   if (loading || videos.length === 0) return null;
 
   const current = videos[active];
   const embedSrc = getEmbedSrc(current);
   const hasDirectVideo = !!current.video_url;
+  const thumb = getThumb(current, generatedThumbs[current.id]);
 
   const handlePlay = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -138,21 +193,15 @@ export default function HomeVideoBanner() {
         </div>
         {videos.length > 1 && (
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={prev}
-              className="w-9 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition"
-            >
+            <button type="button" onClick={prev}
+              className="w-9 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition">
               <Icon name="ChevronLeft" size={18} className="text-gray-600" />
             </button>
             <span className="text-sm text-gray-500 min-w-[3rem] text-center">
               {active + 1} / {videos.length}
             </span>
-            <button
-              type="button"
-              onClick={next}
-              className="w-9 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition"
-            >
+            <button type="button" onClick={next}
+              className="w-9 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition">
               <Icon name="ChevronRight" size={18} className="text-gray-600" />
             </button>
           </div>
@@ -163,27 +212,37 @@ export default function HomeVideoBanner() {
         {/* Плеер */}
         <div className="relative bg-black aspect-video">
           {embedSrc ? (
-            /* iframe-плеер: показываем превью, iframe грузим только после нажатия Play */
             embedStarted ? (
-              <iframe
-                key={embedSrc}
-                src={embedSrc}
-                className="w-full h-full"
-                allow="autoplay; fullscreen; encrypted-media"
-                allowFullScreen
-                frameBorder="0"
-              />
+              <>
+                <iframe
+                  key={embedSrc}
+                  src={embedSrc}
+                  className="w-full h-full"
+                  allow="autoplay; fullscreen; encrypted-media"
+                  allowFullScreen
+                  frameBorder="0"
+                />
+                {/* Таймер поверх iframe после окончания */}
+                {countdown !== null && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 pointer-events-none">
+                    <div className="bg-white/10 backdrop-blur-md rounded-2xl px-8 py-5 text-center pointer-events-auto">
+                      <p className="text-white text-sm mb-2">Следующее видео через</p>
+                      <p className="text-white text-5xl font-extrabold leading-none">{countdown}</p>
+                      <button
+                        onClick={() => { setCountdown(null); if (countdownRef.current) clearInterval(countdownRef.current); }}
+                        className="mt-3 text-white/60 hover:text-white text-xs underline"
+                      >
+                        Отмена
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
-              <div
-                className="w-full h-full cursor-pointer group"
-                onClick={() => setEmbedStarted(true)}
-              >
-                {getThumb(current) ? (
-                  <img
-                    src={getThumb(current)!}
-                    alt={current.title}
-                    className="w-full h-full object-cover group-hover:brightness-75 transition"
-                  />
+              <div className="w-full h-full cursor-pointer group" onClick={() => setEmbedStarted(true)}>
+                {thumb ? (
+                  <img src={thumb} alt={current.title}
+                    className="w-full h-full object-cover group-hover:brightness-75 transition" />
                 ) : (
                   <div className="w-full h-full bg-gray-900" />
                 )}
@@ -195,27 +254,19 @@ export default function HomeVideoBanner() {
               </div>
             )
           ) : hasDirectVideo ? (
-            /* Прямое видео (mp4 и др.) */
             <>
               <video
                 ref={videoRef}
                 src={current.video_url}
-                poster={current.thumbnail_url || undefined}
+                poster={thumb || undefined}
                 className="w-full h-full object-contain"
-                onEnded={() => { setPlaying(false); next(); }}
+                onEnded={() => { setPlaying(false); startCountdown(); }}
                 playsInline
               />
               {!playing && (
-                <div
-                  className="absolute inset-0 flex items-center justify-center cursor-pointer"
-                  onClick={handlePlay}
-                >
-                  {current.thumbnail_url && (
-                    <img
-                      src={current.thumbnail_url}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
+                <div className="absolute inset-0 flex items-center justify-center cursor-pointer" onClick={handlePlay}>
+                  {thumb && (
+                    <img src={thumb} alt="" className="absolute inset-0 w-full h-full object-cover" />
                   )}
                   <div className="relative w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center hover:bg-white/30 transition">
                     <Icon name="Play" size={28} className="text-white ml-1" />
@@ -223,95 +274,70 @@ export default function HomeVideoBanner() {
                 </div>
               )}
               {playing && (
-                <button
-                  type="button"
-                  onClick={handlePlay}
-                  className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition"
-                >
+                <button type="button" onClick={handlePlay}
+                  className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition">
                   <Icon name="Pause" size={16} className="text-white" />
                 </button>
               )}
+              {countdown !== null && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                  <div className="bg-white/10 backdrop-blur-md rounded-2xl px-8 py-5 text-center">
+                    <p className="text-white text-sm mb-2">Следующее видео через</p>
+                    <p className="text-white text-5xl font-extrabold leading-none">{countdown}</p>
+                    <button
+                      onClick={() => { setCountdown(null); if (countdownRef.current) clearInterval(countdownRef.current); }}
+                      className="mt-3 text-white/60 hover:text-white text-xs underline"
+                    >
+                      Отмена
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
-            /* Ссылка без embed (Telegram и др.) — открываем в новой вкладке */
-            <a
-              href={getWatchUrl(current)}
-              target="_blank"
-              rel="noreferrer"
-              className="block w-full h-full group"
-            >
-              {getThumb(current) ? (
-                <img
-                  src={getThumb(current)!}
-                  alt={current.title}
-                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
-                />
+            <a href={getWatchUrl(current)} target="_blank" rel="noreferrer" className="block w-full h-full group">
+              {thumb ? (
+                <img src={thumb} alt={current.title}
+                  className="w-full h-full object-cover group-hover:brightness-75 transition" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-900" />
+                <div className="w-full h-full bg-gray-900" />
               )}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-20 h-20 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center group-hover:bg-black/70 group-hover:scale-105 transition-all">
-                  <Icon name="Play" size={36} className="text-white ml-1.5" />
+                  <Icon name="ExternalLink" size={28} className="text-white" />
                 </div>
               </div>
             </a>
           )}
-
-          {/* Бейдж */}
-          <div className="absolute top-3 left-3 pointer-events-none">
-            {current.is_own ? (
-              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-500 text-white">
-                Наш ролик
-              </span>
-            ) : (
-              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/80 text-white backdrop-blur-sm">
-                Партнёр
-              </span>
-            )}
-          </div>
         </div>
 
-        {/* Инфо */}
-        <div className="p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-gray-900 text-base leading-snug">{current.title}</h3>
-              {current.description && (
-                <p className="text-gray-500 text-sm mt-1 line-clamp-2">{current.description}</p>
-              )}
-              {current.partner_name && (
-                <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                  <Icon name="Building2" size={12} />
-                  {current.partner_name}
-                </p>
-              )}
-            </div>
-
-            {/* Мини-превью */}
-            {videos.length > 1 && (
-              <div className="flex gap-2 shrink-0">
-                {videos.slice(0, 4).map((v, i) => (
-                  <button
-                    key={v.id}
-                    onClick={() => setActive(i)}
-                    className={`w-14 h-10 rounded-lg overflow-hidden border-2 transition shrink-0 ${
-                      i === active ? "border-orange-500" : "border-transparent opacity-60 hover:opacity-100"
-                    }`}
-                  >
-                    {v.thumbnail_url ? (
-                      <img src={v.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                        <Icon name="Play" size={12} className="text-gray-400" />
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
+        {/* Подпись */}
+        <div className="px-6 py-4 flex items-start justify-between gap-4">
+          <div>
+            <p className="font-semibold text-gray-900">{current.title}</p>
+            {current.description && (
+              <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{current.description}</p>
+            )}
+            {current.partner_name && (
+              <p className="text-xs text-orange-500 font-medium mt-1">{current.partner_name}</p>
             )}
           </div>
+          {videos.length > 1 && (
+            <div className="flex gap-1.5 shrink-0 mt-1">
+              {videos.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setCountdown(null); if (countdownRef.current) clearInterval(countdownRef.current); setActive(i); }}
+                  className={`w-2 h-2 rounded-full transition-all ${i === active ? "bg-orange-500 w-5" : "bg-gray-200 hover:bg-gray-300"}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Скрытое видео для генерации превью */}
+      <video ref={thumbVideoRef} className="hidden" muted playsInline crossOrigin="anonymous" />
     </section>
   );
 }
