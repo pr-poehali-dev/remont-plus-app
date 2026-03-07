@@ -180,13 +180,14 @@ def handler(event: dict, context) -> dict:
         cur = conn.cursor()
         cur.execute(
             f"""SELECT city, COUNT(*) as cnt,
-                       SUM(CASE WHEN director_name IS NOT NULL AND director_name != '' THEN 1 ELSE 0 END) as enriched
+                       SUM(CASE WHEN director_name IS NOT NULL AND director_name != '' THEN 1 ELSE 0 END) as enriched,
+                       SUM(CASE WHEN email IS NOT NULL AND email != '' THEN 1 ELSE 0 END) as with_email
                 FROM {SCHEMA}.parsed_companies GROUP BY city ORDER BY cnt DESC"""
         )
         rows = cur.fetchall()
         cur.close()
         conn.close()
-        stats = [{"city": r[0], "count": r[1], "enriched": r[2]} for r in rows]
+        stats = [{"city": r[0], "count": r[1], "enriched": r[2], "with_email": r[3]} for r in rows]
         return {"statusCode": 200, "headers": CORS, "body": json.dumps({"stats": stats}, ensure_ascii=False)}
 
     # GET export CSV

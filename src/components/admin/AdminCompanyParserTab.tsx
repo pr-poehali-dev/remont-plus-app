@@ -22,6 +22,7 @@ interface CityStats {
   city: string;
   count: number;
   enriched: number;
+  with_email: number;
 }
 
 interface City {
@@ -185,7 +186,7 @@ export default function AdminCompanyParserTab() {
       </div>
 
       {/* Сводка */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
           <p className="text-3xl font-extrabold text-gray-900">{totalAll.toLocaleString()}</p>
           <p className="text-sm text-gray-500 mt-1">Всего компаний</p>
@@ -193,6 +194,10 @@ export default function AdminCompanyParserTab() {
         <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
           <p className="text-3xl font-extrabold text-orange-500">{enrichedAll.toLocaleString()}</p>
           <p className="text-sm text-gray-500 mt-1">С ФИО директора</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
+          <p className="text-3xl font-extrabold text-green-600">{stats.reduce((s, c) => s + (c.with_email || 0), 0).toLocaleString()}</p>
+          <p className="text-sm text-gray-500 mt-1">С email</p>
         </div>
         <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
           <p className="text-3xl font-extrabold text-blue-500">{stats.length}</p>
@@ -312,8 +317,8 @@ export default function AdminCompanyParserTab() {
           variant="outline"
           className="gap-2"
         >
-          {enriching ? <Icon name="Loader2" size={16} className="animate-spin" /> : <Icon name="UserCheck" size={16} />}
-          {enriching ? "Обогащаю..." : "Найти директоров"}
+          {enriching ? <Icon name="Loader2" size={16} className="animate-spin" /> : <Icon name="Mail" size={16} />}
+          {enriching ? "Ищу контакты..." : "Найти email / телефон"}
         </Button>
 
         {statusMsg && (
@@ -336,6 +341,7 @@ export default function AdminCompanyParserTab() {
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">Город</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">Компаний</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600">С email</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">С директором</th>
                   <th className="text-right px-4 py-3 font-medium text-gray-600">% обогащено</th>
                   <th className="px-4 py-3"></th>
@@ -353,7 +359,8 @@ export default function AdminCompanyParserTab() {
                       </button>
                     </td>
                     <td className="px-4 py-3 text-right font-semibold">{s.count}</td>
-                    <td className="px-4 py-3 text-right text-green-600">{s.enriched}</td>
+                    <td className="px-4 py-3 text-right text-green-600">{s.with_email || 0}</td>
+                    <td className="px-4 py-3 text-right text-orange-500">{s.enriched}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
