@@ -1,92 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
-
-
-const API_URL = "https://functions.poehali.dev/241aa2b2-a69f-4f48-a343-59a4da14d0b4";
-const ADMIN_TOKEN = "admin2025";
-
-interface Video {
-  id: number;
-  title: string;
-  description: string;
-  video_url: string;
-  thumbnail_url: string;
-  embed_url: string;
-  partner_name: string;
-  is_own: boolean;
-  is_active: boolean;
-  sort_order: number;
-}
-
-const EMPTY: Omit<Video, "id"> = {
-  title: "",
-  description: "",
-  video_url: "",
-  thumbnail_url: "",
-  embed_url: "",
-  partner_name: "",
-  is_own: false,
-  is_active: true,
-  sort_order: 0,
-};
-
-async function uploadThumb(file: File, apiUrl: string, token: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error("Не удалось прочитать файл"));
-    reader.onload = async () => {
-      try {
-        const base64 = (reader.result as string).split(",")[1];
-        const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-        const res = await fetch(`${apiUrl}?action=upload_thumb`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Admin-Token": token },
-          body: JSON.stringify({ thumb_data: base64, thumb_ext: ext }),
-        });
-        if (!res.ok) throw new Error(`Ошибка загрузки обложки: ${res.status}`);
-        const { thumbnail_url } = await res.json();
-        resolve(thumbnail_url);
-      } catch (e) {
-        reject(e);
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function parseEmbedUrl(raw: string): string {
-  if (!raw) return "";
-  const vkMatch = raw.match(/src="([^"]+vk\.com[^"]+)"/);
-  if (vkMatch) return vkMatch[1];
-  const ytMatch = raw.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=))([\w-]+)/);
-  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-  return raw;
-}
-
-function getYoutubeId(raw: string): string | null {
-  const m = raw.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=))([\w-]+)/);
-  return m ? m[1] : null;
-}
-
-function getPreviewInfo(raw: string): { label: string; thumb: string | null; href: string } {
-  const parsed = parseEmbedUrl(raw);
-  const ytId = getYoutubeId(raw);
-  if (ytId) {
-    return {
-      label: "YouTube",
-      thumb: `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`,
-      href: `https://www.youtube.com/watch?v=${ytId}`,
-    };
-  }
-  const vkMatch = raw.match(/oid=(-?\d+)&id=(\d+)/);
-  if (vkMatch) {
-    return { label: "VK Видео", thumb: null, href: `https://vk.com/video${vkMatch[1]}_${vkMatch[2]}` };
-  }
-  return { label: "Видео", thumb: null, href: parsed };
-}
+import { Video, EMPTY, API_URL, ADMIN_TOKEN, uploadThumb, parseEmbedUrl } from "./videos/videoTypes";
+import VideoEditForm from "./videos/VideoEditForm";
+import VideoCard from "./videos/VideoCard";
 
 export default function AdminVideosTab() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -97,7 +14,6 @@ export default function AdminVideosTab() {
   const [thumbFile, setThumbFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState("");
   const [quickThumbId, setQuickThumbId] = useState<number | null>(null);
-  const thumbInputRef = useRef<HTMLInputElement>(null);
   const quickThumbRef = useRef<HTMLInputElement>(null);
 
   const load = () => {
@@ -119,6 +35,10 @@ export default function AdminVideosTab() {
   const openEdit = (v: Video) => {
     setThumbFile(null);
     setEditing({ ...v });
+  };
+
+  const handleChangeField = (field: keyof Video, value: unknown) => {
+    setEditing(p => ({ ...p!, [field]: value }));
   };
 
   const save = async () => {
@@ -177,12 +97,6 @@ export default function AdminVideosTab() {
     load();
   };
 
-  const sourceLabel = (v: Video) => {
-    if (v.embed_url) return "Ссылка";
-    if (v.video_url) return "Файл";
-    return "—";
-  };
-
   const handleQuickThumb = useCallback(async (file: File) => {
     if (!quickThumbId) return;
     const video = videos.find(v => v.id === quickThumbId);
@@ -212,194 +126,20 @@ export default function AdminVideosTab() {
         </Button>
       </div>
 
-      {/* Форма редактирования */}
       {editing && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6 shadow-sm">
-          <h3 className="font-bold text-gray-900 mb-4">
-            {editing.id ? "Редактировать видео" : "Новое видео"}
-          </h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">Название *</label>
-                <Input
-                  value={editing.title || ""}
-                  onChange={e => setEditing(p => ({ ...p!, title: e.target.value }))}
-                  placeholder="Название ролика"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">Описание</label>
-                <Textarea
-                  value={editing.description || ""}
-                  onChange={e => setEditing(p => ({ ...p!, description: e.target.value }))}
-                  placeholder="Краткое описание видео"
-                  rows={3}
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">Партнёр / Автор</label>
-                <Input
-                  value={editing.partner_name || ""}
-                  onChange={e => setEditing(p => ({ ...p!, partner_name: e.target.value }))}
-                  placeholder="Название компании или автора"
-                />
-              </div>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={editing.is_own || false}
-                    onChange={e => setEditing(p => ({ ...p!, is_own: e.target.checked }))}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-gray-700">Наш ролик</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={editing.is_active !== false}
-                    onChange={e => setEditing(p => ({ ...p!, is_active: e.target.checked }))}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-gray-700">Активный</span>
-                </label>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">Порядок сортировки</label>
-                <Input
-                  type="number"
-                  value={editing.sort_order ?? 0}
-                  onChange={e => setEditing(p => ({ ...p!, sort_order: parseInt(e.target.value) || 0 }))}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {/* Ссылка на видео */}
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">
-                  <Icon name="Link" size={12} className="inline mr-1" />
-                  Ссылка на видео (VK или YouTube) *
-                </label>
-                <Textarea
-                  value={editing.embed_url || ""}
-                  onChange={e => setEditing(p => ({ ...p!, embed_url: e.target.value }))}
-                  placeholder="Вставьте ссылку или код iframe..."
-                  rows={3}
-                />
-                <div className="mt-2 p-3 rounded-xl bg-blue-50 border border-blue-100 text-xs text-blue-700 space-y-1.5">
-                  <p className="font-semibold text-blue-800">Поддерживаемые форматы:</p>
-                  <p><strong>YouTube:</strong> любая ссылка — youtube.com/watch?v=ABC или youtu.be/ABC</p>
-                  <p><strong>VK Видео:</strong> vk.com/video-123_456 или vk.com/clip-123_456</p>
-                  <p><strong>VK (iframe-код):</strong> вставь весь код со страницы «Поделиться → Код для вставки»</p>
-                  <p className="text-blue-500 pt-0.5">Telegram-ссылки не поддерживают встраивание — загрузи видео напрямую или используйте VK/YouTube.</p>
-                </div>
-              </div>
-
-              {/* Превью */}
-              {editing.embed_url && (() => {
-                const { label, thumb, href } = getPreviewInfo(editing.embed_url);
-                return (
-                  <div>
-                    <label className="text-xs font-medium text-gray-600 mb-1 block">
-                      <Icon name="Play" size={12} className="inline mr-1" />
-                      Превью
-                    </label>
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block rounded-xl overflow-hidden border border-gray-200 aspect-video bg-gray-900 relative group"
-                    >
-                      {thumb ? (
-                        <img src={thumb} alt="" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Icon name="Video" size={40} className="text-gray-500" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                        <div className="w-14 h-14 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center group-hover:bg-black/70 transition">
-                          <Icon name="Play" size={28} className="text-white ml-1" />
-                        </div>
-                        <span className="px-3 py-1 rounded-full bg-black/50 text-white text-xs font-medium backdrop-blur-sm">
-                          Открыть {label}
-                        </span>
-                      </div>
-                    </a>
-                  </div>
-                );
-              })()}
-
-              {/* Обложка */}
-              <div>
-                <label className="text-xs font-medium text-gray-600 mb-1 block">Обложка (картинка)</label>
-                <div
-                  className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-orange-300 transition"
-                  onClick={() => thumbInputRef.current?.click()}
-                >
-                  {thumbFile ? (
-                    <p className="text-sm text-orange-600 font-medium">{thumbFile.name}</p>
-                  ) : editing.thumbnail_url ? (
-                    <img src={editing.thumbnail_url} alt="" className="w-full h-20 object-cover rounded-lg" />
-                  ) : (
-                    <div>
-                      <Icon name="Image" size={24} className="mx-auto text-gray-300 mb-2" />
-                      <p className="text-sm text-gray-500">Загрузить обложку</p>
-                    </div>
-                  )}
-                </div>
-                <input
-                  ref={thumbInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={e => setThumbFile(e.target.files?.[0] || null)}
-                />
-                {(editing.thumbnail_url || thumbFile) && (
-                  <button
-                    type="button"
-                    className="mt-2 text-xs text-gray-400 hover:text-red-500 transition"
-                    onClick={() => {
-                      setThumbFile(null);
-                      setEditing(p => ({ ...p!, thumbnail_url: "" }));
-                    }}
-                  >
-                    Сбросить обложку (сгенерируется автоматически при следующем открытии)
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {saveError && (
-            <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
-              {saveError}
-            </div>
-          )}
-
-          <div className="flex gap-3 mt-5 pt-4 border-t border-gray-100">
-            <Button
-              onClick={save}
-              disabled={saving || !editing.title}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
-            >
-              {saving ? (
-                <span className="flex items-center gap-2">
-                  <Icon name="Loader2" size={16} className="animate-spin" />
-                  {uploadProgress}
-                </span>
-              ) : "Сохранить"}
-            </Button>
-            <Button variant="outline" onClick={() => setEditing(null)} disabled={saving}>
-              Отмена
-            </Button>
-          </div>
-        </div>
+        <VideoEditForm
+          editing={editing}
+          thumbFile={thumbFile}
+          saving={saving}
+          saveError={saveError}
+          uploadProgress={uploadProgress}
+          onChangeField={handleChangeField}
+          onThumbFile={setThumbFile}
+          onSave={save}
+          onCancel={() => setEditing(null)}
+        />
       )}
 
-      {/* Список */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Icon name="Loader2" size={24} className="animate-spin text-gray-400" />
@@ -412,78 +152,18 @@ export default function AdminVideosTab() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {videos.map(v => (
-            <div key={v.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-              <div className="relative aspect-video bg-gray-100">
-                {v.thumbnail_url ? (
-                  <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Icon name="Play" size={32} className="text-gray-300" />
-                  </div>
-                )}
-                <div className="absolute top-2 left-2 flex gap-1 flex-wrap">
-                  {v.is_own ? (
-                    <span className="px-2 py-0.5 rounded text-xs bg-orange-500 text-white">Наш</span>
-                  ) : (
-                    <span className="px-2 py-0.5 rounded text-xs bg-blue-500 text-white">Партнёр</span>
-                  )}
-                  <span className="px-2 py-0.5 rounded text-xs bg-black/40 text-white backdrop-blur-sm">
-                    {sourceLabel(v)}
-                  </span>
-                  {!v.is_active && (
-                    <span className="px-2 py-0.5 rounded text-xs bg-gray-400 text-white">Скрыт</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-4">
-                <h4 className="font-semibold text-gray-900 text-sm leading-snug mb-1 line-clamp-1">{v.title}</h4>
-                {v.partner_name && (
-                  <p className="text-xs text-gray-400 mb-3">{v.partner_name}</p>
-                )}
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openEdit(v)}
-                    className="flex-1 text-xs h-8"
-                  >
-                    <Icon name="Pencil" size={12} className="mr-1" />
-                    Изменить
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    title="Сменить обложку"
-                    onClick={() => { setQuickThumbId(v.id); setTimeout(() => quickThumbRef.current?.click(), 50); }}
-                    className="text-xs h-8"
-                  >
-                    <Icon name="Image" size={12} />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => toggleActive(v)}
-                    className="text-xs h-8"
-                  >
-                    <Icon name={v.is_active ? "EyeOff" : "Eye"} size={12} />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => remove(v.id)}
-                    className="text-xs h-8 text-red-500 border-red-200 hover:bg-red-50"
-                  >
-                    <Icon name="Trash2" size={12} />
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <VideoCard
+              key={v.id}
+              video={v}
+              onEdit={openEdit}
+              onToggleActive={toggleActive}
+              onRemove={remove}
+              onQuickThumb={(id) => { setQuickThumbId(id); setTimeout(() => quickThumbRef.current?.click(), 50); }}
+            />
           ))}
         </div>
       )}
 
-      {/* Скрытый input для быстрой смены обложки */}
       <input
         ref={quickThumbRef}
         type="file"
