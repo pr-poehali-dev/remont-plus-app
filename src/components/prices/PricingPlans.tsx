@@ -8,6 +8,12 @@ const Cross = () => <Icon name="X" size={15} className="text-gray-300 mt-0.5 shr
 export default function PricingPlans() {
   const navigate = useNavigate();
 
+  const scrollToForm = () => {
+    const el = document.getElementById("tariff-lead-form");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+    else navigate("/tariffs#form");
+  };
+
   return (
     <div className="mb-12">
 
@@ -40,7 +46,7 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-400"><Cross />Без органайзера</li>
               <li className="flex items-start gap-2 text-gray-400"><Cross />Без голосового ЯСЕН</li>
             </ul>
-            <Button variant="outline" className="w-full" onClick={() => navigate("/ai-chat")}>Попробовать 7 дней</Button>
+            <Button variant="outline" className="w-full" onClick={scrollToForm}>Оставить заявку</Button>
           </div>
 
           {/* BUSINESS */}
@@ -68,7 +74,7 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Голосовой ассистент ЯСЕН</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Приоритетная поддержка</li>
             </ul>
-            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => navigate("/ai-chat")}>Получить демо</Button>
+            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={scrollToForm}>Оставить заявку</Button>
           </div>
 
           {/* ENTERPRISE */}
@@ -91,7 +97,7 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Персональный менеджер</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Обучение команды</li>
             </ul>
-            <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => navigate("/ai-chat")}>Обсудить внедрение</Button>
+            <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={scrollToForm}>Оставить заявку</Button>
           </div>
         </div>
       </div>

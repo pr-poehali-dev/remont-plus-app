@@ -121,7 +121,7 @@ export default function Tariffs() {
         <PricingPlans />
 
         {/* Форма заявки */}
-        <div className="mt-8 mb-6 grid md:grid-cols-2 gap-8 items-start">
+        <div id="tariff-lead-form" className="mt-8 mb-6 grid md:grid-cols-2 gap-8 items-start">
           <div>
             <h2 className="text-xl font-bold mb-2">Остались вопросы?</h2>
             <p className="text-gray-500 mb-4">
