@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 
 function getYoutubeId(url: string): string | null {
@@ -17,7 +17,7 @@ function getEmbedSrc(v: PartnerVideo): string | null {
   const url = v.embed_url || "";
   // YouTube
   const ytId = getYoutubeId(url);
-  if (ytId) return `https://www.youtube.com/embed/${ytId}?autoplay=1`;
+  if (ytId) return `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&enablejsapi=1`;
   // VK embed (video_ext.php)
   if (url.includes("vk.com/video_ext.php")) return url;
   // VK clip → конвертируем в embed
@@ -80,6 +80,28 @@ export default function HomeVideoBanner() {
     }
   }, [active]);
 
+  const prev = () => { setActive(i => (i - 1 + videos.length) % videos.length); };
+  const next = useCallback(() => { setActive(i => (i + 1) % videos.length); }, [videos.length]);
+
+  // Слушаем postMessage от VK и YouTube плееров — переключаем на следующий ролик по окончании
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      try {
+        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        if (data?.type === "vid_end" || data?.event === "ended") {
+          next();
+        }
+        if (data?.event === "infoDelivery" && data?.info?.playerState === 0) {
+          next();
+        }
+      } catch (_) {
+        // ignore parse errors
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [next]);
+
   if (loading || videos.length === 0) return null;
 
   const current = videos[active];
@@ -99,9 +121,6 @@ export default function HomeVideoBanner() {
       }
     }
   };
-
-  const prev = () => { setActive(i => (i - 1 + videos.length) % videos.length); };
-  const next = () => { setActive(i => (i + 1) % videos.length); };
 
   return (
     <section className="mt-16">
@@ -183,7 +202,7 @@ export default function HomeVideoBanner() {
                 src={current.video_url}
                 poster={current.thumbnail_url || undefined}
                 className="w-full h-full object-contain"
-                onEnded={() => setPlaying(false)}
+                onEnded={() => { setPlaying(false); next(); }}
                 playsInline
               />
               {!playing && (
