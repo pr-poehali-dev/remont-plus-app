@@ -21,10 +21,10 @@ function getEmbedSrc(v: PartnerVideo): string | null {
   // VK embed (video_ext.php)
   if (url.includes("vk.com/video_ext.php")) return url;
   // VK clip → конвертируем в embed
-  const vkClip = url.match(/vk\.com\/clip(-?\d+)_(\d+)/);
+  const vkClip = url.match(/(?:vk\.com|vkvideo\.ru)\/clip(-?\d+)_(\d+)/);
   if (vkClip) return `https://vk.com/video_ext.php?oid=${vkClip[1]}&id=${vkClip[2]}&hd=2&js_api=1`;
-  // VK video
-  const vkVideo = url.match(/vk\.com\/video(-?\d+)_(\d+)/);
+  // VK video (vk.com или vkvideo.ru)
+  const vkVideo = url.match(/(?:vk\.com|vkvideo\.ru)\/video(-?\d+)_(\d+)/);
   if (vkVideo) return `https://vk.com/video_ext.php?oid=${vkVideo[1]}&id=${vkVideo[2]}&hd=2&js_api=1`;
   return null;
 }
@@ -35,7 +35,8 @@ function getWatchUrl(v: PartnerVideo): string {
   if (ytId) return `https://www.youtube.com/watch?v=${ytId}`;
   const vkMatch = url.match(/oid=(-?\d+)&id=(\d+)/);
   if (vkMatch) return `https://vk.com/video${vkMatch[1]}_${vkMatch[2]}`;
-  // Любая другая ссылка — открываем напрямую
+  const vkDirect = url.match(/(?:vk\.com|vkvideo\.ru)\/(video|clip)(-?\d+)_(\d+)/);
+  if (vkDirect) return `https://vk.com/video${vkDirect[2]}_${vkDirect[3]}`;
   return url || v.video_url || "#";
 }
 
