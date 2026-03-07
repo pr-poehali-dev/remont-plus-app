@@ -288,11 +288,11 @@ def handler(event: dict, context) -> dict:
         cur = conn.cursor()
         if city:
             cur.execute(
-                f"SELECT id, name, inn FROM {SCHEMA}.parsed_companies WHERE (phone IS NULL OR phone = '') AND inn IS NOT NULL AND inn != '' AND city = %s LIMIT 50",
+                f"SELECT id, name, inn FROM {SCHEMA}.parsed_companies WHERE (email IS NULL OR email = '') AND inn IS NOT NULL AND inn != '' AND city = %s LIMIT 50",
                 (city,)
             )
         else:
-            cur.execute(f"SELECT id, name, inn FROM {SCHEMA}.parsed_companies WHERE (phone IS NULL OR phone = '') AND inn IS NOT NULL AND inn != '' LIMIT 50")
+            cur.execute(f"SELECT id, name, inn FROM {SCHEMA}.parsed_companies WHERE (email IS NULL OR email = '') AND inn IS NOT NULL AND inn != '' LIMIT 50")
         rows = cur.fetchall()
         enriched = 0
         for row_id, name, inn in rows:
@@ -320,8 +320,13 @@ def handler(event: dict, context) -> dict:
                     website = sites[0].get("value", "") if sites else ""
                     if phone or email or website:
                         cur.execute(
-                            f"UPDATE {SCHEMA}.parsed_companies SET phone=%s, email=%s, website=%s, enriched_at=NOW() WHERE id=%s",
-                            (phone, email, website, row_id)
+                            f"""UPDATE {SCHEMA}.parsed_companies SET
+                                phone = CASE WHEN %s != '' THEN %s ELSE phone END,
+                                email = CASE WHEN %s != '' THEN %s ELSE email END,
+                                website = CASE WHEN %s != '' THEN %s ELSE website END,
+                                enriched_at = NOW()
+                            WHERE id = %s""",
+                            (phone, phone, email, email, website, website, row_id)
                         )
                         enriched += 1
                 time.sleep(0.15)
