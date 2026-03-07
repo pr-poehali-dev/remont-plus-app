@@ -56,6 +56,7 @@ export default function HomeVideoBanner() {
   const [videos, setVideos] = useState<PartnerVideo[]>([]);
   const [active, setActive] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [embedStarted, setEmbedStarted] = useState(false);
   const [loading, setLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -71,6 +72,7 @@ export default function HomeVideoBanner() {
 
   useEffect(() => {
     setPlaying(false);
+    setEmbedStarted(false);
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -141,15 +143,37 @@ export default function HomeVideoBanner() {
         {/* Плеер */}
         <div className="relative bg-black aspect-video">
           {embedSrc ? (
-            /* iframe-плеер: YouTube, VK и другие embed */
-            <iframe
-              key={embedSrc}
-              src={embedSrc}
-              className="w-full h-full"
-              allow="autoplay; fullscreen; encrypted-media"
-              allowFullScreen
-              frameBorder="0"
-            />
+            /* iframe-плеер: показываем превью, iframe грузим только после нажатия Play */
+            embedStarted ? (
+              <iframe
+                key={embedSrc}
+                src={embedSrc}
+                className="w-full h-full"
+                allow="autoplay; fullscreen; encrypted-media"
+                allowFullScreen
+                frameBorder="0"
+              />
+            ) : (
+              <div
+                className="w-full h-full cursor-pointer group"
+                onClick={() => setEmbedStarted(true)}
+              >
+                {getThumb(current) ? (
+                  <img
+                    src={getThumb(current)!}
+                    alt={current.title}
+                    className="w-full h-full object-cover group-hover:brightness-75 transition"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-900" />
+                )}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center group-hover:bg-black/70 group-hover:scale-105 transition-all">
+                    <Icon name="Play" size={36} className="text-white ml-1.5" />
+                  </div>
+                </div>
+              </div>
+            )
           ) : hasDirectVideo ? (
             /* Прямое видео (mp4 и др.) */
             <>
