@@ -40,6 +40,7 @@ export default function AdminCompanyParserTab() {
   const [loadingList, setLoadingList] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [enriching, setEnriching] = useState(false);
+  const [findingWebsites, setFindingWebsites] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
   const [activeTab, setActiveTab] = useState<"overview" | "list">("overview");
 
@@ -114,6 +115,25 @@ export default function AdminCompanyParserTab() {
       setStatusMsg("Ошибка при обогащении");
     } finally {
       setEnriching(false);
+    }
+  };
+
+  const handleFindWebsites = async () => {
+    setFindingWebsites(true);
+    setStatusMsg(selectedCity ? `Ищу сайты для ${selectedCity}...` : "Ищу сайты по всей базе...");
+    try {
+      const r = await fetch(API_URL, {
+        method: "POST", headers: HEADERS,
+        body: JSON.stringify({ action: "find_websites", city: selectedCity }),
+      });
+      const d = await r.json();
+      setStatusMsg(`Найдено сайтов: ${d.found} из ${d.total} компаний`);
+      loadStats();
+      loadList(selectedCity, offset);
+    } catch {
+      setStatusMsg("Ошибка при поиске сайтов");
+    } finally {
+      setFindingWebsites(false);
     }
   };
 
@@ -312,12 +332,22 @@ export default function AdminCompanyParserTab() {
 
         <Button
           onClick={handleEnrich}
-          disabled={parsing || enriching}
+          disabled={parsing || enriching || findingWebsites}
           variant="outline"
           className="gap-2"
         >
           {enriching ? <Icon name="Loader2" size={16} className="animate-spin" /> : <Icon name="Mail" size={16} />}
           {enriching ? "Ищу контакты..." : "Найти email / телефон"}
+        </Button>
+
+        <Button
+          onClick={handleFindWebsites}
+          disabled={parsing || enriching || findingWebsites}
+          variant="outline"
+          className="gap-2"
+        >
+          {findingWebsites ? <Icon name="Loader2" size={16} className="animate-spin" /> : <Icon name="Globe" size={16} />}
+          {findingWebsites ? "Ищу сайты..." : "Найти сайты"}
         </Button>
 
         {statusMsg && (

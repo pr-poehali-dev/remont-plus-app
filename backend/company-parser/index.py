@@ -374,6 +374,57 @@ def handler(event: dict, context) -> dict:
         conn.close()
         return {"statusCode": 200, "headers": CORS, "body": json.dumps({"enriched": enriched, "total": len(rows)}, ensure_ascii=False)}
 
+    # POST find_websites — ищем сайт через Яндекс по названию компании
+    if method == "POST" and body.get("action") == "find_websites":
+        city = body.get("city", "")
+        conn = get_db()
+        cur = conn.cursor()
+        if city:
+            cur.execute(
+                f"SELECT id, name, inn FROM {SCHEMA}.parsed_companies WHERE (website IS NULL OR website = '') AND city = %s LIMIT 30",
+                (city,)
+            )
+        else:
+            cur.execute(f"SELECT id, name, inn FROM {SCHEMA}.parsed_companies WHERE (website IS NULL OR website = '') LIMIT 30")
+        rows = cur.fetchall()
+        found_count = 0
+        for row_id, name, inn in rows:
+            website = ""
+            # Ищем через Яндекс XML-like (просто GET html и парсим первый result)
+            try:
+                query = urllib.parse.quote(f"{name} официальный сайт")
+                req = urllib.request.Request(
+                    f"https://yandex.ru/search/?text={query}&lr=213",
+                    headers={
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                        "Accept": "text/html",
+                        "Accept-Language": "ru",
+                    }
+                )
+                with urllib.request.urlopen(req, timeout=8) as r:
+                    html = r.read(60000).decode("utf-8", errors="ignore")
+                # Ищем первую внешнюю ссылку из результатов (не yandex.ru)
+                links = re.findall(r'href="(https?://(?!(?:yandex|google|bing|mail\.ru|vk\.com|2gis|dadata|avito|hh\.ru)[./])[^"]+)"', html)
+                for link in links:
+                    parsed = urllib.parse.urlparse(link)
+                    domain = parsed.netloc.lstrip("www.")
+                    if domain and "." in domain and len(domain) > 4:
+                        website = parsed.scheme + "://" + parsed.netloc
+                        break
+            except Exception:
+                pass
+            if website:
+                cur.execute(
+                    f"UPDATE {SCHEMA}.parsed_companies SET website = %s WHERE id = %s",
+                    (website, row_id)
+                )
+                found_count += 1
+            time.sleep(0.5)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"statusCode": 200, "headers": CORS, "body": json.dumps({"found": found_count, "total": len(rows)}, ensure_ascii=False)}
+
     # DELETE
     if method == "DELETE":
         city = body.get("city", "") or params.get("city", "")
