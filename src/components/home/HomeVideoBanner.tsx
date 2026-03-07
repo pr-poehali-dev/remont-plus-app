@@ -11,10 +11,55 @@ function getThumb(v: PartnerVideo, generated?: string | null): string | null {
   if (generated) return generated;
   const ytId = getYoutubeId(v.embed_url || "");
   if (ytId) return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-  // VK thumbnail через открытое API
-  const vkVideo = (v.embed_url || "").match(/(?:vk\.com|vkvideo\.ru)\/video(-?\d+)_(\d+)/);
-  if (vkVideo) return `https://vk.com/images/video_thumb/video${vkVideo[1]}_${vkVideo[2]}.jpg`;
   return null;
+}
+
+function generateCanvasThumb(title: string, partnerName: string): string {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1280;
+  canvas.height = 720;
+  const ctx = canvas.getContext("2d")!;
+  // Градиентный фон
+  const grad = ctx.createLinearGradient(0, 0, 1280, 720);
+  grad.addColorStop(0, "#1a1a2e");
+  grad.addColorStop(1, "#16213e");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1280, 720);
+  // Оранжевый акцент
+  const accent = ctx.createLinearGradient(0, 0, 1280, 0);
+  accent.addColorStop(0, "#f97316");
+  accent.addColorStop(1, "#fb923c");
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, 680, 1280, 40);
+  // Круг Play
+  ctx.beginPath();
+  ctx.arc(640, 320, 80, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(249, 115, 22, 0.15)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(640, 320, 60, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(249, 115, 22, 0.9)";
+  ctx.fill();
+  // Треугольник Play
+  ctx.beginPath();
+  ctx.moveTo(625, 295);
+  ctx.lineTo(625, 345);
+  ctx.lineTo(672, 320);
+  ctx.closePath();
+  ctx.fillStyle = "#fff";
+  ctx.fill();
+  // Название
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 48px Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(title || "Видео", 640, 450);
+  // Партнёр
+  if (partnerName) {
+    ctx.fillStyle = "#f97316";
+    ctx.font = "28px Arial, sans-serif";
+    ctx.fillText(partnerName, 640, 500);
+  }
+  return canvas.toDataURL("image/jpeg", 0.85);
 }
 
 function getEmbedSrc(v: PartnerVideo): string | null {
@@ -159,40 +204,54 @@ export default function HomeVideoBanner() {
     return () => window.removeEventListener("message", handleMessage);
   }, [startCountdown]);
 
-  // Генерация заставки из кадра mp4 видео через canvas + сохранение в S3/БД
-  const generateThumb = useCallback((video: PartnerVideo) => {
-    if (!video.video_url || video.thumbnail_url || generatedThumbs[video.id]) return;
-    const vid = document.createElement("video");
-    vid.crossOrigin = "anonymous";
-    vid.src = video.video_url;
-    vid.currentTime = 3;
-    vid.muted = true;
-    vid.addEventListener("seeked", async () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = vid.videoWidth || 1280;
-        canvas.height = vid.videoHeight || 720;
-        canvas.getContext("2d")?.drawImage(vid, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-        // Сразу показываем локально
-        setGeneratedThumbs(prev => ({ ...prev, [video.id]: dataUrl }));
-        // Загружаем в S3 и сохраняем URL в БД
-        const savedUrl = await uploadAndSaveThumb(video.id, dataUrl, video);
-        if (savedUrl) {
-          // Обновляем videos — чтобы thumbnail_url появился и больше не регенерировался
-          setVideos(prev => prev.map(v => v.id === video.id ? { ...v, thumbnail_url: savedUrl } : v));
-        }
-      } catch (e) { void e; }
-    }, { once: true });
-    vid.load();
+  // Генерация и сохранение заставки для ролика
+  const generateAndSaveThumb = useCallback(async (video: PartnerVideo) => {
+    if (video.thumbnail_url || generatedThumbs[video.id]) return;
+
+    let dataUrl: string;
+
+    if (video.video_url) {
+      // mp4 — берём кадр через canvas
+      dataUrl = await new Promise<string>((resolve, reject) => {
+        const vid = document.createElement("video");
+        vid.crossOrigin = "anonymous";
+        vid.src = video.video_url;
+        vid.currentTime = 3;
+        vid.muted = true;
+        vid.addEventListener("seeked", () => {
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = vid.videoWidth || 1280;
+            canvas.height = vid.videoHeight || 720;
+            canvas.getContext("2d")?.drawImage(vid, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", 0.85));
+          } catch (e) { reject(e); }
+        }, { once: true });
+        vid.addEventListener("error", reject, { once: true });
+        vid.load();
+      });
+    } else {
+      // embed (VK/другие) — генерируем canvas-заставку
+      dataUrl = generateCanvasThumb(video.title, video.partner_name);
+    }
+
+    // Показываем сразу
+    setGeneratedThumbs(prev => ({ ...prev, [video.id]: dataUrl }));
+    // Сохраняем в S3 + БД
+    const savedUrl = await uploadAndSaveThumb(video.id, dataUrl, video);
+    if (savedUrl) {
+      setVideos(prev => prev.map(v => v.id === video.id ? { ...v, thumbnail_url: savedUrl } : v));
+    }
   }, [generatedThumbs]);
 
   useEffect(() => {
     if (videos.length === 0) return;
     videos.forEach(v => {
-      if (v.video_url && !v.thumbnail_url && !generatedThumbs[v.id]) generateThumb(v);
+      if (!v.thumbnail_url && !generatedThumbs[v.id]) {
+        generateAndSaveThumb(v).catch(() => {});
+      }
     });
-  }, [videos, generateThumb, generatedThumbs]);
+  }, [videos, generateAndSaveThumb, generatedThumbs]);
 
   if (loading || videos.length === 0) return null;
 
