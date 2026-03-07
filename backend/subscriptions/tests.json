@@ -15,11 +15,11 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "GET несуществующий пользователь — нет подписки",
+      "name": "GET несуществующий пользователь — бесплатный план",
       "method": "GET",
       "path": "/?user_id=999999",
       "expectedStatus": 200,
-      "expectedBody": {"subscription": null},
+      "expectedBody": {"subscription": {"status": "active"}},
       "bodyMatcher": "partial"
     }
   ]

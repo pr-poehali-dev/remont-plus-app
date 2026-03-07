@@ -109,16 +109,7 @@ def consume_subscription(sub_id: int, resource: str):
 
 def create_project(body, user_id: int = None):
     """Создать новый проект"""
-    # Проверка лимита подписки
-    if user_id:
-        check = check_subscription_limit(user_id, 'project')
-        if not check['allowed']:
-            if check['reason'] == 'no_subscription':
-                return resp(403, {'error': 'limit_exceeded', 'reason': 'no_subscription',
-                                  'message': 'Для создания проекта необходима подписка'})
-            return resp(403, {'error': 'limit_exceeded', 'reason': check['reason'],
-                              'message': f'Лимит проектов исчерпан. Тариф «{check["plan_name"]}» — до {check["max"]} проектов.',
-                              'plan_name': check.get('plan_name'), 'max': check.get('max')})
+    # Проверка лимита подписки (касса отключена — пропускаем)
 
     name = body.get('name', 'Мой дизайн-проект')
     style = body.get('style', 'modern')

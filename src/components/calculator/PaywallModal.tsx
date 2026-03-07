@@ -49,10 +49,9 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
   const [tab, setTab] = useState<"single" | "plans">("single");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  if (isAdmin) {
-    onSuccess();
-    return null;
-  }
+  // Касса временно отключена — всё бесплатно
+  onSuccess();
+  return null;
 
   const stopPoll = () => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }

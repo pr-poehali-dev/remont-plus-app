@@ -48,20 +48,33 @@ def handler(event: dict, context) -> dict:
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        # GET — статус подписки
+        # GET — статус подписки (касса временно отключена — возвращаем активный безлимитный план)
         if method == 'GET':
             sub = get_active_sub(cur, user_id)
-            if not sub:
-                return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'subscription': None})}
-            sub = dict(sub)
-            # Считаем остатки
-            sub['projects_left'] = (sub['max_projects'] - sub['projects_used']) if not sub['is_unlimited'] else 9999
-            sub['visualizations_left'] = (sub['max_visualizations'] - sub['visualizations_used']) if not sub['is_unlimited'] else 9999
-            sub['revisions_left'] = (sub['max_revisions'] - sub['revisions_used']) if not sub['is_unlimited'] else 9999
-            sub['activated_at'] = str(sub['activated_at']) if sub['activated_at'] else None
-            sub['expires_at'] = str(sub['expires_at']) if sub['expires_at'] else None
-            sub['created_at'] = str(sub['created_at']) if sub['created_at'] else None
-            sub['updated_at'] = str(sub['updated_at']) if sub['updated_at'] else None
+            if sub:
+                sub = dict(sub)
+                sub['projects_left'] = 9999
+                sub['visualizations_left'] = 9999
+                sub['revisions_left'] = 9999
+                sub['activated_at'] = str(sub['activated_at']) if sub['activated_at'] else None
+                sub['expires_at'] = str(sub['expires_at']) if sub['expires_at'] else None
+                sub['created_at'] = str(sub['created_at']) if sub['created_at'] else None
+                sub['updated_at'] = str(sub['updated_at']) if sub['updated_at'] else None
+            else:
+                sub = {
+                    'status': 'active',
+                    'plan_code': 'max',
+                    'plan_name': 'MAX',
+                    'is_unlimited': True,
+                    'projects_left': 9999,
+                    'visualizations_left': 9999,
+                    'revisions_left': 9999,
+                    'has_materials': True,
+                    'has_manager': True,
+                    'has_crm': True,
+                    'has_whitelabel': False,
+                    'expires_at': None,
+                }
             return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'subscription': sub}, default=str)}
 
         # POST — активация или списание
@@ -97,67 +110,13 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'success': True, 'subscription_id': new_sub['id']}, default=str)}
 
-        # Проверить лимит (без списания)
+        # Проверить лимит (касса отключена — всегда разрешено)
         if action == 'check':
-            resource = body.get('resource')  # 'project' | 'visualization' | 'revision'
-            sub = get_active_sub(cur, user_id)
-            if not sub:
-                return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'allowed': False, 'reason': 'no_subscription'})}
+            return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'allowed': True})}
 
-            sub = dict(sub)
-            if sub['is_unlimited']:
-                return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'allowed': True})}
-
-            allowed = True
-            reason = None
-            if resource == 'project' and sub['projects_used'] >= sub['max_projects']:
-                allowed, reason = False, 'projects_limit'
-            elif resource == 'visualization' and sub['visualizations_used'] >= sub['max_visualizations']:
-                allowed, reason = False, 'visualizations_limit'
-            elif resource == 'revision' and sub['revisions_used'] >= sub['max_revisions']:
-                allowed, reason = False, 'revisions_limit'
-
-            return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({
-                'allowed': allowed,
-                'reason': reason,
-                'plan_code': sub['plan_code'],
-                'plan_name': sub['plan_name'],
-                'used': sub.get(f'{resource}s_used', 0) if resource else 0,
-                'max': sub.get(f'max_{resource}s', 0) if resource else 0,
-            })}
-
-        # Списать использование
+        # Списать использование (касса отключена — просто отвечаем успехом)
         if action == 'consume':
-            resource = body.get('resource')  # 'project' | 'visualization' | 'revision'
-            amount = int(body.get('amount', 1))
-            if resource not in ('project', 'visualization', 'revision'):
-                return {'statusCode': 400, 'headers': JSON, 'body': json.dumps({'error': 'Invalid resource'})}
-
-            sub = get_active_sub(cur, user_id)
-            if not sub:
-                return {'statusCode': 403, 'headers': JSON, 'body': json.dumps({'error': 'no_subscription'})}
-
-            sub = dict(sub)
-            col = f'{resource}s_used'
-
-            if not sub['is_unlimited']:
-                max_col = f'max_{resource}s'
-                if sub[col] + amount > sub[max_col]:
-                    return {'statusCode': 403, 'headers': JSON, 'body': json.dumps({
-                        'error': 'limit_exceeded',
-                        'resource': resource,
-                        'used': sub[col],
-                        'max': sub[max_col],
-                        'plan_name': sub['plan_name'],
-                    })}
-
-            cur.execute(f"""
-                UPDATE user_subscriptions
-                SET {col} = {col} + %s, updated_at = NOW()
-                WHERE id = %s
-            """, (amount, sub['id']))
-            conn.commit()
-            return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'success': True, 'consumed': amount})}
+            return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'success': True, 'consumed': 1})}
 
         return {'statusCode': 400, 'headers': JSON, 'body': json.dumps({'error': 'Unknown action'})}
 

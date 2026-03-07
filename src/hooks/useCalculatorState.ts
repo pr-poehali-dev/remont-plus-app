@@ -63,10 +63,10 @@ export function useCalculatorState() {
   const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
   const userId: number | null = storedUser?.id ?? null;
   const { subscription, reload: reloadSub } = useSubscription(userId);
-  const hasPaidPlan = !!subscription && subscription.status === "active";
+  const hasPaidPlan = true;
   const freePrintsUsed = getFreePrintsUsed();
-  const hasFreePrints = freePrintsUsed < FREE_PRINTS_LIMIT;
-  const canExport = hasPaidPlan || hasFreePrints;
+  const hasFreePrints = true;
+  const canExport = true;
 
   const [deliveryFloor, setDeliveryFloor] = useState<number>(1);
   const [deliveryHasElevator, setDeliveryHasElevator] = useState<boolean>(true);

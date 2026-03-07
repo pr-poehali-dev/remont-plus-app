@@ -67,27 +67,7 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
     n.toLocaleString("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 });
 
   useEffect(() => {
-    if (isAdmin) {
-      setHasPaid(true);
-      return;
-    }
-    if (!userId) {
-      if (freeUsed.current < FREE_LIMIT) {
-        localStorage.setItem(FREE_KEY, String(freeUsed.current + 1));
-        setHasPaid(true);
-      } else {
-        setHasPaid(false);
-      }
-      return;
-    }
-    checkSubscription(userId).then(active => {
-      if (!active && freeUsed.current < FREE_LIMIT) {
-        localStorage.setItem(FREE_KEY, String(freeUsed.current + 1));
-        setHasPaid(true);
-      } else {
-        setHasPaid(active);
-      }
-    });
+    setHasPaid(true);
   }, [userId]);
 
   useEffect(() => () => {
