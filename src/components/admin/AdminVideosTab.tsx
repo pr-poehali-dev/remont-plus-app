@@ -267,9 +267,12 @@ export default function AdminVideosTab() {
                   placeholder="Вставьте ссылку или код iframe..."
                   rows={3}
                 />
-                <div className="mt-2 p-3 rounded-xl bg-blue-50 border border-blue-100 text-xs text-blue-700 space-y-1">
-                  <p><strong>VK:</strong> открой видео → «Поделиться» → «Код для вставки» → вставь весь код или только src из iframe</p>
-                  <p><strong>YouTube:</strong> вставь обычную ссылку типа youtube.com/watch?v=... — преобразуем автоматически</p>
+                <div className="mt-2 p-3 rounded-xl bg-blue-50 border border-blue-100 text-xs text-blue-700 space-y-1.5">
+                  <p className="font-semibold text-blue-800">Поддерживаемые форматы:</p>
+                  <p><strong>YouTube:</strong> любая ссылка — youtube.com/watch?v=ABC или youtu.be/ABC</p>
+                  <p><strong>VK Видео:</strong> vk.com/video-123_456 или vk.com/clip-123_456</p>
+                  <p><strong>VK (iframe-код):</strong> вставь весь код со страницы «Поделиться → Код для вставки»</p>
+                  <p className="text-blue-500 pt-0.5">Telegram-ссылки не поддерживают встраивание — загрузи видео напрямую или используйте VK/YouTube.</p>
                 </div>
               </div>
 
