@@ -24,6 +24,7 @@ export default function Register() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [emailConsent, setEmailConsent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +42,7 @@ export default function Register() {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
           user_type: userType,
+          email_consent: emailConsent,
         }),
       });
       const data = await res.json();
@@ -164,26 +166,39 @@ export default function Register() {
                 />
               </div>
 
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={agreed}
-                  onChange={(e) => setAgreed(e.target.checked)}
-                  className="mt-0.5 accent-orange-500"
-                  required
-                />
-                <span className="text-sm text-gray-600">
-                  Я принимаю{" "}
-                  <Link to="/terms" className="text-orange-500 hover:underline" target="_blank">
-                    Пользовательское соглашение
-                  </Link>{" "}
-                  и{" "}
-                  <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">
-                    Политику конфиденциальности
-                  </Link>
-                  , даю согласие на обработку персональных данных в соответствии с ФЗ-152
-                </span>
-              </label>
+              <div className="space-y-3">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="mt-0.5 accent-orange-500"
+                    required
+                  />
+                  <span className="text-sm text-gray-600">
+                    Я принимаю{" "}
+                    <Link to="/terms" className="text-orange-500 hover:underline" target="_blank">
+                      Пользовательское соглашение
+                    </Link>{" "}
+                    и{" "}
+                    <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">
+                      Политику конфиденциальности
+                    </Link>
+                    , даю согласие на обработку персональных данных в соответствии с ФЗ-152
+                  </span>
+                </label>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailConsent}
+                    onChange={(e) => setEmailConsent(e.target.checked)}
+                    className="mt-0.5 accent-orange-500"
+                  />
+                  <span className="text-sm text-gray-600">
+                    Согласен(а) получать полезные материалы, акции и новости сервиса на указанный email
+                  </span>
+                </label>
+              </div>
 
               <Button type="submit" className="w-full" size="lg" disabled={isLoading || !agreed}>
                 {isLoading ? (

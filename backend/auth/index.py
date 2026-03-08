@@ -67,6 +67,7 @@ def handler(event: dict, context) -> dict:
         name = (body.get('name') or '').strip()
         phone = (body.get('phone') or '').strip()
         user_type = body.get('user_type', 'customer')
+        email_consent = bool(body.get('email_consent', False))
 
         if not email or not password or not name:
             cursor.close()
@@ -86,8 +87,8 @@ def handler(event: dict, context) -> dict:
 
         pw_hash = hash_password(password)
         cursor.execute(
-            "INSERT INTO users (phone, name, email, user_type, password_hash, is_verified, role) VALUES (%s, %s, %s, %s, %s, TRUE, 'user') RETURNING id, name, email, user_type, role",
-            (phone or '', name, email, user_type, pw_hash)
+            "INSERT INTO users (phone, name, email, user_type, password_hash, is_verified, role, email_consent) VALUES (%s, %s, %s, %s, %s, TRUE, 'user', %s) RETURNING id, name, email, user_type, role",
+            (phone or '', name, email, user_type, pw_hash, email_consent)
         )
         user = cursor.fetchone()
         conn.commit()
@@ -101,7 +102,8 @@ def handler(event: dict, context) -> dict:
                 f"👤 Имя: {name}\n"
                 f"📧 Email: {email}\n"
                 f"📞 Телефон: {phone or '—'}\n"
-                f"🏷 Тип: {user_type_label}"
+                f"🏷 Тип: {user_type_label}\n"
+                f"📨 Рассылка: {'✅ Да' if email_consent else '❌ Нет'}"
             )
         except Exception as e:
             print(f'TELEGRAM ERROR: {e}')
@@ -213,6 +215,7 @@ def handler(event: dict, context) -> dict:
         name = body.get('name')
         email = body.get('email')
         user_type = body.get('user_type', 'customer')
+        email_consent = bool(body.get('email_consent', False))
 
         if not all([phone, code, name]):
             cursor.close()
@@ -234,11 +237,14 @@ def handler(event: dict, context) -> dict:
         cursor.execute("SELECT id FROM users WHERE phone = %s", (phone,))
         existing = cursor.fetchone()
         if existing:
-            cursor.execute("UPDATE users SET is_verified = TRUE, updated_at = NOW() WHERE phone = %s RETURNING id, name, email, user_type, role", (phone,))
+            cursor.execute(
+                "UPDATE users SET is_verified = TRUE, email_consent = %s, updated_at = NOW() WHERE phone = %s RETURNING id, name, email, user_type, role",
+                (email_consent, phone)
+            )
         else:
             cursor.execute(
-                "INSERT INTO users (phone, name, email, user_type, is_verified, role) VALUES (%s, %s, %s, %s, TRUE, 'user') RETURNING id, name, email, user_type, role",
-                (phone, name, email, user_type)
+                "INSERT INTO users (phone, name, email, user_type, is_verified, role, email_consent) VALUES (%s, %s, %s, %s, TRUE, 'user', %s) RETURNING id, name, email, user_type, role",
+                (phone, name, email, user_type, email_consent)
             )
         user = cursor.fetchone()
         conn.commit()
@@ -252,7 +258,8 @@ def handler(event: dict, context) -> dict:
                 f"👤 Имя: {name}\n"
                 f"📞 Телефон: {phone}\n"
                 f"📧 Email: {email or '—'}\n"
-                f"🏷 Тип: {user_type_label}"
+                f"🏷 Тип: {user_type_label}\n"
+                f"📨 Рассылка: {'✅ Да' if email_consent else '❌ Нет'}"
             )
         except Exception as e:
             print(f'TELEGRAM ERROR: {e}')

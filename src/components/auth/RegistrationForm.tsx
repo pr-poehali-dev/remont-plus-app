@@ -29,6 +29,7 @@ export const RegistrationForm = ({ onClose, onSuccess }: RegistrationFormProps) 
   const [smsCode, setSmsCode] = useState('');
   const [devCode, setDevCode] = useState('');
   const [agreed, setAgreed] = useState(false);
+  const [emailConsent, setEmailConsent] = useState(false);
   const { toast } = useToast();
 
   const formatPhone = (value: string) => {
@@ -99,7 +100,8 @@ export const RegistrationForm = ({ onClose, onSuccess }: RegistrationFormProps) 
           email: formData.email,
           user_type: userType,
           specialization: formData.specialization || null,
-          experience: formData.experience ? parseInt(formData.experience) : null
+          experience: formData.experience ? parseInt(formData.experience) : null,
+          email_consent: emailConsent
         })
       });
 
@@ -215,14 +217,22 @@ export const RegistrationForm = ({ onClose, onSuccess }: RegistrationFormProps) 
                     </div>
                   </div>
 
-                  <label className="flex items-start gap-2 cursor-pointer">
-                    <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 accent-orange-500" required />
-                    <span className="text-xs text-gray-500">
-                      Согласен(а) с{' '}
-                      <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">Политикой конфиденциальности</Link>{' '}
-                      и обработкой персональных данных (ФЗ-152)
-                    </span>
-                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 accent-orange-500" required />
+                      <span className="text-xs text-gray-500">
+                        Согласен(а) с{' '}
+                        <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">Политикой конфиденциальности</Link>{' '}
+                        и обработкой персональных данных (ФЗ-152)
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input type="checkbox" checked={emailConsent} onChange={(e) => setEmailConsent(e.target.checked)} className="mt-0.5 accent-orange-500" />
+                      <span className="text-xs text-gray-500">
+                        Согласен(а) получать полезные материалы, акции и новости сервиса на указанный email
+                      </span>
+                    </label>
+                  </div>
 
                   <Button type="submit" className="w-full h-12 text-base" disabled={isLoading || !agreed}>
                     {isLoading ? (
@@ -316,14 +326,22 @@ export const RegistrationForm = ({ onClose, onSuccess }: RegistrationFormProps) 
                     </div>
                   </div>
 
-                  <label className="flex items-start gap-2 cursor-pointer">
-                    <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 accent-orange-500" required />
-                    <span className="text-xs text-gray-500">
-                      Согласен(а) с{' '}
-                      <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">Политикой конфиденциальности</Link>{' '}
-                      и обработкой персональных данных (ФЗ-152)
-                    </span>
-                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 accent-orange-500" required />
+                      <span className="text-xs text-gray-500">
+                        Согласен(а) с{' '}
+                        <Link to="/privacy" className="text-orange-500 hover:underline" target="_blank">Политикой конфиденциальности</Link>{' '}
+                        и обработкой персональных данных (ФЗ-152)
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input type="checkbox" checked={emailConsent} onChange={(e) => setEmailConsent(e.target.checked)} className="mt-0.5 accent-orange-500" />
+                      <span className="text-xs text-gray-500">
+                        Согласен(а) получать полезные материалы, акции и новости сервиса на указанный email
+                      </span>
+                    </label>
+                  </div>
 
                   <Button type="submit" className="w-full h-12 text-base" disabled={isLoading || !agreed}>
                     {isLoading ? (
