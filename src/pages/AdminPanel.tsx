@@ -16,8 +16,12 @@ export const AdminPanel = () => {
 
   useEffect(() => {
     const adminAuth = localStorage.getItem('admin_auth');
-    if (adminAuth === 'true') {
+    const adminToken = localStorage.getItem('admin_token');
+    if (adminAuth === 'true' && adminToken) {
       setIsAuthenticated(true);
+    } else {
+      localStorage.removeItem('admin_auth');
+      localStorage.removeItem('admin_token');
     }
   }, []);
 
@@ -25,23 +29,23 @@ export const AdminPanel = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Простая проверка пароля (в реальном приложении это должно быть через backend)
-    const ADMIN_PASSWORD = 'admin2025'; // Временно захардкожено, потом через секреты
-
-    if (password === ADMIN_PASSWORD) {
-      localStorage.setItem('admin_auth', 'true');
-      localStorage.setItem('admin_password', password);
-      setIsAuthenticated(true);
-      toast({
-        title: 'Добро пожаловать!',
-        description: 'Вы успешно вошли в панель администратора'
+    try {
+      const res = await fetch('https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', email: 'admin', password })
       });
-    } else {
-      toast({
-        title: 'Ошибка',
-        description: 'Неверный пароль',
-        variant: 'destructive'
-      });
+      const data = await res.json();
+      if (data.success && data.user?.role === 'admin') {
+        localStorage.setItem('admin_auth', 'true');
+        localStorage.setItem('admin_token', data.token);
+        setIsAuthenticated(true);
+        toast({ title: 'Добро пожаловать!', description: 'Вы успешно вошли в панель администратора' });
+      } else {
+        toast({ title: 'Ошибка', description: data.error || 'Неверный пароль', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'Ошибка', description: 'Нет соединения с сервером', variant: 'destructive' });
     }
 
     setIsLoading(false);
@@ -50,7 +54,7 @@ export const AdminPanel = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('admin_auth');
-    localStorage.removeItem('admin_password');
+    localStorage.removeItem('admin_token');
     setIsAuthenticated(false);
     toast({
       title: 'Выход',
@@ -103,19 +107,12 @@ export const AdminPanel = () => {
                 )}
               </Button>
 
-              <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="bg-muted/50 rounded-lg p-4 text-sm">
                 <div className="flex items-start gap-2">
                   <Icon name="Info" size={16} className="flex-shrink-0 mt-0.5 text-primary" />
                   <span className="text-muted-foreground">
                     Доступ ограничен. Только для администраторов системы.
                   </span>
-                </div>
-                <div className="flex items-start gap-2 bg-primary/5 p-2 rounded">
-                  <Icon name="Key" size={16} className="flex-shrink-0 mt-0.5 text-primary" />
-                  <div>
-                    <span className="text-muted-foreground">Пароль по умолчанию: </span>
-                    <span className="font-mono font-bold text-primary">admin2025</span>
-                  </div>
                 </div>
               </div>
             </form>

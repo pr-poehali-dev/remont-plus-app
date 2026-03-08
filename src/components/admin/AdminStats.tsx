@@ -72,11 +72,11 @@ export const AdminStats = () => {
   const [calcStats, setCalcStats] = useState<CalcStats | null>(null);
   const { toast } = useToast();
 
-  const adminPassword = localStorage.getItem('admin_password') || 'admin2025';
+  const adminToken = localStorage.getItem('admin_token') || '';
 
   const fetchCalcStats = async () => {
     try {
-      const res = await fetch(CALC_EVENTS_URL, { headers: { 'X-Admin-Token': adminPassword } });
+      const res = await fetch(CALC_EVENTS_URL, { headers: { 'X-Auth-Token': adminToken } });
       const data = await res.json();
       if (data.by_calc) setCalcStats(data);
     } catch (_e) { /* ignore */ }
@@ -86,7 +86,7 @@ export const AdminStats = () => {
     try {
       const response = await fetch(`${ADMIN_API_URL}?action=stats`, {
         headers: {
-          'X-Admin-Token': adminPassword
+          'X-Auth-Token': adminToken
         }
       });
       const data = await response.json();
@@ -110,7 +110,7 @@ export const AdminStats = () => {
       
       const response = await fetch(url, {
         headers: {
-          'X-Admin-Token': adminPassword
+          'X-Auth-Token': adminToken
         }
       });
       const data = await response.json();
@@ -134,7 +134,7 @@ export const AdminStats = () => {
       
       const response = await fetch(url, {
         headers: {
-          'X-Admin-Token': adminPassword
+          'X-Auth-Token': adminToken
         }
       });
       const data = await response.json();
