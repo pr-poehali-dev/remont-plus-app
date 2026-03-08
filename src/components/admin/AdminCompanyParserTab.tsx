@@ -62,6 +62,11 @@ export default function AdminCompanyParserTab() {
   const [bulkStop, setBulkStop] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number; city: string; log: string[] }>({ done: 0, total: 0, city: "", log: [] });
 
+  const [rebuildRunning, setRebuildRunning] = useState(false);
+  const [rebuildPhase, setRebuildPhase] = useState<"" | "parse" | "enrich">("");
+  const [rebuildMsg, setRebuildMsg] = useState("");
+  const rebuildStopRef = useRef(false);
+
   const [enrichProgress, setEnrichProgress] = useState<EnrichProgress>({
     running: false, cycle: 0, totalEnriched: 0, lastResult: "", log: [],
   });
@@ -287,6 +292,71 @@ export default function AdminCompanyParserTab() {
     loadStats();
   };
 
+  const handleRebuildContacts = async () => {
+    if (!selectedCity) return;
+    rebuildStopRef.current = false;
+    setRebuildRunning(true);
+
+    // Шаг 1: parse
+    setRebuildPhase("parse");
+    setRebuildMsg(`Шаг 1/2: собираю компании из 2ГИС (${selectedCity})...`);
+    try {
+      const r = await fetch(API_URL, {
+        method: "POST", headers: HEADERS,
+        body: JSON.stringify({ action: "parse", city: selectedCity }),
+      });
+      const d = await r.json();
+      setRebuildMsg(`Шаг 1/2 готов: найдено ${d.found}, добавлено ${d.inserted}. Запускаю обогащение...`);
+      loadStats();
+    } catch {
+      setRebuildMsg("Ошибка при сборе из 2ГИС, продолжаю обогащение...");
+    }
+
+    if (rebuildStopRef.current) {
+      setRebuildRunning(false);
+      setRebuildPhase("");
+      return;
+    }
+
+    // Шаг 2: enrich циклом
+    setRebuildPhase("enrich");
+    let cycle = 0;
+    let totalEnriched = 0;
+
+    while (!rebuildStopRef.current) {
+      cycle++;
+      setRebuildMsg(`Шаг 2/2: обогащение, цикл ${cycle} — обогащено всего: ${totalEnriched}...`);
+      try {
+        const r = await fetch(API_URL, {
+          method: "POST", headers: HEADERS,
+          body: JSON.stringify({ action: "enrich", city: selectedCity, limit: ENRICH_BATCH }),
+        });
+        const d = await r.json();
+        totalEnriched += d.enriched || 0;
+        if (d.total === 0) {
+          setRebuildMsg(`Готово! Пересобрано из 2ГИС, обогащено контактов: ${totalEnriched}`);
+          break;
+        }
+        loadStats();
+        await new Promise(res => setTimeout(res, 1500));
+      } catch {
+        await new Promise(res => setTimeout(res, 3000));
+      }
+    }
+
+    setRebuildRunning(false);
+    setRebuildPhase("");
+    loadStats();
+    loadList(selectedCity, 0);
+  };
+
+  const handleRebuildStop = () => {
+    rebuildStopRef.current = true;
+    setRebuildRunning(false);
+    setRebuildPhase("");
+    setRebuildMsg(prev => prev + " (остановлено)");
+  };
+
   const handleDelete = async (city: string) => {
     if (!confirm(`Удалить все компании по городу "${city}"?`)) return;
     await fetch(API_URL, {
@@ -356,7 +426,7 @@ export default function AdminCompanyParserTab() {
           {!websiteProgress.running ? (
             <Button
               onClick={handleFindWebsites}
-              disabled={parsing || enrichProgress.running}
+              disabled={parsing || enrichProgress.running || rebuildRunning}
               variant="outline"
               className="gap-2 border-blue-300 text-blue-600 hover:bg-blue-50"
             >
@@ -372,6 +442,28 @@ export default function AdminCompanyParserTab() {
               <Icon name="Square" size={16} />
               Остановить сайты
             </Button>
+          )}
+
+          {selectedCity && (
+            !rebuildRunning ? (
+              <Button
+                onClick={handleRebuildContacts}
+                disabled={parsing || enrichProgress.running || findingWebsites}
+                className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+              >
+                <Icon name="RefreshCw" size={16} />
+                Пересобрать контакты
+              </Button>
+            ) : (
+              <Button
+                onClick={handleRebuildStop}
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50 gap-2"
+              >
+                <Icon name="Square" size={16} />
+                Остановить пересборку
+              </Button>
+            )
           )}
 
           {statusMsg && (
@@ -400,6 +492,24 @@ export default function AdminCompanyParserTab() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Прогресс пересборки контактов */}
+        {(rebuildRunning || rebuildMsg) && (
+          <div className="border-t border-gray-100 pt-3 mt-1">
+            <div className="flex items-center gap-3">
+              {rebuildRunning && (
+                <Icon name="Loader2" size={14} className={`animate-spin ${rebuildPhase === "parse" ? "text-orange-500" : "text-purple-600"}`} />
+              )}
+              {!rebuildRunning && <Icon name="CheckCircle" size={14} className="text-purple-600" />}
+              <span className="text-sm font-medium text-gray-700">{rebuildMsg}</span>
+              {rebuildRunning && (
+                <span className="ml-auto text-xs text-purple-700 font-semibold bg-purple-50 px-2 py-0.5 rounded-lg">
+                  {rebuildPhase === "parse" ? "Шаг 1: сбор" : "Шаг 2: обогащение"}
+                </span>
+              )}
+            </div>
           </div>
         )}
 

@@ -1,0 +1,1 @@
+UPDATE t_p46588937_remont_plus_app.parsed_companies SET enriched_at = NULL;
