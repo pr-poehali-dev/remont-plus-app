@@ -67,6 +67,15 @@ interface DayCount {
   count: number;
 }
 
+interface SubscriberRow {
+  id: number;
+  name: string;
+  phone: string;
+  email: string;
+  user_type: string;
+  created_at: string;
+}
+
 interface ReportData {
   summary: Summary;
   users: UserRow[];
@@ -148,10 +157,27 @@ function exportCSV(data: ReportData) {
   URL.revokeObjectURL(url);
 }
 
+function exportSubscribersCSV(subscribers: SubscriberRow[]) {
+  const rows: string[] = [];
+  rows.push("Имя;Email;Телефон;Тип;Дата регистрации");
+  subscribers.forEach(s => {
+    rows.push([s.name, s.email, s.phone || "—", USER_TYPE_LABELS[s.user_type] || s.user_type, fmtDate(s.created_at)].join(";"));
+  });
+  const blob = new Blob(["\uFEFF" + rows.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function AdminReportTab() {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState<"summary" | "users" | "projects" | "estimates">("summary");
+  const [tab, setTab] = useState<"summary" | "users" | "projects" | "estimates" | "subscribers">("summary");
+  const [subscribers, setSubscribers] = useState<SubscriberRow[]>([]);
+  const [subsLoading, setSubsLoading] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -171,7 +197,23 @@ export default function AdminReportTab() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  async function loadSubscribers() {
+    setSubsLoading(true);
+    try {
+      const res = await fetch(`${ADMIN_API}?action=subscribers`, {
+        headers: { ...getAuthHeaders(), "X-Admin-Token": "admin2025" },
+      });
+      const json = await res.json();
+      const parsed = typeof json.body === "string" ? JSON.parse(json.body) : json;
+      setSubscribers(parsed?.subscribers || []);
+    } catch (e) {
+      console.error("Subscribers load error", e);
+    } finally {
+      setSubsLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); loadSubscribers(); }, []);
 
   if (loading) {
     return (
@@ -196,12 +238,18 @@ export default function AdminReportTab() {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Сводный отчёт</h2>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={load}>
+          <Button variant="outline" size="sm" onClick={() => { load(); loadSubscribers(); }}>
             <Icon name="RefreshCw" size={15} className="mr-1" /> Обновить
           </Button>
-          <Button size="sm" onClick={() => exportCSV(data)}>
-            <Icon name="Download" size={15} className="mr-1" /> Скачать CSV
-          </Button>
+          {tab === "subscribers" ? (
+            <Button size="sm" onClick={() => exportSubscribersCSV(subscribers)} disabled={subscribers.length === 0}>
+              <Icon name="Download" size={15} className="mr-1" /> Скачать базу рассылки
+            </Button>
+          ) : (
+            <Button size="sm" onClick={() => exportCSV(data)}>
+              <Icon name="Download" size={15} className="mr-1" /> Скачать CSV
+            </Button>
+          )}
         </div>
       </div>
 
@@ -239,8 +287,8 @@ export default function AdminReportTab() {
       </div>
 
       {/* Переключатель таблиц */}
-      <div className="flex gap-2 border-b pb-2">
-        {(["summary", "users", "projects", "estimates"] as const).map(t => (
+      <div className="flex flex-wrap gap-2 border-b pb-2">
+        {(["summary", "users", "projects", "estimates", "subscribers"] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -249,7 +297,8 @@ export default function AdminReportTab() {
             {t === "summary" ? "Активность"
               : t === "users" ? `Пользователи (${data.users.length})`
               : t === "projects" ? `Проекты (${data.projects.length})`
-              : `Сметы (${(data.estimates || []).length})`}
+              : t === "estimates" ? `Сметы (${(data.estimates || []).length})`
+              : <span className="flex items-center gap-1"><Icon name="Mail" size={13} />Рассылка{subscribers.length > 0 && <Badge className="ml-1 text-xs px-1.5 py-0">{subscribers.length}</Badge>}</span>}
           </button>
         ))}
       </div>
@@ -412,6 +461,57 @@ export default function AdminReportTab() {
                 ))}
               </tbody>
             </table>
+          )}
+        </div>
+      )}
+
+      {/* Таблица подписчиков на рассылку */}
+      {tab === "subscribers" && (
+        <div className="overflow-x-auto">
+          {subsLoading ? (
+            <div className="flex items-center justify-center py-12 text-gray-400">
+              <Icon name="Loader2" className="animate-spin mr-2" /> Загружаем базу рассылки...
+            </div>
+          ) : subscribers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-2">
+              <Icon name="MailX" size={32} />
+              <p className="text-sm">Пока никто не дал согласие на рассылку</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2 mb-4 p-3 bg-green-50 rounded-lg border border-green-100">
+                <Icon name="Mail" size={16} className="text-green-600" />
+                <span className="text-sm text-green-700 font-medium">
+                  {subscribers.length} {subscribers.length === 1 ? "человек дал" : subscribers.length < 5 ? "человека дали" : "человек дали"} согласие на рассылку
+                </span>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-gray-500">
+                    <th className="pb-2 pr-4">Имя</th>
+                    <th className="pb-2 pr-4">Email</th>
+                    <th className="pb-2 pr-4">Телефон</th>
+                    <th className="pb-2 pr-4">Тип</th>
+                    <th className="pb-2">Зарегистрирован</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscribers.map(s => (
+                    <tr key={s.id} className="border-b hover:bg-gray-50">
+                      <td className="py-2 pr-4 font-medium">{s.name}</td>
+                      <td className="py-2 pr-4 text-blue-600">{s.email}</td>
+                      <td className="py-2 pr-4 text-gray-600">{s.phone || "—"}</td>
+                      <td className="py-2 pr-4">
+                        <Badge variant={s.user_type === "customer" ? "secondary" : "outline"} className="text-xs">
+                          {USER_TYPE_LABELS[s.user_type] || s.user_type}
+                        </Badge>
+                      </td>
+                      <td className="py-2 text-gray-500">{fmtDate(s.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
           )}
         </div>
       )}

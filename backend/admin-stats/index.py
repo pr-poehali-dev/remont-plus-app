@@ -390,6 +390,29 @@ def handler(event: dict, context) -> dict:
                     })
                 }
 
+            elif action == 'subscribers':
+                # Пользователи, давшие согласие на email-рассылку
+                cursor.execute("""
+                    SELECT id, name, phone, email, user_type, created_at
+                    FROM users
+                    WHERE email_consent = TRUE AND email IS NOT NULL AND email != ''
+                    ORDER BY created_at DESC
+                """)
+                rows = cursor.fetchall()
+                subscribers = [
+                    {
+                        'id': r[0], 'name': r[1], 'phone': r[2], 'email': r[3],
+                        'user_type': r[4],
+                        'created_at': r[5].isoformat() if r[5] else None,
+                    } for r in rows
+                ]
+
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'subscribers': subscribers, 'total': len(subscribers)})
+                }
+
             else:
                 return {
                     'statusCode': 400,
