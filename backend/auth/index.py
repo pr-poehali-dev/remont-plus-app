@@ -245,6 +245,18 @@ def handler(event: dict, context) -> dict:
         cursor.close()
         conn.close()
 
+        try:
+            user_type_label = {'customer': 'Клиент', 'contractor': 'Подрядчик', 'designer': 'Дизайнер'}.get(user_type, user_type)
+            send_telegram(
+                f"🆕 <b>Новый пользователь</b>\n\n"
+                f"👤 Имя: {name}\n"
+                f"📞 Телефон: {phone}\n"
+                f"📧 Email: {email or '—'}\n"
+                f"🏷 Тип: {user_type_label}"
+            )
+        except Exception as e:
+            print(f'TELEGRAM ERROR: {e}')
+
         token = secrets.token_hex(32)
         return {
             'statusCode': 200,
