@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS t_p82294077_user_role_app.products (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  volume NUMERIC(10,2) NOT NULL,
+  unit TEXT NOT NULL DEFAULT 'л',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)

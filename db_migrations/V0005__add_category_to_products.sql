@@ -1,0 +1,3 @@
+
+ALTER TABLE t_p82294077_user_role_app.products
+  ADD COLUMN IF NOT EXISTS category VARCHAR(100) DEFAULT '' NOT NULL;

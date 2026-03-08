@@ -285,6 +285,13 @@ def extract_company(suggestion):
 
     okved = d.get("okved", "")
 
+    phones = d.get("phones") or []
+    emails = d.get("emails") or []
+    sites = d.get("sites") or []
+    phone = phones[0].get("value", "") if phones else ""
+    email = emails[0].get("value", "") if emails else ""
+    website = sites[0].get("value", "") if sites else ""
+
     return {
         "name": name,
         "inn": inn,
@@ -294,6 +301,9 @@ def extract_company(suggestion):
         "director": director,
         "okved": okved,
         "status": status,
+        "phone": phone,
+        "email": email,
+        "website": website,
     }
 
 
@@ -442,10 +452,14 @@ def handler(event: dict, context) -> dict:
         inserted = 0
         for item in collected.values():
             cur.execute(
-                f"""INSERT INTO {SCHEMA}.parsed_companies (city, name, address, director_name, inn, source)
-                    VALUES (%s, %s, %s, %s, %s, 'dadata')
-                    ON CONFLICT (inn) DO NOTHING""",
-                (city_name, item["name"], item["address"], item["director"], item["inn"])
+                f"""INSERT INTO {SCHEMA}.parsed_companies (city, name, address, director_name, inn, phone, email, website, source)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'dadata')
+                    ON CONFLICT (inn) DO UPDATE SET
+                        phone = CASE WHEN EXCLUDED.phone != '' AND (parsed_companies.phone IS NULL OR parsed_companies.phone = '') THEN EXCLUDED.phone ELSE parsed_companies.phone END,
+                        email = CASE WHEN EXCLUDED.email != '' AND (parsed_companies.email IS NULL OR parsed_companies.email = '') THEN EXCLUDED.email ELSE parsed_companies.email END,
+                        website = CASE WHEN EXCLUDED.website != '' AND (parsed_companies.website IS NULL OR parsed_companies.website = '') THEN EXCLUDED.website ELSE parsed_companies.website END""",
+                (city_name, item["name"], item["address"], item["director"], item["inn"],
+                 item.get("phone", ""), item.get("email", ""), item.get("website", ""))
             )
             if cur.rowcount > 0:
                 inserted += 1
@@ -465,17 +479,26 @@ def handler(event: dict, context) -> dict:
         api_key = os.environ.get("DADATA_API_KEY", "")
         conn = get_db()
         cur = conn.cursor()
-        where = f"inn IS NOT NULL AND inn != '' AND city = %s" if city else "inn IS NOT NULL AND inn != ''"
-        args = (limit, city) if city else (limit,)
-        cur.execute(
-            f"""SELECT id, name, inn, website, city
-                FROM {SCHEMA}.parsed_companies
-                WHERE (email IS NULL OR email = '') AND {where}
-                ORDER BY id LIMIT %s""",
-            (city, limit) if city else (limit,)
-        )
+        base_cond = "(phone IS NULL OR phone = '' OR email IS NULL OR email = '') AND inn IS NOT NULL AND inn != '' AND enriched_at IS NULL"
+        if city:
+            cur.execute(
+                f"""SELECT id, name, inn, website, city
+                    FROM {SCHEMA}.parsed_companies
+                    WHERE {base_cond} AND city = %s
+                    ORDER BY id LIMIT %s""",
+                (city, limit)
+            )
+        else:
+            cur.execute(
+                f"""SELECT id, name, inn, website, city
+                    FROM {SCHEMA}.parsed_companies
+                    WHERE {base_cond}
+                    ORDER BY id LIMIT %s""",
+                (limit,)
+            )
         rows = cur.fetchall()
         enriched = 0
+        debug_info = []
         for row_id, name, inn, existing_website, row_city in rows:
             phone, email, website = "", "", existing_website or ""
 
@@ -504,40 +527,48 @@ def handler(event: dict, context) -> dict:
                     if not website:
                         website = sites[0].get("value", "") if sites else ""
                 time.sleep(0.15)
-            except Exception:
-                pass
+            except Exception as e:
+                debug_info.append(f"dadata_err {inn}: {e}")
 
             # 2. Если сайта нет — ищем через Яндекс
             if not website:
-                website = find_website_via_yandex(name, inn, row_city)
-                if website:
-                    time.sleep(0.5)
+                try:
+                    website = find_website_via_yandex(name, inn, row_city)
+                    if website:
+                        time.sleep(0.5)
+                except Exception as e:
+                    debug_info.append(f"yandex_err {inn}: {e}")
 
             # 3. Парсим сайт — email и телефон
             if website and (not email or not phone):
-                contacts = scrape_contacts_from_site(website)
-                if not email:
-                    email = contacts["email"]
-                if not phone:
-                    phone = contacts["phone"]
+                try:
+                    contacts = scrape_contacts_from_site(website)
+                    if not email:
+                        email = contacts["email"]
+                    if not phone:
+                        phone = contacts["phone"]
+                except Exception as e:
+                    debug_info.append(f"scrape_err {website}: {e}")
 
-            # 4. Сохраняем
+            # 4. Сохраняем (даже если не нашли — отмечаем enriched_at чтобы не крутить бесконечно)
+            cur.execute(
+                f"""UPDATE {SCHEMA}.parsed_companies SET
+                    phone = CASE WHEN %s != '' AND (phone IS NULL OR phone = '') THEN %s ELSE phone END,
+                    email = CASE WHEN %s != '' AND (email IS NULL OR email = '') THEN %s ELSE email END,
+                    website = CASE WHEN %s != '' AND (website IS NULL OR website = '') THEN %s ELSE website END,
+                    enriched_at = NOW()
+                WHERE id = %s""",
+                (phone, phone, email, email, website, website, row_id)
+            )
             if phone or email or website:
-                cur.execute(
-                    f"""UPDATE {SCHEMA}.parsed_companies SET
-                        phone = CASE WHEN %s != '' THEN %s ELSE phone END,
-                        email = CASE WHEN %s != '' THEN %s ELSE email END,
-                        website = CASE WHEN %s != '' THEN %s ELSE website END,
-                        enriched_at = NOW()
-                    WHERE id = %s""",
-                    (phone, phone, email, email, website, website, row_id)
-                )
                 enriched += 1
 
         conn.commit()
         cur.close()
         conn.close()
-        return {"statusCode": 200, "headers": CORS, "body": json.dumps({"enriched": enriched, "total": len(rows)}, ensure_ascii=False)}
+        return {"statusCode": 200, "headers": CORS, "body": json.dumps({
+            "enriched": enriched, "total": len(rows), "debug": debug_info[:10]
+        }, ensure_ascii=False)}
 
     # POST find_websites — ищем сайт через Яндекс по ИНН + названию
     if method == "POST" and body.get("action") == "find_websites":

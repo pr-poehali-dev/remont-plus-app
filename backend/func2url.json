@@ -1,4 +1,6 @@
 {
+  "orders": "https://functions.poehali.dev/3343d235-9f23-4fbe-be3c-c0d4efdf3453",
+  "products": "https://functions.poehali.dev/82d9585f-e95b-4f74-a7d9-84b1bcfb3b63",
   "company-parser": "https://functions.poehali.dev/40dd0e7a-86a9-4379-aae6-93556483a8bd",
   "partner-videos": "https://functions.poehali.dev/241aa2b2-a69f-4f48-a343-59a4da14d0b4",
   "builder-leads": "https://functions.poehali.dev/69fd9787-d0eb-4342-b94b-9d14bb3f36e7",
