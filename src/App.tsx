@@ -60,6 +60,7 @@ import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
 import InstallPWABanner from "./components/pwa/InstallPWABanner";
 import VisitorLeadPopup from "./components/VisitorLeadPopup";
+import LeadCapturePopup from "./components/LeadCapturePopup";
 
 const queryClient = new QueryClient();
 
