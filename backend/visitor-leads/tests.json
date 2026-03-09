@@ -1,0 +1,13 @@
+{
+  "tests": [
+    {
+      "name": "Save visitor lead",
+      "method": "POST",
+      "path": "/",
+      "body": {"name": "Тест", "phone": "+79001234567", "email": "test@test.ru", "source": "popup", "consent": true},
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -59,6 +59,7 @@ import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
 import InstallPWABanner from "./components/pwa/InstallPWABanner";
+import VisitorLeadPopup from "./components/VisitorLeadPopup";
 
 const queryClient = new QueryClient();
 
@@ -127,6 +128,8 @@ const App = () => {
           <CookieBanner />
           <ChatWidget />
           <InstallPWABanner />
+          <VisitorLeadPopup />
+          <LeadCapturePopup />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

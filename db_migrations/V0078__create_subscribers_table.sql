@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS subscribers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    source VARCHAR(100) DEFAULT 'popup',
+    consent BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
