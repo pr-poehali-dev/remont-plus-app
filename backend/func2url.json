@@ -1,4 +1,6 @@
 {
+  "blocked-api": "https://functions.poehali.dev/a55d3d54-3fe7-45bb-a13b-b0e000c5bf47",
+  "sites-api": "https://functions.poehali.dev/67486a95-f8c0-4726-a8f9-9207121bb385",
   "visitor-leads": "https://functions.poehali.dev/536b1902-f1a6-497f-811d-d2fbad49442a",
   "orders": "https://functions.poehali.dev/3343d235-9f23-4fbe-be3c-c0d4efdf3453",
   "products": "https://functions.poehali.dev/82d9585f-e95b-4f74-a7d9-84b1bcfb3b63",

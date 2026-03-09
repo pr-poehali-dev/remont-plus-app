@@ -451,18 +451,30 @@ def handler(event: dict, context) -> dict:
         cur = conn.cursor()
         inserted = 0
         for item in collected.values():
+            inn = item["inn"]
+            if inn:
+                cur.execute(f"SELECT id FROM {SCHEMA}.parsed_companies WHERE inn = %s", (inn,))
+                existing = cur.fetchone()
+                if existing:
+                    cur.execute(
+                        f"""UPDATE {SCHEMA}.parsed_companies SET
+                            phone = CASE WHEN %s != '' AND (phone IS NULL OR phone = '') THEN %s ELSE phone END,
+                            email = CASE WHEN %s != '' AND (email IS NULL OR email = '') THEN %s ELSE email END,
+                            website = CASE WHEN %s != '' AND (website IS NULL OR website = '') THEN %s ELSE website END
+                            WHERE id = %s""",
+                        (item.get("phone",""), item.get("phone",""),
+                         item.get("email",""), item.get("email",""),
+                         item.get("website",""), item.get("website",""),
+                         existing[0])
+                    )
+                    continue
             cur.execute(
                 f"""INSERT INTO {SCHEMA}.parsed_companies (city, name, address, director_name, inn, phone, email, website, source)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'dadata')
-                    ON CONFLICT (inn) DO UPDATE SET
-                        phone = CASE WHEN EXCLUDED.phone != '' AND (parsed_companies.phone IS NULL OR parsed_companies.phone = '') THEN EXCLUDED.phone ELSE parsed_companies.phone END,
-                        email = CASE WHEN EXCLUDED.email != '' AND (parsed_companies.email IS NULL OR parsed_companies.email = '') THEN EXCLUDED.email ELSE parsed_companies.email END,
-                        website = CASE WHEN EXCLUDED.website != '' AND (parsed_companies.website IS NULL OR parsed_companies.website = '') THEN EXCLUDED.website ELSE parsed_companies.website END""",
-                (city_name, item["name"], item["address"], item["director"], item["inn"],
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'dadata')""",
+                (city_name, item["name"], item["address"], item["director"], inn,
                  item.get("phone", ""), item.get("email", ""), item.get("website", ""))
             )
-            if cur.rowcount > 0:
-                inserted += 1
+            inserted += 1
         conn.commit()
         cur.close()
         conn.close()
