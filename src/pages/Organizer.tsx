@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useMeta } from "@/hooks/useMeta";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
@@ -13,6 +14,13 @@ import OrganizerStageDialog, { SummaryCard } from "@/components/organizer/Organi
 export default function Organizer() {
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useMeta({
+    title: "Органайзер ремонта — планирование этапов и контроль работ",
+    description: "Планируйте ремонт поэтапно: контролируйте сроки, бюджет и подрядчиков. Удобный органайзер для управления ремонтными работами онлайн.",
+    keywords: "органайзер ремонта, планирование ремонта, контроль ремонта, этапы ремонта, управление подрядчиками",
+    canonical: "/organizer",
+  });
 
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState<Plan | null>(null);

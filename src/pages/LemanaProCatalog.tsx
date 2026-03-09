@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useMeta } from "@/hooks/useMeta";
 import {
   type EstimateSavedItem,
   BASE_URL,
@@ -19,6 +20,13 @@ export default function LemanaProCatalog() {
   const navigate = useNavigate();
   const [estimateItems, setEstimateItems] = useState<EstimateSavedItem[]>([]);
   const [showEstimate, setShowEstimate] = useState(false);
+
+  useMeta({
+    title: "Каталог стройматериалов Леман Про — цены и смета онлайн",
+    description: "Подбирайте стройматериалы из каталога Леман Про, добавляйте в смету и рассчитывайте стоимость ремонта. Актуальные цены на отделочные материалы.",
+    keywords: "Леман Про, каталог стройматериалов, цены на материалы, смета ремонта, Леруа Мерлен",
+    canonical: "/lemanapro",
+  });
 
   useEffect(() => {
     setEstimateItems(getEstimateItems());

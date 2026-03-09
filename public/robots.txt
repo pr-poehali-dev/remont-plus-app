@@ -3,6 +3,11 @@ Allow: /
 Disallow: /admin
 Disallow: /dashboard
 Disallow: /profile
+Disallow: /login
+Disallow: /register
+Disallow: /yandex-callback
+Disallow: /rbc-parser
+Disallow: /yukassa-cabinet
 Disallow: /estimate/print
 Disallow: /docs/print
 Disallow: /windows/print
@@ -12,6 +17,8 @@ Disallow: /electrics/print
 Disallow: /bathroom/print
 Disallow: /newbuild/print
 Disallow: /turnkey/print
+Disallow: /bathhouse/print
+Disallow: /frame-house/print
 
 Sitemap: https://avangard-ai.ru/sitemap.xml
 
