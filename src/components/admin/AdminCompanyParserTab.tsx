@@ -117,8 +117,9 @@ export default function AdminCompanyParserTab() {
         method: "POST", headers: HEADERS,
         body: JSON.stringify({ action: "parse", city: selectedCity }),
       });
-      const d = await r.json();
-      setStatusMsg(`Найдено: ${d.found}, добавлено новых: ${d.inserted}`);
+      const raw = await r.json();
+      const d = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+      setStatusMsg(`Найдено: ${d.found ?? 0}, добавлено новых: ${d.inserted ?? 0}`);
       loadStats();
       loadList(selectedCity, 0);
     } catch {
@@ -145,9 +146,10 @@ export default function AdminCompanyParserTab() {
           method: "POST", headers: HEADERS,
           body: JSON.stringify({ action: "enrich", city: selectedCity, limit: ENRICH_BATCH }),
         });
-        const d = await r.json();
+        const raw = await r.json();
+        const d = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
         totalEnriched += d.enriched || 0;
-        const line = `Цикл ${cycle} (${cityLabel}): обогащено ${d.enriched} из ${d.total}`;
+        const line = `Цикл ${cycle} (${cityLabel}): обогащено ${d.enriched ?? 0} из ${d.total ?? 0}`;
 
         setEnrichProgress(p => ({
           ...p,
@@ -207,9 +209,10 @@ export default function AdminCompanyParserTab() {
           method: "POST", headers: HEADERS,
           body: JSON.stringify({ action: "find_websites", city: selectedCity, limit: ENRICH_BATCH }),
         });
-        const d = await r.json();
+        const raw = await r.json();
+        const d = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
         totalFound += d.found || 0;
-        const line = `Цикл ${cycle} (${cityLabel}): найдено ${d.found} из ${d.total}`;
+        const line = `Цикл ${cycle} (${cityLabel}): найдено ${d.found ?? 0} из ${d.total ?? 0}`;
 
         setWebsiteProgress(p => ({
           ...p,
