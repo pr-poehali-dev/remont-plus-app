@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 
-const VISITOR_LEADS_URL = "https://functions.poehali.dev/69fd9787-d0eb-4342-b94b-9d14bb3f36e7";
+const VISITOR_LEADS_URL = "https://functions.poehali.dev/536b1902-f1a6-497f-811d-d2fbad49442a";
 const ADMIN_TOKEN = "admin2025";
 
 interface Lead {

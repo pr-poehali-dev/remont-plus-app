@@ -4,55 +4,51 @@ import psycopg2
 
 
 def handler(event: dict, context) -> dict:
-    """Сохранение и получение контактов посетителей сайта для рассылки"""
+    """Сохраняет контакты посетителей (имя, телефон, email) для рассылки акций и скидок"""
 
-    cors_headers = {
+    headers = {
+        'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token',
-        'Content-Type': 'application/json',
+        'Access-Control-Allow-Headers': 'Content-Type',
     }
 
     if event.get('httpMethod') == 'OPTIONS':
-        return {'statusCode': 200, 'headers': cors_headers, 'body': ''}
+        return {'statusCode': 200, 'headers': headers, 'body': ''}
 
-    schema = os.environ.get('MAIN_DB_SCHEMA', 'public')
-    dsn = os.environ.get('DATABASE_URL')
-    conn = psycopg2.connect(dsn)
-    cursor = conn.cursor()
-
-    method = event.get('httpMethod', 'GET')
-
-    # GET — список лидов для админа
-    if method == 'GET':
+    # GET — список лидов для админки
+    if event.get('httpMethod') == 'GET':
+        params = event.get('queryStringParameters') or {}
         admin_token = (event.get('headers') or {}).get('X-Admin-Token', '')
         if admin_token != 'admin2025':
-            cursor.close(); conn.close()
-            return {'statusCode': 403, 'headers': cors_headers, 'body': json.dumps({'error': 'Forbidden'})}
+            return {'statusCode': 403, 'headers': headers, 'body': json.dumps({'error': 'Forbidden'})}
 
-        params = event.get('queryStringParameters') or {}
+        schema = os.environ.get('MAIN_DB_SCHEMA', 'public')
+        conn = psycopg2.connect(os.environ['DATABASE_URL'])
+        cursor = conn.cursor()
+
         limit = int(params.get('limit', 100))
         offset = int(params.get('offset', 0))
+        source = params.get('source', '')
 
+        where = f"WHERE source = '{source}'" if source else ''
         cursor.execute(
-            f"SELECT id, name, phone, email, source, page_url, consent, created_at FROM {schema}.visitor_leads ORDER BY created_at DESC LIMIT %s OFFSET %s",
-            (limit, offset)
+            f"SELECT id, name, phone, email, source, page_url, consent, created_at FROM {schema}.visitor_leads {where} ORDER BY created_at DESC LIMIT {limit} OFFSET {offset}"
         )
         rows = cursor.fetchall()
-        cursor.execute(f"SELECT COUNT(*) FROM {schema}.visitor_leads")
+        cursor.execute(f"SELECT COUNT(*) FROM {schema}.visitor_leads {where}")
         total = cursor.fetchone()[0]
-        cursor.close(); conn.close()
+        cursor.close()
+        conn.close()
 
         leads = [
-            {'id': r[0], 'name': r[1], 'phone': r[2], 'email': r[3],
-             'source': r[4], 'page_url': r[5], 'consent': r[6],
-             'created_at': r[7].isoformat() if r[7] else None}
+            {'id': r[0], 'name': r[1], 'phone': r[2], 'email': r[3], 'source': r[4], 'page_url': r[5], 'consent': r[6], 'created_at': str(r[7])}
             for r in rows
         ]
-        return {'statusCode': 200, 'headers': cors_headers, 'body': json.dumps({'leads': leads, 'total': total}, ensure_ascii=False)}
+        return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'leads': leads, 'total': total}, ensure_ascii=False)}
 
     # POST — сохранить контакт
-    if method == 'POST':
+    if event.get('httpMethod') == 'POST':
         body = json.loads(event.get('body') or '{}')
         name = (body.get('name') or '').strip()
         phone = (body.get('phone') or '').strip()
@@ -62,9 +58,11 @@ def handler(event: dict, context) -> dict:
         consent = bool(body.get('consent', True))
 
         if not phone and not email:
-            cursor.close(); conn.close()
-            return {'statusCode': 400, 'headers': cors_headers,
-                    'body': json.dumps({'error': 'Укажите телефон или email'}, ensure_ascii=False)}
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Укажите телефон или email'}, ensure_ascii=False)}
+
+        schema = os.environ.get('MAIN_DB_SCHEMA', 'public')
+        conn = psycopg2.connect(os.environ['DATABASE_URL'])
+        cursor = conn.cursor()
 
         cursor.execute(
             f"INSERT INTO {schema}.visitor_leads (name, phone, email, source, page_url, consent) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
@@ -72,10 +70,9 @@ def handler(event: dict, context) -> dict:
         )
         lead_id = cursor.fetchone()[0]
         conn.commit()
-        cursor.close(); conn.close()
+        cursor.close()
+        conn.close()
 
-        return {'statusCode': 200, 'headers': cors_headers,
-                'body': json.dumps({'success': True, 'id': lead_id}, ensure_ascii=False)}
+        return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'success': True, 'id': lead_id}, ensure_ascii=False)}
 
-    cursor.close(); conn.close()
-    return {'statusCode': 405, 'headers': cors_headers, 'body': json.dumps({'error': 'Method not allowed'})}
+    return {'statusCode': 405, 'headers': headers, 'body': json.dumps({'error': 'Method not allowed'})}

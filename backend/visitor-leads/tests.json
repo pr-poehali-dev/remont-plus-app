@@ -1,12 +1,29 @@
 {
   "tests": [
     {
-      "name": "Save visitor lead",
+      "name": "POST save visitor lead",
       "method": "POST",
       "path": "/",
       "body": {"name": "Тест", "phone": "+79001234567", "email": "test@test.ru", "source": "popup", "consent": true},
       "expectedStatus": 200,
       "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST missing contacts",
+      "method": "POST",
+      "path": "/",
+      "body": {"name": "Тест"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "Укажите телефон или email"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "GET list forbidden",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 403,
+      "expectedBody": {"error": "Forbidden"},
       "bodyMatcher": "partial"
     }
   ]
