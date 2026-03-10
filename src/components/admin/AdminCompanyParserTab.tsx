@@ -371,7 +371,7 @@ export default function AdminCompanyParserTab() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-900">База компаний</h2>
-          <p className="text-sm text-gray-500 mt-0.5">Ремонтные компании из ЕГРЮЛ по городам-миллионникам</p>
+          <p className="text-sm text-gray-500 mt-0.5">Ремонтные компании из ЕГРЮЛ — 34 города с населением от 500 000 чел.</p>
         </div>
         <Button onClick={handleExport} variant="outline" className="gap-2">
           <Icon name="Download" size={16} />

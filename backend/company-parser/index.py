@@ -23,6 +23,7 @@ ADMIN_TOKEN = "admin2025"
 SCHEMA = "t_p46588937_remont_plus_app"
 
 CITIES = [
+    # Города-миллионники
     {"name": "Москва",          "region": "77", "query_prefix": ""},
     {"name": "Санкт-Петербург", "region": "78", "query_prefix": ""},
     {"name": "Новосибирск",     "region": "54", "query_prefix": "Новосибирск"},
@@ -37,6 +38,27 @@ CITIES = [
     {"name": "Красноярск",      "region": "24", "query_prefix": "Красноярск"},
     {"name": "Пермь",           "region": "59", "query_prefix": "Пермь"},
     {"name": "Воронеж",         "region": "36", "query_prefix": "Воронеж"},
+    # Города от 500 000 до 1 000 000 жителей
+    {"name": "Краснодар",       "region": "23", "query_prefix": "Краснодар"},
+    {"name": "Саратов",         "region": "64", "query_prefix": "Саратов"},
+    {"name": "Тюмень",          "region": "72", "query_prefix": "Тюмень"},
+    {"name": "Тольятти",        "region": "63", "query_prefix": "Тольятти"},
+    {"name": "Ижевск",          "region": "18", "query_prefix": "Ижевск"},
+    {"name": "Барнаул",         "region": "22", "query_prefix": "Барнаул"},
+    {"name": "Ульяновск",       "region": "73", "query_prefix": "Ульяновск"},
+    {"name": "Иркутск",         "region": "38", "query_prefix": "Иркутск"},
+    {"name": "Хабаровск",       "region": "27", "query_prefix": "Хабаровск"},
+    {"name": "Ярославль",       "region": "76", "query_prefix": "Ярославль"},
+    {"name": "Владивосток",     "region": "25", "query_prefix": "Владивосток"},
+    {"name": "Махачкала",       "region": "05", "query_prefix": "Махачкала"},
+    {"name": "Томск",           "region": "70", "query_prefix": "Томск"},
+    {"name": "Оренбург",        "region": "56", "query_prefix": "Оренбург"},
+    {"name": "Кемерово",        "region": "42", "query_prefix": "Кемерово"},
+    {"name": "Новокузнецк",     "region": "42", "query_prefix": "Новокузнецк"},
+    {"name": "Рязань",          "region": "62", "query_prefix": "Рязань"},
+    {"name": "Астрахань",       "region": "30", "query_prefix": "Астрахань"},
+    {"name": "Пенза",           "region": "58", "query_prefix": "Пенза"},
+    {"name": "Липецк",          "region": "48", "query_prefix": "Липецк"},
 ]
 
 OKVED_CODES = ["43.3", "43.31", "43.32", "43.33", "43.34", "43.39", "41.20", "43.1"]

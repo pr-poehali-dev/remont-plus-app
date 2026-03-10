@@ -27,7 +27,7 @@ export default function CompanyParserBulkPanel({ cities, bulkRunning, bulkProgre
       <div className="flex flex-wrap items-center gap-3">
         <div>
           <p className="font-semibold text-gray-900 text-sm">Собрать все города сразу</p>
-          <p className="text-xs text-gray-400">Поочерёдно обойдёт все 14 городов-миллионников</p>
+          <p className="text-xs text-gray-400">Поочерёдно обойдёт все 34 города с населением от 500 000 чел.</p>
         </div>
         <div className="flex gap-2 ml-auto">
           {bulkRunning ? (
