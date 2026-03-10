@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "Create estimate order",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "create_order",
+        "plan_type": "estimate_print",
+        "amount": 399,
+        "client_name": "Тест Тестов",
+        "client_email": "test@example.com",
+        "client_phone": "+79001234567"
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "order_id": 1 },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Check status missing",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "check_status",
+        "order_number": "EST-00000"
+      },
+      "expectedStatus": 404,
+      "expectedBody": { "error": "Заказ не найден" },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

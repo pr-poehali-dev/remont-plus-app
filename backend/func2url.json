@@ -1,4 +1,5 @@
 {
+  "estimate-payment": "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d",
   "blocked-api": "https://functions.poehali.dev/a55d3d54-3fe7-45bb-a13b-b0e000c5bf47",
   "sites-api": "https://functions.poehali.dev/67486a95-f8c0-4726-a8f9-9207121bb385",
   "visitor-leads": "https://functions.poehali.dev/536b1902-f1a6-497f-811d-d2fbad49442a",

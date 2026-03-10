@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
 import PricingPlans from "@/components/prices/PricingPlans";
+import EstimatePricingSection from "@/components/prices/EstimatePricingSection";
 import PageTour from "@/components/ui/PageTour";
 
 const TARIFFS_TOUR = [
@@ -119,6 +120,8 @@ export default function Tariffs() {
         </div>
 
         <PricingPlans />
+
+        <EstimatePricingSection />
 
         {/* Форма заявки */}
         <div id="tariff-lead-form" className="mt-8 mb-6 grid md:grid-cols-2 gap-8 items-start">
