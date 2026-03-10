@@ -212,7 +212,7 @@ const sections = [
   {
     id: "expert",
     title: "ЭКСПЕРТ",
-    description: "ИИ-консультант по дизайну, интерьеру и ремонту — задайте любой вопрос бесплатно",
+    description: "ИИ-консультант по дизайну, интерьеру и ремонту — задайте любой вопрос онлайн",
     emoji: "💡",
     icon: "Sparkles",
     gradient: "from-amber-400 via-yellow-400 to-orange-400",

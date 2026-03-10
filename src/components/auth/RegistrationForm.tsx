@@ -205,7 +205,7 @@ export const RegistrationForm = ({ onClose, onSuccess }: RegistrationFormProps) 
                   <div className="bg-primary/5 rounded-lg p-4 space-y-2">
                     <div className="flex items-center gap-2 text-sm">
                       <Icon name="CheckCircle2" size={16} className="text-green-500" />
-                      <span>Регистрация бесплатная</span>
+                      <span>Регистрация без оплаты</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <Icon name="CheckCircle2" size={16} className="text-green-500" />

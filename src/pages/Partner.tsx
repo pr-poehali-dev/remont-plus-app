@@ -25,7 +25,7 @@ const HOW_IT_WORKS = [
 ];
 
 const CONDITIONS = [
-  { icon: "Gift", title: "Бесплатный старт", text: "Регистрация и размещение профиля — бесплатно. Монетизация подключается по мере вашего роста." },
+  { icon: "Gift", title: "Быстрый старт", text: "Регистрация и размещение профиля без предоплаты. Монетизация подключается по мере вашего роста." },
   { icon: "MapPin", title: "Региональный фокус", text: "Заявки преимущественно от клиентов из вашего города и области — конкурируете локально, а не по всей стране." },
   { icon: "Target", title: "Клиенты с задачей", text: "Человек уже рассчитал ориентировочную смету или дизайн-проект — у него есть конкретная задача и представление о бюджете." },
   { icon: "BarChart2", title: "Прозрачная аналитика", text: "Видите, сколько заявок пришло, сколько конвертировалось, какой средний чек. Управляйте своим ростом осознанно." },
@@ -126,7 +126,7 @@ export default function Partner() {
               Вы получаете контакт с клиентом, у которого уже есть задача и представление о бюджете — меньше уговоров, больше дела.
             </p>
             <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-white/40">
-              <span className="flex items-center gap-1.5"><Icon name="Check" size={14} className="text-emerald-400" />Бесплатная регистрация</span>
+              <span className="flex items-center gap-1.5"><Icon name="Check" size={14} className="text-emerald-400" />Регистрация без оплаты</span>
               <span className="flex items-center gap-1.5"><Icon name="Check" size={14} className="text-emerald-400" />Заявки из вашего региона</span>
               <span className="flex items-center gap-1.5"><Icon name="Check" size={14} className="text-emerald-400" />Вся Россия</span>
             </div>

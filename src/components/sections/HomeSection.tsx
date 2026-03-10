@@ -52,7 +52,7 @@ export const HomeSection = () => {
             <Icon name="User" size={24} className="text-primary" />
             Для заказчика
           </CardTitle>
-          <CardDescription>Регистрация бесплатная</CardDescription>
+          <CardDescription>Быстрая регистрация</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
