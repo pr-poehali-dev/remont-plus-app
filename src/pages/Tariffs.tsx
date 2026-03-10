@@ -103,20 +103,65 @@ export default function Tariffs() {
           <span className="text-gray-700">Цены</span>
         </div>
 
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Тарифы для студий и строительных компаний</h1>
-            <p className="text-gray-500">
-              Автоматизация дизайн‑проектов, смет и управления ремонтом — выберите подходящий пакет для вашей компании
-            </p>
+        {/* Hero-блок */}
+        <div className="mb-10">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">Тарифы для студий и строительных компаний</h1>
+              <p className="text-gray-500">
+                Автоматизация дизайн‑проектов, смет и управления ремонтом — выберите подходящий пакет для вашей компании
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate("/expert")}
+              className="bg-orange-500 hover:bg-orange-600 text-white shrink-0 h-11 px-5"
+            >
+              <Icon name="Sparkles" size={16} className="mr-2" />
+              Спросить ИИ‑эксперта
+            </Button>
           </div>
-          <Button
-            onClick={() => navigate("/expert")}
-            className="bg-orange-500 hover:bg-orange-600 text-white shrink-0 h-11 px-5"
-          >
-            <Icon name="Sparkles" size={16} className="mr-2" />
-            Спросить ИИ‑эксперта
-          </Button>
+
+          {/* Ценностные блоки */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                icon: "Zap",
+                color: "text-orange-500",
+                bg: "bg-orange-50",
+                title: "В 3× быстрее",
+                text: "Смета и дизайн-проект — за минуты, а не дни. Больше сделок за тот же рабочий день.",
+              },
+              {
+                icon: "TrendingUp",
+                color: "text-blue-500",
+                bg: "bg-blue-50",
+                title: "+40% к конверсии",
+                text: "Клиент видит готовый проект с реальными ценами ещё на этапе переговоров — принять решение проще.",
+              },
+              {
+                icon: "ShieldCheck",
+                color: "text-green-500",
+                bg: "bg-green-50",
+                title: "Ваш бренд",
+                text: "Все сметы, проекты и отчёты выходят под логотипом вашей компании — никаких чужих watermark.",
+              },
+              {
+                icon: "HeadphonesIcon",
+                color: "text-purple-500",
+                bg: "bg-purple-50",
+                title: "Поддержка 24/7",
+                text: "Персональный менеджер и приоритетная очередь — ваша команда не тратит время на ожидание.",
+              },
+            ].map((item) => (
+              <div key={item.title} className={`rounded-xl ${item.bg} p-4 flex flex-col gap-2`}>
+                <div className={`w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-sm`}>
+                  <Icon name={item.icon} size={18} className={item.color} />
+                </div>
+                <p className="font-semibold text-sm text-gray-900">{item.title}</p>
+                <p className="text-xs text-gray-500 leading-relaxed">{item.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         <PricingPlans />
@@ -126,18 +171,22 @@ export default function Tariffs() {
         {/* Форма заявки */}
         <div id="tariff-lead-form" className="mt-8 mb-6 grid md:grid-cols-2 gap-8 items-start">
           <div>
-            <h2 className="text-xl font-bold mb-2">Остались вопросы?</h2>
+            <h2 className="text-xl font-bold mb-2">Подберём тариф под вашу задачу</h2>
             <p className="text-gray-500 mb-4">
-              Оставьте заявку — мы свяжемся с вами, ответим на все вопросы и подберём подходящий тариф.
+              Расскажите о вашем бизнесе — мы разберём ваши задачи и покажем, как АВАНГАРД закроет их конкретными инструментами.
             </p>
             <ul className="space-y-3 text-sm text-gray-600">
               <li className="flex items-center gap-2">
                 <Icon name="Clock" size={16} className="text-primary shrink-0" />
-                Связываемся в рабочее время (пн–пт, 9:00–18:00)
+                Перезваниваем в рабочее время (пн–пт, 9:00–18:00)
+              </li>
+              <li className="flex items-center gap-2">
+                <Icon name="Sparkles" size={16} className="text-primary shrink-0" />
+                Покажем демо с вашими реальными задачами
               </li>
               <li className="flex items-center gap-2">
                 <Icon name="ShieldCheck" size={16} className="text-primary shrink-0" />
-                Первичная консультация бесплатна, без обязательств по покупке
+                Без скриптов продаж — только по делу
               </li>
               <li className="flex items-center gap-2">
                 <Icon name="Phone" size={16} className="text-primary shrink-0" />
@@ -190,13 +239,13 @@ export default function Tariffs() {
                 )}
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white"
                   disabled={sending || !name.trim() || !phone.trim()}
                 >
                   {sending ? (
                     <><Icon name="Loader2" size={16} className="mr-2 animate-spin" />Отправляем...</>
                   ) : (
-                    <><Icon name="Send" size={16} className="mr-2" />Отправить заявку</>
+                    <><Icon name="Phone" size={16} className="mr-2" />Хочу демо и подбор тарифа</>
                   )}
                 </Button>
                 <p className="text-xs text-gray-400 text-center">
