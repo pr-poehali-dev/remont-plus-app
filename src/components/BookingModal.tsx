@@ -42,7 +42,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     
     try {
       // Отправка через backend-функцию (интеграция с AlfaCRM + Telegram)
-      const leadProcessorUrl = 'https://functions.poehali.dev/843b926d-790c-4015-8aa5-d47ea82c41fb';
+      const leadProcessorUrl = 'https://functions.poehali.dev/0d734a2e-55b4-41ff-a0f3-d85fb7c1e094';
       
       await fetch(leadProcessorUrl, {
         method: 'POST',
