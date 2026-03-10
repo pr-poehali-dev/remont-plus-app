@@ -1,0 +1,120 @@
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import Footer from "@/components/Footer";
+import DiagFormNavigation from "@/components/diag/DiagFormNavigation";
+import LoadingState from "@/components/diag/LoadingState";
+import ErrorState from "@/components/diag/ErrorState";
+import PersonalDataView from "@/components/diag/PersonalDataView";
+import AnamnesticsView from "@/components/diag/AnamnesticsView";
+import SpeechView from "@/components/diag/SpeechView";
+import WrittenSpeechView from "@/components/diag/WrittenSpeechView";
+import ConclusionView from "@/components/diag/ConclusionView";
+import RecommendationsView from "@/components/diag/RecommendationsView";
+import SignatureView from "@/components/diag/SignatureView";
+import ImageModal from "@/components/diag/ImageModal";
+import { useDiagData } from "@/hooks/useDiagData";
+
+export default function DiagConclusion() {
+  const { serialNumber } = useParams();
+  const { diagData, loading, error } = useDiagData(serialNumber);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // Устанавливаем название документа для печати
+  useEffect(() => {
+    if (diagData?.childName) {
+      const today = new Date();
+      const dateStr = today.toLocaleDateString('ru-RU').replace(/\./g, '-');
+      document.title = `${diagData.childName} - заключение - ${dateStr}`;
+    }
+  }, [diagData]);
+
+  if (loading) {
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return <ErrorState error={error} serialNumber={serialNumber} />;
+  }
+
+  if (!diagData || typeof diagData !== 'object') {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Ошибка загрузки</h2>
+          <p className="text-gray-600 mb-6">Данные повреждены или отсутствуют</p>
+          <button 
+            onClick={() => window.location.href = '/diag_form'}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
+          >
+            Заполнить форму заново
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      <DiagFormNavigation />
+
+      <main className="flex-1 py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 no-print">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Логопедическое заключение
+            </h1>
+            <p className="text-lg text-gray-600 mb-4">№ {serialNumber}</p>
+            
+            <div className="flex justify-center">
+              <button
+                onClick={() => {
+                  window.print();
+                }}
+                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Скачать PDF
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-lg p-8 space-y-8 print-page">
+            {/* Логотип школы сверху - только для печати */}
+            <div className="hidden print:block mb-2">
+              <img 
+                src="https://cdn.poehali.dev/projects/a085bb84-fdb7-4eab-976d-509a5a45c40e/bucket/602a60ff-336d-4e7c-a660-f1e187ebc3cd.png" 
+                alt="ЛинэяСкул" 
+                className="h-16 object-contain"
+              />
+            </div>
+
+            {/* Заголовок - только для печати */}
+            <div className="hidden print:block text-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                Логопедическое заключение
+              </h1>
+              <p className="text-base text-gray-600">№ {serialNumber}</p>
+            </div>
+
+            <PersonalDataView diagData={diagData} />
+            <AnamnesticsView diagData={diagData} />
+            <SpeechView diagData={diagData} />
+            <WrittenSpeechView diagData={diagData} onImageClick={setSelectedImage} />
+            <ConclusionView diagData={diagData} />
+            <RecommendationsView diagData={diagData} />
+            <SignatureView diagData={diagData} />
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+      
+      <ImageModal 
+        selectedImage={selectedImage} 
+        onClose={() => setSelectedImage(null)} 
+      />
+    </div>
+  );
+}

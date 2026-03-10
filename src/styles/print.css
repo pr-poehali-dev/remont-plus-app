@@ -1,0 +1,134 @@
+@media print {
+  /* Скрыть ненужное */
+  .no-print,
+  button,
+  nav,
+  footer {
+    display: none !important;
+  }
+
+  /* Базовые стили */
+  body {
+    font-family: "Times New Roman", serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: black;
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Настройки страницы A4 */
+  @page {
+    size: A4;
+    margin: 20mm;
+  }
+
+  /* Основной контейнер */
+  .print-page {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: white;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Убрать все декоративные элементы */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .bg-white,
+  .bg-gray-50,
+  .bg-gray-100,
+  .border,
+  .rounded-lg {
+    background: white !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* Заголовки */
+  h1 {
+    font-size: 18pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15pt;
+  }
+
+  h2 {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 15pt;
+    margin-bottom: 10pt;
+    border-bottom: 1pt solid #333;
+    padding-bottom: 5pt;
+  }
+
+  h3 {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-top: 10pt;
+    margin-bottom: 8pt;
+  }
+
+  /* Секции */
+  section {
+    margin-bottom: 15pt;
+    page-break-inside: avoid;
+  }
+
+  /* Таблицы */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10pt;
+  }
+
+  table td {
+    padding: 5pt 8pt;
+    border-bottom: 0.5pt solid #ddd;
+    vertical-align: top;
+    font-size: 12pt;
+  }
+
+  table td:first-child {
+    font-weight: bold;
+    width: 40%;
+  }
+
+  /* Параграфы */
+  p {
+    margin-bottom: 8pt;
+    text-align: justify;
+  }
+
+  /* Списки */
+  ul,
+  ol {
+    margin-bottom: 10pt;
+    padding-left: 20pt;
+  }
+
+  li {
+    margin-bottom: 5pt;
+  }
+
+  /* Изображения */
+  img {
+    max-width: 100%;
+    height: auto;
+    page-break-inside: avoid;
+  }
+
+  /* Скрыть контейнеры */
+  .max-w-4xl,
+  .container {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+}

@@ -1,0 +1,177 @@
+import { Card, CardContent } from "@/components/ui/card";
+import Icon from "@/components/ui/icon";
+
+export default function MethodologySection() {
+  const BrainSVG = ({ activeAreas, className = "" }: { activeAreas: string[], className?: string }) => (
+    <div className={`relative w-full h-full ${className}`}>
+      <img 
+        src="https://cdn.poehali.dev/projects/a085bb84-fdb7-4eab-976d-509a5a45c40e/bucket/db7cd9f4-aa1b-4b8e-9572-92a79eb11f7c.png" 
+        alt="Анатомическая схема мозга" 
+        className="w-full h-full object-contain"
+        style={{ backgroundColor: '#ffffff' }}
+      />
+    </div>
+  );
+
+
+
+  return (
+    <section className="py-8 sm:py-12 lg:py-16 bg-white">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+
+
+        {/* Основные типы занятий */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-16">
+          {/* Логопед */}
+          <Card className="relative overflow-hidden border-0 shadow-xl bg-gradient-to-br from-green-500 to-green-600 text-white">
+            <CardContent className="p-8">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                <Icon name="MessageCircle" size={32} className="text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Логопед:
+индивидуальные
+занятия</h3>
+
+              <div className="text-green-50 leading-relaxed space-y-2">
+                <div>• Фонематические процессы</div>
+                <div>• Слоговый анализ</div>
+                <div>• Языковой анализ</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Нейропсихолог */}
+          <Card className="relative overflow-hidden border-0 shadow-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+            <CardContent className="p-8">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                <Icon name="Brain" size={32} className="text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Нейропсихолог: индивидуальные
+занятия</h3>
+
+              <div className="text-purple-50 leading-relaxed space-y-2">
+                <div>• Сукцессивное восприятие</div>
+                <div>• Симультанное восприятие</div>
+                <div>• Оптико-моторный компонент</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Групповые занятия */}
+          <Card className="relative overflow-hidden border-0 shadow-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-8">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                <Icon name="Users" size={32} className="text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Логопед + нейропсихолог: групповые занятия</h3>
+
+              <div className="text-blue-50 leading-relaxed">
+                Отрабатываем новые умения на практике и превращаем их в навыки
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Детальная инфографика навыков */}
+        <div className="bg-white rounded-3xl p-4 sm:p-6 lg:p-12 shadow-xl mb-16">
+
+          
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-start lg:items-center">
+            {/* Правая колонка - большая схема мозга */}
+            <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8 order-1 lg:order-2">
+              <h4 className="text-base sm:text-lg font-bold text-center mb-4">Карта активности мозга</h4>
+              <div className="h-48 sm:h-64 lg:h-96 flex items-center justify-center">
+                <div className="w-full max-w-xs sm:max-w-sm lg:max-w-none">
+                  <BrainSVG activeAreas={['frontal', 'parietal', 'temporal', 'occipital', 'motor']} />
+                </div>
+              </div>
+              
+              {/* Легенда */}
+              <div className="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-pink-300 rounded flex-shrink-0 mr-2 sm:mr-3"></div>
+                  <span>Лобная доля</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-yellow-400 rounded flex-shrink-0 mr-2 sm:mr-3"></div>
+                  <span>Теменная доля</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-green-500 rounded flex-shrink-0 mr-2 sm:mr-3"></div>
+                  <span>Височная доля</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-red-500 rounded flex-shrink-0 mr-2 sm:mr-3"></div>
+                  <span>Затылочная доля</span>
+                </div>
+                <div className="flex items-center sm:col-span-2 sm:justify-center">
+                  <div className="w-4 h-4 bg-cyan-500 rounded flex-shrink-0 mr-2 sm:mr-3"></div>
+                  <span>Первичная моторная кора</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Левая колонка - навыки */}
+            <div className="space-y-4 sm:space-y-6 lg:space-y-8 order-2 lg:order-1">
+              <div className="border-l-4 border-purple-500 pl-3 sm:pl-4 lg:pl-6">
+                <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Сукцессивное восприятие</h4>
+                <p className="text-sm sm:text-base text-gray-600 mb-3">Последовательное восприятие, которое необходимо для того, чтобы буквы и слоги не "путались" при письме и чтении, - регуляторная функция</p>
+                <div className="flex items-center text-sm text-purple-600">
+                  <Icon name="MapPin" size={16} className="mr-2" />
+                  Лобные доли
+                </div>
+              </div>
+
+              <div className="border-l-4 border-blue-500 pl-3 sm:pl-4 lg:pl-6">
+                <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Симультанное восприятие</h4>
+                <p className="text-sm sm:text-base text-gray-600 mb-3">Целостное восприятие, которое необходимо для беглого чтения не по слогам, а целыми словами и фразами</p>
+                <div className="flex items-center text-sm text-blue-600">
+                  <Icon name="MapPin" size={16} className="mr-2" />
+                  Теменные доли
+                </div>
+              </div>
+
+              <div className="border-l-4 border-cyan-500 pl-3 sm:pl-4 lg:pl-6">
+                <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Оптико-моторный компонент</h4>
+                <p className="text-sm sm:text-base text-gray-600 mb-3">
+                  Необходим для правильного написания букв и разборчивого почерка
+                </p>
+                <div className="flex items-center text-sm text-cyan-600">
+                  <Icon name="MapPin" size={16} className="mr-2" />
+                  Моторная кора, затылочные доли
+                </div>
+              </div>
+
+              <div className="border-l-4 border-orange-500 pl-3 sm:pl-4 lg:pl-6">
+                <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Фонематические процессы</h4>
+                <p className="text-sm sm:text-base text-gray-600 mb-3">Умение слышать, различать и анализировать звуки речи для последующей кодировки/декодировки букв</p>
+                <div className="flex items-center text-sm text-orange-600">
+                  <Icon name="MapPin" size={16} className="mr-2" />
+                  Височные доли
+                </div>
+              </div>
+
+              <div className="border-l-4 border-green-500 pl-3 sm:pl-4 lg:pl-6">
+                <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Слоговый и языковой анализ</h4>
+                <p className="text-sm sm:text-base text-gray-600 mb-3">Анализ последовательности букв, слогов, слов и предложений; умение видеть их границы</p>
+                <div className="flex items-center text-sm text-green-600">
+                  <Icon name="MapPin" size={16} className="mr-2" />
+                  Лобные, височные, теменные доли
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Результат */}
+        <div className="text-center">
+          <div className="inline-flex items-center space-x-4 bg-gradient-to-r from-green-500 to-blue-500 px-8 py-4 rounded-2xl text-white shadow-lg">
+            <Icon name="Target" size={24} />
+            <span className="text-lg font-bold">Комплексное развитие всех областей мозга</span>
+            <Icon name="Brain" size={24} />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

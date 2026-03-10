@@ -1,0 +1,27 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS request for CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST lead with valid data",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Тестовый Родитель",
+        "email": "test@example.com",
+        "phone": "+79236251611",
+        "date": "15.12.2025",
+        "time": "14:00"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -1,0 +1,415 @@
+import { useState, useRef } from 'react';
+import Icon from '@/components/ui/icon';
+
+export default function TestimonialsSection() {
+  const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+  const [playingVideoId, setPlayingVideoId] = useState<number | null>(null);
+  const [loadedVideos, setLoadedVideos] = useState<Set<number>>(new Set());
+  const [photoReviewIndex, setPhotoReviewIndex] = useState(0);
+  const videoRefs = useRef<{ [key: number]: HTMLVideoElement }>({});
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Вертикальные видео-отзывы из папки public
+  const videoTestimonials = [
+    {
+      id: 1,
+      name: "Алёна (10 лет) и её мама Екатерина",
+      description: "Дочка начала четко говорить",
+      videoUrl: "/IMG_1146 (1).mov",
+      posterUrl: "https://cdn.poehali.dev/files/524d8cc7-dbd7-43eb-b572-f226aa3bd4ed.png",
+      gradient: "from-green-400 to-teal-500"
+    },
+    {
+      id: 2,
+      name: "Вероника (9 лет)",
+      description: "Дочка стала говорить увереннее",
+      videoUrl: "/IMG_1145 (1).mov",
+      posterUrl: "https://cdn.poehali.dev/files/aa2deff0-fd00-4b4c-885e-1d594dabb2fa.png",
+      gradient: "from-green-400 to-teal-500"
+    },
+    {
+      id: 3,
+      name: "Арсений (14 лет), Марк (10 лет) и их мама Елена",
+      description: "Готовы к школе на 100%",
+      videoUrl: "/IMG_1149.MOV",
+      posterUrl: "https://cdn.poehali.dev/files/9ee7762b-6dde-4de8-bc8a-9404b8633499.png",
+      gradient: "from-green-400 to-teal-500"
+    },
+    {
+      id: 4,
+      name: "Рома (11 лет)",
+      description: "За 3 месяца сын заговорил четко",
+      videoUrl: "/IMG_1141 (1) (1).mov",
+      posterUrl: "https://cdn.poehali.dev/files/d84740ec-1f13-4c59-909a-686596b2be90.png",
+      gradient: "from-green-400 to-teal-500"
+    },
+    {
+      id: 5,
+      name: "Полина, мама Насти (10 лет)",
+      description: "Проблемы с Р полностью решены",
+      videoUrl: "/IMG_1143 (1).mov",
+      posterUrl: "https://cdn.poehali.dev/files/95c1208c-115e-4433-8267-a088aefdbd86.png",
+      gradient: "from-green-400 to-teal-500"
+    },
+    {
+      id: 6,
+      name: "Риана (12 лет)",
+      description: "Подготовились к школе за 2 месяца",
+      videoUrl: "/IMG_1144 (1).mov",
+      posterUrl: "https://cdn.poehali.dev/files/f9c45555-2e89-4491-a5be-deab8dae18ca.png",
+      gradient: "from-green-400 to-teal-500"
+    },
+    {
+      id: 7,
+      name: "Мария, мама Ромы (11 лет)",
+      description: "",
+      videoUrl: "/IMG_1156.MOV",
+      posterUrl: "https://cdn.poehali.dev/files/dcaa1950-dbe7-475a-8abc-1e3fc58a1585.png",
+      gradient: "from-green-400 to-teal-500"
+    }
+  ];
+
+  // Текстовые отзывы с фотографиями
+  const textTestimonials = [
+    {
+      id: 1,
+      name: "Марина К.",
+      text: "Прекрасный логопед! За 2 месяца мой сын начал говорить намного четче. Очень довольны результатом!",
+      photo: "/api/placeholder/300/400",
+      rating: 5
+    },
+    {
+      id: 2,
+      name: "Александр П.",
+      text: "Занятия очень интересные, ребенок с удовольствием учится. Видим прогресс каждую неделю.",
+      photo: "/api/placeholder/300/400",
+      rating: 5
+    },
+    {
+      id: 3,
+      name: "Ольга С.",
+      text: "Отличная методика! Дочка наконец-то стала произносить сложные звуки. Спасибо большое!",
+      photo: "/api/placeholder/300/400",
+      rating: 5
+    },
+    {
+      id: 4,
+      name: "Дмитрий М.",
+      text: "Профессиональный подход, индивидуальная программа. Рекомендую всем родителям!",
+      photo: "/api/placeholder/300/400",
+      rating: 5
+    },
+    {
+      id: 5,
+      name: "Екатерина Л.",
+      text: "За полгода занятий сын научился правильно произносить все звуки. Результат превзошел ожидания!",
+      photo: "/api/placeholder/300/400",
+      rating: 5
+    }
+  ];
+
+  // Данные для фото-отзывов (по одному изображению)
+  const photoReviews = [
+    "/5298690179890020331.jpg",
+    "/5298690179890020340.jpg", 
+    "/5298690179890020341.jpg",
+    "/5298690179890020342.jpg",
+    "/5298690179890020343.jpg",
+    "/5298690179890020344.jpg",
+    "/5298690179890020345.jpg",
+    "/5298690179890020346.jpg",
+    "/5298690179890020347.jpg", 
+    "/5298690179890020349.jpg",
+    "/5298690179890020350.jpg",
+    "/Снимок экрана 2025-08-29 110658.png",
+    "/Снимок экрана 2025-08-29 113848.png",
+    "/Снимок экрана 2025-08-29 114544.png",
+    "/Снимок экрана 2025-08-29 114652.png"
+  ];
+
+  const nextPhotoReview = () => {
+    setPhotoReviewIndex((prev) => (prev + 1) % photoReviews.length);
+  };
+
+  const prevPhotoReview = () => {
+    setPhotoReviewIndex((prev) => (prev - 1 + photoReviews.length) % photoReviews.length);
+  };
+
+  const nextTestimonial = () => {
+    setActiveTestimonialIndex((prev) => (prev + 1) % textTestimonials.length);
+  };
+
+  const prevTestimonial = () => {
+    setActiveTestimonialIndex((prev) => (prev - 1 + textTestimonials.length) % textTestimonials.length);
+  };
+
+  const getScrollAmount = (index: number) => {
+    // 288px (w-72) на мобильных, 320px (w-80) на десктопе + gap
+    const cardWidth = window.innerWidth >= 640 ? 320 : 288;
+    const gap = window.innerWidth >= 640 ? 24 : 16;
+    return index * (cardWidth + gap);
+  };
+
+  const nextVideo = () => {
+    setActiveVideoIndex((prev) => {
+      const next = prev + 1;
+      const newIndex = next >= videoTestimonials.length ? 0 : next;
+      
+      // Прокручиваем к нужному видео
+      if (scrollContainerRef.current) {
+        const scrollAmount = getScrollAmount(newIndex);
+        scrollContainerRef.current.scrollTo({
+          left: scrollAmount,
+          behavior: 'smooth'
+        });
+      }
+      
+      return newIndex;
+    });
+  };
+
+  const prevVideo = () => {
+    setActiveVideoIndex((prev) => {
+      const previous = prev - 1;
+      const newIndex = previous < 0 ? videoTestimonials.length - 1 : previous;
+      
+      // Прокручиваем к нужному видео
+      if (scrollContainerRef.current) {
+        const scrollAmount = getScrollAmount(newIndex);
+        scrollContainerRef.current.scrollTo({
+          left: scrollAmount,
+          behavior: 'smooth'
+        });
+      }
+      
+      return newIndex;
+    });
+  };
+
+  const toggleVideoPlay = (videoId: number) => {
+    const video = videoRefs.current[videoId];
+    if (!video) return;
+    
+    if (playingVideoId === videoId) {
+      video.pause();
+      setPlayingVideoId(null);
+    } else {
+      // Load video only when user clicks to play
+      if (!loadedVideos.has(videoId)) {
+        video.load();
+        setLoadedVideos(prev => new Set([...prev, videoId]));
+      }
+      
+      // Остановить все остальные видео
+      Object.values(videoRefs.current).forEach(v => v.pause());
+      video.play();
+      setPlayingVideoId(videoId);
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setPlayingVideoId(null);
+  };
+
+  return (
+    <section className="py-20 bg-white">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Заголовок */}
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">
+            Посмотрите, что говорят дети и родители, которые уже выбрали <span className="text-green-600">ЛинэяСкул</span> для онлайн-занятий
+          </h2>
+        </div>
+
+        {/* Видео-отзывы - горизонтальная карусель */}
+        <div className="mb-20 relative">
+          <div className="max-w-6xl mx-auto">
+            {/* Контейнер с прокруткой */}
+            <div className="relative">
+              {/* Кнопки навигации */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  prevVideo();
+                }}
+                className="absolute left-2 sm:left-0 top-1/2 -translate-y-1/2 z-30 bg-white shadow-xl rounded-full p-2 sm:p-3 hover:bg-gray-50 transition-colors"
+              >
+                <Icon name="ChevronLeft" size={16} className="text-gray-600 sm:w-5 sm:h-5" />
+              </button>
+              
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  nextVideo();
+                }}
+                className="absolute right-2 sm:right-0 top-1/2 -translate-y-1/2 z-30 bg-white shadow-xl rounded-full p-2 sm:p-3 hover:bg-gray-50 transition-colors"
+              >
+                <Icon name="ChevronRight" size={16} className="text-gray-600 sm:w-5 sm:h-5" />
+              </button>
+
+              {/* Видео сетка */}
+              <div 
+                ref={scrollContainerRef}
+                className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide px-8 sm:px-12"
+                onTouchStart={(e) => {
+                  // Allow horizontal scroll only when touching within the scroll container
+                  e.currentTarget.style.touchAction = 'pan-x';
+                }}
+                onTouchEnd={(e) => {
+                  // Reset touch action to allow vertical scrolling
+                  e.currentTarget.style.touchAction = 'pan-y pan-x';
+                }}
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  touchAction: 'pan-y pan-x',
+                  overscrollBehavior: 'contain auto',
+                  WebkitOverflowScrolling: 'touch'
+                }}
+              >
+                {videoTestimonials.map((video, index) => (
+                    <div 
+                      key={video.id} 
+                      className="flex-shrink-0 w-72 sm:w-80 bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                    >
+                      {/* Видео с адаптивным форматом */}
+                      <div className="aspect-[9/16] relative group overflow-hidden">
+                        {/* Фото-обложка */}
+                        {playingVideoId !== video.id && video.posterUrl && (
+                          <div 
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{ backgroundImage: `url(${video.posterUrl})` }}
+                          />
+                        )}
+                        
+                        <video
+                          ref={(el) => {
+                            if (el) {
+                              videoRefs.current[video.id] = el;
+                            }
+                          }}
+                          className={`w-full h-full object-cover ${playingVideoId === video.id ? 'relative z-10' : 'opacity-0'}`}
+                          onEnded={handleVideoEnded}
+                          controls={playingVideoId === video.id}
+                          playsInline
+                          preload="none"
+                          muted
+                          poster={video.posterUrl || undefined}
+                        >
+                          <source src={video.videoUrl} type="video/mp4" />
+                          <source src={video.videoUrl} type="video/quicktime" />
+                          Ваш браузер не поддерживает видео.
+                        </video>
+                      
+                      {/* Кнопка воспроизведения */}
+                      {playingVideoId !== video.id && (
+                        <button
+                          onClick={() => toggleVideoPlay(video.id)}
+                          className="absolute inset-0 flex items-center justify-center z-20 group-hover:bg-black group-hover:bg-opacity-10 transition-all duration-300"
+                        >
+                          <div className="bg-white rounded-full p-4 sm:p-5 hover:scale-110 transition-transform duration-200 shadow-2xl">
+                            <Icon name="Play" size={32} className="text-green-600" style={{ marginLeft: '3px' }} />
+                          </div>
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Информация под видео */}
+                    <div className="p-4">
+                      <h4 className="font-semibold text-gray-800 text-sm">
+                        {video.name}
+                      </h4>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Индикаторы точками */}
+            <div className="flex justify-center space-x-2 mt-8">
+              {videoTestimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setActiveVideoIndex(index);
+                    if (scrollContainerRef.current) {
+                      const scrollAmount = getScrollAmount(index);
+                      scrollContainerRef.current.scrollTo({
+                        left: scrollAmount,
+                        behavior: 'smooth'
+                      });
+                    }
+                  }}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    activeVideoIndex === index 
+                      ? 'bg-green-600' 
+                      : 'bg-gray-300 hover:bg-gray-400'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Фото-отзывы */}
+        <div>
+          <h3 className="text-2xl font-bold text-center text-gray-800 mb-12">
+            Еще больше реальных отзывов
+          </h3>
+          
+          <div className="relative max-w-6xl mx-auto">
+            {/* Карусель */}
+            <div className="overflow-hidden">
+              <div 
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(-${photoReviewIndex * 100}%)` }}
+              >
+                {photoReviews.map((photo, index) => (
+                  <div key={index} className="w-full flex-shrink-0 flex justify-center">
+                    <img 
+                      src={photo} 
+                      alt="Отзыв" 
+                      loading="lazy"
+                      className="max-h-[70vh] max-w-[67%] rounded-lg shadow-lg object-contain" 
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Навигация */}
+            <button
+              onClick={prevPhotoReview}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors z-10"
+            >
+              <Icon name="ChevronLeft" size={24} className="text-gray-600" />
+            </button>
+            
+            <button
+              onClick={nextPhotoReview}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors z-10"
+            >
+              <Icon name="ChevronRight" size={24} className="text-gray-600" />
+            </button>
+
+            {/* Индикаторы точками */}
+            <div className="flex justify-center space-x-3 mt-8">
+              {photoReviews.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setPhotoReviewIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    photoReviewIndex === index ? 'bg-green-600' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
