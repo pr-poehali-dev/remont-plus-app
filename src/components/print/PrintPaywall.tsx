@@ -5,6 +5,68 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { openPaymentPage } from "@/components/extensions/yookassa/useYookassa";
 
+// Компонент проверки существующего заказа
+function CheckOrderPanel({ onUnlock }: { onUnlock: () => void }) {
+  const [orderNum, setOrderNum] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleCheck = async () => {
+    const val = orderNum.trim().toUpperCase();
+    if (!val) { setError("Введите номер заказа"); return; }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(ESTIMATE_PAYMENT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "check_status", order_number: val }),
+      });
+      const raw = await res.json();
+      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+      if (res.status === 404 || data.error) {
+        setError("Заказ не найден. Проверьте номер.");
+      } else if (data.status !== "paid") {
+        setError("Оплата по заказу ещё не поступила. Подождите немного и попробуйте снова.");
+      } else {
+        markPaid();
+        onUnlock();
+      }
+    } catch {
+      setError("Ошибка соединения. Попробуйте ещё раз.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="border-t border-gray-100 pt-4 mt-2">
+      <p className="text-xs text-gray-500 mb-2">
+        Уже оплачивали? Введите номер заказа из письма (например, <span className="font-mono font-semibold">EST-00001</span>):
+      </p>
+      <div className="flex gap-2">
+        <Input
+          placeholder="EST-00001"
+          value={orderNum}
+          onChange={(e) => { setOrderNum(e.target.value); setError(""); }}
+          className="h-8 text-xs font-mono uppercase flex-1"
+          onKeyDown={(e) => e.key === "Enter" && handleCheck()}
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleCheck}
+          disabled={loading}
+          className="h-8 px-3 text-xs shrink-0"
+        >
+          {loading ? <Icon name="Loader2" size={13} className="animate-spin" /> : "Проверить"}
+        </Button>
+      </div>
+      {error && <p className="text-xs text-red-500 mt-1.5">{error}</p>}
+    </div>
+  );
+}
+
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 const YOOKASSA_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
 
@@ -287,6 +349,8 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
                   <p className="text-center text-xs text-gray-400">
                     Безопасная оплата через ЮКассу · Чек на email
                   </p>
+
+                  <CheckOrderPanel onUnlock={() => setUnlocked(true)} />
                 </div>
               </>
             )}
