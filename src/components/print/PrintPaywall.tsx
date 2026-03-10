@@ -1,39 +1,31 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { openPaymentPage } from "@/components/extensions/yookassa/useYookassa";
 
-const YK_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
-const SUBS_URL = "https://functions.poehali.dev/52ea78ee-5f41-4904-b547-d60063d9da0a";
+const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
+const YOOKASSA_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
 
-const SINGLE_PRICE = 399;
-const FREE_LIMIT = 1;
-const FREE_KEY = "avangard_free_prints";
+const PRICE = 399;
+const PAID_KEY = "avangard_estimate_paid";
+const PAID_TTL_MS = 24 * 60 * 60 * 1000; // 24 часа
 
-const PLANS = [
-  {
-    code: "start",
-    name: "START",
-    price: 990,
-    label: "990 ₽/мес",
-    features: ["Безлимитная печать смет и КП", "3 проекта", "10 визуализаций ИИ"],
-  },
-  {
-    code: "pro",
-    name: "PRO",
-    price: 2490,
-    label: "2 490 ₽/мес",
-    features: ["Безлимитная печать смет и КП", "10 проектов", "30 визуализаций ИИ"],
-    popular: true,
-  },
-  {
-    code: "max",
-    name: "MAX",
-    price: 4990,
-    label: "4 990 ₽/мес",
-    features: ["Безлимитная печать смет и КП", "30 проектов", "Безлимит правок"],
-  },
-];
+function isPaidRecently(): boolean {
+  try {
+    const raw = localStorage.getItem(PAID_KEY);
+    if (!raw) return false;
+    const { ts } = JSON.parse(raw);
+    return Date.now() - ts < PAID_TTL_MS;
+  } catch {
+    return false;
+  }
+}
+
+function markPaid() {
+  localStorage.setItem(PAID_KEY, JSON.stringify({ ts: Date.now() }));
+}
 
 interface Props {
   children: React.ReactNode;
@@ -41,113 +33,143 @@ interface Props {
   totalSum?: number;
 }
 
-function checkSubscription(userId: number): Promise<boolean> {
-  return fetch(`${SUBS_URL}?user_id=${userId}`)
-    .then(r => r.json())
-    .then(d => d.subscription?.status === "active")
-    .catch(() => false);
-}
-
 export default function PrintPaywall({ children, docTitle = "Смета", totalSum = 0 }: Props) {
-  const navigate = useNavigate();
-  let storedUser: { id?: number; role?: string; email?: string } | null = null;
+  let storedUser: { id?: number; role?: string; email?: string; name?: string } | null = null;
   try { storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null"); } catch { storedUser = null; }
-  const userId: number | null = storedUser?.id != null ? storedUser.id : null;
 
   const isAdmin = storedUser?.role === "admin" || storedUser?.role === "yukassa_staff";
 
-  const [hasPaid, setHasPaid] = useState<boolean | null>(null);
-  const [paying, setPaying] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<"single" | "plans">("single");
+  const [unlocked, setUnlocked] = useState(false);
+  const [step, setStep] = useState<"form" | "waiting" | "done">("form");
+  const [name, setName] = useState(storedUser?.name || "");
+  const [email, setEmail] = useState(storedUser?.email || "");
+  const [phone, setPhone] = useState("");
+  const [comment, setComment] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const freeUsed = useRef(parseInt(localStorage.getItem(FREE_KEY) || "0", 10));
 
   const fmt = (n: number) =>
     n.toLocaleString("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 });
 
   useEffect(() => {
-    setHasPaid(true);
-  }, [userId]);
+    if (isAdmin || isPaidRecently()) {
+      setUnlocked(true);
+    }
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [isAdmin]);
 
-  useEffect(() => () => {
-    if (pollRef.current) clearInterval(pollRef.current);
-  }, []);
+  const validate = () => {
+    if (!name.trim()) { setError("Введите ваше имя"); return false; }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Введите корректный email");
+      return false;
+    }
+    return true;
+  };
 
-  const handlePay = async (code: string, price: number, name: string) => {
-    if (!userId) { navigate("/login"); return; }
-    setError(null);
-    setPaying(code);
+  const handlePay = async () => {
+    if (!validate()) return;
+    setLoading(true);
+    setError("");
     try {
-      const res = await fetch(YK_URL, {
+      // 1. Создаём заказ в БД
+      const orderRes = await fetch(ESTIMATE_PAYMENT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: price,
-          user_email: storedUser?.email || `user${userId}@remont.ru`,
-          user_name: storedUser?.name || "",
-          description: name,
-          return_url: window.location.href,
-          cart_items: [{ id: code, name, price, quantity: 1 }],
-          metadata: { user_id: String(userId), plan_code: code },
+          action: "create_order",
+          plan_type: "estimate_print",
+          amount: PRICE,
+          client_name: name.trim(),
+          client_email: email.trim(),
+          client_phone: phone.trim(),
+          client_comment: comment.trim() || docTitle,
         }),
       });
-      const data = await res.json();
-      if (!data.payment_url) { setError("Не удалось создать платёж"); setPaying(null); return; }
-      const win = window.open(data.payment_url, "_blank", "width=800,height=700");
+      const orderRaw = await orderRes.json();
+      const orderData = typeof orderRaw.body === "string" ? JSON.parse(orderRaw.body) : orderRaw;
+      const oNum = orderData.order_number;
+      setOrderNumber(oNum);
+
+      // 2. Создаём платёж ЮКасса
+      const payRes = await fetch(YOOKASSA_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: PRICE,
+          user_email: email.trim(),
+          user_name: name.trim(),
+          user_phone: phone.trim(),
+          description: `Смета + доступ к сервисам АВАНГАРД · ${oNum}`,
+          return_url: window.location.href,
+          cart_items: [{ id: "estimate_print", name: "Смета + доступ к сервисам", price: PRICE, quantity: 1 }],
+          metadata: { estimate_order_number: oNum },
+        }),
+      });
+      const payRaw = await payRes.json();
+      const payData = typeof payRaw.body === "string" ? JSON.parse(payRaw.body) : payRaw;
+
+      if (!payRes.ok || !payData.payment_url) {
+        throw new Error(payData.error || "Ошибка создания платежа");
+      }
+
+      openPaymentPage(payData.payment_url);
+      setStep("waiting");
+
+      // Поллинг статуса заказа
       pollRef.current = setInterval(async () => {
-        const active = await checkSubscription(userId);
-        if (active) {
-          if (pollRef.current) clearInterval(pollRef.current);
-          win?.close();
-          setPaying(null);
-          setHasPaid(true);
-          setTimeout(() => window.print(), 400);
+        try {
+          const statusRes = await fetch(ESTIMATE_PAYMENT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "check_status", order_number: oNum }),
+          });
+          const statusRaw = await statusRes.json();
+          const statusData = typeof statusRaw.body === "string" ? JSON.parse(statusRaw.body) : statusRaw;
+          if (statusData.status === "paid") {
+            if (pollRef.current) clearInterval(pollRef.current);
+            markPaid();
+            setStep("done");
+            setTimeout(() => {
+              setUnlocked(true);
+              window.print();
+            }, 800);
+          }
+        } catch {
+          // продолжаем поллить
         }
       }, 3000);
-    } catch {
-      setError("Ошибка соединения. Попробуйте ещё раз.");
-      setPaying(null);
+
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Что-то пошло не так. Попробуйте ещё раз.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const isLoading = hasPaid === null;
-  const isLocked = hasPaid === false;
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Icon name="Loader2" size={32} className="animate-spin text-orange-500" />
-      </div>
-    );
-  }
-
-  if (!isLocked) {
-    return <>{children}</>;
-  }
+  if (unlocked) return <>{children}</>;
 
   return (
     <div className="relative bg-gray-50 min-h-screen">
-      {/* Размытое превью документа */}
-      <div className="relative overflow-hidden" style={{ maxHeight: "70vh" }}>
-        <div
-          className="pointer-events-none select-none"
-          style={{ filter: "blur(4px)", opacity: 0.55, transform: "scale(1.02)" }}
-        >
+      {/* Размытое превью */}
+      <div className="relative overflow-hidden" style={{ maxHeight: "65vh" }}>
+        <div className="pointer-events-none select-none" style={{ filter: "blur(5px)", opacity: 0.5 }}>
           {children}
         </div>
-        {/* Градиент-завеса */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: "linear-gradient(to bottom, rgba(249,250,251,0) 20%, rgba(249,250,251,0.85) 60%, rgba(249,250,251,1) 100%)" }}
+          style={{ background: "linear-gradient(to bottom, rgba(249,250,251,0) 20%, rgba(249,250,251,0.9) 65%, rgba(249,250,251,1) 100%)" }}
         />
       </div>
 
       {/* Блок оплаты */}
-      <div className="relative z-10 flex flex-col items-center px-4 pb-16 -mt-8">
+      <div className="relative z-10 flex flex-col items-center px-4 pb-16 -mt-6">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
 
-          {/* Шапка */}
           <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-5 text-white">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
@@ -165,124 +187,108 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
             )}
           </div>
 
-          {/* Переключатель */}
-          <div className="grid grid-cols-2 gap-1 mx-6 mt-5 p-1 bg-gray-100 rounded-xl">
-            <button
-              onClick={() => setTab("single")}
-              className={`py-2.5 rounded-lg text-sm font-medium transition-all ${
-                tab === "single" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Один документ
-            </button>
-            <button
-              onClick={() => setTab("plans")}
-              className={`py-2.5 rounded-lg text-sm font-medium transition-all ${
-                tab === "plans" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Подписка
-            </button>
-          </div>
-
-          <div className="px-6 pb-6 pt-4">
-            {tab === "single" ? (
-              <div>
-                <div className="border border-orange-200 bg-orange-50 rounded-xl p-4 mb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <p className="font-bold text-gray-900">Разовая печать</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Скачать этот документ в PDF</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-orange-600">{SINGLE_PRICE} ₽</p>
-                      <p className="text-xs text-gray-400">единоразово</p>
-                    </div>
-                  </div>
-                  <ul className="text-xs text-gray-600 space-y-1.5 mb-4">
-                    {["PDF со всеми работами и материалами", "Подписи и реквизиты сторон", "Профессиональное оформление А4"].map(f => (
-                      <li key={f} className="flex items-center gap-1.5">
-                        <Icon name="Check" size={12} className="text-green-500 shrink-0" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
-                    onClick={() => handlePay("single_print", SINGLE_PRICE, `Печать: ${docTitle}`)}
-                    disabled={paying !== null}
-                  >
-                    {paying === "single_print" ? (
-                      <><Icon name="Loader2" size={15} className="mr-2 animate-spin" />Ожидание оплаты...</>
-                    ) : (
-                      <><Icon name="Download" size={15} className="mr-2" />Скачать за {SINGLE_PRICE} ₽</>
-                    )}
-                  </Button>
+          <div className="px-6 py-5">
+            {step === "done" ? (
+              <div className="text-center py-4">
+                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
+                  <Icon name="CheckCircle" size={30} className="text-green-500" />
                 </div>
-                <p className="text-xs text-center text-gray-400">
-                  Работаете с клиентами регулярно?{" "}
-                  <button className="text-orange-500 underline font-medium" onClick={() => setTab("plans")}>
-                    Подписка выгоднее
-                  </button>
+                <p className="font-bold text-lg mb-1">Оплата прошла!</p>
+                <p className="text-gray-500 text-sm">Открываем документ для печати...</p>
+              </div>
+            ) : step === "waiting" ? (
+              <div className="text-center py-4">
+                <Icon name="Loader2" size={32} className="animate-spin text-orange-500 mx-auto mb-3" />
+                <p className="font-bold text-base mb-1">Ожидаем подтверждение оплаты</p>
+                <p className="text-gray-500 text-sm mb-3">
+                  Заказ <strong>{orderNumber}</strong>. Как только оплата пройдёт — документ откроется автоматически.
                 </p>
+                <p className="text-xs text-gray-400">Смета также придёт на {email}</p>
               </div>
             ) : (
-              <div className="space-y-2.5">
-                {PLANS.map((plan) => (
-                  <div
-                    key={plan.code}
-                    className={`border rounded-xl p-3.5 flex items-center justify-between gap-3 ${
-                      plan.popular ? "border-orange-400 bg-orange-50" : "border-gray-200"
-                    }`}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-bold text-gray-900 text-sm">{plan.name}</span>
-                        {plan.popular && (
-                          <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full font-medium">Популярный</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500 truncate">{plan.features[0]}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="font-bold text-gray-900 text-sm mb-1.5">{plan.label}</div>
-                      <Button
-                        size="sm"
-                        className={`text-xs h-7 ${plan.popular ? "bg-orange-500 hover:bg-orange-600 text-white" : ""}`}
-                        variant={plan.popular ? "default" : "outline"}
-                        onClick={() => handlePay(plan.code, plan.price, `Тариф ${plan.name}`)}
-                        disabled={paying !== null}
-                      >
-                        {paying === plan.code ? (
-                          <><Icon name="Loader2" size={11} className="mr-1 animate-spin" />Ждём...</>
-                        ) : "Выбрать"}
-                      </Button>
-                    </div>
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="font-semibold text-gray-800">Доступ к документу</p>
+                  <span className="text-2xl font-black text-orange-600">{PRICE} ₽</span>
+                </div>
+
+                <ul className="text-xs text-gray-600 space-y-1.5 mb-5">
+                  {[
+                    "Смета PDF — файл на email",
+                    "Распечатка и скачивание этого документа",
+                    "Доступ к калькулятору, дизайнеру и ИИ-эксперту",
+                    "Органайзер ремонта и шоурум проектов",
+                  ].map((f) => (
+                    <li key={f} className="flex items-start gap-1.5">
+                      <Icon name="Check" size={12} className="text-green-500 shrink-0 mt-0.5" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">Ваше имя *</label>
+                    <Input
+                      placeholder="Иван Иванов"
+                      value={name}
+                      onChange={(e) => { setName(e.target.value); setError(""); }}
+                      className="h-9 text-sm"
+                    />
                   </div>
-                ))}
-              </div>
-            )}
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">Email — сюда пришлём смету *</label>
+                    <Input
+                      type="email"
+                      placeholder="ivan@example.ru"
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">Телефон</label>
+                    <Input
+                      type="tel"
+                      placeholder="+7 (___) ___-__-__"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 mb-1 block">Комментарий</label>
+                    <Textarea
+                      placeholder="Пожелания, уточнения по смете..."
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      rows={2}
+                      className="text-sm"
+                    />
+                  </div>
 
-            {!userId && (
-              <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 text-sm text-amber-800">
-                <Icon name="AlertCircle" size={16} className="shrink-0" />
-                <span>
-                  Для оплаты{" "}
-                  <button className="underline font-medium" onClick={() => navigate("/login")}>войдите в аккаунт</button>
-                </span>
-              </div>
-            )}
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-2.5 text-xs text-red-700 flex items-center gap-2">
+                      <Icon name="AlertCircle" size={13} className="shrink-0" />
+                      {error}
+                    </div>
+                  )}
 
-            {error && (
-              <p className="mt-3 text-sm text-red-600 flex items-center gap-1">
-                <Icon name="AlertCircle" size={14} /> {error}
-              </p>
-            )}
-
-            {paying && (
-              <p className="mt-3 text-xs text-center text-gray-400">
-                Окно оплаты открыто. После оплаты доступ откроется автоматически.
-              </p>
+                  <Button
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-11"
+                    onClick={handlePay}
+                    disabled={loading}
+                  >
+                    {loading
+                      ? <><Icon name="Loader2" size={16} className="animate-spin mr-2" />Создаём платёж...</>
+                      : <><Icon name="CreditCard" size={16} className="mr-2" />Оплатить {PRICE} ₽ и распечатать</>
+                    }
+                  </Button>
+                  <p className="text-center text-xs text-gray-400">
+                    Безопасная оплата через ЮКассу · Чек на email
+                  </p>
+                </div>
+              </>
             )}
           </div>
         </div>
