@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,78 +9,31 @@ import { openPaymentPage } from "@/components/extensions/yookassa/useYookassa";
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 const YOOKASSA_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
 
-interface Plan {
-  id: string;
-  title: string;
-  price: number;
-  badge?: string;
-  badgeColor?: string;
-  description: string;
-  features: string[];
-  icon: string;
-  color: string;
-  borderColor: string;
-}
+const PLAN = {
+  id: "estimate_print",
+  title: "Смета + доступ к сервисам",
+  price: 399,
+  description: "Профессиональная смета на ремонт файлом на почту и полный доступ к инструментам сайта",
+};
 
-const PLANS: Plan[] = [
-  {
-    id: "estimate_digital",
-    title: "Смета в PDF",
-    price: 199,
-    description: "Профессиональная смета на ремонт в электронном виде",
-    icon: "FileText",
-    color: "text-blue-600",
-    borderColor: "border-blue-200",
-    features: [
-      "Детальная смета по видам работ",
-      "Расчёт материалов",
-      "Итоговая сумма по разделам",
-      "Файл PDF на email",
-    ],
-  },
-  {
-    id: "estimate_print",
-    title: "Смета + распечатка",
-    price: 399,
-    badge: "Популярный выбор",
-    badgeColor: "bg-orange-500",
-    description: "Смета в PDF и распечатанный экземпляр с доставкой или самовывозом",
-    icon: "Printer",
-    color: "text-orange-600",
-    borderColor: "border-orange-400",
-    features: [
-      "Всё из тарифа «Смета в PDF»",
-      "Распечатка на фирменном бланке",
-      "Прошивка и печать",
-      "Самовывоз или курьер",
-    ],
-  },
-  {
-    id: "estimate_consult",
-    title: "Смета + консультация",
-    price: 990,
-    badge: "Максимум пользы",
-    badgeColor: "bg-purple-600",
-    description: "Смета + живая консультация со специалистом по деталям и торгу с подрядчиком",
-    icon: "UserCheck",
-    color: "text-purple-600",
-    borderColor: "border-purple-200",
-    features: [
-      "Всё из тарифа «Смета + распечатка»",
-      "30-минутная консультация онлайн",
-      "Разбор сметы по пунктам",
-      "Советы по выбору подрядчика",
-      "Как торговаться и не переплатить",
-    ],
-  },
+const FEATURES = [
+  { icon: "FileText", text: "Детальная смета по видам работ — файл PDF на email" },
+  { icon: "Calculator", text: "Калькулятор ремонта по всем видам работ" },
+  { icon: "Compass", text: "Дизайнер интерьера с расчётом материалов" },
+  { icon: "Sparkles", text: "ИИ-эксперт по ремонту — задавайте любые вопросы" },
+  { icon: "ClipboardList", text: "Органайзер ремонта: этапы, сроки, бюджет" },
+  { icon: "Layers", text: "Шоурум готовых проектов для вдохновения" },
 ];
 
-interface PaymentModalProps {
-  plan: Plan;
-  onClose: () => void;
-}
+const SECTIONS = [
+  { icon: "Calculator", label: "Калькулятор", path: "/calculator" },
+  { icon: "Compass", label: "Дизайнер", path: "/designer" },
+  { icon: "Sparkles", label: "ИИ-эксперт", path: "/expert" },
+  { icon: "ClipboardList", label: "Органайзер", path: "/organizer" },
+  { icon: "Layers", label: "Шоурум", path: "/showroom" },
+];
 
-function PaymentModal({ plan, onClose }: PaymentModalProps) {
+function PaymentModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -91,7 +45,10 @@ function PaymentModal({ plan, onClose }: PaymentModalProps) {
 
   const validate = () => {
     if (!name.trim()) { setError("Введите ваше имя"); return false; }
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError("Введите корректный email"); return false; }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Введите корректный email");
+      return false;
+    }
     return true;
   };
 
@@ -99,54 +56,47 @@ function PaymentModal({ plan, onClose }: PaymentModalProps) {
     if (!validate()) return;
     setLoading(true);
     setError("");
-
     try {
-      // 1. Создаём заказ в БД
       const orderRes = await fetch(ESTIMATE_PAYMENT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "create_order",
-          plan_type: plan.id,
-          amount: plan.price,
+          plan_type: PLAN.id,
+          amount: PLAN.price,
           client_name: name.trim(),
           client_email: email.trim(),
           client_phone: phone.trim(),
           client_comment: comment.trim(),
         }),
       });
-      const orderData = await orderRes.json();
-      const parsedOrder = typeof orderData.body === "string" ? JSON.parse(orderData.body) : orderData;
-      const oNum = parsedOrder.order_number;
+      const orderRaw = await orderRes.json();
+      const orderData = typeof orderRaw.body === "string" ? JSON.parse(orderRaw.body) : orderRaw;
+      const oNum = orderData.order_number;
       setOrderNumber(oNum);
 
-      // 2. Создаём платёж ЮКасса
       const payRes = await fetch(YOOKASSA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: plan.price,
+          amount: PLAN.price,
           user_email: email.trim(),
           user_name: name.trim(),
           user_phone: phone.trim(),
-          description: `Заказ сметы «${plan.title}» · ${oNum}`,
+          description: `Смета + доступ к сервисам АВАНГАРД · ${oNum}`,
           return_url: `${window.location.origin}/tariffs?order=${oNum}`,
-          cart_items: [
-            { id: plan.id, name: plan.title, price: plan.price, quantity: 1 },
-          ],
-          metadata: {
-            estimate_order_number: oNum,
-          },
+          cart_items: [{ id: PLAN.id, name: PLAN.title, price: PLAN.price, quantity: 1 }],
+          metadata: { estimate_order_number: oNum },
         }),
       });
-      const payData = await payRes.json();
-      const parsedPay = typeof payData.body === "string" ? JSON.parse(payData.body) : payData;
+      const payRaw = await payRes.json();
+      const payData = typeof payRaw.body === "string" ? JSON.parse(payRaw.body) : payRaw;
 
-      if (!payRes.ok || !parsedPay.payment_url) {
-        throw new Error(parsedPay.error || "Ошибка создания платежа");
+      if (!payRes.ok || !payData.payment_url) {
+        throw new Error(payData.error || "Ошибка создания платежа");
       }
 
-      openPaymentPage(parsedPay.payment_url);
+      openPaymentPage(payData.payment_url);
       setStep("success");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Что-то пошло не так. Попробуйте ещё раз.");
@@ -156,21 +106,15 @@ function PaymentModal({ plan, onClose }: PaymentModalProps) {
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={`rounded-t-2xl p-6 text-white ${plan.id === "estimate_print" ? "bg-gradient-to-r from-orange-500 to-orange-600" : plan.id === "estimate_consult" ? "bg-gradient-to-r from-purple-600 to-purple-700" : "bg-gradient-to-r from-blue-500 to-blue-600"}`}>
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-t-2xl p-6 text-white">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-white/80 text-sm mb-1">Заказ сметы</p>
-              <h2 className="text-xl font-bold">{plan.title}</h2>
+              <p className="text-white/80 text-sm mb-1">Разовый платёж</p>
+              <h2 className="text-xl font-bold">{PLAN.title}</h2>
               <p className="text-3xl font-black mt-2">
-                {plan.price} <span className="text-lg font-normal opacity-80">₽</span>
+                399 <span className="text-lg font-normal opacity-80">₽</span>
               </p>
             </div>
             <button onClick={onClose} className="text-white/70 hover:text-white p-1">
@@ -187,57 +131,38 @@ function PaymentModal({ plan, onClose }: PaymentModalProps) {
               </div>
               <h3 className="font-bold text-lg mb-2">Переходим к оплате!</h3>
               <p className="text-gray-500 text-sm mb-3">
-                Заказ <strong>{orderNumber}</strong> создан. Вы будете перенаправлены на страницу ЮКассы.
+                Заказ <strong>{orderNumber}</strong> создан. Открылась страница ЮКассы для оплаты.
               </p>
-              <p className="text-gray-400 text-xs">После оплаты вы получите письмо на {email}</p>
+              <p className="text-gray-400 text-xs">После оплаты смета придёт на {email}</p>
               <Button className="mt-5 w-full" variant="outline" onClick={onClose}>Закрыть</Button>
             </div>
           ) : (
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Ваше имя *</label>
-                <Input
-                  placeholder="Иван Иванов"
-                  value={name}
-                  onChange={(e) => { setName(e.target.value); setError(""); }}
-                />
+                <Input placeholder="Иван Иванов" value={name} onChange={(e) => { setName(e.target.value); setError(""); }} />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Email для чека и результата *</label>
-                <Input
-                  type="email"
-                  placeholder="ivan@example.ru"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setError(""); }}
-                />
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Email — сюда пришлём смету *</label>
+                <Input type="email" placeholder="ivan@example.ru" value={email} onChange={(e) => { setEmail(e.target.value); setError(""); }} />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Телефон</label>
-                <Input
-                  type="tel"
-                  placeholder="+7 (___) ___-__-__"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
+                <Input type="tel" placeholder="+7 (___) ___-__-__" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">Комментарий к смете</label>
-                <Textarea
-                  placeholder="Тип помещения, площадь, пожелания..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  rows={2}
-                />
+                <Textarea placeholder="Тип помещения, площадь, пожелания..." value={comment} onChange={(e) => setComment(e.target.value)} rows={2} />
               </div>
 
-              <div className="bg-gray-50 rounded-xl p-4">
+              <div className="bg-orange-50 rounded-xl p-4 border border-orange-100">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>{plan.title}</span>
-                  <span>{plan.price} ₽</span>
+                  <span>{PLAN.title}</span>
+                  <span>399 ₽</span>
                 </div>
-                <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-gray-900">
+                <div className="border-t border-orange-200 pt-3 flex justify-between font-bold text-gray-900">
                   <span>Итого</span>
-                  <span className="text-orange-600">{plan.price} ₽</span>
+                  <span className="text-orange-600">399 ₽</span>
                 </div>
               </div>
 
@@ -248,20 +173,13 @@ function PaymentModal({ plan, onClose }: PaymentModalProps) {
                 </div>
               )}
 
-              <Button
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12"
-                onClick={handlePay}
-                disabled={loading}
-              >
-                {loading ? (
-                  <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
-                ) : (
-                  <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить {plan.price} ₽</>
-                )}
+              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12" onClick={handlePay} disabled={loading}>
+                {loading
+                  ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
+                  : <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить 399 ₽</>
+                }
               </Button>
-              <p className="text-center text-xs text-gray-400">
-                Безопасная оплата через ЮКассу · Чек на email после оплаты
-              </p>
+              <p className="text-center text-xs text-gray-400">Безопасная оплата через ЮКассу · Чек на email</p>
             </div>
           )}
         </div>
@@ -271,89 +189,83 @@ function PaymentModal({ plan, onClose }: PaymentModalProps) {
 }
 
 export default function EstimatePricingSection() {
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <section className="mt-12 mb-8">
-      <div className="text-center mb-8">
-        <span className="inline-block bg-orange-100 text-orange-700 text-xs font-semibold px-3 py-1 rounded-full mb-3">
-          Для частных клиентов
-        </span>
-        <h2 className="text-2xl font-bold mb-2">Составление и распечатка сметы</h2>
-        <p className="text-gray-500 max-w-lg mx-auto text-sm">
-          Получите профессиональную смету на ваш ремонт — без обязательств, быстро и с гарантией качества
-        </p>
-      </div>
-
-      <div className="grid sm:grid-cols-3 gap-4">
-        {PLANS.map((plan) => (
-          <div
-            key={plan.id}
-            className={`relative bg-white rounded-2xl border-2 ${plan.badge ? plan.borderColor : "border-gray-200"} p-6 flex flex-col hover:shadow-md transition-shadow`}
-          >
-            {plan.badge && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className={`${plan.badgeColor} text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap`}>
-                  {plan.badge}
-                </span>
-              </div>
-            )}
-
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${plan.id === "estimate_print" ? "bg-orange-100" : plan.id === "estimate_consult" ? "bg-purple-100" : "bg-blue-100"}`}>
-              <Icon name={plan.icon as "FileText"} size={20} className={plan.color} />
+    <section className="mt-10 mb-8">
+      <div className="bg-white rounded-2xl border-2 border-orange-200 overflow-hidden shadow-sm">
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-6 text-white">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <span className="inline-block bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-2">
+                Для частных клиентов
+              </span>
+              <h2 className="text-2xl font-bold">{PLAN.title}</h2>
+              <p className="text-white/80 text-sm mt-1">{PLAN.description}</p>
             </div>
-
-            <h3 className="font-bold text-base mb-1">{plan.title}</h3>
-            <p className="text-sm text-gray-400 mb-3">{plan.description}</p>
-
-            <div className="text-3xl font-extrabold mb-1">{plan.price} ₽</div>
-            <div className="text-xs text-gray-400 mb-4">разовый платёж</div>
-
-            <ul className="space-y-2 text-sm flex-1 mb-5">
-              {plan.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-gray-700">
-                  <Icon name="Check" size={14} className="text-green-500 mt-0.5 shrink-0" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-
-            <Button
-              onClick={() => setSelectedPlan(plan)}
-              className={
-                plan.id === "estimate_print"
-                  ? "w-full bg-orange-500 hover:bg-orange-600 text-white"
-                  : plan.id === "estimate_consult"
-                  ? "w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  : "w-full"
-              }
-              variant={plan.id === "estimate_print" || plan.id === "estimate_consult" ? "default" : "outline"}
-            >
-              <Icon name="CreditCard" size={15} className="mr-2" />
-              Заказать за {plan.price} ₽
-            </Button>
+            <div className="shrink-0 text-center sm:text-right">
+              <div className="text-4xl font-black">399 ₽</div>
+              <div className="text-white/70 text-sm">разовый платёж</div>
+            </div>
           </div>
-        ))}
+        </div>
+
+        <div className="p-6 sm:p-8">
+          <div className="grid sm:grid-cols-2 gap-3 mb-8">
+            {FEATURES.map((f) => (
+              <div key={f.text} className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+                  <Icon name={f.icon as "FileText"} size={16} className="text-orange-600" />
+                </div>
+                <span className="text-sm text-gray-700 pt-1">{f.text}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-gray-100 pt-6 mb-6">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Доступные разделы после оплаты</p>
+            <div className="flex flex-wrap gap-2">
+              {SECTIONS.map((s) => (
+                <button
+                  key={s.path}
+                  onClick={() => navigate(s.path)}
+                  className="flex items-center gap-1.5 bg-gray-100 hover:bg-orange-50 hover:text-orange-700 text-gray-600 text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
+                >
+                  <Icon name={s.icon as "Calculator"} size={13} />
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <Button
+              onClick={() => setShowModal(true)}
+              className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 px-8 text-base"
+            >
+              <Icon name="CreditCard" size={18} className="mr-2" />
+              Заказать смету за 399 ₽
+            </Button>
+            <div className="flex items-center gap-4 text-xs text-gray-400">
+              <span className="flex items-center gap-1">
+                <Icon name="ShieldCheck" size={13} className="text-green-500" />
+                ЮКасса
+              </span>
+              <span className="flex items-center gap-1">
+                <Icon name="Clock" size={13} className="text-blue-500" />
+                1 рабочий день
+              </span>
+              <span className="flex items-center gap-1">
+                <Icon name="Mail" size={13} className="text-orange-500" />
+                Смета на email
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-6 text-xs text-gray-400">
-        <span className="flex items-center gap-1.5">
-          <Icon name="ShieldCheck" size={14} className="text-green-500" />
-          Безопасная оплата ЮКасса
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Icon name="Clock" size={14} className="text-blue-500" />
-          Срок — 1 рабочий день
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Icon name="ReceiptText" size={14} className="text-orange-500" />
-          Чек на email
-        </span>
-      </div>
-
-      {selectedPlan && (
-        <PaymentModal plan={selectedPlan} onClose={() => setSelectedPlan(null)} />
-      )}
+      {showModal && <PaymentModal onClose={() => setShowModal(false)} />}
     </section>
   );
 }
