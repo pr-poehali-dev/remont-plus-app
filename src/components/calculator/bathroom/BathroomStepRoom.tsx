@@ -84,6 +84,25 @@ export default function BathroomStepRoom({ cfg, onUpdate, onNext }: Props) {
         checked={cfg.demolitionIncluded}
         onChange={v => onUpdate({ demolitionIncluded: v })}
       />
+      <div className="ml-4 space-y-2">
+        <ToggleRow
+          label="Демонтаж сантехнической кабины"
+          description="Снос стен ванной / туалета — работа + вывоз мусора"
+          checked={cfg.cabinDemolition}
+          onChange={v => onUpdate({
+            cabinDemolition: v,
+            cabinConstruction: v ? cfg.cabinConstruction : false,
+          })}
+        />
+        {cfg.cabinDemolition && (
+          <ToggleRow
+            label="Возведение сантехнической кабины"
+            description="Кладка перегородок: пеноблоки / ПГБ, клей, армирование"
+            checked={cfg.cabinConstruction}
+            onChange={v => onUpdate({ cabinConstruction: v })}
+          />
+        )}
+      </div>
 
       <button
         type="button"

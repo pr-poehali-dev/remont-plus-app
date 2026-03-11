@@ -8,6 +8,8 @@ export function fmt(n: number): string {
 
 export interface BathroomPriceBreakdown {
   demolitionCost: number;
+  cabinDemolitionCost: number;
+  cabinConstructionCost: number;
   screedCost: number;
   waterproofingCost: number;
   floorTileCost: number;
@@ -43,6 +45,17 @@ export function calcBathroomPrice(
   // Демонтаж
   const demolitionCost = cfg.demolitionIncluded
     ? Math.round((area * 3700 + wallArea * 1550) * rc)
+    : 0;
+
+  // Демонтаж сантехнической кабины
+  const cabinDemolitionCost = cfg.cabinDemolition
+    ? Math.round((area * 4200 + wallArea * 1800) * rc)
+    : 0;
+
+  // Возведение сантехнической кабины (пеноблоки / ПГБ)
+  const cabinPerimeter = Math.round(Math.sqrt(area) * 4);
+  const cabinConstructionCost = cfg.cabinConstruction
+    ? Math.round(cabinPerimeter * 2.5 * 4800 * rc)
     : 0;
 
   // Стяжка
@@ -95,6 +108,8 @@ export function calcBathroomPrice(
 
   const subtotal =
     demolitionCost +
+    cabinDemolitionCost +
+    cabinConstructionCost +
     screedCost +
     waterproofingCost +
     floorTileCost +
@@ -107,8 +122,10 @@ export function calcBathroomPrice(
 
   // Материальная составляющая по каждой статье
   const materialsCost = Math.round(
-    demolitionCost      * 0.00 +
-    screedCost          * 0.55 + // смеси для стяжки
+    demolitionCost          * 0.00 +
+    cabinDemolitionCost     * 0.00 +
+    cabinConstructionCost   * 0.65 +
+    screedCost              * 0.55 + // смеси для стяжки
     waterproofingCost   * 0.60 + // гидроизоляционные материалы
     floorMaterialCost             + // вся стоимость плитки пола — материал
     wallMaterialCost              + // вся стоимость плитки стен — материал
@@ -124,6 +141,8 @@ export function calcBathroomPrice(
 
   return {
     demolitionCost,
+    cabinDemolitionCost,
+    cabinConstructionCost,
     screedCost,
     waterproofingCost,
     floorTileCost,
@@ -156,6 +175,18 @@ export function calcBathroomMaterials(
   const area     = cfg.area || 0;
   const wallArea = cfg.wallArea || 0;
   const items: MaterialItem[] = [];
+
+  // ── МАТЕРИАЛЫ: Возведение сантехнической кабины ──────────────────────────
+  if (cfg.cabinConstruction && bd.cabinConstructionCost > 0) {
+    const perimeter = Math.round(Math.sqrt(area) * 4);
+    const wallH = 2.5;
+    const blockQty = Math.ceil(perimeter * wallH / 0.09);
+    items.push({ name: "Пеноблоки / ПГБ 600×300×100 мм", spec: "перегородочные блоки", unit: "шт.", qty: blockQty, pricePerUnit: 95, total: blockQty * 95 });
+    items.push({ name: "Клей для газо- и пенобетона", spec: "Ceresit CT 21 / аналог", unit: "кг", qty: Math.ceil(perimeter * wallH * 3), pricePerUnit: 28, total: Math.ceil(perimeter * wallH * 3) * 28, isConsumable: true });
+    items.push({ name: "Штукатурная сетка серпянка", unit: "м.п.", qty: Math.ceil(perimeter * 2), pricePerUnit: 18, total: Math.ceil(perimeter * 2) * 18, isConsumable: true });
+    items.push({ name: "Арматура кладочная ∅6 мм", spec: "перевязка рядов блоков", unit: "м.п.", qty: Math.ceil(perimeter * wallH / 0.6 * 0.6), pricePerUnit: 35, total: Math.ceil(perimeter * wallH / 0.6 * 0.6) * 35 });
+    items.push({ name: "Дюбели, анкеры, метизы", unit: "компл.", qty: 1, pricePerUnit: Math.round(1800 * rc), total: Math.round(1800 * rc), isConsumable: true });
+  }
 
   // ── МАТЕРИАЛЫ: Плитка пола ───────────────────────────────────────────────
   if (floorTile && bd.floorTileCost > 0) {

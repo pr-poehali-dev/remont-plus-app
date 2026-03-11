@@ -75,6 +75,8 @@ export interface BathroomConfig {
   wallArea: number;
   // Демонтаж
   demolitionIncluded: boolean;
+  cabinDemolition: boolean;
+  cabinConstruction: boolean;
   // Стяжка и гидроизоляция
   screedIncluded: boolean;
   waterproofingType: string;
@@ -111,6 +113,8 @@ export const DEFAULT_BATHROOM_CONFIG: Omit<BathroomConfig, "id" | "totalPrice"> 
   area: 5,
   wallArea: 20,
   demolitionIncluded: true,
+  cabinDemolition: false,
+  cabinConstruction: false,
   screedIncluded: true,
   waterproofingType: "coating",
   floorTileId: "gres-std",

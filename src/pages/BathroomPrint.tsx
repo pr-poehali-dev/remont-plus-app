@@ -179,6 +179,24 @@ export default function BathroomPrint() {
                     <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.demolitionCost)} ₽</td>
                   </tr>
                 )}
+                {bd.cabinDemolitionCost > 0 && (
+                  <tr className="border-t border-gray-100">
+                    <td className="px-2 py-1.5">Демонтаж сантехнической кабины (стены)</td>
+                    <td className="px-2 py-1.5 text-center">1</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">компл.</td>
+                    <td className="px-2 py-1.5 text-right">—</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.cabinDemolitionCost)} ₽</td>
+                  </tr>
+                )}
+                {bd.cabinConstructionCost > 0 && (
+                  <tr className="border-t border-gray-100">
+                    <td className="px-2 py-1.5">Возведение сантехнической кабины (пеноблоки / ПГБ)</td>
+                    <td className="px-2 py-1.5 text-center">1</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">компл.</td>
+                    <td className="px-2 py-1.5 text-right">—</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.cabinConstructionCost)} ₽</td>
+                  </tr>
+                )}
                 {bd.screedCost > 0 && (
                   <tr className="border-t border-gray-100">
                     <td className="px-2 py-1.5">Цементная стяжка пола</td>
