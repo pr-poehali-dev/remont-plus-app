@@ -245,13 +245,13 @@ function FurnitureLeadModal({ isOpen, onClose, apartmentTitle }: { isOpen: boole
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await fetch("https://functions.poehali.dev/0d734a2e-55b4-41ff-a0f3-d85fb7c1e094", {
+      await fetch("https://functions.poehali.dev/9f15d013-9fa0-4040-999f-157c863f46b6", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          parentName: name,
+          name,
           phone: phone.replace(/\D/g, ""),
-          comment: `Подбор мебели: ${apartmentTitle}`,
+          apartment: apartmentTitle,
         }),
       });
     } catch (err) {

@@ -1,0 +1,24 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Missing phone",
+      "method": "POST",
+      "path": "/",
+      "body": {"name": "Тест"},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Submit lead",
+      "method": "POST",
+      "path": "/",
+      "body": {"name": "Иван", "phone": "79001234567", "apartment": "Студия"},
+      "expectedStatus": 200
+    }
+  ]
+}
