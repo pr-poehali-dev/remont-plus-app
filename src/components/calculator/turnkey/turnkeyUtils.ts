@@ -68,11 +68,18 @@ export function calcTurnkeyPrice(
   // Базовая сумма — именно то, что написано в карточке пакета
   const baseTotal = Math.round(basePriceM2 * area * rc);
 
+  // Демонтаж и возведение кабины — фиксированная доплата поверх базовой суммы
+  // ~15 000 ₽ за кабину (демонтаж) и ~25 000 ₽ (возведение), умноженные на кол-во санузлов и регион
+  const bathroomCabinDemolitionCost = cfg.bathroomCabinDemolition
+    ? Math.round(15000 * (cfg.bathroomCount || 1) * rc)
+    : 0;
+  const bathroomCabinConstructionCost = cfg.bathroomCabinConstruction
+    ? Math.round(25000 * (cfg.bathroomCount || 1) * rc)
+    : 0;
+
   // Считаем, какие статьи включены, нормируем доли чтобы сумма = baseTotal
   const activeShares: Record<string, number> = {
-    demolition:                cfg.demolitionIncluded           ? BASE_SHARES.demolition                : 0,
-    bathroomCabinDemolition:   cfg.bathroomCabinDemolition      ? BASE_SHARES.bathroomCabinDemolition   : 0,
-    bathroomCabinConstruction: cfg.bathroomCabinConstruction    ? BASE_SHARES.bathroomCabinConstruction : 0,
+    demolition:   cfg.demolitionIncluded           ? BASE_SHARES.demolition  : 0,
     electrics:    cfg.electricsIncluded     ? BASE_SHARES.electrics     : 0,
     plumbing:     cfg.plumbingIncluded      ? BASE_SHARES.plumbing      : 0,
     plaster:      cfg.plastersIncluded      ? BASE_SHARES.plaster       : 0,
@@ -92,9 +99,7 @@ export function calcTurnkeyPrice(
   const get = (key: string) =>
     totalShare > 0 ? Math.round(baseTotal * activeShares[key] * norm) : 0;
 
-  const demolitionCost                = get("demolition");
-  const bathroomCabinDemolitionCost   = get("bathroomCabinDemolition");
-  const bathroomCabinConstructionCost = get("bathroomCabinConstruction");
+  const demolitionCost   = get("demolition");
   const electricsCost    = get("electrics");
   const plumbingCost     = get("plumbing");
   const plasterCost      = get("plaster");
@@ -107,8 +112,7 @@ export function calcTurnkeyPrice(
   const furnitureCost    = get("furniture");
   // Остаток уходит в уборку чтобы сумма была точной
   const cleaningCostRaw  = get("cleaning");
-  const sumSoFar = demolitionCost + bathroomCabinDemolitionCost + bathroomCabinConstructionCost +
-    electricsCost + plumbingCost + plasterCost +
+  const sumSoFar = demolitionCost + electricsCost + plumbingCost + plasterCost +
     floorsCost + ceilingsCost + bathroomsCost + kitchenCost + doorsCost +
     windowSlopesCost + furnitureCost + cleaningCostRaw;
   const cleaningCost = cfg.cleaningIncluded

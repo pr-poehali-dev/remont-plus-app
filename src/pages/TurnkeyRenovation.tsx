@@ -111,6 +111,8 @@ export default function TurnkeyRenovation() {
 
   const breakdownRows: { label: string; value: number }[] = [
     { label: "Демонтаж", value: breakdown.demolitionCost },
+    { label: `Демонтаж сантехкабины ×${cfg.bathroomCount}`, value: breakdown.bathroomCabinDemolitionCost },
+    { label: `Возведение сантехкабины ×${cfg.bathroomCount}`, value: breakdown.bathroomCabinConstructionCost },
     { label: "Электромонтаж", value: breakdown.electricsCost },
     { label: "Сантехника (разводка)", value: breakdown.plumbingCost },
     { label: "Штукатурка и стяжка", value: breakdown.plasterCost },
