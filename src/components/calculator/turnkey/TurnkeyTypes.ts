@@ -138,6 +138,8 @@ export interface TurnkeyConfig {
   ceilingHeightM: number;
   renovationLevel: string;
   demolitionIncluded: boolean;
+  bathroomCabinDemolition: boolean;
+  bathroomCabinConstruction: boolean;
   electricsIncluded: boolean;
   plumbingIncluded: boolean;
   plastersIncluded: boolean;
@@ -172,6 +174,8 @@ export const DEFAULT_TURNKEY_CONFIG: Omit<TurnkeyConfig, "id" | "totalPrice"> = 
   ceilingHeightM: 2.8,
   renovationLevel: "standard",
   demolitionIncluded: true,
+  bathroomCabinDemolition: false,
+  bathroomCabinConstruction: false,
   electricsIncluded: true,
   plumbingIncluded: true,
   plastersIncluded: true,

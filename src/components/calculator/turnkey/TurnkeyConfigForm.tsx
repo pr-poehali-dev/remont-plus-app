@@ -266,6 +266,25 @@ export default function TurnkeyConfigForm({ cfg, onUpdate }: Props) {
             checked={cfg.demolitionIncluded}
             onChange={v => onUpdate({ demolitionIncluded: v })}
           />
+          <div className="ml-4 space-y-2">
+            <ToggleRow
+              label="Демонтаж сантехнической кабины"
+              description="Снос стен ванной и туалета — работа + вывоз мусора"
+              checked={cfg.bathroomCabinDemolition}
+              onChange={v => onUpdate({
+                bathroomCabinDemolition: v,
+                bathroomCabinConstruction: v ? cfg.bathroomCabinConstruction : false,
+              })}
+            />
+            {cfg.bathroomCabinDemolition && (
+              <ToggleRow
+                label="Возведение сантехнической кабины"
+                description="Кладка перегородок: пеноблоки / ПГБ, клей, армирование"
+                checked={cfg.bathroomCabinConstruction}
+                onChange={v => onUpdate({ bathroomCabinConstruction: v })}
+              />
+            )}
+          </div>
           <ToggleRow
             label="Электромонтаж"
             description="Разводка кабелей, щиток, розетки, выключатели — 1 300 ₽/м²"

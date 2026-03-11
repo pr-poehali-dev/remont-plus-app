@@ -10,6 +10,8 @@ export function fmt(n: number): string {
 
 export interface TurnkeyPriceBreakdown {
   demolitionCost: number;
+  bathroomCabinDemolitionCost: number;
+  bathroomCabinConstructionCost: number;
   electricsCost: number;
   plumbingCost: number;
   plasterCost: number;
@@ -34,7 +36,9 @@ export interface TurnkeyPriceBreakdown {
 // Доли каждой статьи от базовой стоимости (сумма активных долей = 1.0)
 // Базовые доли при полном наборе работ
 const BASE_SHARES = {
-  demolition:   0.06,
+  demolition:                0.06,
+  bathroomCabinDemolition:   0.03,
+  bathroomCabinConstruction: 0.04,
   electrics:    0.12,
   plumbing:     0.10,
   plaster:      0.18,
@@ -66,7 +70,9 @@ export function calcTurnkeyPrice(
 
   // Считаем, какие статьи включены, нормируем доли чтобы сумма = baseTotal
   const activeShares: Record<string, number> = {
-    demolition:   cfg.demolitionIncluded    ? BASE_SHARES.demolition   : 0,
+    demolition:                cfg.demolitionIncluded           ? BASE_SHARES.demolition                : 0,
+    bathroomCabinDemolition:   cfg.bathroomCabinDemolition      ? BASE_SHARES.bathroomCabinDemolition   : 0,
+    bathroomCabinConstruction: cfg.bathroomCabinConstruction    ? BASE_SHARES.bathroomCabinConstruction : 0,
     electrics:    cfg.electricsIncluded     ? BASE_SHARES.electrics     : 0,
     plumbing:     cfg.plumbingIncluded      ? BASE_SHARES.plumbing      : 0,
     plaster:      cfg.plastersIncluded      ? BASE_SHARES.plaster       : 0,
@@ -86,7 +92,9 @@ export function calcTurnkeyPrice(
   const get = (key: string) =>
     totalShare > 0 ? Math.round(baseTotal * activeShares[key] * norm) : 0;
 
-  const demolitionCost   = get("demolition");
+  const demolitionCost                = get("demolition");
+  const bathroomCabinDemolitionCost   = get("bathroomCabinDemolition");
+  const bathroomCabinConstructionCost = get("bathroomCabinConstruction");
   const electricsCost    = get("electrics");
   const plumbingCost     = get("plumbing");
   const plasterCost      = get("plaster");
@@ -99,20 +107,24 @@ export function calcTurnkeyPrice(
   const furnitureCost    = get("furniture");
   // Остаток уходит в уборку чтобы сумма была точной
   const cleaningCostRaw  = get("cleaning");
-  const sumSoFar = demolitionCost + electricsCost + plumbingCost + plasterCost +
+  const sumSoFar = demolitionCost + bathroomCabinDemolitionCost + bathroomCabinConstructionCost +
+    electricsCost + plumbingCost + plasterCost +
     floorsCost + ceilingsCost + bathroomsCost + kitchenCost + doorsCost +
     windowSlopesCost + furnitureCost + cleaningCostRaw;
   const cleaningCost = cfg.cleaningIncluded
     ? cleaningCostRaw + (baseTotal - sumSoFar)
     : 0;
 
-  const worksSubtotal = demolitionCost + electricsCost + plumbingCost + plasterCost +
+  const worksSubtotal = demolitionCost + bathroomCabinDemolitionCost + bathroomCabinConstructionCost +
+    electricsCost + plumbingCost + plasterCost +
     floorsCost + ceilingsCost + bathroomsCost + kitchenCost + doorsCost +
     windowSlopesCost + furnitureCost + cleaningCost;
 
   // Материальная составляющая (доля материалов по каждой статье)
   const materialsCost = Math.round(
-    demolitionCost   * 0.00 +
+    demolitionCost                * 0.00 +
+    bathroomCabinDemolitionCost   * 0.00 +
+    bathroomCabinConstructionCost * 0.65 +
     electricsCost    * 0.50 +
     plumbingCost     * 0.40 +
     plasterCost      * 0.55 +
@@ -140,6 +152,8 @@ export function calcTurnkeyPrice(
 
   return {
     demolitionCost,
+    bathroomCabinDemolitionCost,
+    bathroomCabinConstructionCost,
     electricsCost,
     plumbingCost,
     plasterCost,
@@ -178,6 +192,17 @@ export function calcTurnkeyMaterials(
   const bathroomLevel = BATHROOM_LEVELS.find(b => b.id === cfg.bathroomLevel);
 
   const items: MaterialItem[] = [];
+
+  if (cfg.bathroomCabinConstruction && bd.bathroomCabinConstructionCost > 0) {
+    const perimeterM = cfg.bathroomCount * 10;
+    const wallH = ceilingH;
+    const blockQty = Math.ceil(perimeterM * wallH / 0.09);
+    items.push({ name: "Пеноблоки / ПГБ 600×300×100 мм", spec: "перегородочные блоки", unit: "шт.", qty: blockQty, pricePerUnit: 95, total: blockQty * 95 });
+    items.push({ name: "Клей для газо- и пенобетона", spec: "Ceresit CT 21 / аналог", unit: "кг", qty: Math.ceil(perimeterM * wallH * 3), pricePerUnit: 28, total: Math.ceil(perimeterM * wallH * 3) * 28, isConsumable: true });
+    items.push({ name: "Штукатурная сетка серпянка", unit: "м.п.", qty: Math.ceil(perimeterM * 2), pricePerUnit: 18, total: Math.ceil(perimeterM * 2) * 18, isConsumable: true });
+    items.push({ name: "Арматура кладочная ∅6 мм", spec: "перевязка рядов блоков", unit: "м.п.", qty: Math.ceil(perimeterM * wallH / 0.6 * 0.6), pricePerUnit: 35, total: Math.ceil(perimeterM * wallH / 0.6 * 0.6) * 35 });
+    items.push({ name: "Дюбели, анкеры, метизы", unit: "компл.", qty: cfg.bathroomCount, pricePerUnit: 1800, total: cfg.bathroomCount * 1800, isConsumable: true });
+  }
 
   if (cfg.plastersIncluded && bd.plasterCost > 0) {
     const plasterKg = Math.ceil(wallArea * 12);

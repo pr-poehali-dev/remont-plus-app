@@ -75,6 +75,14 @@ export default function TurnkeyPrint() {
       label: "Демонтаж старой отделки",
       qty: cfg.totalAreaM2, unit: "м²", price: "1 600 ₽/м²", total: bd.demolitionCost,
     },
+    cfg.bathroomCabinDemolition && bd.bathroomCabinDemolitionCost > 0 && {
+      label: "Демонтаж сантехнической кабины (ванная, туалет)",
+      qty: cfg.bathroomCount, unit: "шт.", price: "—", total: bd.bathroomCabinDemolitionCost,
+    },
+    cfg.bathroomCabinConstruction && bd.bathroomCabinConstructionCost > 0 && {
+      label: "Возведение сантехнической кабины (пеноблоки / ПГБ)",
+      qty: cfg.bathroomCount, unit: "шт.", price: "—", total: bd.bathroomCabinConstructionCost,
+    },
     cfg.electricsIncluded && bd.electricsCost > 0 && {
       label: "Электромонтаж (разводка, розетки, выключатели)",
       qty: cfg.totalAreaM2, unit: "м²", price: "1 300 ₽/м²", total: bd.electricsCost,
