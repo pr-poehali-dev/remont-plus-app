@@ -113,7 +113,7 @@ const sections = [
   {
     id: "flooring",
     title: "ПОЛЫ",
-    description: "Расчёт напольных покрытий: ламинат, паркет, плитка, SPC, ковролин — смета с монтажом",
+    description: "Расчёт напольных покрытий: ламинат, паркет, плитка, SPC, ковролин, эпоксидный пол — смета с монтажом",
     emoji: "🪵",
     icon: "SquareStack",
     gradient: "from-amber-400 via-yellow-400 to-orange-400",
