@@ -33,90 +33,98 @@ export interface TurnkeyPriceBreakdown {
   total: number;
 }
 
-// Доли каждой статьи от базовой стоимости (сумма активных долей = 1.0)
-// Базовые доли при полном наборе работ
-const BASE_SHARES = {
-  demolition:                0.06,
-  bathroomCabinDemolition:   0.03,
-  bathroomCabinConstruction: 0.04,
-  electrics:    0.12,
-  plumbing:     0.10,
-  plaster:      0.18,
-  floors:       0.14,
-  ceilings:     0.08,
-  bathrooms:    0.16,
-  kitchen:      0.04,
-  doors:        0.06,
-  windowSlopes: 0.02,
-  furniture:    0.02,
-  cleaning:     0.02,
-};
-
 export function calcTurnkeyPrice(
   cfg: Omit<TurnkeyConfig, "id" | "totalPrice">,
   regionId = "moscow",
   markupPct = 0,
 ): TurnkeyPriceBreakdown {
   const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];
-  const level = RENOVATION_LEVELS.find(l => l.id === cfg.renovationLevel);
+  const level  = RENOVATION_LEVELS.find(l => l.id === cfg.renovationLevel);
+  const bathroomLevel = BATHROOM_LEVELS.find(b => b.id === cfg.bathroomLevel);
+  const floorType    = FLOOR_TYPES.find(f => f.id === cfg.floorType);
+  const ceilingType  = CEILING_TYPES.find(c => c.id === cfg.ceilingType);
 
-  const rc = region.coeff;
-  const lc = level?.priceCoeff ?? 1.0;
+  const rc  = region.coeff;
+  const lc  = level?.priceCoeff ?? 1.0;
   const area = cfg.totalAreaM2 || 0;
-  const basePriceM2 = level?.basePriceM2 ?? 18000;
+  const baths = cfg.bathroomCount || 1;
+  const ceilH = cfg.ceilingHeightM || 2.8;
+  // периметр стен (приближение)
+  const wallArea = Math.round(Math.sqrt(area) * 3.5 * ceilH * 10) / 10;
+  // количество окон (оценка)
+  const windowCount = (cfg.balconyCount || 0) + Math.max(1, Math.ceil(area / 18));
 
-  // Базовая сумма — именно то, что написано в карточке пакета
-  const baseTotal = Math.round(basePriceM2 * area * rc);
+  // ── Черновые работы ──────────────────────────────────────────────────────
+  // Демонтаж: 350 ₽/м² пола + 280 ₽/м² стен (работа + вывоз)
+  const demolitionCost = cfg.demolitionIncluded
+    ? Math.round((area * 350 + wallArea * 280) * rc)
+    : 0;
 
-  // Демонтаж и возведение кабины — фиксированная доплата поверх базовой суммы
-  // ~15 000 ₽ за кабину (демонтаж) и ~25 000 ₽ (возведение), умноженные на кол-во санузлов и регион
+  // Демонтаж / возведение сантехкабины — фиксированная доплата на санузел
   const bathroomCabinDemolitionCost = cfg.bathroomCabinDemolition
-    ? Math.round(15000 * (cfg.bathroomCount || 1) * rc)
+    ? Math.round(15000 * baths * rc)
     : 0;
   const bathroomCabinConstructionCost = cfg.bathroomCabinConstruction
-    ? Math.round(25000 * (cfg.bathroomCount || 1) * rc)
+    ? Math.round(25000 * baths * rc)
     : 0;
 
-  // Считаем, какие статьи включены, нормируем доли чтобы сумма = baseTotal
-  const activeShares: Record<string, number> = {
-    demolition:   cfg.demolitionIncluded           ? BASE_SHARES.demolition  : 0,
-    electrics:    cfg.electricsIncluded     ? BASE_SHARES.electrics     : 0,
-    plumbing:     cfg.plumbingIncluded      ? BASE_SHARES.plumbing      : 0,
-    plaster:      cfg.plastersIncluded      ? BASE_SHARES.plaster       : 0,
-    floors:       cfg.floorsIncluded        ? BASE_SHARES.floors        : 0,
-    ceilings:     cfg.ceilingsIncluded      ? BASE_SHARES.ceilings      : 0,
-    bathrooms:    cfg.bathroomIncluded      ? BASE_SHARES.bathrooms     : 0,
-    kitchen:      cfg.kitchenIncluded       ? BASE_SHARES.kitchen       : 0,
-    doors:        cfg.doorsIncluded && cfg.doorsCount > 0 ? BASE_SHARES.doors : 0,
-    windowSlopes: cfg.windowslopeIncluded   ? BASE_SHARES.windowSlopes  : 0,
-    furniture:    cfg.furnitureAssembly     ? BASE_SHARES.furniture     : 0,
-    cleaning:     cfg.cleaningIncluded      ? BASE_SHARES.cleaning      : 0,
-  };
+  // Электрика: 1 200 ₽/м² × уровень
+  const electricsCost = cfg.electricsIncluded
+    ? Math.round(area * 1200 * lc * rc)
+    : 0;
 
-  const totalShare = Object.values(activeShares).reduce((s, v) => s + v, 0);
-  const norm = totalShare > 0 ? 1 / totalShare : 1;
+  // Сантехника (разводка): 18 000 ₽ на санузел × уровень
+  const plumbingCost = cfg.plumbingIncluded
+    ? Math.round(baths * 18000 * lc * rc)
+    : 0;
 
-  const get = (key: string) =>
-    totalShare > 0 ? Math.round(baseTotal * activeShares[key] * norm) : 0;
+  // Штукатурка + стяжка: 900 ₽/м² стен + 750 ₽/м² пола
+  const plasterCost = cfg.plastersIncluded
+    ? Math.round((wallArea * 900 + area * 750) * rc)
+    : 0;
 
-  const demolitionCost   = get("demolition");
-  const electricsCost    = get("electrics");
-  const plumbingCost     = get("plumbing");
-  const plasterCost      = get("plaster");
-  const floorsCost       = get("floors");
-  const ceilingsCost     = get("ceilings");
-  const bathroomsCost    = get("bathrooms");
-  const kitchenCost      = get("kitchen");
-  const doorsCost        = get("doors");
-  const windowSlopesCost = get("windowSlopes");
-  const furnitureCost    = get("furniture");
-  // Остаток уходит в уборку чтобы сумма была точной
-  const cleaningCostRaw  = get("cleaning");
-  const sumSoFar = demolitionCost + electricsCost + plumbingCost + plasterCost +
-    floorsCost + ceilingsCost + bathroomsCost + kitchenCost + doorsCost +
-    windowSlopesCost + furnitureCost + cleaningCostRaw;
+  // Напольное покрытие: работа 650 ₽/м² + материал priceM2
+  const floorMaterial = floorType?.priceM2 ?? 1200;
+  const floorsCost = cfg.floorsIncluded
+    ? Math.round(area * (650 + floorMaterial * lc) * rc)
+    : 0;
+
+  // Потолки: работа 450 ₽/м² + материал priceM2
+  const ceilMaterial = ceilingType?.priceM2 ?? 850;
+  const ceilingsCost = cfg.ceilingsIncluded
+    ? Math.round(area * (450 + ceilMaterial * lc) * rc)
+    : 0;
+
+  // Санузлы: pricePerUnit × количество × регион (включает материалы + работу)
+  const bathUnitPrice = bathroomLevel?.pricePerUnit ?? 185000;
+  const bathroomsCost = cfg.bathroomIncluded
+    ? Math.round(bathUnitPrice * baths * rc)
+    : 0;
+
+  // Монтаж кухни: 45 000 ₽ фикс × уровень
+  const kitchenCost = cfg.kitchenIncluded
+    ? Math.round(45000 * lc * rc)
+    : 0;
+
+  // Двери: 12 000 ₽/дверь × уровень (материал + монтаж)
+  const doorsCost = cfg.doorsIncluded && cfg.doorsCount > 0
+    ? Math.round(cfg.doorsCount * 12000 * lc * rc)
+    : 0;
+
+  // Откосы: 3 500 ₽/окно
+  const windowSlopesCost = cfg.windowslopeIncluded
+    ? Math.round(windowCount * 3500 * rc)
+    : 0;
+
+  // Сборка мебели: 8 000 ₽/комната (оценка: 1 комната на каждые 20 м²)
+  const roomCount = Math.max(1, Math.round(area / 20));
+  const furnitureCost = cfg.furnitureAssembly
+    ? Math.round(roomCount * 8000 * rc)
+    : 0;
+
+  // Финальная уборка: 120 ₽/м²
   const cleaningCost = cfg.cleaningIncluded
-    ? cleaningCostRaw + (baseTotal - sumSoFar)
+    ? Math.round(area * 120 * rc)
     : 0;
 
   const worksSubtotal = demolitionCost + bathroomCabinDemolitionCost + bathroomCabinConstructionCost +
@@ -124,7 +132,7 @@ export function calcTurnkeyPrice(
     floorsCost + ceilingsCost + bathroomsCost + kitchenCost + doorsCost +
     windowSlopesCost + furnitureCost + cleaningCost;
 
-  // Материальная составляющая (доля материалов по каждой статье)
+  // Материальная составляющая (для расчёта снабженца)
   const materialsCost = Math.round(
     demolitionCost                * 0.00 +
     bathroomCabinDemolitionCost   * 0.00 +

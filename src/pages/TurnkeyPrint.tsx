@@ -72,8 +72,8 @@ export default function TurnkeyPrint() {
 
   const rows: { label: string; qty: number | string; unit: string; price: string; total: number }[] = [
     cfg.demolitionIncluded && bd.demolitionCost > 0 && {
-      label: "Демонтаж старой отделки",
-      qty: cfg.totalAreaM2, unit: "м²", price: "1 600 ₽/м²", total: bd.demolitionCost,
+      label: "Демонтаж старой отделки (пол + стены, вывоз мусора)",
+      qty: cfg.totalAreaM2, unit: "м²", price: "350–630 ₽/м²", total: bd.demolitionCost,
     },
     cfg.bathroomCabinDemolition && bd.bathroomCabinDemolitionCost > 0 && {
       label: "Демонтаж сантехнической кабины (ванная, туалет)",
@@ -84,16 +84,16 @@ export default function TurnkeyPrint() {
       qty: cfg.bathroomCount, unit: "шт.", price: "—", total: bd.bathroomCabinConstructionCost,
     },
     cfg.electricsIncluded && bd.electricsCost > 0 && {
-      label: "Электромонтаж (разводка, розетки, выключатели)",
-      qty: cfg.totalAreaM2, unit: "м²", price: "1 300 ₽/м²", total: bd.electricsCost,
+      label: "Электромонтаж (разводка, щит, розетки, выключатели)",
+      qty: cfg.totalAreaM2, unit: "м²", price: `${fmt(Math.round(bd.electricsCost / (cfg.totalAreaM2 || 1)))} ₽/м²`, total: bd.electricsCost,
     },
     cfg.plumbingIncluded && bd.plumbingCost > 0 && {
       label: "Сантехника (разводка труб ХВС/ГВС/канализация)",
-      qty: cfg.totalAreaM2, unit: "м²", price: "—", total: bd.plumbingCost,
+      qty: cfg.bathroomCount, unit: "санузел", price: `${fmt(Math.round(bd.plumbingCost / (cfg.bathroomCount || 1)))} ₽/шт.`, total: bd.plumbingCost,
     },
     cfg.plastersIncluded && bd.plasterCost > 0 && {
       label: "Штукатурка стен + стяжка пола",
-      qty: cfg.totalAreaM2, unit: "м²", price: "—", total: bd.plasterCost,
+      qty: cfg.totalAreaM2, unit: "м²", price: `${fmt(Math.round(bd.plasterCost / (cfg.totalAreaM2 || 1)))} ₽/м²`, total: bd.plasterCost,
     },
     cfg.floorsIncluded && bd.floorsCost > 0 && {
       label: `Напольное покрытие: ${floorType?.label}`,
@@ -109,23 +109,23 @@ export default function TurnkeyPrint() {
     },
     cfg.kitchenIncluded && bd.kitchenCost > 0 && {
       label: "Монтаж кухонного гарнитура",
-      qty: 1, unit: "компл.", price: "16 000 ₽", total: bd.kitchenCost,
+      qty: 1, unit: "компл.", price: `${fmt(bd.kitchenCost)} ₽`, total: bd.kitchenCost,
     },
     cfg.doorsIncluded && bd.doorsCost > 0 && {
-      label: "Установка межкомнатных дверей",
-      qty: cfg.doorsCount, unit: "шт.", price: "12 000 ₽/шт.", total: bd.doorsCost,
+      label: "Установка межкомнатных дверей (материал + монтаж)",
+      qty: cfg.doorsCount, unit: "шт.", price: `${fmt(Math.round(bd.doorsCost / (cfg.doorsCount || 1)))} ₽/шт.`, total: bd.doorsCost,
     },
     cfg.windowslopeIncluded && bd.windowSlopesCost > 0 && {
       label: "Откосы на окна и балконные двери",
-      qty: cfg.balconyCount + Math.ceil(cfg.totalAreaM2 / 18), unit: "проём", price: "3 200 ₽", total: bd.windowSlopesCost,
+      qty: (cfg.balconyCount || 0) + Math.max(1, Math.ceil(cfg.totalAreaM2 / 18)), unit: "проём", price: "3 500 ₽/проём", total: bd.windowSlopesCost,
     },
     cfg.furnitureAssembly && bd.furnitureCost > 0 && {
       label: "Сборка и навеска мебели",
-      qty: cfg.totalAreaM2, unit: "м²", price: "500 ₽/м²", total: bd.furnitureCost,
+      qty: Math.max(1, Math.round(cfg.totalAreaM2 / 20)), unit: "комн.", price: "8 000 ₽/комн.", total: bd.furnitureCost,
     },
     cfg.cleaningIncluded && bd.cleaningCost > 0 && {
       label: "Финальная уборка после ремонта",
-      qty: cfg.totalAreaM2, unit: "м²", price: "180 ₽/м²", total: bd.cleaningCost,
+      qty: cfg.totalAreaM2, unit: "м²", price: "120 ₽/м²", total: bd.cleaningCost,
     },
     cfg.foremanIncluded && bd.foremanCost > 0 && {
       label: `Прораб — технический надзор и координация`,
