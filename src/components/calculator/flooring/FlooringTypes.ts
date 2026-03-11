@@ -1,4 +1,4 @@
-export type FlooringCategory = "laminate" | "parquet" | "tile" | "vinyl" | "carpet" | "linoleum" | "engineered" | "cork" | "spc" | "bamboo";
+export type FlooringCategory = "laminate" | "parquet" | "tile" | "vinyl" | "carpet" | "linoleum" | "engineered" | "cork" | "spc" | "bamboo" | "epoxy";
 
 export interface FlooringProduct {
   id: string;
@@ -66,6 +66,7 @@ export const FLOORING_CATEGORIES: { value: FlooringCategory; label: string; icon
   { value: "cork",       label: "Пробка",            icon: "🍂" },
   { value: "carpet",     label: "Ковролин",          icon: "🛋️" },
   { value: "bamboo",     label: "Бамбук",            icon: "🌿" },
+  { value: "epoxy",     label: "Эпоксидный пол",    icon: "✦" },
 ];
 
 const IMG = {
@@ -74,6 +75,7 @@ const IMG = {
   tile:     "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/f83be6a5-5006-405c-8d00-20abfc7b017f.jpg",
   vinyl:    "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/d7ed8480-a3d2-4ca4-89cf-dc0e995ea4be.jpg",
   carpet:   "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/7f6a9c05-1915-4d24-8ad0-9475ba244022.jpg",
+  epoxy:    "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/f83be6a5-5006-405c-8d00-20abfc7b017f.jpg",
 };
 
 export const FLOORING_PRODUCTS: FlooringProduct[] = [
@@ -389,6 +391,64 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     features: ["Плетёный бамбук", "Масло-воск", "Пепельный тон"],
     suitable: ["Гостиная", "Кабинет"],
     installPrice: 860,
+  },
+
+  // ЭПОКСИДНЫЙ ПОЛ
+  {
+    id: "epoxy-standard",
+    category: "epoxy",
+    name: "Наливной эпоксидный 3 мм",
+    brand: "Эпоксол EF-120",
+    pricePerM2: 1_800,
+    thickness: 3,
+    wear: "Износост. класс 43",
+    warranty: 15,
+    image: IMG.epoxy,
+    features: ["Бесшовное покрытие", "Влагостойкость 100%", "Химическая стойкость", "Глянцевый финиш"],
+    suitable: ["Кухня", "Прихожая", "Ванная", "Гараж"],
+    installPrice: 1_800,
+  },
+  {
+    id: "epoxy-3d",
+    category: "epoxy",
+    name: "3D-эпоксидный пол с рисунком",
+    brand: "Sika FloorCoat 3D",
+    pricePerM2: 3_200,
+    thickness: 5,
+    wear: "Износост. класс 43",
+    warranty: 10,
+    image: IMG.epoxy,
+    features: ["3D-рисунок под плёнкой", "Уникальный дизайн", "Прозрачный слой 2 мм", "Антискользящий финиш"],
+    suitable: ["Гостиная", "Прихожая", "Кухня"],
+    installPrice: 2_800,
+  },
+  {
+    id: "epoxy-flake",
+    category: "epoxy",
+    name: "Эпоксидный с флоками (чипсы)",
+    brand: "Uzin PE 480 + ColorFlakes",
+    pricePerM2: 2_400,
+    thickness: 3,
+    wear: "Износост. класс 43",
+    warranty: 12,
+    image: IMG.epoxy,
+    features: ["Декоративные цветные чипсы", "Антискользящий", "Скрывает мелкие неровности", "Матовый лак финиш"],
+    suitable: ["Прихожая", "Кухня", "Гараж", "Офис"],
+    installPrice: 2_200,
+  },
+  {
+    id: "epoxy-metallic",
+    category: "epoxy",
+    name: "Металлик / жидкий металл",
+    brand: "Mapei Mapefloor Comfort",
+    pricePerM2: 4_800,
+    thickness: 3,
+    wear: "Износост. класс 43",
+    warranty: 10,
+    image: IMG.epoxy,
+    features: ["Перламутровый металлик-пигмент", "Эффект глубины", "Ручной замес волн", "Премиум-вид"],
+    suitable: ["Гостиная", "Спальня", "Офис"],
+    installPrice: 3_500,
   },
 ];
 

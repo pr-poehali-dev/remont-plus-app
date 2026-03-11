@@ -153,7 +153,63 @@ export function calcFlooringMaterials(
   }
 
   // ── РАСХОДНИКИ ──────────────────────────────────────────────────────────────
-  if (bd.materialCost > 0) {
+  const isEpoxy = product?.category === "epoxy";
+
+  if (isEpoxy && bd.materialCost > 0) {
+    // Эпоксидный праймер: ~0.3 кг/м², упаковка 4 кг = ~13 м²
+    const primerPacks = Math.ceil(area / 13);
+    items.push({
+      name: "Эпоксидный праймер 2К, 4 кг",
+      spec: "Uzin PE 460 / Mapei Primer G",
+      unit: "компл.",
+      qty: primerPacks,
+      pricePerUnit: 3_800,
+      total: primerPacks * 3_800,
+      isConsumable: true,
+    });
+    // Смола: ~1.5 кг/м² на 3 мм, упаковка 10 кг = ~6.5 м²
+    const resinPacks = Math.ceil(area / 6.5);
+    items.push({
+      name: "Эпоксидная смола наливная 2К, 10 кг",
+      spec: "Эпоксол EF-120 / Sika FloorCoat (компонент A+B)",
+      unit: "компл.",
+      qty: resinPacks,
+      pricePerUnit: 6_400,
+      total: resinPacks * 6_400,
+      isConsumable: true,
+    });
+    // Финишный лак ПУ: ~0.2 кг/м², упаковка 5 кг = ~25 м²
+    const lacquerPacks = Math.ceil(area / 25);
+    items.push({
+      name: "Финишный полиуретановый лак 2К, 5 кг",
+      spec: "Uzin PE 480 / Bostik PU 2K",
+      unit: "компл.",
+      qty: lacquerPacks,
+      pricePerUnit: 4_200,
+      total: lacquerPacks * 4_200,
+      isConsumable: true,
+    });
+    if (product?.id === "epoxy-flake" || product?.id === "epoxy-3d") {
+      items.push({
+        name: "Декоративные флоки / чипсы 0.5 кг",
+        spec: "ColorFlakes Standart Mix",
+        unit: "шт.",
+        qty: Math.ceil(area / 8),
+        pricePerUnit: 1_200,
+        total: Math.ceil(area / 8) * 1_200,
+        isConsumable: true,
+      });
+    }
+    items.push({
+      name: "Обезжириватель / растворитель, 1 л",
+      spec: "подготовка основания",
+      unit: "шт.",
+      qty: Math.ceil(area / 20),
+      pricePerUnit: 380,
+      total: Math.ceil(area / 20) * 380,
+      isConsumable: true,
+    });
+  } else if (bd.materialCost > 0) {
     items.push({
       name: "Клей для плинтуса / дюбели",
       spec: "крепёж и клей",
@@ -198,9 +254,12 @@ export function calcFlooringMaterials(
 
   // ── РАБОТЫ ──────────────────────────────────────────────────────────────────
   if (product && bd.installCost > 0) {
+    const workName = isEpoxy
+      ? "Заливка эпоксидного пола (шлифовка + грунт + заливка + лак)"
+      : `Укладка ${product.name.split(" ")[0].toLowerCase()}`;
     items.push({
-      name: `Укладка ${product.name.split(" ")[0].toLowerCase()}`,
-      spec: pattern ? `${pattern.name}, отход ${pattern.wastePct}%` : "",
+      name: workName,
+      spec: isEpoxy ? `${product.thickness} мм, включая подготовку основания` : (pattern ? `${pattern.name}, отход ${pattern.wastePct}%` : ""),
       unit: "м²",
       qty: area,
       pricePerUnit: Math.round(product.installPrice * rc),
