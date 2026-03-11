@@ -1,6 +1,14 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
-import BookingModal from "@/components/BookingModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface FurnitureItem {
   name: string;
@@ -220,6 +228,115 @@ function formatPrice(value: number): string {
   return value.toLocaleString("ru-RU") + " ₽";
 }
 
+function FurnitureLeadModal({ isOpen, onClose, apartmentTitle }: { isOpen: boolean; onClose: () => void; apartmentTitle: string }) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [sent, setSent] = useState(false);
+
+  const formatPhone = (value: string) => {
+    const n = value.replace(/\D/g, "");
+    if (n.length <= 1) return "+7 ";
+    if (n.length <= 4) return `+7 (${n.slice(1)}`;
+    if (n.length <= 7) return `+7 (${n.slice(1, 4)}) ${n.slice(4)}`;
+    if (n.length <= 9) return `+7 (${n.slice(1, 4)}) ${n.slice(4, 7)}-${n.slice(7)}`;
+    return `+7 (${n.slice(1, 4)}) ${n.slice(4, 7)}-${n.slice(7, 9)}-${n.slice(9, 11)}`;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await fetch("https://functions.poehali.dev/0d734a2e-55b4-41ff-a0f3-d85fb7c1e094", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parentName: name,
+          phone: phone.replace(/\D/g, ""),
+          comment: `Подбор мебели: ${apartmentTitle}`,
+        }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
+    setSent(true);
+  };
+
+  const handleClose = () => {
+    setSent(false);
+    setName("");
+    setPhone("");
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[420px]">
+        {!sent ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-gray-900">
+                Подбор мебели
+              </DialogTitle>
+              <DialogDescription className="text-gray-500">
+                Комплект для: <span className="font-semibold text-orange-500">{apartmentTitle}</span>
+                <br />Оставьте контакты — менеджер свяжется и поможет с выбором
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+              <div>
+                <Label htmlFor="fur-name" className="text-sm font-medium text-gray-700">Ваше имя *</Label>
+                <Input
+                  id="fur-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Иван Иванов"
+                  required
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="fur-phone" className="text-sm font-medium text-gray-700">Телефон *</Label>
+                <Input
+                  id="fur-phone"
+                  type="tel"
+                  value={phone || "+7 "}
+                  onChange={(e) => setPhone(formatPhone(e.target.value))}
+                  onFocus={() => { if (!phone) setPhone("+7 "); }}
+                  placeholder="+7 (___) ___-__-__"
+                  required
+                  maxLength={18}
+                  className="mt-1"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+              >
+                <Icon name="Send" size={18} />
+                Отправить заявку
+              </button>
+              <p className="text-xs text-gray-400 text-center">Нажимая кнопку, вы соглашаетесь на обработку персональных данных</p>
+            </form>
+          </>
+        ) : (
+          <div className="py-8 text-center">
+            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+              <Icon name="Check" size={28} className="text-green-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Заявка отправлена!</h3>
+            <p className="text-gray-500 mb-6">Менеджер свяжется с вами в ближайшее время</p>
+            <button
+              onClick={handleClose}
+              className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors"
+            >
+              Закрыть
+            </button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function HomeFurnitureCalculator() {
   const [activeId, setActiveId] = useState<string>("studio");
   const [bookingOpen, setBookingOpen] = useState(false);
@@ -335,7 +452,7 @@ export default function HomeFurnitureCalculator() {
         </div>
       </div>
 
-      <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
+      <FurnitureLeadModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} apartmentTitle={active.title} />
     </section>
   );
 }
