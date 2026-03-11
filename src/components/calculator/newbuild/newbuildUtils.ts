@@ -35,18 +35,6 @@ export interface NewbuildProjectTotals {
   total: number;
 }
 
-// Доли каждой статьи от базовой стоимости (при полном наборе работ)
-const BASE_SHARES = {
-  screed:       0.14,
-  plaster:      0.18,
-  ceiling:      0.10,
-  paint:        0.12,
-  flooring:     0.20,
-  electrics:    0.10,
-  doors:        0.10,
-  windowSlopes: 0.06,
-};
-
 export function calcNewbuildPrice(
   cfg: Omit<NewbuildConfig, "id" | "totalPrice">,
   regionId = "moscow",
@@ -55,46 +43,65 @@ export function calcNewbuildPrice(
   const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];
   const roomType = ROOM_TYPES.find(r => r.id === cfg.roomType);
   const level = RENOVATION_LEVELS.find(l => l.id === cfg.renovationLevel);
+  const screedType = SCREED_TYPES.find(s => s.id === cfg.screedType);
+  const plasterType = PLASTER_TYPES.find(p => p.id === cfg.plasterType);
+  const ceilingType = CEILING_FINISH_TYPES.find(c => c.id === cfg.ceilingType);
+  const flooringType = FLOORING_TYPES.find(f => f.id === cfg.flooringType);
+  const doorType = DOOR_TYPES.find(d => d.id === cfg.doorType);
 
   const rc = region.coeff;
   const lc = level?.priceCoeff ?? 1.0;
   const tc = roomType?.priceCoeff ?? 1.0;
   const area = cfg.area || 0;
-  const basePriceM2 = level?.basePriceM2 ?? 7000;
+  const ceilH = cfg.ceilingHeightM || 2.8;
+  const wallCoeff = roomType?.wallCoeff ?? 2.4;
+  const wallArea = Math.round(area * wallCoeff * ceilH / 2.8 * 10) / 10;
 
-  // Базовая сумма зоны — basePriceM2 × площадь × коэф. типа комнаты × регион
-  const baseTotal = Math.round(basePriceM2 * area * tc * rc);
+  // ── Стяжка: реальная цена из типа × уровень ──────────────────────────────
+  const screedPriceM2 = screedType?.priceM2 ?? 1100;
+  const screedCost = cfg.screedIncluded
+    ? Math.round(area * screedPriceM2 * lc * tc * rc)
+    : 0;
 
-  // Какие статьи включены
-  const activeShares: Record<string, number> = {
-    screed:       cfg.screedIncluded                  ? BASE_SHARES.screed       : 0,
-    plaster:      cfg.plasterIncluded                 ? BASE_SHARES.plaster      : 0,
-    ceiling:      cfg.ceilingLevelIncluded            ? BASE_SHARES.ceiling      : 0,
-    paint:        (cfg.paintingWalls || cfg.paintingCeiling) ? BASE_SHARES.paint : 0,
-    flooring:     BASE_SHARES.flooring,
-    electrics:    cfg.electricsIncluded               ? BASE_SHARES.electrics    : 0,
-    doors:        cfg.doorsCount > 0                  ? BASE_SHARES.doors        : 0,
-    windowSlopes: cfg.windowSlopesCount > 0           ? BASE_SHARES.windowSlopes : 0,
-  };
+  // ── Штукатурка: цена из типа × уровень ───────────────────────────────────
+  const plasterPriceM2 = plasterType?.priceM2 ?? 720;
+  const plasterCost = cfg.plasterIncluded
+    ? Math.round(wallArea * plasterPriceM2 * lc * tc * rc)
+    : 0;
 
-  const totalShare = Object.values(activeShares).reduce((s, v) => s + v, 0);
+  // ── Потолок: цена из типа × уровень ──────────────────────────────────────
+  const ceilPriceM2 = ceilingType?.priceM2 ?? 850;
+  const ceilingCost = cfg.ceilingLevelIncluded
+    ? Math.round(area * ceilPriceM2 * lc * tc * rc)
+    : 0;
 
-  const get = (key: string) =>
-    totalShare > 0 ? Math.round(baseTotal * activeShares[key] / totalShare) : 0;
+  // ── Покраска стен/потолка: 350 ₽/м² × слои × уровень ────────────────────
+  let paintArea = 0;
+  if (cfg.paintingWalls) paintArea += wallArea;
+  if (cfg.paintingCeiling) paintArea += area;
+  const paintCost = paintArea > 0
+    ? Math.round(paintArea * 350 * (cfg.paintLayersCount || 2) * 0.5 * lc * rc)
+    : 0;
 
-  const screedCost       = get("screed");
-  const plasterCost      = get("plaster");
-  const ceilingCost      = get("ceiling");
-  const paintCost        = get("paint");
-  const flooringCost     = get("flooring");
-  const electricsCost    = get("electrics");
-  const doorsCost        = get("doors");
-  const windowSlopesCostRaw = get("windowSlopes");
+  // ── Напольное покрытие: работа + материал ─────────────────────────────────
+  const floorMaterialM2 = flooringType?.priceM2 ?? 1100;
+  const flooringCost = Math.round(area * (550 + floorMaterialM2 * lc) * tc * rc);
 
-  // Коррекция округления: остаток добавляем к напольному покрытию
-  const sumSoFar = screedCost + plasterCost + ceilingCost + paintCost +
-    flooringCost + electricsCost + doorsCost + windowSlopesCostRaw;
-  const windowSlopesCost = windowSlopesCostRaw + (baseTotal - sumSoFar);
+  // ── Электрика: 650 ₽/точка × кол-во + 800 ₽/м² базовая разводка ─────────
+  const electricsCost = cfg.electricsIncluded
+    ? Math.round((area * 800 + (cfg.outletsCount + cfg.switchesCount) * 650) * lc * tc * rc)
+    : 0;
+
+  // ── Двери: pricePerDoor × количество × уровень ───────────────────────────
+  const doorPrice = doorType?.pricePerDoor ?? 20000;
+  const doorsCost = cfg.doorsCount > 0
+    ? Math.round(cfg.doorsCount * doorPrice * lc * rc)
+    : 0;
+
+  // ── Откосы: 3 500 ₽/проём ────────────────────────────────────────────────
+  const windowSlopesCost = cfg.windowSlopesCount > 0
+    ? Math.round(cfg.windowSlopesCount * 3500 * rc)
+    : 0;
 
   const worksSubtotal = screedCost + plasterCost + ceilingCost + paintCost +
     flooringCost + electricsCost + doorsCost + windowSlopesCost;
@@ -175,8 +182,9 @@ export function calcNewbuildMaterials(
   const doorType = DOOR_TYPES.find(d => d.id === cfg.doorType);
 
   const area = cfg.area || 0;
+  const ceilH = cfg.ceilingHeightM || 2.8;
   const wallCoeff = roomType?.wallCoeff ?? 2.4;
-  const wallArea = Math.round(area * wallCoeff * 10) / 10;
+  const wallArea = Math.round(area * wallCoeff * ceilH / 2.8 * 10) / 10;
   const items: MaterialItem[] = [];
 
   if (cfg.screedIncluded && bd.screedCost > 0 && screedType) {
