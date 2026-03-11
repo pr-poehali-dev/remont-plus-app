@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import BookingModal from "@/components/BookingModal";
 
 interface FurnitureItem {
   name: string;
@@ -221,6 +222,7 @@ function formatPrice(value: number): string {
 
 export default function HomeFurnitureCalculator() {
   const [activeId, setActiveId] = useState<string>("studio");
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   const active = PACKAGES.find((p) => p.id === activeId)!;
 
@@ -321,9 +323,19 @@ export default function HomeFurnitureCalculator() {
                 цены ориентировочные
               </div>
             </div>
+
+            <button
+              onClick={() => setBookingOpen(true)}
+              className="mt-5 w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+            >
+              <Icon name="ShoppingCart" size={18} />
+              Заказать подбор мебели
+            </button>
           </div>
         </div>
       </div>
+
+      <BookingModal isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
     </section>
   );
 }
