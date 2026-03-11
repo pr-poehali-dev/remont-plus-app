@@ -210,6 +210,17 @@ const sections = [
     requireAuth: false,
   },
   {
+    id: "furniture",
+    title: "МЕБЕЛЬ",
+    description: "Подберите мебель для квартиры по комплектации и бюджету — калькулятор с разбивкой по комнатам",
+    emoji: "🛋️",
+    icon: "Sofa",
+    gradient: "from-amber-600 via-yellow-600 to-amber-500",
+    glow: "group-hover:shadow-amber-400/50",
+    path: "/#furniture",
+    requireAuth: false,
+  },
+  {
     id: "expert",
     title: "ЭКСПЕРТ",
     description: "ИИ-консультант по дизайну, интерьеру и ремонту — задайте любой вопрос онлайн",
@@ -232,6 +243,17 @@ export default function HomeHero({ user, regionLabel, onLogout }: Props) {
   const navigate = useNavigate();
 
   const handleNavigate = (section: typeof sections[0]) => {
+    if (section.path.startsWith("/#")) {
+      const id = section.path.slice(2);
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      } else {
+        navigate("/");
+        setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 300);
+      }
+      return;
+    }
     if (section.requireAuth && !user) {
       navigate(`/login?redirect=${section.path}`);
     } else {

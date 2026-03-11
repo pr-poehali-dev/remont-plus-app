@@ -111,7 +111,7 @@ export default function Home() {
       <div className="bg-[#fafaf8] flex-1 px-4 py-16">
         <div className="w-full max-w-6xl mx-auto">
           <HomeProjects region={region} />
-          <HomeFurnitureCalculator />
+          <div id="furniture"><HomeFurnitureCalculator /></div>
           <HomeVideoBanner />
           <HomePartner />
           <HomeLatestPosts posts={latestPosts} />
