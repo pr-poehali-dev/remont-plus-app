@@ -75,9 +75,9 @@ export interface ScreedTypeOption {
 }
 
 export const SCREED_TYPES: ScreedTypeOption[] = [
-  { id: "dry",           label: "Сухая стяжка",          description: "Быстрый монтаж, лёгкая конструкция", priceM2: 850  },
-  { id: "wet",           label: "Мокрая стяжка",         description: "Цементно-песчаная, прочная",          priceM2: 1100  },
-  { id: "self-leveling", label: "Самовыравнивающаяся",   description: "Идеально ровная поверхность",          priceM2: 1450 },
+  { id: "dry",           label: "Сухая стяжка",          description: "Быстрый монтаж, лёгкая конструкция", priceM2: 1100 },
+  { id: "wet",           label: "Мокрая стяжка",         description: "Цементно-песчаная, прочная",          priceM2: 1350 },
+  { id: "self-leveling", label: "Самовыравнивающаяся",   description: "Идеально ровная поверхность",          priceM2: 1700 },
 ];
 
 // ─── Типы штукатурки ──────────────────────────────────────────────────────────
@@ -90,8 +90,8 @@ export interface PlasterTypeOption {
 }
 
 export const PLASTER_TYPES: PlasterTypeOption[] = [
-  { id: "gypsum",  label: "Гипсовая штукатурка",  description: "Для жилых помещений, ровная поверхность", priceM2: 720 },
-  { id: "cement",  label: "Цементная штукатурка",  description: "Для влажных помещений, прочная",           priceM2: 850 },
+  { id: "gypsum",  label: "Гипсовая штукатурка",  description: "Для жилых помещений, ровная поверхность", priceM2: 900 },
+  { id: "cement",  label: "Цементная штукатурка",  description: "Для влажных помещений, прочная",           priceM2: 1050 },
 ];
 
 // ─── Типы потолка ─────────────────────────────────────────────────────────────
@@ -104,9 +104,9 @@ export interface CeilingTypeOption {
 }
 
 export const CEILING_FINISH_TYPES: CeilingTypeOption[] = [
-  { id: "paint",        label: "Покраска потолка",      description: "Шпаклёвка + грунт + покраска",  priceM2: 850  },
-  { id: "stretch",      label: "Натяжной потолок",      description: "ПВХ полотно, любой цвет",        priceM2: 1200  },
-  { id: "gypsum-board", label: "Гипсокартонный потолок",description: "С подсветкой, сложные формы",    priceM2: 1600 },
+  { id: "paint",        label: "Покраска потолка",      description: "Шпаклёвка + грунт + покраска",  priceM2: 950  },
+  { id: "stretch",      label: "Натяжной потолок",      description: "ПВХ полотно, любой цвет",        priceM2: 1400 },
+  { id: "gypsum-board", label: "Гипсокартонный потолок",description: "С подсветкой, сложные формы",    priceM2: 1900 },
 ];
 
 // ─── Типы напольного покрытия ────────────────────────────────────────────────
@@ -119,10 +119,10 @@ export interface FlooringTypeOption {
 }
 
 export const FLOORING_TYPES: FlooringTypeOption[] = [
-  { id: "laminate",  label: "Ламинат 33 класс",     description: "Универсальный вариант",               priceM2: 1100  },
-  { id: "tile",      label: "Плитка / керамогранит", description: "Для кухни, ванной, прихожей",         priceM2: 1700 },
-  { id: "parquet",   label: "Паркетная доска",       description: "Для гостиной, спальни",               priceM2: 2400 },
-  { id: "linoleum",  label: "Линолеум",              description: "Бюджетный, быстрый монтаж",           priceM2: 600  },
+  { id: "laminate",  label: "Ламинат 33 класс",     description: "Универсальный вариант",               priceM2: 1400 },
+  { id: "tile",      label: "Плитка / керамогранит", description: "Для кухни, ванной, прихожей",         priceM2: 2100 },
+  { id: "parquet",   label: "Паркетная доска",       description: "Для гостиной, спальни",               priceM2: 3200 },
+  { id: "linoleum",  label: "Линолеум",              description: "Бюджетный, быстрый монтаж",           priceM2: 800  },
 ];
 
 // ─── Типы дверей ─────────────────────────────────────────────────────────────
@@ -135,9 +135,9 @@ export interface DoorTypeOption {
 }
 
 export const DOOR_TYPES: DoorTypeOption[] = [
-  { id: "economy",  label: "Эконом (ламинат)",  description: "МДФ с ламинатом, коробка в комплекте",  pricePerDoor: 11500  },
-  { id: "standard", label: "Стандарт (шпон)",   description: "Шпонированная дверь + коробка + установка", pricePerDoor: 20000 },
-  { id: "premium",  label: "Премиум (массив)",  description: "Массив дерева, фурнитура, установка",   pricePerDoor: 38000 },
+  { id: "economy",  label: "Эконом (ламинат)",  description: "МДФ с ламинатом, коробка в комплекте",  pricePerDoor: 14000 },
+  { id: "standard", label: "Стандарт (шпон)",   description: "Шпонированная дверь + коробка + установка", pricePerDoor: 24000 },
+  { id: "premium",  label: "Премиум (массив)",  description: "Массив дерева, фурнитура, установка",   pricePerDoor: 45000 },
 ];
 
 // ─── Регионы ─────────────────────────────────────────────────────────────────

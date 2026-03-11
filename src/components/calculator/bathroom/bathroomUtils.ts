@@ -42,25 +42,27 @@ export function calcBathroomPrice(
   const area = cfg.area || 0;
   const wallArea = cfg.wallArea || 0;
 
-  // Демонтаж
+  // Демонтаж: 380 ₽/м² пола + 320 ₽/м² стен (снятие плитки, вывоз)
   const demolitionCost = cfg.demolitionIncluded
-    ? Math.round((area * 3700 + wallArea * 1550) * rc)
+    ? Math.round((area * 380 + wallArea * 320) * rc)
     : 0;
 
-  // Демонтаж сантехнической кабины
+  // Демонтаж сантехнической кабины: снос перегородок + вывоз + санфаянс
+  // ~12 000 ₽ за пог. метр периметра (работа + вывоз)
+  const cabinPerimeter = Math.max(6, Math.round(Math.sqrt(area) * 4));
   const cabinDemolitionCost = cfg.cabinDemolition
-    ? Math.round((area * 4200 + wallArea * 1800) * rc)
+    ? Math.round(cabinPerimeter * 12000 * rc)
     : 0;
 
-  // Возведение сантехнической кабины (пеноблоки / ПГБ)
-  const cabinPerimeter = Math.round(Math.sqrt(area) * 4);
+  // Возведение сантехнической кабины (пеноблоки / ПГБ):
+  // 4 800 ₽/м² стены × периметр × высота 2.5 м
   const cabinConstructionCost = cfg.cabinConstruction
     ? Math.round(cabinPerimeter * 2.5 * 4800 * rc)
     : 0;
 
-  // Стяжка
+  // Стяжка: 1 200 ₽/м² (работа + материал ЦПС)
   const screedCost = cfg.screedIncluded
-    ? Math.round(area * 2700 * rc)
+    ? Math.round(area * 1200 * rc)
     : 0;
 
   // Гидроизоляция
@@ -78,33 +80,33 @@ export function calcBathroomPrice(
   const wallInstallCost = Math.round(wallArea * (wallTile?.installPriceM2 ?? 0) * typeCoeff * rc);
   const wallTileCost = wallMaterialCost + wallInstallCost;
 
-  // Сантехника
+  // Сантехника (только монтаж — без стоимости самих приборов)
   let plumbingBase = 0;
-  if (cfg.toiletInstall) plumbingBase += 21000;
-  if (cfg.sinkInstall) plumbingBase += 14500;
-  if (cfg.bathInstall) plumbingBase += 36000;
-  if (cfg.showerCabinInstall) plumbingBase += 49000;
-  plumbingBase += cfg.mixersCount * 7800;
-  if (cfg.installationSystemIncluded) plumbingBase += 36000;
+  if (cfg.toiletInstall) plumbingBase += 9500;       // монтаж унитаза
+  if (cfg.sinkInstall) plumbingBase += 7500;          // раковина + подводка
+  if (cfg.bathInstall) plumbingBase += 14000;         // ванна + смеситель + слив
+  if (cfg.showerCabinInstall) plumbingBase += 18000;  // поддон + кабина + лейка
+  plumbingBase += cfg.mixersCount * 4500;             // смесители
+  if (cfg.installationSystemIncluded) plumbingBase += 22000; // инсталляция унитаза
   const plumbingCost = Math.round(plumbingBase * rc);
 
-  // Тёплый пол
+  // Тёплый пол (материал + монтаж): электро 2200 ₽/м², водяной 3800 ₽/м²
   let heatedFloorCost = 0;
   if (cfg.heatedFloorIncluded) {
-    const basePerM2 = cfg.heatedFloorType === "electric" ? 3700 : 5800;
+    const basePerM2 = cfg.heatedFloorType === "electric" ? 2200 : 3800;
     heatedFloorCost = Math.round(area * basePerM2 * rc);
   }
 
-  // Вентиляция
-  const ventilationCost = cfg.ventilationIncluded ? Math.round(5800 * rc) : 0;
+  // Вентиляция: монтаж вентилятора + вытяжка
+  const ventilationCost = cfg.ventilationIncluded ? Math.round(8500 * rc) : 0;
 
-  // Мебель и аксессуары
+  // Мебель (только монтаж — подвеска, регулировка)
   let furnitureBase = 0;
-  if (cfg.vanityInstall) furnitureBase += 20500;
-  if (cfg.mirrorInstall) furnitureBase += 9000;
+  if (cfg.vanityInstall) furnitureBase += 8500;   // тумба с раковиной
+  if (cfg.mirrorInstall) furnitureBase += 3500;    // зеркало / зеркало-шкаф
   const furnitureCost = Math.round(furnitureBase * rc);
 
-  const accessoriesCost = cfg.accessoriesIncluded ? Math.round(4900 * rc) : 0;
+  const accessoriesCost = cfg.accessoriesIncluded ? Math.round(6500 * rc) : 0;
 
   const subtotal =
     demolitionCost +

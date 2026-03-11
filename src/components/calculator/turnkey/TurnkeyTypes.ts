@@ -86,10 +86,10 @@ export interface FloorTypeOption {
 }
 
 export const FLOOR_TYPES: FloorTypeOption[] = [
-  { id: "laminate",   label: "Ламинат 33 класс",       description: "Для комнат, коридора",            priceM2: 1200  },
-  { id: "parquet",    label: "Паркетная доска",         description: "Комфорт и выше",                  priceM2: 2400 },
-  { id: "tile-all",   label: "Керамогранит везде",      description: "Надёжно, влагостойко",            priceM2: 1800 },
-  { id: "mixed",      label: "Комбинированный",         description: "Паркет в комнатах, плитка в кухне/ванной", priceM2: 1700 },
+  { id: "laminate",   label: "Ламинат 33 класс",       description: "Для комнат, коридора",            priceM2: 1400 },
+  { id: "parquet",    label: "Паркетная доска",         description: "Комфорт и выше",                  priceM2: 3200 },
+  { id: "tile-all",   label: "Керамогранит везде",      description: "Надёжно, влагостойко",            priceM2: 2100 },
+  { id: "mixed",      label: "Комбинированный",         description: "Паркет в комнатах, плитка в кухне/ванной", priceM2: 2200 },
 ];
 
 // ─── Типы потолков ────────────────────────────────────────────────────────────
@@ -102,9 +102,9 @@ export interface CeilingTypeOption {
 }
 
 export const CEILING_TYPES: CeilingTypeOption[] = [
-  { id: "paint",    label: "Покраска потолков",      description: "Шпаклёвка + покраска",       priceM2: 850  },
-  { id: "stretch",  label: "Натяжные потолки",       description: "ПВХ или тканевое полотно",   priceM2: 1200  },
-  { id: "mixed",    label: "Комбинированный",        description: "Покраска + натяжные в части", priceM2: 1050  },
+  { id: "paint",    label: "Покраска потолков",      description: "Шпаклёвка + покраска",       priceM2: 950  },
+  { id: "stretch",  label: "Натяжные потолки",       description: "ПВХ или тканевое полотно",   priceM2: 1400 },
+  { id: "mixed",    label: "Комбинированный",        description: "Покраска + натяжные в части", priceM2: 1200 },
 ];
 
 // ─── Уровни санузлов ─────────────────────────────────────────────────────────
@@ -117,9 +117,9 @@ export interface BathroomLevelOption {
 }
 
 export const BATHROOM_LEVELS: BathroomLevelOption[] = [
-  { id: "economy",  label: "Эконом",   description: "Плитка базовая, санфаянс стандарт",    pricePerUnit: 110000  },
-  { id: "standard", label: "Стандарт", description: "Плитка хорошая, гидроизоляция, тёплый пол", pricePerUnit: 185000 },
-  { id: "premium",  label: "Премиум",  description: "Дизайнерская плитка, инсталляция, премиум санфаянс", pricePerUnit: 320000 },
+  { id: "economy",  label: "Эконом",   description: "Плитка базовая, санфаянс стандарт",    pricePerUnit: 140000 },
+  { id: "standard", label: "Стандарт", description: "Плитка хорошая, гидроизоляция, тёплый пол", pricePerUnit: 230000 },
+  { id: "premium",  label: "Премиум",  description: "Дизайнерская плитка, инсталляция, премиум санфаянс", pricePerUnit: 420000 },
 ];
 
 // ─── Регионы ─────────────────────────────────────────────────────────────────
