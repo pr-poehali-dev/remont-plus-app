@@ -217,7 +217,7 @@ const sections = [
     icon: "Sofa",
     gradient: "from-amber-600 via-yellow-600 to-amber-500",
     glow: "group-hover:shadow-amber-400/50",
-    path: "/#furniture",
+    path: "/furniture",
     requireAuth: false,
   },
   {

@@ -55,6 +55,7 @@ import RbcParser from "./pages/RbcParser";
 import YukassaCabinet from "./pages/YukassaCabinet";
 import OfficeCalc from "./pages/OfficeCalc";
 import CityLanding from "./pages/CityLanding";
+import Furniture from "./pages/Furniture";
 import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
@@ -74,6 +75,7 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/furniture" element={<Furniture />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/ai-chat" element={<AIChat />} />
