@@ -8,6 +8,7 @@ import HomeLatestPosts, { type LatestPost } from "@/components/home/HomeLatestPo
 import HomeCTA from "@/components/home/HomeCTA";
 import HomePartner from "@/components/home/HomePartner";
 import HomeVideoBanner from "@/components/home/HomeVideoBanner";
+import HomeReadyProjects from "@/components/home/HomeReadyProjects";
 
 
 const POSTS_URL = "https://functions.poehali.dev/60baa083-841b-461e-9edb-8460b28e7076";
@@ -112,6 +113,7 @@ export default function Home() {
         <div className="w-full max-w-6xl mx-auto">
           <HomeProjects region={region} />
 
+          <HomeReadyProjects />
           <HomeVideoBanner />
           <HomePartner />
           <HomeLatestPosts posts={latestPosts} />

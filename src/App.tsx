@@ -56,6 +56,7 @@ import YukassaCabinet from "./pages/YukassaCabinet";
 import OfficeCalc from "./pages/OfficeCalc";
 import CityLanding from "./pages/CityLanding";
 import Furniture from "./pages/Furniture";
+import ReadyProjects from "./pages/ReadyProjects";
 import NotFound from "./pages/NotFound";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
@@ -125,6 +126,7 @@ const App = () => {
             <Route path="/yukassa" element={<YukassaCabinet />} />
             <Route path="/office" element={<OfficeCalc />} />
             <Route path="/city/:slug" element={<CityLanding />} />
+            <Route path="/ready-projects" element={<ReadyProjects />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
