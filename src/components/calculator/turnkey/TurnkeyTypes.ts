@@ -160,6 +160,8 @@ export interface TurnkeyConfig {
   foremanPct: number;
   supplierIncluded: boolean;
   supplierPct: number;
+  floorNumber: number;
+  deliveryIncluded: boolean;
   note: string;
   totalPrice: number;
 }
@@ -196,5 +198,7 @@ export const DEFAULT_TURNKEY_CONFIG: Omit<TurnkeyConfig, "id" | "totalPrice"> = 
   foremanPct: 10,
   supplierIncluded: false,
   supplierPct: 5,
+  floorNumber: 3,
+  deliveryIncluded: true,
   note: "",
 };

@@ -156,13 +156,22 @@ export default function TurnkeyConfigForm({ cfg, onUpdate }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <div>
               <Label className="text-xs text-gray-500 mb-1 block">Высота потолков, м</Label>
               <Input
                 type="number" min={2.2} max={5} step={0.05}
                 value={cfg.ceilingHeightM}
                 onChange={e => onUpdate({ ceilingHeightM: parseFloat(e.target.value) || 2.7 })}
+                className="h-9"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Этаж</Label>
+              <Input
+                type="number" min={1} max={100} step={1}
+                value={cfg.floorNumber || 1}
+                onChange={e => onUpdate({ floorNumber: Math.max(1, parseInt(e.target.value) || 1) })}
                 className="h-9"
               />
             </div>
@@ -473,6 +482,12 @@ export default function TurnkeyConfigForm({ cfg, onUpdate }: Props) {
               <span className="text-xs text-gray-400">обычно 3–7%</span>
             </div>
           )}
+          <ToggleRow
+            label="Доставка материалов + подъём на этаж"
+            description={`Доставка до подъезда и подъём на ${cfg.floorNumber || 1}-й этаж (расчёт по весу материалов)`}
+            checked={cfg.deliveryIncluded}
+            onChange={v => onUpdate({ deliveryIncluded: v })}
+          />
 
           <div>
             <Label className="text-xs text-gray-500 mb-1 block">Примечания</Label>

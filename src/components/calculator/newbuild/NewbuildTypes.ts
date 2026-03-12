@@ -169,6 +169,8 @@ export interface NewbuildConfig {
   doorsCount: number;
   doorType: string;
   windowSlopesCount: number;
+  floorNumber: number;
+  deliveryIncluded: boolean;
   note: string;
   totalPrice: number;
 }
@@ -197,5 +199,7 @@ export const DEFAULT_NEWBUILD_CONFIG: Omit<NewbuildConfig, "id" | "totalPrice"> 
   doorsCount: 1,
   doorType: "standard",
   windowSlopesCount: 1,
+  floorNumber: 3,
+  deliveryIncluded: true,
   note: "",
 };

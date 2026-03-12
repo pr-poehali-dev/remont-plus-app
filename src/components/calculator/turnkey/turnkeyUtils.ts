@@ -281,5 +281,53 @@ export function calcTurnkeyMaterials(
     items.push({ name: "Монтажная пена, герметик", unit: "компл.", qty: 1, pricePerUnit: Math.round(windowCount * 490), total: Math.round(windowCount * 490), isConsumable: true });
   }
 
+  // ── Малярный инструмент и расходники ────────────────────────────────────────
+  // Валики, кисти, лотки, малярный скотч, плёнка защитная, шпатели, перчатки
+  {
+    const paintSurface = wallArea + area;
+    const rollersQty = Math.ceil(paintSurface / 60);       // 1 валик на ~60 м²
+    const brushesQty = Math.ceil(paintSurface / 40);       // 1 кисть на ~40 м²
+    items.push({ name: "Валики малярные ∅180 мм (нейлон)", unit: "шт.", qty: rollersQty, pricePerUnit: 280, total: rollersQty * 280, isConsumable: true });
+    items.push({ name: "Кисти малярные (набор: 25/50/75 мм)", unit: "набор", qty: brushesQty, pricePerUnit: 350, total: brushesQty * 350, isConsumable: true });
+    items.push({ name: "Лоток малярный с сеткой", unit: "шт.", qty: Math.max(1, rollersQty), pricePerUnit: 180, total: Math.max(1, rollersQty) * 180, isConsumable: true });
+    items.push({ name: "Малярный скотч 50 мм", unit: "шт.", qty: Math.ceil(wallArea / 30), pricePerUnit: 95, total: Math.ceil(wallArea / 30) * 95, isConsumable: true });
+    items.push({ name: "Плёнка защитная 4×5 м", unit: "шт.", qty: Math.ceil(area / 18), pricePerUnit: 140, total: Math.ceil(area / 18) * 140, isConsumable: true });
+    items.push({ name: "Шпатели (набор: 80/150/250 мм)", unit: "набор", qty: Math.max(2, Math.ceil(area / 30)), pricePerUnit: 420, total: Math.max(2, Math.ceil(area / 30)) * 420, isConsumable: true });
+    items.push({ name: "Перчатки строительные (нитрил)", unit: "пар", qty: Math.ceil(area / 10), pricePerUnit: 55, total: Math.ceil(area / 10) * 55, isConsumable: true });
+    items.push({ name: "Респираторы FFP2 (при шлифовке, штукатурке)", unit: "шт.", qty: Math.ceil(area / 20), pricePerUnit: 85, total: Math.ceil(area / 20) * 85, isConsumable: true });
+    items.push({ name: "Мусорные мешки строительные 120 л", unit: "шт.", qty: Math.ceil(area / 5), pricePerUnit: 28, total: Math.ceil(area / 5) * 28, isConsumable: true });
+    items.push({ name: "Наждачная бумага / абразивная сетка", unit: "шт.", qty: Math.ceil(wallArea / 8), pricePerUnit: 45, total: Math.ceil(wallArea / 8) * 45, isConsumable: true });
+  }
+
+  // ── Доставка стройматериалов и подъём на этаж ─────────────────────────────
+  if (cfg.deliveryIncluded) {
+    const floorN = cfg.floorNumber || 1;
+    // Базовая доставка: фура до подъезда — вес материалов ~30 кг/м² → тоннаж
+    const weightTonnes = Math.max(1, Math.round(area * 30 / 1000 * 10) / 10);
+    const deliveryBase = Math.round(weightTonnes * 3500 * rc);
+    // Подъём: 1-й этаж — бесплатно, со 2-го — 250 ₽/т/этаж
+    const liftCost = floorN > 1 ? Math.round(weightTonnes * 250 * (floorN - 1) * rc) : 0;
+    const deliveryTotal = deliveryBase + liftCost;
+    items.push({
+      name: "Доставка стройматериалов",
+      spec: `~${weightTonnes} т, до подъезда`,
+      unit: "рейс",
+      qty: Math.ceil(weightTonnes / 3),
+      pricePerUnit: Math.round(deliveryBase / Math.ceil(weightTonnes / 3)),
+      total: deliveryBase,
+    });
+    if (liftCost > 0) {
+      items.push({
+        name: `Подъём материалов на ${floorN}-й этаж`,
+        spec: "без лифта / по договорённости с грузчиками",
+        unit: "т",
+        qty: weightTonnes,
+        pricePerUnit: Math.round(250 * (floorN - 1) * rc),
+        total: liftCost,
+      });
+    }
+    void deliveryTotal;
+  }
+
   return items;
 }
