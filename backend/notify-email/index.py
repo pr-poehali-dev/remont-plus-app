@@ -111,6 +111,102 @@ def payment_received_html(master_name: str, customer_name: str, contract_amount:
 """
 
 
+def estimate_html(calc_name: str, total_sum: float, items: list,
+                   params: dict, customer: str, contractor: str,
+                   address: str, phone: str, doc_date: str) -> str:
+    """HTML-письмо со сметой в стиле АВАНГАРД"""
+    fmt = lambda n: f"{n:,.0f}".replace(',', ' ')
+
+    # Блок параметров объекта
+    params_block = ''
+    if params:
+        rows = ''
+        for k, v in params.items():
+            rows += (
+                f'<tr>'
+                f'<td style="color:#888;padding:5px 10px 5px 0;font-size:13px;white-space:nowrap;">{k}</td>'
+                f'<td style="color:#333;padding:5px 0;font-size:13px;font-weight:500;">{v}</td>'
+                f'</tr>'
+            )
+        params_block = f"""
+      <div style="margin-bottom:20px;">
+        <h2 style="font-size:15px;color:#333;margin:0 0 10px;">Параметры объекта</h2>
+        <div style="background:#f9fafb;border-radius:8px;padding:14px 18px;">
+          <table style="width:100%;border-collapse:collapse;">{rows}</table>
+        </div>
+      </div>"""
+
+    # Таблица работ
+    items_rows = ''
+    for idx, item in enumerate(items or [], start=1):
+        name = item.get('name', '') if isinstance(item, dict) else str(item)
+        price = item.get('price', 0) if isinstance(item, dict) else 0
+        items_rows += (
+            f'<tr style="border-bottom:1px solid #f0f0f0;">'
+            f'<td style="padding:10px 8px;color:#888;font-size:13px;text-align:center;width:36px;">{idx}</td>'
+            f'<td style="padding:10px 8px;color:#333;font-size:13px;">{name}</td>'
+            f'<td style="padding:10px 8px;color:#333;font-size:13px;text-align:right;white-space:nowrap;font-weight:500;">{fmt(float(price))} &#8381;</td>'
+            f'</tr>'
+        )
+
+    # Блок заказчик / подрядчик
+    parties_block = ''
+    if customer or contractor:
+        parties_rows = ''
+        if customer:
+            parties_rows += f'<tr><td style="color:#888;padding:5px 10px 5px 0;font-size:13px;">Заказчик</td><td style="color:#333;font-size:13px;font-weight:500;">{customer}</td></tr>'
+        if contractor:
+            parties_rows += f'<tr><td style="color:#888;padding:5px 10px 5px 0;font-size:13px;">Подрядчик</td><td style="color:#333;font-size:13px;font-weight:500;">{contractor}</td></tr>'
+        if address:
+            parties_rows += f'<tr><td style="color:#888;padding:5px 10px 5px 0;font-size:13px;">Адрес</td><td style="color:#333;font-size:13px;font-weight:500;">{address}</td></tr>'
+        if phone:
+            parties_rows += f'<tr><td style="color:#888;padding:5px 10px 5px 0;font-size:13px;">Телефон</td><td style="color:#333;font-size:13px;font-weight:500;">{phone}</td></tr>'
+        parties_block = f"""
+      <div style="margin-top:20px;">
+        <div style="background:#f9fafb;border-radius:8px;padding:14px 18px;">
+          <table style="width:100%;border-collapse:collapse;">{parties_rows}</table>
+        </div>
+      </div>"""
+
+    return f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:20px;">
+  <div style="max-width:620px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background:linear-gradient(135deg,#f59e0b,#f97316);padding:28px 32px;">
+      <h1 style="color:#fff;margin:0;font-size:22px;">Смета</h1>
+      <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:14px;">{calc_name or 'Расчёт стоимости'}{(' &middot; ' + doc_date) if doc_date else ''}</p>
+    </div>
+    <div style="padding:28px 32px;">
+{params_block}
+      <div style="margin-bottom:8px;">
+        <h2 style="font-size:15px;color:#333;margin:0 0 12px;">Работы и материалы</h2>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:2px solid #f59e0b;">
+              <th style="padding:8px;color:#888;font-size:12px;text-align:center;width:36px;">No</th>
+              <th style="padding:8px;color:#888;font-size:12px;text-align:left;">Наименование</th>
+              <th style="padding:8px;color:#888;font-size:12px;text-align:right;">Стоимость</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items_rows}
+          </tbody>
+        </table>
+        <div style="border-top:2px solid #f59e0b;margin-top:4px;padding:14px 8px 0;text-align:right;">
+          <span style="font-size:16px;font-weight:700;color:#111;">Итого: {fmt(float(total_sum))} &#8381;</span>
+        </div>
+      </div>
+{parties_block}
+    </div>
+    <div style="background:#f9fafb;padding:16px 32px;text-align:center;">
+      <p style="color:#bbb;font-size:11px;margin:0;">Авангард &middot; avangard-ai.ru &middot; Это автоматическое уведомление</p>
+    </div>
+  </div>
+</body>
+</html>"""
+
+
 def handler(event: dict, context) -> dict:
     """Email-уведомления мастерам: подписание договора и получение оплаты"""
 
@@ -236,6 +332,37 @@ def handler(event: dict, context) -> dict:
                 f"👤 Имя: {client_name or '—'}\n"
                 f"📞 Телефон: {client_phone or '—'}\n"
                 f"📝 ТЗ: {(brief_text or '—')[:300]}"
+            )
+        except Exception as e:
+            print(f'TELEGRAM ERROR: {e}')
+        return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'success': ok}, ensure_ascii=False)}
+
+    elif action == 'send_estimate':
+        to_email = body.get('to_email', '')
+        subject = body.get('subject', 'Смета от Авангард')
+        calc_name = body.get('calc_name', '')
+        total_sum = float(body.get('total_sum', 0))
+        items = body.get('items', [])
+        params = body.get('params', {})
+        customer = body.get('customer', '')
+        contractor = body.get('contractor', '')
+        address = body.get('address', '')
+        phone = body.get('phone', '')
+        doc_date = body.get('doc_date', '')
+
+        if not to_email:
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'to_email обязателен'}, ensure_ascii=False)}
+
+        html = estimate_html(calc_name, total_sum, items, params,
+                             customer, contractor, address, phone, doc_date)
+        ok = send_email(to_email, subject, html)
+        try:
+            fmt_sum = f"{total_sum:,.0f}".replace(',', ' ')
+            send_telegram(
+                f"📋 <b>Смета отправлена</b>\n\n"
+                f"📧 Email: {to_email}\n"
+                f"💰 Сумма: {fmt_sum} ₽\n"
+                f"🏗 Калькулятор: {calc_name or '—'}"
             )
         except Exception as e:
             print(f'TELEGRAM ERROR: {e}')

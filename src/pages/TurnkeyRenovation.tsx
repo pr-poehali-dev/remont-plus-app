@@ -20,6 +20,7 @@ import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import EstimateActions from "@/components/calculator/EstimateActions";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const MARKUP_KEY = "turnkey_markup_pct";
@@ -265,6 +266,33 @@ export default function TurnkeyRenovation() {
                   <Icon name="FileText" size={15} className="mr-2" />
                   Создать документ
                 </Button>
+                <div className="mt-3 pt-3 border-t border-white/20 [&_button]:border-white/30 [&_button]:text-white [&_button]:hover:bg-white/10 [&_input]:bg-white/10 [&_input]:border-white/30 [&_input]:text-white [&_input]:placeholder:text-white/50">
+                  <EstimateActions
+                    onPrint={() => {
+                      const now = new Date();
+                      const printState = {
+                        cfg,
+                        markupPct,
+                        regionId,
+                        totalSum: cfg.totalPrice,
+                        docNum: String(now.getTime()).slice(-6),
+                        date: now.toLocaleDateString("ru-RU"),
+                        docType: "smeta" as const,
+                      };
+                      sessionStorage.setItem("turnkey_print_state", JSON.stringify(printState));
+                      window.open("/turnkey/print", "_blank");
+                    }}
+                    calcName="Ремонт под ключ"
+                    totalSum={cfg.totalPrice}
+                    items={breakdownRows.map(r => ({ name: r.label, price: r.value }))}
+                    params={{
+                      "Тип квартиры": aptType?.label ?? "",
+                      "Площадь": `${cfg.totalAreaM2} м²`,
+                      "Уровень": level?.label ?? "",
+                      "Регион": REGIONS.find(r => r.id === regionId)?.label ?? "",
+                    }}
+                  />
+                </div>
               </Card>
 
               {/* Краткая сводка */}

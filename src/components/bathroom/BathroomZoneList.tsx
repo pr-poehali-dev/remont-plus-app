@@ -5,6 +5,7 @@ import { BATHROOM_TYPES } from "@/components/calculator/bathroom/BathroomTypes";
 import type { BathroomConfig } from "@/components/calculator/bathroom/BathroomTypes";
 import { fmt } from "@/components/calculator/bathroom/bathroomUtils";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import EstimateActions from "@/components/calculator/EstimateActions";
 
 const ROOM_PRESETS = ["Ванная", "Туалет", "Совмещённый", "Гостевой санузел", "Душевая", "Постирочная"];
 
@@ -181,6 +182,31 @@ export default function BathroomZoneList({
             Включая наценку {markupPct}%
           </p>
         )}
+        <div className="mt-3 pt-3 border-t border-white/20 [&_button]:border-white/30 [&_button]:text-white [&_button]:hover:bg-white/10 [&_input]:bg-white/10 [&_input]:border-white/30 [&_input]:text-white [&_input]:placeholder:text-white/50">
+          <EstimateActions
+            onPrint={() => {
+              const now = new Date();
+              const printState = {
+                zones,
+                markupPct,
+                totalSum,
+                docNum: String(now.getTime()).slice(-6),
+                date: now.toLocaleDateString("ru-RU"),
+                docType: "smeta" as const,
+              };
+              sessionStorage.setItem("bathroom_print_state", JSON.stringify(printState));
+              window.open("/bathroom/print", "_blank");
+            }}
+            calcName="Ремонт санузла"
+            totalSum={totalSum}
+            items={zones.map(z => ({ name: z.roomName || "Санузел", price: z.totalPrice }))}
+            params={{
+              "Санузлов": `${zones.length}`,
+              "Общая площадь": `${fmt(Math.round(totalArea * 10) / 10)} м²`,
+              ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+            }}
+          />
+        </div>
       </Card>
 
       <CalcOrderForm

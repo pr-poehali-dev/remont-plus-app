@@ -31,6 +31,49 @@
       "expectedStatus": 200,
       "expectedBody": { "success": true },
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "send_estimate missing to_email returns 400",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "send_estimate",
+        "calc_name": "Ремонт квартиры",
+        "total_sum": 150000
+      },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "send_estimate returns 200",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "send_estimate",
+        "to_email": "test@example.com",
+        "subject": "Смета: Ремонт квартиры",
+        "calc_name": "Ремонт квартиры",
+        "total_sum": 253000,
+        "items": [
+          { "name": "Штукатурка стен", "price": 45000 },
+          { "name": "Укладка плитки", "price": 78000 },
+          { "name": "Электромонтаж", "price": 130000 }
+        ],
+        "params": {
+          "Площадь": "65 м²",
+          "Тип помещения": "Квартира",
+          "Этаж": "5"
+        },
+        "customer": "Иванов Иван Иванович",
+        "contractor": "ООО Авангард",
+        "address": "г. Москва, ул. Примерная, д. 1",
+        "phone": "+7 900 123-45-67",
+        "doc_date": "12.03.2026"
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "success": true },
+      "bodyMatcher": "partial"
     }
   ]
 }

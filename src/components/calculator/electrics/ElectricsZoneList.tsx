@@ -5,6 +5,7 @@ import { ROOM_TYPES } from "@/components/calculator/electrics/ElectricsTypes";
 import type { ElectricsConfig } from "@/components/calculator/electrics/ElectricsTypes";
 import { fmt } from "@/components/calculator/electrics/electricsUtils";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import EstimateActions from "@/components/calculator/EstimateActions";
 
 const ROOM_PRESETS = ["Спальня", "Гостиная", "Кухня", "Ванная", "Прихожая", "Кабинет", "Детская", "Балкон"];
 
@@ -171,6 +172,31 @@ export default function ElectricsZoneList({
             Включая наценку {markupPct}%
           </p>
         )}
+        <div className="mt-3 pt-3 border-t border-white/20 [&_button]:border-white/30 [&_button]:text-white [&_button]:hover:bg-white/10 [&_input]:bg-white/10 [&_input]:border-white/30 [&_input]:text-white [&_input]:placeholder:text-white/50">
+          <EstimateActions
+            onPrint={() => {
+              const now = new Date();
+              const printState = {
+                zones,
+                markupPct,
+                totalSum,
+                docNum: String(now.getTime()).slice(-6),
+                date: now.toLocaleDateString("ru-RU"),
+                docType: "smeta" as const,
+              };
+              sessionStorage.setItem("electrics_print_state", JSON.stringify(printState));
+              window.open("/electrics/print", "_blank");
+            }}
+            calcName="Электрика"
+            totalSum={totalSum}
+            items={zones.map(z => ({ name: z.roomName || "Помещение", price: z.totalPrice }))}
+            params={{
+              "Зон": `${zones.length}`,
+              "Общая площадь": `${fmt(Math.round(totalArea * 10) / 10)} м²`,
+              ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+            }}
+          />
+        </div>
       </Card>
 
       <CalcOrderForm

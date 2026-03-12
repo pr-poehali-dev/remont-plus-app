@@ -7,6 +7,7 @@ import type { BathHouseBreakdown } from "@/components/calculator/bathhouse/bathH
 import { fmt, calcBathHouseMaterials } from "@/components/calculator/bathhouse/bathHouseUtils";
 import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import EstimateActions from "@/components/calculator/EstimateActions";
 import BathHouseBreakdownCard from "./BathHouseBreakdownCard";
 import BathHouseExportPanel from "./BathHouseExportPanel";
 import type { ExportState } from "./BathHouseExportPanel";
@@ -33,6 +34,59 @@ export default function BathHouseTabResult({
       {/* Детализация */}
       <div className="space-y-4">
         <BathHouseBreakdownCard config={config} bd={bd} regionId={regionId} markupPct={markupPct} />
+
+        <Card className="p-4">
+          <EstimateActions
+            onPrint={() => {
+              const now = new Date();
+              const printState = {
+                config,
+                regionId,
+                markupPct,
+                bd,
+                docNum: String(now.getTime()).slice(-6),
+                date: now.toLocaleDateString("ru-RU"),
+                docType: "smeta" as const,
+                customer: exportState.customer,
+                contractor: exportState.contractor,
+                address: exportState.address,
+                phone: exportState.phone,
+              };
+              sessionStorage.setItem("bathhouse_print_state", JSON.stringify(printState));
+              window.open("/bathhouse/print", "_blank");
+            }}
+            calcName="Баня"
+            totalSum={bd.total}
+            items={[
+              { name: "Фундамент", price: bd.foundation },
+              { name: "Стены (коробка)", price: bd.walls },
+              { name: "Кровельная конструкция", price: bd.roofStructure },
+              { name: "Кровельный материал", price: bd.roofing },
+              { name: "Утепление", price: bd.insulation },
+              { name: "Отделка парной", price: bd.wallFinishSteam },
+              { name: "Отделка мойки", price: bd.wallFinishWash },
+              { name: "Отделка комнаты отдыха", price: bd.wallFinishRest },
+              { name: "Полы", price: bd.floor },
+              { name: "Печь", price: bd.stove },
+              { name: "Вентиляция", price: bd.ventilation },
+              { name: "Полок", price: bd.shelves },
+              { name: "Окна", price: bd.windows },
+              { name: "Дымоход", price: bd.chimney },
+              { name: "Бак для воды", price: bd.tank },
+              { name: "Терраса", price: bd.terrace },
+              { name: "Электрика", price: bd.electrical },
+              { name: "Монтаж и работа", price: bd.assembly },
+            ].filter(r => r.price > 0)}
+            params={{
+              "Площадь": `${config.totalArea} м²`,
+              "Регион": REGIONS[regionId]?.label ?? regionId,
+              ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+            }}
+            customer={exportState.customer}
+            contractor={exportState.contractor}
+            address={exportState.address}
+          />
+        </Card>
 
         <MaterialsTable items={matItems} accentColor="amber" />
 

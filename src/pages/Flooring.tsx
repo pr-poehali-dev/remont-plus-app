@@ -184,6 +184,7 @@ export default function Flooring() {
               markupPct={markupPct}
               totalSum={totalSum}
               totalArea={totalArea}
+              regionId={regionId}
               onSelectZone={setActiveId}
               onAddZone={addZone}
               onRemoveZone={removeZone}

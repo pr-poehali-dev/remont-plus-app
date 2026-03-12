@@ -21,6 +21,7 @@ import DocsTab from "@/components/calculator/DocsTab";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
+import EstimateActions from "@/components/calculator/EstimateActions";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const MARKUP_KEY = "windows_markup_pct";
@@ -349,6 +350,37 @@ export default function Windows() {
                         <Icon name="FileText" size={15} className="mr-2" />
                         Создать документ
                       </Button>
+                      <div className="mt-3 pt-3 border-t">
+                        <EstimateActions
+                          onPrint={() => {
+                            const now = new Date();
+                            const exportConfigs = configs.length > 0
+                              ? configs
+                              : [{ ...cfg, id: `win-${Date.now()}`, totalPrice: price }];
+                            const exportTotal = exportConfigs.reduce((s, c) => s + c.totalPrice, 0);
+                            const printState = {
+                              configs: exportConfigs,
+                              markupPct,
+                              totalSum: exportTotal,
+                              docNum: String(now.getTime()).slice(-6),
+                              date: now.toLocaleDateString("ru-RU"),
+                              docType: "smeta" as const,
+                            };
+                            sessionStorage.setItem("windows_print_state", JSON.stringify(printState));
+                            window.open("/windows/print", "_blank");
+                          }}
+                          calcName="Окна и остекление"
+                          totalSum={totalSum}
+                          items={configs.map(c => {
+                            const ct = CONSTRUCTION_TYPES.find(x => x.value === c.constructionType);
+                            return { name: `${ct?.label ?? "Окно"} ${c.width}x${c.height} x${c.quantity}`, price: c.totalPrice };
+                          })}
+                          params={{
+                            "Позиций": `${configs.length}`,
+                            ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+                          }}
+                        />
+                      </div>
                     </Card>
                   )}
 

@@ -2,10 +2,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import type { FrameHouseConfig } from "@/components/calculator/framehouse/FrameHouseTypes";
+import { REGIONS } from "@/components/calculator/framehouse/FrameHouseTypes";
 import type { FrameHouseBreakdown } from "@/components/calculator/framehouse/frameHousePricing";
 import { fmt, calcFrameHouseMaterials } from "@/components/calculator/framehouse/frameHouseUtils";
 import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import EstimateActions from "@/components/calculator/EstimateActions";
 import FrameHouseBreakdownCard from "./FrameHouseBreakdownCard";
 import FrameHouseExportPanel from "./FrameHouseExportPanel";
 import type { FrameExportState } from "./FrameHouseExportPanel";
@@ -34,6 +36,58 @@ export default function FrameHouseTabResult({
       {/* Смета */}
       <div className="space-y-4">
         <FrameHouseBreakdownCard config={config} bd={bd} regionId={regionId} markupPct={markupPct} />
+
+        <Card className="p-4">
+          <EstimateActions
+            onPrint={() => {
+              const now = new Date();
+              const printState = {
+                config,
+                regionId,
+                markupPct,
+                bd,
+                docNum: String(now.getTime()).slice(-6),
+                date: now.toLocaleDateString("ru-RU"),
+                docType: "smeta" as const,
+                customer: exportState.customer,
+                contractor: exportState.contractor,
+                address: exportState.address,
+                phone: exportState.phone,
+              };
+              sessionStorage.setItem("framehouse_print_state", JSON.stringify(printState));
+              window.open("/framehouse/print", "_blank");
+            }}
+            calcName="Каркасный дом"
+            totalSum={bd.total}
+            items={[
+              { name: "Фундамент", price: bd.foundation },
+              { name: "Каркас стен", price: bd.frame },
+              { name: "Утепление", price: bd.insulation },
+              { name: "Кровельная конструкция", price: bd.roofStructure },
+              { name: "Кровельный материал", price: bd.roofing },
+              { name: "Фасад", price: bd.facade },
+              { name: "Окна", price: bd.windows },
+              { name: "Полы", price: bd.floor },
+              { name: "Отопление", price: bd.heating },
+              { name: "Электрика", price: bd.electrical },
+              { name: "Водоснабжение", price: bd.plumbing },
+              { name: "Канализация", price: bd.sewage },
+              { name: "Внутренняя отделка", price: bd.interiorFinish },
+              { name: "Терраса", price: bd.terrace },
+              { name: "Гараж", price: bd.garage },
+              { name: "Монтажные работы", price: bd.assembly },
+            ].filter(r => r.price > 0)}
+            params={{
+              "Площадь": `${config.totalArea} м²`,
+              "Этажей": `${config.floors}`,
+              "Регион": REGIONS[regionId]?.label ?? regionId,
+              ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+            }}
+            customer={exportState.customer}
+            contractor={exportState.contractor}
+            address={exportState.address}
+          />
+        </Card>
 
         <MaterialsTable items={matItems} accentColor="green" />
 

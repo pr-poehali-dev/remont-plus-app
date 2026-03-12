@@ -5,6 +5,7 @@ import { FLOORING_PRODUCTS, FLOORING_CATEGORIES } from "@/components/calculator/
 import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTypes";
 import { fmt } from "@/components/calculator/flooring/flooringUtils";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import EstimateActions from "@/components/calculator/EstimateActions";
 
 const ROOM_PRESETS = ["Гостиная", "Спальня", "Кухня", "Детская", "Коридор", "Прихожая", "Кабинет", "Ванная"];
 
@@ -15,6 +16,7 @@ interface Props {
   markupPct: number;
   totalSum: number;
   totalArea: number;
+  regionId?: string;
   onSelectZone: (id: string) => void;
   onAddZone: (name?: string) => void;
   onRemoveZone: (id: string) => void;
@@ -26,7 +28,7 @@ interface Props {
 }
 
 export default function FlooringZoneList({
-  zones, activeId, renamingId, markupPct, totalSum, totalArea,
+  zones, activeId, renamingId, markupPct, totalSum, totalArea, regionId,
   onSelectZone, onAddZone, onRemoveZone, onDuplicateZone,
   onRenameZone, onStartRename, onStopRename, onExport,
 }: Props) {
@@ -167,6 +169,32 @@ export default function FlooringZoneList({
             Включая наценку {markupPct}%
           </p>
         )}
+        <div className="mt-3 pt-3 border-t border-white/20 [&_button]:border-white/30 [&_button]:text-white [&_button]:hover:bg-white/10 [&_input]:bg-white/10 [&_input]:border-white/30 [&_input]:text-white [&_input]:placeholder:text-white/50">
+          <EstimateActions
+            onPrint={() => {
+              const now = new Date();
+              const printState = {
+                zones,
+                markupPct,
+                regionId,
+                totalSum,
+                docNum: String(now.getTime()).slice(-6),
+                date: now.toLocaleDateString("ru-RU"),
+                docType: "smeta" as const,
+              };
+              sessionStorage.setItem("flooring_print_state", JSON.stringify(printState));
+              window.open("/flooring/print", "_blank");
+            }}
+            calcName="Напольные покрытия"
+            totalSum={totalSum}
+            items={zones.map(z => ({ name: z.roomName || "Помещение", price: z.totalPrice }))}
+            params={{
+              "Зон": `${zones.length}`,
+              "Общая площадь": `${fmt(Math.round(totalArea * 10) / 10)} м²`,
+              ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+            }}
+          />
+        </div>
       </Card>
 
       <CalcOrderForm

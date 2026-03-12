@@ -20,6 +20,7 @@ import NewbuildConfigForm from "@/components/calculator/newbuild/NewbuildConfigF
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import EstimateActions from "@/components/calculator/EstimateActions";
 
 const MARKUP_KEY = "newbuild_markup_pct";
 const REGION_KEY = "newbuild_region";
@@ -401,6 +402,39 @@ export default function NewbuildRenovation() {
                   Включая наценку {markupPct}%
                 </p>
               )}
+              <div className="mt-3 pt-3 border-t border-white/20 [&_button]:border-white/30 [&_button]:text-white [&_button]:hover:bg-white/10 [&_input]:bg-white/10 [&_input]:border-white/30 [&_input]:text-white [&_input]:placeholder:text-white/50">
+                <EstimateActions
+                  onPrint={() => {
+                    const now = new Date();
+                    const printState = {
+                      zones,
+                      markupPct,
+                      regionId,
+                      totalSum,
+                      foremanIncluded, foremanPct,
+                      supplierIncluded, supplierPct,
+                      docNum: String(now.getTime()).slice(-6),
+                      date: now.toLocaleDateString("ru-RU"),
+                      docType: "smeta" as const,
+                    };
+                    sessionStorage.setItem("newbuild_print_state", JSON.stringify(printState));
+                    window.open("/newbuild/print", "_blank");
+                  }}
+                  calcName="Ремонт в новостройке"
+                  totalSum={totalSum}
+                  items={[
+                    ...zones.map(z => ({ name: z.roomName || "Помещение", price: z.totalPrice })),
+                    ...(foremanIncluded ? [{ name: `Прораб ${foremanPct}%`, price: projectTotals.foremanCost }] : []),
+                    ...(supplierIncluded ? [{ name: `Снабженец ${supplierPct}%`, price: projectTotals.supplierCost }] : []),
+                  ]}
+                  params={{
+                    "Помещений": `${zones.length}`,
+                    "Общая площадь": `${fmt(Math.round(totalArea * 10) / 10)} м²`,
+                    "Регион": REGIONS.find(r => r.id === regionId)?.label ?? "",
+                    ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+                  }}
+                />
+              </div>
             </Card>
           </div>
 
