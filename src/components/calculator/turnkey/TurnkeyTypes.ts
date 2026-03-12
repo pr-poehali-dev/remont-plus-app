@@ -86,6 +86,7 @@ export interface FloorTypeOption {
 }
 
 export const FLOOR_TYPES: FloorTypeOption[] = [
+  { id: "linoleum",   label: "Линолеум",               description: "Бюджетный, практичный, влагостойкий", priceM2: 750  },
   { id: "laminate",   label: "Ламинат 33 класс",       description: "Для комнат, коридора",            priceM2: 1400 },
   { id: "parquet",    label: "Паркетная доска",         description: "Комфорт и выше",                  priceM2: 3200 },
   { id: "tile-all",   label: "Керамогранит везде",      description: "Надёжно, влагостойко",            priceM2: 2100 },
