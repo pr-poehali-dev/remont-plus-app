@@ -110,7 +110,7 @@ def create_tochka_payment(
     payload = {
         "Data": {
             "customerCode": customer_code,
-            "amount": int(round(amount * 100)),
+            "amount": round(amount, 2),
             "currency": "RUB",
             "purpose": purpose[:140],
             "paymentLinkId": payment_link_id,
@@ -275,9 +275,12 @@ def handler(event, context):
     except HTTPError as e:
         conn.rollback()
         error_body = e.read().decode() if e.fp else str(e)
+        print(f"[handler] HTTPError: {e.code} {error_body}")
         return {'statusCode': 500, 'headers': HEADERS, 'body': json.dumps({'error': f'Tochka API error: {error_body}'})}
     except Exception as e:
         conn.rollback()
+        import traceback
+        print(f"[handler] Exception: {traceback.format_exc()}")
         return {'statusCode': 500, 'headers': HEADERS, 'body': json.dumps({'error': str(e)})}
     finally:
         conn.close()
