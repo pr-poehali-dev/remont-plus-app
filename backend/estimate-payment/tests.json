@@ -13,7 +13,7 @@
         "client_phone": "+79001234567"
       },
       "expectedStatus": 200,
-      "expectedBody": { "order_id": 1 },
+      "expectedBody": { "order_number": "string" },
       "bodyMatcher": "partial"
     },
     {

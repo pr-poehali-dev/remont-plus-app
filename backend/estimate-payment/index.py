@@ -2,13 +2,15 @@
 Webhook и управление заказами смет (estimate_orders):
 - POST action=create_order — создание записи перед оплатой
 - POST action=check_status — проверка статуса по order_number
-- POST (без action, с event=payment.succeeded) — webhook от ЮКассы
+- POST (без action) — webhook от Точка Банка
 """
 import json
 import os
 import smtplib
 import ssl
 import urllib.request
+import hmac
+import hashlib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -195,14 +197,24 @@ def handler(event: dict, context) -> dict:
             "amount": float(row[3]), "paid_at": str(row[4]) if row[4] else None,
         })
 
-    # --- Webhook от ЮКассы ---
-    event_type = body.get("event", "")
-    obj = body.get("object", {})
-    payment_id = obj.get("id", "")
-    metadata = obj.get("metadata", {})
+    # --- Webhook от Точка Банка ---
+    # Точка отправляет { "Data": { "status": "APPROVED", "paymentLinkId": "...", "description": "..." } }
+    payment_data = body.get("Data", body)
+    payment_status = payment_data.get("status", "").upper()
+    payment_link_id = payment_data.get("paymentLinkId", payment_data.get("paymentId", ""))
+
+    # Пробуем достать order_number из description (JSON-строка с метаданными)
+    description_raw = payment_data.get("description", "")
+    metadata = {}
+    if description_raw:
+        try:
+            metadata = json.loads(description_raw)
+        except Exception:
+            pass
+
     order_number = metadata.get("estimate_order_number", "")
 
-    if event_type == "payment.succeeded" and order_number:
+    if payment_status in ("APPROVED", "PAID", "AUTHORIZED") and order_number:
         conn = get_conn()
         with conn.cursor() as cur:
             cur.execute(
@@ -210,7 +222,7 @@ def handler(event: dict, context) -> dict:
                     SET status='paid', yookassa_payment_id=%s, paid_at=NOW(), updated_at=NOW()
                     WHERE order_number=%s AND status='pending'
                     RETURNING id, plan_type, client_name, client_email, client_phone, client_comment, amount""",
-                (payment_id, order_number),
+                (payment_link_id, order_number),
             )
             row = cur.fetchone()
             conn.commit()

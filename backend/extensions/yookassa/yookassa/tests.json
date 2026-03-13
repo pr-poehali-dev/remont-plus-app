@@ -1,0 +1,23 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Missing credentials returns 500",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "amount": 1000,
+        "user_email": "test@example.com",
+        "return_url": "https://avangard-ai.ru/payment-success"
+      },
+      "expectedStatus": 500,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

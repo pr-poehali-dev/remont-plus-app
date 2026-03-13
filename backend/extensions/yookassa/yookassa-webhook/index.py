@@ -1,125 +1,142 @@
-"""YooKassa webhook handler for payment notifications."""
+"""Обработчик вебхуков от интернет-эквайринга Точка Банка."""
 import json
 import os
+import hmac
+import hashlib
 import base64
 from datetime import datetime
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+from urllib.parse import urlencode
 
 import psycopg2
 
-# =============================================================================
-# CONSTANTS
-# =============================================================================
+TOCHKA_TOKEN_URL = "https://enter.tochka.com/connect/token"
+TOCHKA_API_BASE = "https://enter.tochka.com/uapi/acquiring/v1.0"
 
 HEADERS = {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
 }
 
-YOOKASSA_API_URL = "https://api.yookassa.ru/v3/payments"
-
-
-# =============================================================================
-# SECURITY
-# =============================================================================
-
-def verify_payment_via_api(payment_id: str, shop_id: str, secret_key: str) -> dict | None:
-    """Verify payment status via YooKassa API.
-
-    YooKassa doesn't use webhook signatures. The recommended approach is to
-    verify payment status by making a GET request to the API.
-    """
-    auth_string = f"{shop_id}:{secret_key}"
-    auth_bytes = base64.b64encode(auth_string.encode()).decode()
-
-    request = Request(
-        f"{YOOKASSA_API_URL}/{payment_id}",
-        headers={
-            'Authorization': f'Basic {auth_bytes}',
-            'Content-Type': 'application/json'
-        },
-        method='GET'
-    )
-
-    try:
-        with urlopen(request, timeout=10) as response:
-            return json.loads(response.read().decode())
-    except (HTTPError, Exception):
-        return None
-
-
-# =============================================================================
-# DATABASE
-# =============================================================================
 
 def get_connection():
-    """Get database connection."""
     return psycopg2.connect(os.environ['DATABASE_URL'])
 
 
 def get_schema() -> str:
-    """Get database schema prefix."""
     schema = os.environ.get('MAIN_DB_SCHEMA', 'public')
     return f"{schema}." if schema else ""
 
 
-# =============================================================================
-# HANDLER
-# =============================================================================
+def verify_signature(payload: bytes, signature: str, secret_key: str) -> bool:
+    """Проверка подписи вебхука через HMAC-SHA256."""
+    expected = hmac.new(
+        secret_key.encode('utf-8'),
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+    try:
+        return hmac.compare_digest(expected, signature)
+    except Exception:
+        return False
+
+
+def get_access_token(client_id: str, client_secret: str) -> str:
+    """Получить Bearer-токен для проверки статуса платежа."""
+    data = urlencode({
+        'grant_type': 'client_credentials',
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'scope': 'acquiring:payments'
+    }).encode('utf-8')
+
+    req = Request(
+        TOCHKA_TOKEN_URL,
+        data=data,
+        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+        method='POST'
+    )
+    with urlopen(req, timeout=15) as resp:
+        result = json.loads(resp.read().decode())
+    return result['access_token']
+
+
+def verify_payment_via_api(payment_link_id: str, access_token: str) -> dict | None:
+    """Проверить статус платежа через API Точка Банка."""
+    req = Request(
+        f"{TOCHKA_API_BASE}/payment-links/{payment_link_id}",
+        headers={
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        },
+        method='GET'
+    )
+    try:
+        with urlopen(req, timeout=10) as resp:
+            return json.loads(resp.read().decode())
+    except (HTTPError, Exception):
+        return None
+
 
 def handler(event, context):
-    """Handle YooKassa webhook notification."""
-    if event.get('httpMethod') != 'POST':
-        return {
-            'statusCode': 405,
-            'headers': HEADERS,
-            'body': json.dumps({'error': 'Method not allowed'})
-        }
+    """Обработка вебхука оплаты от Точка Банка."""
+    if event.get('httpMethod') == 'OPTIONS':
+        return {'statusCode': 200, 'headers': HEADERS, 'body': ''}
 
-    # Parse body
-    body = event.get('body', '{}')
+    if event.get('httpMethod') != 'POST':
+        return {'statusCode': 405, 'headers': HEADERS, 'body': json.dumps({'error': 'Method not allowed'})}
+
+    raw_body = event.get('body', '{}')
     if event.get('isBase64Encoded'):
-        body = base64.b64decode(body).decode('utf-8')
+        raw_body = base64.b64decode(raw_body).decode('utf-8')
+
+    # Проверка подписи вебхука (если передана)
+    headers = event.get('headers', {})
+    signature = headers.get('x-tochka-signature', '') or headers.get('X-Tochka-Signature', '')
+    client_secret = os.environ.get('TOCHKA_SECRET_KEY', '')
+
+    if signature and client_secret:
+        if not verify_signature(raw_body.encode('utf-8'), signature, client_secret):
+            return {'statusCode': 401, 'headers': HEADERS, 'body': json.dumps({'error': 'Invalid signature'})}
 
     try:
-        data = json.loads(body)
+        data = json.loads(raw_body)
     except json.JSONDecodeError:
-        return {
-            'statusCode': 400,
-            'headers': HEADERS,
-            'body': json.dumps({'error': 'Invalid JSON'})
-        }
+        return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'Invalid JSON'})}
 
-    # Extract payment info
-    event_type = data.get('event', '')
-    payment_object = data.get('object', {})
-    payment_id = payment_object.get('id', '')
-    metadata = payment_object.get('metadata', {})
+    # Точка Банк отправляет вебхук в формате { "Data": { ... } }
+    payment_data = data.get('Data', data)
+    payment_status = payment_data.get('status', payment_data.get('paymentStatus', '')).upper()
+    payment_link_id = payment_data.get('paymentLinkId', payment_data.get('externalId', ''))
+    payment_id = payment_data.get('paymentId', payment_link_id)
 
-    if not payment_id:
-        return {
-            'statusCode': 400,
-            'headers': HEADERS,
-            'body': json.dumps({'error': 'Missing payment id'})
-        }
+    # Извлекаем метаданные
+    description = payment_data.get('description', '')
+    metadata = {}
+    if description:
+        try:
+            metadata = json.loads(description)
+        except Exception:
+            pass
 
-    # Security: Verify payment via API (most reliable)
-    shop_id = os.environ.get('YOOKASSA_SHOP_ID', '')
-    secret_key = os.environ.get('YOOKASSA_SECRET_KEY', '')
+    order_number_meta = metadata.get('order_number', '')
+    order_id_meta = metadata.get('order_id', '')
 
-    if shop_id and secret_key:
-        verified_payment = verify_payment_via_api(payment_id, shop_id, secret_key)
-        if not verified_payment:
-            return {
-                'statusCode': 400,
-                'headers': HEADERS,
-                'body': json.dumps({'error': 'Payment verification failed'})
-            }
-        # Use verified status instead of webhook data
-        payment_status = verified_payment.get('status', '')
-    else:
-        # Fallback to webhook data (less secure, only if credentials missing)
-        payment_status = payment_object.get('status', '')
+    if not payment_link_id and not order_number_meta:
+        return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'Missing payment identifier'})}
+
+    # Дополнительная проверка статуса через API
+    client_id = os.environ.get('TOCHKA_LOGIN', '')
+    if client_id and client_secret and payment_link_id:
+        try:
+            access_token = get_access_token(client_id, client_secret)
+            verified = verify_payment_via_api(payment_link_id, access_token)
+            if verified:
+                verified_data = verified.get('Data', verified)
+                payment_status = verified_data.get('status', payment_status).upper()
+        except Exception:
+            pass
 
     S = get_schema()
     conn = get_connection()
@@ -128,34 +145,31 @@ def handler(event, context):
         cur = conn.cursor()
         now = datetime.utcnow().isoformat()
 
-        # Find order by payment_id
-        cur.execute(f"""
-            SELECT id, status FROM {S}orders
-            WHERE yookassa_payment_id = %s
-        """, (payment_id,))
+        # Ищем заказ
+        row = None
+        if payment_link_id:
+            cur.execute(f"SELECT id, status FROM {S}orders WHERE yookassa_payment_id = %s", (payment_link_id,))
+            row = cur.fetchone()
 
-        row = cur.fetchone()
+        if not row and payment_id and payment_id != payment_link_id:
+            cur.execute(f"SELECT id, status FROM {S}orders WHERE yookassa_payment_id = %s", (payment_id,))
+            row = cur.fetchone()
+
+        if not row and order_number_meta:
+            cur.execute(f"SELECT id, status FROM {S}orders WHERE order_number = %s", (order_number_meta,))
+            row = cur.fetchone()
+
+        if not row and order_id_meta:
+            cur.execute(f"SELECT id, status FROM {S}orders WHERE id = %s", (int(order_id_meta),))
+            row = cur.fetchone()
 
         if not row:
-            # Try to find by order_id from metadata
-            order_id_meta = metadata.get('order_id')
-            if order_id_meta:
-                cur.execute(f"""
-                    SELECT id, status FROM {S}orders WHERE id = %s
-                """, (int(order_id_meta),))
-                row = cur.fetchone()
-
-        if not row:
-            return {
-                'statusCode': 404,
-                'headers': HEADERS,
-                'body': json.dumps({'error': 'Order not found'})
-            }
+            return {'statusCode': 404, 'headers': HEADERS, 'body': json.dumps({'error': 'Order not found'})}
 
         order_id, current_status = row
 
-        # Update based on verified payment status
-        if payment_status == 'succeeded':
+        # APPROVED / PAID / AUTHORIZED → оплачен
+        if payment_status in ('APPROVED', 'PAID', 'AUTHORIZED', 'succeeded'):
             if current_status != 'paid':
                 cur.execute(f"""
                     UPDATE {S}orders
@@ -163,7 +177,7 @@ def handler(event, context):
                     WHERE id = %s
                 """, (now, now, order_id))
 
-                # Активация тарифа дизайнера если это покупка user_subscriptions
+                # Активация тарифа дизайнера
                 user_id_meta = metadata.get('user_id')
                 plan_code_meta = metadata.get('plan_code')
                 if user_id_meta and plan_code_meta:
@@ -179,7 +193,7 @@ def handler(event, context):
                         VALUES (%s, %s, 'active', {expires_sql})
                     """, (int(user_id_meta), plan_code_meta))
 
-                # Активация тарифа строительной компании (builder_subscriptions)
+                # Активация тарифа строительной компании
                 contractor_id_meta = metadata.get('contractor_id')
                 builder_plan_meta = metadata.get('builder_plan_code')
                 months_meta = int(metadata.get('months', 1))
@@ -197,7 +211,7 @@ def handler(event, context):
 
                 conn.commit()
 
-        elif payment_status == 'canceled':
+        elif payment_status in ('CANCELLED', 'EXPIRED', 'REJECTED', 'canceled'):
             if current_status not in ('paid', 'canceled'):
                 cur.execute(f"""
                     UPDATE {S}orders
@@ -206,18 +220,10 @@ def handler(event, context):
                 """, (now, order_id))
                 conn.commit()
 
-        return {
-            'statusCode': 200,
-            'headers': HEADERS,
-            'body': json.dumps({'status': 'ok'})
-        }
+        return {'statusCode': 200, 'headers': HEADERS, 'body': json.dumps({'status': 'ok'})}
 
     except Exception as e:
         conn.rollback()
-        return {
-            'statusCode': 500,
-            'headers': HEADERS,
-            'body': json.dumps({'error': 'Internal error'})
-        }
+        return {'statusCode': 500, 'headers': HEADERS, 'body': json.dumps({'error': 'Internal error'})}
     finally:
         conn.close()
