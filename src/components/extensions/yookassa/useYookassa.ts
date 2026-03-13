@@ -52,15 +52,10 @@ interface UseYookassaReturn {
 // =============================================================================
 
 /**
- * Open payment page (new tab on mobile, same tab on desktop)
+ * Open payment page in new tab
  */
 export function openPaymentPage(url: string): void {
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if (isMobile) {
-    window.open(url, "_blank");
-  } else {
-    window.location.href = url;
-  }
+  window.open(url, "_blank");
 }
 
 /**
