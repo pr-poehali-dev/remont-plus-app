@@ -3,12 +3,9 @@ import json
 import os
 import re
 import uuid
-import hashlib
-import hmac
 from datetime import datetime
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
-from urllib.parse import urlencode
 
 import psycopg2
 
@@ -17,7 +14,7 @@ EMAIL_REGEX = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
 MIN_AMOUNT = 1.00
 MAX_AMOUNT = 1_000_000.00
 
-TOCHKA_TOKEN_URL = "https://enter.tochka.com/connect/token"
+CUSTOMER_CODE = "302664947"
 TOCHKA_API_BASE = "https://enter.tochka.com/uapi/acquiring/v1.0"
 
 HEADERS = {
@@ -45,91 +42,34 @@ def get_schema() -> str:
     return f"{schema}." if schema else ""
 
 
-def get_access_token(client_id: str, client_secret: str) -> str:
-    """Получить Bearer-токен через OAuth2 client_credentials."""
-    data = urlencode({
-        'grant_type': 'client_credentials',
-        'client_id': client_id,
-        'client_secret': client_secret,
-        'scope': 'acquiring:payments'
-    }).encode('utf-8')
-
-    req = Request(
-        TOCHKA_TOKEN_URL,
-        data=data,
-        headers={'Content-Type': 'application/x-www-form-urlencoded'},
-        method='POST'
-    )
-    try:
-        with urlopen(req, timeout=15) as resp:
-            result = json.loads(resp.read().decode())
-        print(f"[token] got access_token ok, keys: {list(result.keys())}")
-        return result['access_token']
-    except HTTPError as e:
-        err = e.read().decode() if e.fp else str(e)
-        print(f"[token] ERROR {e.code}: {err}")
-        raise
-
-
-def get_customer_code(access_token: str) -> str:
-    """Получить customerCode (код счёта/клиента) из API Точка Банка."""
-    req = Request(
-        f"{TOCHKA_API_BASE}/customers",
-        headers={
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json'
-        },
-        method='GET'
-    )
-    try:
-        with urlopen(req, timeout=15) as resp:
-            result = json.loads(resp.read().decode())
-        print(f"[customers] response: {json.dumps(result)[:500]}")
-        # Берём первый customerCode из списка
-        items = result.get('Data', result).get('customers', result.get('Data', []))
-        if isinstance(items, list) and items:
-            return items[0].get('customerCode', '')
-        return ''
-    except HTTPError as e:
-        err = e.read().decode() if e.fp else str(e)
-        print(f"[customers] ERROR {e.code}: {err}")
-        return ''
-
-
 def create_tochka_payment(
-    access_token: str,
-    customer_code: str,
+    jwt_token: str,
     amount: float,
     purpose: str,
     payment_link_id: str,
     redirect_url: str,
     fail_redirect_url: str,
-    metadata_str: str = ''
 ) -> dict:
     """Создать платёжную ссылку в Точка Банке."""
     payload = {
         "Data": {
-            "customerCode": customer_code,
+            "customerCode": CUSTOMER_CODE,
             "amount": round(amount, 2),
             "currency": "RUB",
             "purpose": purpose[:140],
             "paymentLinkId": payment_link_id,
             "redirectUrl": redirect_url,
             "failRedirectUrl": fail_redirect_url,
-            "saveCard": False
         }
     }
 
-    if metadata_str:
-        payload["Data"]["description"] = metadata_str[:255]
-
-    print(f"[payment] POST /payment-links payload: {json.dumps(payload)[:500]}")
+    print(f"[payment] POST payload: {json.dumps(payload)[:500]}")
 
     req = Request(
         f"{TOCHKA_API_BASE}/payment-links",
         data=json.dumps(payload).encode('utf-8'),
         headers={
-            'Authorization': f'Bearer {access_token}',
+            'Authorization': f'Bearer {jwt_token}',
             'Content-Type': 'application/json',
         },
         method='POST'
@@ -179,11 +119,9 @@ def handler(event, context):
     if not return_url or not is_valid_url(return_url):
         return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'return_url must be a valid HTTPS URL'})}
 
-    client_id = os.environ.get('TOCHKA_LOGIN', '')
-    client_secret = os.environ.get('TOCHKA_SECRET_KEY', '')
-
-    if not client_id or not client_secret:
-        return {'statusCode': 500, 'headers': HEADERS, 'body': json.dumps({'error': 'Tochka Bank credentials not configured'})}
+    jwt_token = os.environ.get('TOCHKA_JWT_TOKEN', '')
+    if not jwt_token:
+        return {'statusCode': 500, 'headers': HEADERS, 'body': json.dumps({'error': 'Tochka JWT token not configured'})}
 
     if not cart_items:
         cart_items = [{'id': '1', 'name': description or 'Оплата', 'price': amount, 'quantity': 1}]
@@ -196,7 +134,7 @@ def handler(event, context):
         now = datetime.utcnow().isoformat()
 
         order_number = f"TK-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}"
-        payment_link_id = uuid.uuid4().hex
+        payment_link_id = str(uuid.uuid4())
 
         cur.execute(f"""
             INSERT INTO {S}orders
@@ -221,36 +159,25 @@ def handler(event, context):
                 now
             ))
 
-        metadata_parts = {
-            "order_id": str(order_id),
-            "order_number": order_number,
-            **{k: str(v) for k, v in extra_metadata.items() if k in (
-                "user_id", "plan_code", "contractor_id", "builder_plan_code", "months"
-            )}
-        }
+        conn.commit()
 
         purpose = f"{description} ({order_number})"
-        metadata_str = json.dumps(metadata_parts, ensure_ascii=False)
-
-        access_token = get_access_token(client_id, client_secret)
-
-        # Получаем реальный customerCode (не логин!)
-        customer_code = get_customer_code(access_token) or client_id
-        print(f"[payment] using customerCode={customer_code}")
 
         payment_response = create_tochka_payment(
-            access_token=access_token,
-            customer_code=customer_code,
+            jwt_token=jwt_token,
             amount=amount,
             purpose=purpose,
             payment_link_id=payment_link_id,
             redirect_url=return_url,
             fail_redirect_url=fail_url or return_url,
-            metadata_str=metadata_str
         )
 
         tochka_data = payment_response.get('Data', {})
-        confirmation_url = tochka_data.get('paymentUrl') or tochka_data.get('url') or ''
+        confirmation_url = (
+            tochka_data.get('paymentUrl') or
+            tochka_data.get('url') or
+            tochka_data.get('link') or ''
+        )
         tochka_payment_id = tochka_data.get('paymentLinkId', payment_link_id)
 
         cur.execute(f"""
