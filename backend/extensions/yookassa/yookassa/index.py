@@ -57,7 +57,7 @@ def create_tochka_payment(
             "amount": round(amount, 2),
             "currency": "RUB",
             "purpose": purpose[:140],
-            "paymentLinkId": payment_link_id,
+            "externalId": payment_link_id,
             "redirectUrl": redirect_url,
             "failRedirectUrl": fail_redirect_url,
         }
@@ -66,7 +66,7 @@ def create_tochka_payment(
     print(f"[payment] POST payload: {json.dumps(payload)[:500]}")
 
     req = Request(
-        f"{TOCHKA_API_BASE}/payment-links",
+        f"{TOCHKA_API_BASE}/payments",
         data=json.dumps(payload).encode('utf-8'),
         headers={
             'Authorization': f'Bearer {jwt_token}',
