@@ -58,7 +58,7 @@ def create_tochka_payment(
             "currency": "RUB",
             "purpose": purpose[:140],
             "externalId": payment_link_id,
-            "paymentMode": ["normal"],
+            "paymentMode": ["card", "sbp"],
             "redirectUrl": redirect_url,
             "failRedirectUrl": fail_redirect_url,
         }
