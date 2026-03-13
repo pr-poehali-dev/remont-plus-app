@@ -66,6 +66,7 @@ export default function Expert() {
   useMeta({
     title: "Эксперт по дизайну и ремонту — консультация ИИ онлайн",
     description: "ИИ-консультант АВАНГАРД ответит на любой вопрос по дизайну интерьера, выбору материалов и ремонту. Без регистрации.",
+    canonical: "/expert",
   });
 
   const navigate = useNavigate();
