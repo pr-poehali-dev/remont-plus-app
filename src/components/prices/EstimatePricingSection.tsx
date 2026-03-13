@@ -91,8 +91,9 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
       });
       const payRaw = await payRes.json();
       const payData = typeof payRaw.body === "string" ? JSON.parse(payRaw.body) : payRaw;
+      const payStatusCode = payRaw.statusCode ?? (payRes.ok ? 200 : payRes.status);
 
-      if (!payRes.ok || !payData.payment_url) {
+      if (!payRes.ok || payStatusCode >= 400 || !payData.payment_url) {
         throw new Error(payData.error || "Ошибка создания платежа");
       }
 
