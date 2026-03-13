@@ -7,7 +7,7 @@ import Icon from "@/components/ui/icon";
 import { openPaymentPage } from "@/components/extensions/yookassa/useYookassa";
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
-const YOOKASSA_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
+const PAYMENT_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
 
 const PLAN = {
   id: "estimate_print",
@@ -75,7 +75,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
       const oNum = orderData.order_number;
       setOrderNumber(oNum);
 
-      const payRes = await fetch(YOOKASSA_URL, {
+      const payRes = await fetch(PAYMENT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -132,7 +132,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
               </div>
               <h3 className="font-bold text-lg mb-2">Переходим к оплате!</h3>
               <p className="text-gray-500 text-sm mb-3">
-                Заказ <strong>{orderNumber}</strong> создан. Открылась страница ЮКассы для оплаты.
+                Заказ <strong>{orderNumber}</strong> создан. Открылась страница оплаты.
               </p>
               <p className="text-gray-400 text-xs">После оплаты смета придёт на {email}</p>
               <Button className="mt-5 w-full" variant="outline" onClick={onClose}>Закрыть</Button>
@@ -180,7 +180,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
                   : <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить 399 ₽</>
                 }
               </Button>
-              <p className="text-center text-xs text-gray-400">Безопасная оплата через ЮКассу · Чек на email</p>
+              <p className="text-center text-xs text-gray-400">Безопасная оплата · Чек на email</p>
             </div>
           )}
         </div>

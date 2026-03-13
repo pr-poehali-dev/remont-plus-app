@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
 import { openPaymentPage } from "@/components/extensions/yookassa/useYookassa";
 
-const YOOKASSA_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
+const PAYMENT_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
 const RETURN_URL = `${window.location.origin}/masters`;
 
 interface BuilderPlan {
@@ -55,7 +55,7 @@ export default function BuilderPaymentModal({
     setError("");
 
     try {
-      const res = await fetch(YOOKASSA_URL, {
+      const res = await fetch(PAYMENT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -184,7 +184,7 @@ export default function BuilderPaymentModal({
           </Button>
 
           <p className="text-center text-xs text-gray-400">
-            Безопасная оплата через ЮКассу · Чек на email после оплаты
+            Безопасная оплата · Чек на email после оплаты
           </p>
         </div>
       </div>

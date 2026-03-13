@@ -129,20 +129,6 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Введите email и пароль'}, ensure_ascii=False)}
 
-        yukassa_login = os.environ.get('YUKASSA_STAFF_LOGIN', '')
-        yukassa_password = os.environ.get('YUKASSA_STAFF_PASSWORD', '')
-        if yukassa_login and email == yukassa_login and password == yukassa_password:
-            cursor.close()
-            conn.close()
-            return {
-                'statusCode': 200,
-                'headers': headers,
-                'body': json.dumps({
-                    'success': True,
-                    'token': secrets.token_hex(32),
-                    'user': {'id': -1, 'name': 'Сотрудник ЮКасса', 'email': yukassa_login, 'user_type': 'staff', 'role': 'yukassa_staff'}
-                }, ensure_ascii=False)
-            }
 
         admin_password = os.environ.get('ADMIN_PASSWORD', '')
         if email == 'admin' and password == admin_password and admin_password:

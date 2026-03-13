@@ -68,7 +68,7 @@ function CheckOrderPanel({ onUnlock }: { onUnlock: () => void }) {
 }
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
-const YOOKASSA_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
+const PAYMENT_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
 
 const PRICE = 399;
 const PAID_KEY = "avangard_estimate_paid";
@@ -99,7 +99,7 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
   let storedUser: { id?: number; role?: string; email?: string; name?: string } | null = null;
   try { storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null"); } catch { storedUser = null; }
 
-  const isAdmin = storedUser?.role === "admin" || storedUser?.role === "yukassa_staff";
+  const isAdmin = storedUser?.role === "admin";
 
   const [unlocked, setUnlocked] = useState(false);
   const [step, setStep] = useState<"form" | "waiting" | "done">("form");
@@ -157,8 +157,8 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
       const oNum = orderData.order_number;
       setOrderNumber(oNum);
 
-      // 2. Создаём платёж ЮКасса
-      const payRes = await fetch(YOOKASSA_URL, {
+      // 2. Создаём платёж
+      const payRes = await fetch(PAYMENT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

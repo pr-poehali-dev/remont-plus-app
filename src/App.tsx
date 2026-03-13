@@ -52,7 +52,6 @@ import BathHousePrint from "./pages/BathHousePrint";
 import FrameHouse from "./pages/FrameHouse";
 import FrameHousePrint from "./pages/FrameHousePrint";
 import RbcParser from "./pages/RbcParser";
-import YukassaCabinet from "./pages/YukassaCabinet";
 import OfficeCalc from "./pages/OfficeCalc";
 import CityLanding from "./pages/CityLanding";
 import Furniture from "./pages/Furniture";
@@ -124,7 +123,6 @@ const App = () => {
             <Route path="/framehouse/print" element={<FrameHousePrint />} />
             <Route path="/auth/yandex/callback" element={<YandexCallback />} />
             <Route path="/rbc-parser" element={<RbcParser />} />
-            <Route path="/yukassa" element={<YukassaCabinet />} />
             <Route path="/office" element={<OfficeCalc />} />
             <Route path="/city/:slug" element={<CityLanding />} />
             <Route path="/ready-projects" element={<ReadyProjects />} />

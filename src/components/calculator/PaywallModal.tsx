@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 
-const YK_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
+const PAYMENT_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
 const SUBS_URL = "https://functions.poehali.dev/52ea78ee-5f41-4904-b547-d60063d9da0a";
 
 const SINGLE_PRICE = 149;
@@ -42,7 +42,7 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
   const userId: number | null = storedUser?.id ?? null;
-  const isAdmin = storedUser?.role === "admin" || storedUser?.role === "yukassa_staff";
+  const isAdmin = storedUser?.role === "admin";
 
   const [paying, setPaying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
     setPaying(code);
 
     try {
-      const res = await fetch(YK_URL, {
+      const res = await fetch(PAYMENT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

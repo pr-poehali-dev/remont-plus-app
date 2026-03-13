@@ -100,7 +100,7 @@ def handler(event: dict, context) -> dict:
             "leads_left": None if row[9] else max(0, row[8] - row[3]),
         }})
 
-    # POST activate — активировать подписку (после оплаты через yookassa)
+    # POST activate — активировать подписку (после оплаты)
     if method == "POST" and action == "activate":
         contractor_id = body.get("contractor_id")
         plan_code = body.get("plan_code")
