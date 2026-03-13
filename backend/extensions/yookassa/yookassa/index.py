@@ -60,9 +60,40 @@ def get_access_token(client_id: str, client_secret: str) -> str:
         headers={'Content-Type': 'application/x-www-form-urlencoded'},
         method='POST'
     )
-    with urlopen(req, timeout=15) as resp:
-        result = json.loads(resp.read().decode())
-    return result['access_token']
+    try:
+        with urlopen(req, timeout=15) as resp:
+            result = json.loads(resp.read().decode())
+        print(f"[token] got access_token ok, keys: {list(result.keys())}")
+        return result['access_token']
+    except HTTPError as e:
+        err = e.read().decode() if e.fp else str(e)
+        print(f"[token] ERROR {e.code}: {err}")
+        raise
+
+
+def get_customer_code(access_token: str) -> str:
+    """Получить customerCode (код счёта/клиента) из API Точка Банка."""
+    req = Request(
+        f"{TOCHKA_API_BASE}/customers",
+        headers={
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        },
+        method='GET'
+    )
+    try:
+        with urlopen(req, timeout=15) as resp:
+            result = json.loads(resp.read().decode())
+        print(f"[customers] response: {json.dumps(result)[:500]}")
+        # Берём первый customerCode из списка
+        items = result.get('Data', result).get('customers', result.get('Data', []))
+        if isinstance(items, list) and items:
+            return items[0].get('customerCode', '')
+        return ''
+    except HTTPError as e:
+        err = e.read().decode() if e.fp else str(e)
+        print(f"[customers] ERROR {e.code}: {err}")
+        return ''
 
 
 def create_tochka_payment(
@@ -92,6 +123,8 @@ def create_tochka_payment(
     if metadata_str:
         payload["Data"]["description"] = metadata_str[:255]
 
+    print(f"[payment] POST /payment-links payload: {json.dumps(payload)[:500]}")
+
     req = Request(
         f"{TOCHKA_API_BASE}/payment-links",
         data=json.dumps(payload).encode('utf-8'),
@@ -102,8 +135,15 @@ def create_tochka_payment(
         method='POST'
     )
 
-    with urlopen(req, timeout=30) as resp:
-        return json.loads(resp.read().decode())
+    try:
+        with urlopen(req, timeout=30) as resp:
+            result = json.loads(resp.read().decode())
+        print(f"[payment] response: {json.dumps(result)[:500]}")
+        return result
+    except HTTPError as e:
+        err = e.read().decode() if e.fp else str(e)
+        print(f"[payment] ERROR {e.code}: {err}")
+        raise
 
 
 def handler(event, context):
@@ -194,9 +234,13 @@ def handler(event, context):
 
         access_token = get_access_token(client_id, client_secret)
 
+        # Получаем реальный customerCode (не логин!)
+        customer_code = get_customer_code(access_token) or client_id
+        print(f"[payment] using customerCode={customer_code}")
+
         payment_response = create_tochka_payment(
             access_token=access_token,
-            customer_code=client_id,
+            customer_code=customer_code,
             amount=amount,
             purpose=purpose,
             payment_link_id=payment_link_id,
