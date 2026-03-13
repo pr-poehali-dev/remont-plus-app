@@ -58,6 +58,7 @@ import CityLanding from "./pages/CityLanding";
 import Furniture from "./pages/Furniture";
 import ReadyProjects from "./pages/ReadyProjects";
 import NotFound from "./pages/NotFound";
+import PriceMonitor from "./pages/PriceMonitor";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
 import InstallPWABanner from "./components/pwa/InstallPWABanner";
@@ -127,6 +128,7 @@ const App = () => {
             <Route path="/office" element={<OfficeCalc />} />
             <Route path="/city/:slug" element={<CityLanding />} />
             <Route path="/ready-projects" element={<ReadyProjects />} />
+            <Route path="/price-monitor" element={<PriceMonitor />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

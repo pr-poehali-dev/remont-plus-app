@@ -81,19 +81,19 @@ export function calcBathHousePrice(cfg: BathHouseConfig, regionId: string, marku
   const stove = stoveData.price;
 
   const ventData = VENTILATION_TYPES[cfg.ventilation];
-  const ventilation = ventData.price + area * 198;
+  const ventilation = ventData.price + area * 240;
 
   const shelfMat = SHELF_MATERIALS[cfg.shelfMaterial];
   const shelfArea = cfg.steamRoomArea * 0.35 * cfg.shelfTiers * (cfg.shelfWidth / 0.6);
   const shelves = shelfArea * shelfMat.pricePerM2;
 
-  const windowsBase = cfg.window_pvc ? 12000 : 20000;
+  const windowsBase = cfg.window_pvc ? 14000 : 23000;
   const windows = cfg.windowCount * windowsBase;
 
-  const chimney = cfg.chimney ? 30800 : 0;
-  const tank = cfg.tankVolume > 0 ? 9350 + cfg.tankVolume * 50 : 0;
-  const terrace = cfg.terrace ? cfg.terraceArea * 5280 : 0;
-  const electrical = cfg.electricalFull ? area * 1980 + 24200 : cfg.electricalBasic ? area * 935 + 13200 : 0;
+  const chimney = cfg.chimney ? 34500 : 0;
+  const tank = cfg.tankVolume > 0 ? 10500 + cfg.tankVolume * 55 : 0;
+  const terrace = cfg.terrace ? cfg.terraceArea * 5900 : 0;
+  const electrical = cfg.electricalFull ? area * 2200 + 27000 : cfg.electricalBasic ? area * 1050 + 15000 : 0;
 
   const materialSum = foundation + walls + roofStructure + roofing + insulation +
     wallFinishSteam + wallFinishWash + wallFinishRest + floor + stove + ventilation +

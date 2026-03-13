@@ -1,4 +1,5 @@
 {
+  "price-monitor": "https://functions.poehali.dev/3af84459-7150-4153-aa97-df0f906784be",
   "furniture-lead": "https://functions.poehali.dev/9f15d013-9fa0-4040-999f-157c863f46b6",
   "payment-init": "https://functions.poehali.dev/fff599a6-c367-4e3d-9cb7-e33d15be527b",
   "get-diag-report": "https://functions.poehali.dev/4d9b06d3-d0e1-4490-8f0e-61d69e48a5c1",

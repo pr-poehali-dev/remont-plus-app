@@ -1,0 +1,29 @@
+{
+  "tests": [
+    {
+      "name": "Dashboard - получить текущие цены",
+      "method": "GET",
+      "path": "/?action=dashboard",
+      "expectedStatus": 200,
+      "expectedBody": {"prices": [], "reference": []},
+      "bodyMatcher": "keys_exist"
+    },
+    {
+      "name": "POST - зафиксировать эталонные цены",
+      "method": "POST",
+      "path": "/",
+      "body": {"prices": []},
+      "expectedStatus": 200,
+      "expectedBody": {"saved": 14},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Alerts - получить список алертов",
+      "method": "GET",
+      "path": "/?action=alerts",
+      "expectedStatus": 200,
+      "expectedBody": {"alerts": []},
+      "bodyMatcher": "keys_exist"
+    }
+  ]
+}

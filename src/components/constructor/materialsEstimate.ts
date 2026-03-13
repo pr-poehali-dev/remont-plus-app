@@ -117,7 +117,7 @@ export function calculateEstimate(walls: Wall[], ceilingHeightMM: number): Estim
   const wallItems: MaterialLine[] = [];
   if (netWallAreaM2 > 0) {
     const primerQty = round2((netWallAreaM2 * 0.2) * RESERVE);
-    const primerPrice = 480;
+    const primerPrice = 138;
     wallItems.push({
       name: 'Грунтовка глубокого проникновения',
       unit: 'л',
@@ -127,7 +127,7 @@ export function calculateEstimate(walls: Wall[], ceilingHeightMM: number): Estim
     });
 
     const puttyQty = round2((netWallAreaM2 * 1.2) * RESERVE);
-    const puttyPrice = 65;
+    const puttyPrice = 30;
     wallItems.push({
       name: 'Шпаклёвка финишная',
       unit: 'кг',
@@ -166,7 +166,7 @@ export function calculateEstimate(walls: Wall[], ceilingHeightMM: number): Estim
   const ceilingItems: MaterialLine[] = [];
   if (ceilingArea > 0) {
     const cPrimerQty = round2((ceilingArea * 0.2) * RESERVE);
-    const cPrimerPrice = 480;
+    const cPrimerPrice = 138;
     ceilingItems.push({
       name: 'Грунтовка потолочная',
       unit: 'л',
@@ -242,7 +242,7 @@ export function calculateEstimate(walls: Wall[], ceilingHeightMM: number): Estim
   const roughItems: MaterialLine[] = [];
   if (floorArea > 0) {
     const screedQty = round2(floorArea * 20 * RESERVE);
-    const screedPrice = 12;
+    const screedPrice = 15;
     roughItems.push({
       name: 'Смесь для стяжки пола (50 мм)',
       unit: 'кг',
@@ -254,7 +254,7 @@ export function calculateEstimate(walls: Wall[], ceilingHeightMM: number): Estim
 
   if (netWallAreaM2 > 0) {
     const plasterQty = round2(netWallAreaM2 * 8 * RESERVE);
-    const plasterPrice = 14;
+    const plasterPrice = 22;
     roughItems.push({
       name: 'Штукатурка гипсовая (10 мм)',
       unit: 'кг',

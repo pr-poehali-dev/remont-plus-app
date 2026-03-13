@@ -238,8 +238,8 @@ export function calcElectricsMaterials(
         name: "Алебастр / ротбанд для заделки штроб",
         unit: "кг",
         qty: Math.ceil(cfg.cableRunM * 0.3),
-        pricePerUnit: 29,
-        total: Math.ceil(cfg.cableRunM * 0.3) * 29,
+        pricePerUnit: 22,
+        total: Math.ceil(cfg.cableRunM * 0.3) * 22,
         isConsumable: true,
       });
     } else if (cfg.cablingType === "corrugated") {

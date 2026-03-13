@@ -148,12 +148,12 @@ export const ROOFING_MATERIALS: Record<RoofingMaterial, { label: string; pricePe
 };
 
 export const INSULATION_MATERIALS: Record<InsulationMaterial, { label: string; pricePerM3: number }> = {
-  mineral_wool:  { label: "Минеральная вата (Rockwool, Knauf)", pricePerM3: 3800 },
-  basalt_wool:   { label: "Базальтовая вата (ISOVER, ТехноНиколь)", pricePerM3: 4200 },
-  ecowool:       { label: "Эковата (целлюлоза)", pricePerM3: 3200 },
-  penoizol:      { label: "Пеноизол (жидкий пенопласт)", pricePerM3: 5000 },
-  foil_penofol:  { label: "Пенофол фольгированный", pricePerM3: 6800 },
-  pir_panel:     { label: "PIR-панели (современные)", pricePerM3: 68000 },
+  mineral_wool:  { label: "Минеральная вата (Rockwool, Knauf)", pricePerM3: 4350 },
+  basalt_wool:   { label: "Базальтовая вата (ISOVER, ТехноНиколь)", pricePerM3: 4850 },
+  ecowool:       { label: "Эковата (целлюлоза)", pricePerM3: 3700 },
+  penoizol:      { label: "Пеноизол (жидкий пенопласт)", pricePerM3: 5800 },
+  foil_penofol:  { label: "Пенофол фольгированный", pricePerM3: 7800 },
+  pir_panel:     { label: "PIR-панели (современные)", pricePerM3: 76000 },
 };
 
 export const WALL_FINISHES: Record<WallFinishInterior, { label: string; pricePerM2: number; suitsSteam: boolean }> = {
