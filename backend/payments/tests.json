@@ -1,11 +1,43 @@
 {
   "tests": [
     {
+      "name": "CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
       "name": "GET payments list",
       "method": "GET",
       "path": "/?user_id=1",
       "expectedStatus": 200,
       "expectedBody": {"payments": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "GET payments - missing user_id",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST create payment - missing email",
+      "method": "POST",
+      "path": "/",
+      "body": {"amount": 399, "return_url": "https://avangard-ai.ru/tariffs"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST create payment - missing return_url",
+      "method": "POST",
+      "path": "/",
+      "body": {"amount": 399, "user_email": "test@test.ru"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
       "bodyMatcher": "partial"
     }
   ]
