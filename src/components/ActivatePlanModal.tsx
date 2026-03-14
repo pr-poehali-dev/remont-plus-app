@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import Icon from "@/components/ui/icon";
 
 const YK_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
+const PAYMENTS_ENABLED = false;
 
 const PLANS = [
   {
@@ -208,35 +209,52 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
                       ))}
                     </ul>
 
-                    <Button
-                      size="sm"
-                      className="w-full h-8 text-xs"
-                      disabled={isCurrent || loading}
-                      variant={isCurrent ? "outline" : "default"}
-                      onClick={() => startPayment(plan)}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Icon name="Loader2" size={13} className="mr-1.5 animate-spin" />
-                          Создаём платёж...
-                        </>
-                      ) : isCurrent ? (
-                        "Текущий тариф"
-                      ) : (
-                        <>
-                          <Icon name="CreditCard" size={13} className="mr-1.5" />
-                          Оплатить {plan.label}
-                        </>
-                      )}
-                    </Button>
+                    {PAYMENTS_ENABLED ? (
+                      <Button
+                        size="sm"
+                        className="w-full h-8 text-xs"
+                        disabled={isCurrent || loading}
+                        variant={isCurrent ? "outline" : "default"}
+                        onClick={() => startPayment(plan)}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Icon name="Loader2" size={13} className="mr-1.5 animate-spin" />
+                            Создаём платёж...
+                          </>
+                        ) : isCurrent ? (
+                          "Текущий тариф"
+                        ) : (
+                          <>
+                            <Icon name="CreditCard" size={13} className="mr-1.5" />
+                            Оплатить {plan.label}
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button size="sm" className="w-full h-8 text-xs" variant="outline" disabled>
+                        Скоро
+                      </Button>
+                    )}
                   </div>
                 );
               })}
             </div>
 
-            <p className="text-xs text-gray-400 text-center mt-1">
-              Оплата картой или через СБП. Безопасно и мгновенно.
-            </p>
+            {PAYMENTS_ENABLED ? (
+              <p className="text-xs text-gray-400 text-center mt-1">
+                Оплата картой или через СБП. Безопасно и мгновенно.
+              </p>
+            ) : (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-center mt-2">
+                <p className="text-sm font-medium text-gray-800 mb-1">Онлайн-оплата временно недоступна</p>
+                <p className="text-xs text-gray-500">Для подключения тарифа свяжитесь с нами:</p>
+                <a href="tel:+79991234567" className="inline-flex items-center gap-1.5 text-orange-600 font-semibold text-sm hover:underline mt-1">
+                  <Icon name="Phone" size={14} />
+                  Позвонить
+                </a>
+              </div>
+            )}
           </>
         )}
 

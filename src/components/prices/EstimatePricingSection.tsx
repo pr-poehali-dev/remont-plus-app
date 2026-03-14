@@ -7,6 +7,7 @@ import Icon from "@/components/ui/icon";
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
+const PAYMENTS_ENABLED = false;
 
 const PLAN = {
   id: "estimate_print",
@@ -173,13 +174,27 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
                 </div>
               )}
 
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12" onClick={handlePay} disabled={loading}>
-                {loading
-                  ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
-                  : <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить 399 ₽</>
-                }
-              </Button>
-              <p className="text-center text-xs text-gray-400">Безопасная оплата · Чек на email</p>
+              {PAYMENTS_ENABLED ? (
+                <>
+                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12" onClick={handlePay} disabled={loading}>
+                    {loading
+                      ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
+                      : <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить 399 ₽</>
+                    }
+                  </Button>
+                  <p className="text-center text-xs text-gray-400">Безопасная оплата · Чек на email</p>
+                </>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
+                  <Icon name="Clock" size={24} className="text-yellow-500 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-gray-800 mb-1">Онлайн-оплата временно недоступна</p>
+                  <p className="text-xs text-gray-500 mb-3">Для оформления заказа свяжитесь с нами:</p>
+                  <a href="tel:+79991234567" className="inline-flex items-center gap-1.5 text-orange-600 font-semibold text-sm hover:underline">
+                    <Icon name="Phone" size={14} />
+                    Позвонить
+                  </a>
+                </div>
+              )}
             </div>
           )}
         </div>
