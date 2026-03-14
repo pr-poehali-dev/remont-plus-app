@@ -120,7 +120,8 @@ def handler(event, context):
     if not return_url or not is_valid_url(return_url):
         return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'return_url must be a valid HTTPS URL'})}
 
-    jwt_token = os.environ.get('TOCHKA_JWT_TOKEN', '')
+    jwt_token = os.environ.get('TOCHKA_JWT_TOKEN', '').strip()
+    print(f"[debug] TOCHKA_JWT_TOKEN length={len(jwt_token)}, starts={jwt_token[:20]}..., ends=...{jwt_token[-10:]}")
     if not jwt_token:
         return {'statusCode': 500, 'headers': HEADERS, 'body': json.dumps({'error': 'Tochka JWT token not configured'})}
 
