@@ -3,7 +3,6 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { openPaymentPage } from "@/components/extensions/yookassa/useYookassa";
 
 // Компонент проверки существующего заказа
 function CheckOrderPanel({ onUnlock }: { onUnlock: () => void }) {
@@ -68,7 +67,7 @@ function CheckOrderPanel({ onUnlock }: { onUnlock: () => void }) {
 }
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
-const PAYMENT_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
+const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
 
 const PRICE = 399;
 const PAID_KEY = "avangard_estimate_paid";
@@ -179,7 +178,7 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
         throw new Error(payData.error || "Ошибка создания платежа");
       }
 
-      openPaymentPage(payData.payment_url);
+      window.open(payData.payment_url, "_blank");
       setStep("waiting");
 
       // Поллинг статуса заказа

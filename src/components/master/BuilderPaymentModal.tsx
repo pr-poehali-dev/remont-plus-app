@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
-import { openPaymentPage } from "@/components/extensions/yookassa/useYookassa";
 
-const PAYMENT_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
+const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
 const RETURN_URL = `${window.location.origin}/masters`;
 
 interface BuilderPlan {
@@ -85,7 +84,7 @@ export default function BuilderPaymentModal({
       if (!res.ok) throw new Error(data.error || "Ошибка создания платежа");
 
       if (data.payment_url) {
-        openPaymentPage(data.payment_url);
+        window.open(data.payment_url, "_blank");
         onSuccess();
       }
     } catch (e) {

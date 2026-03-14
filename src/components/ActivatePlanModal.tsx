@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Icon from "@/components/ui/icon";
 
-const YK_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
+const YK_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
 
 const PLANS = [
   {
@@ -160,7 +160,7 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
           <>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">Выбрать тариф</DialogTitle>
-              <p className="text-sm text-gray-500">Нажмите «Оплатить» — откроется страница ЮKassa, после оплаты тариф активируется автоматически</p>
+              <p className="text-sm text-gray-500">Нажмите «Оплатить» — откроется страница оплаты, после оплаты тариф активируется автоматически</p>
             </DialogHeader>
 
             {error && (
@@ -235,7 +235,7 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
             </div>
 
             <p className="text-xs text-gray-400 text-center mt-1">
-              Оплата через ЮKassa — карта, СБП, ЮMoney. Безопасно и мгновенно.
+              Оплата картой или через СБП. Безопасно и мгновенно.
             </p>
           </>
         )}

@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
-import { openPaymentPage } from "@/components/extensions/yookassa/useYookassa";
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
-const PAYMENT_URL = "https://functions.poehali.dev/52571e7f-f411-45cb-9eba-0dd753ba3a91";
+const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
 
 const PLAN = {
   id: "estimate_print",
@@ -97,7 +96,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
         throw new Error(payData.error || "Ошибка создания платежа");
       }
 
-      openPaymentPage(payData.payment_url);
+      window.open(payData.payment_url, "_blank");
       setStep("success");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Что-то пошло не так. Попробуйте ещё раз.");
