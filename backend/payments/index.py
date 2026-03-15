@@ -1,4 +1,4 @@
-"""Создание платежей через PayKeeper API (Точка Банк) и управление заказами."""
+"""Создание платежей через API Точка Банк и управление заказами."""
 import json
 import os
 import uuid
@@ -18,7 +18,10 @@ CORS = {
 JSON_HEADERS = {'Content-Type': 'application/json', **CORS}
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 't_p46588937_remont_plus_app')
-PAYKEEPER_BASE = "https://checkout.tochka.com"
+
+TOCHKA_API = "https://enter.tochka.com/uapi/acquiring/v1.0"
+CUSTOMER_CODE = "302664947"
+FALLBACK_CHECKOUT = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32"
 
 PLAN_NAMES = {
     'start': 'Тариф START', 'pro': 'Тариф PRO', 'max': 'Тариф MAX',
@@ -43,78 +46,54 @@ def send_telegram(message: str):
         pass
 
 
-def paykeeper_request(path, data=None, method="GET"):
-    """Выполнить запрос к PayKeeper API (Точка Банк эквайринг)."""
-    import base64
-    login = os.environ.get("TOCHKA_LOGIN", "").strip()
-    secret = os.environ.get("TOCHKA_SECRET_KEY", "").strip()
-    if not login or not secret:
-        return None, "TOCHKA_LOGIN или TOCHKA_SECRET_KEY не настроены"
+def create_tochka_payment(amount, purpose, external_id, redirect_url):
+    """Создать платёжную ссылку через Tochka Open API."""
+    jwt_token = os.environ.get('TOCHKA_JWT_TOKEN', '').strip()
+    if not jwt_token:
+        return None, "TOCHKA_JWT_TOKEN не настроен"
 
-    auth = base64.b64encode(f"{login}:{secret}".encode()).decode()
-    url = f"{PAYKEEPER_BASE}/{path.lstrip('/')}"
-
-    headers = {"Authorization": f"Basic {auth}"}
-    body = None
-    if data and method == "POST":
-        body = urllib.parse.urlencode(data).encode() if isinstance(data, dict) else data
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-
-    req = urlreq.Request(url, data=body, headers=headers, method=method)
+    payload = {
+        "Data": {
+            "customerCode": CUSTOMER_CODE,
+            "amount": round(amount, 2),
+            "currency": "RUB",
+            "purpose": purpose[:140],
+            "externalId": external_id,
+            "paymentMode": ["sbp", "card"],
+            "redirectUrl": redirect_url,
+            "failRedirectUrl": redirect_url,
+        }
+    }
+    req = urlreq.Request(
+        f"{TOCHKA_API}/payments",
+        data=json.dumps(payload).encode(),
+        headers={'Authorization': f'Bearer {jwt_token}', 'Content-Type': 'application/json'},
+        method='POST'
+    )
     try:
         with urlreq.urlopen(req, timeout=30) as r:
-            return json.loads(r.read().decode()), None
+            result = json.loads(r.read().decode())
+        d = result.get('Data', {})
+        payment_url = d.get('paymentUrl') or d.get('url') or d.get('link') or ''
+        payment_link_id = d.get('paymentLinkId') or d.get('paymentId') or external_id
+        return {"payment_url": payment_url, "payment_link_id": payment_link_id}, None
     except urllib.error.HTTPError as e:
         err_body = e.read().decode() if e.fp else str(e)
-        print(f"[payments] PayKeeper error {e.code}: {err_body}")
-        return None, f"PayKeeper ({e.code}): {err_body[:200]}"
+        print(f"[payments] Tochka API error {e.code}: {err_body[:300]}")
+        return None, f"Tochka API ({e.code})"
     except Exception as e:
-        print(f"[payments] PayKeeper request error: {e}")
+        print(f"[payments] Tochka request error: {e}")
         return None, str(e)
 
 
-def create_tochka_payment(amount, purpose, order_id, client_email="", client_phone=""):
-    """Создать уникальную платёжную ссылку через PayKeeper API."""
-    token_resp, err = paykeeper_request("/info/settings/token/")
-    if err:
-        return None, err
-    token = token_resp.get("token", "")
-    if not token:
-        return None, "Не удалось получить security token"
-
-    sign_str = f"{amount:.2f}{client_email}{order_id}{purpose}{token}"
-    sign = hashlib.md5(sign_str.encode()).hexdigest()
-
-    invoice_data = {
-        "pay_amount": f"{amount:.2f}",
-        "clientid": purpose[:255],
-        "orderid": str(order_id),
-        "service_name": purpose[:255],
-        "client_email": client_email,
-        "client_phone": client_phone,
-        "token": token,
-        "sign": sign,
-    }
-
-    result, err = paykeeper_request("/change/invoice/preview/", data=invoice_data, method="POST")
-    if err:
-        return None, err
-
-    invoice_id = result.get("invoice_id", "")
-    if not invoice_id:
-        return None, f"Нет invoice_id в ответе: {json.dumps(result)[:200]}"
-
-    payment_url = f"{PAYKEEPER_BASE}/bill/{invoice_id}/"
-    return {"payment_url": payment_url, "invoice_id": str(invoice_id)}, None
-
-
 def handle_create_payment(body):
-    """POST — создание платежа с уникальной ссылкой через PayKeeper."""
+    """POST — создание платежа с ссылкой на оплату."""
     amount = float(body.get('amount', 0))
     user_email = body.get('user_email', '').strip()
     user_name = body.get('user_name', '').strip()
     user_phone = body.get('user_phone', '').strip()
     description = body.get('description', 'Оплата')
+    return_url = body.get('return_url', 'https://avangard-ai.ru').strip()
     cart_items = body.get('cart_items', [])
     metadata = body.get('metadata', {})
 
@@ -151,19 +130,22 @@ def handle_create_payment(body):
         conn.commit()
 
         purpose = f"{description} ({order_number})"
-        payment_result, err = create_tochka_payment(amount, purpose, order_number, user_email, user_phone)
+        payment_result, err = create_tochka_payment(amount, purpose, external_id, return_url)
 
-        if err or not payment_result:
-            cur.execute(f"UPDATE {SCHEMA}.orders SET status='error', updated_at=%s WHERE id=%s", (now, order_id))
-            conn.commit()
-            return {'statusCode': 500, 'headers': JSON_HEADERS, 'body': json.dumps({'error': f'Не удалось создать платёж: {err}'})}
+        payment_url = FALLBACK_CHECKOUT
+        payment_link_id = external_id
+        api_used = False
 
-        payment_url = payment_result["payment_url"]
-        invoice_id = payment_result["invoice_id"]
+        if payment_result and payment_result.get("payment_url"):
+            payment_url = payment_result["payment_url"]
+            payment_link_id = payment_result.get("payment_link_id", external_id)
+            api_used = True
+        elif err:
+            print(f"[payments] API fallback for {order_number}: {err}")
 
         cur.execute(f"""
             UPDATE {SCHEMA}.orders SET yookassa_payment_id = %s, payment_url = %s, updated_at = %s WHERE id = %s
-        """, (invoice_id, payment_url, now, order_id))
+        """, (payment_link_id, payment_url, now, order_id))
         conn.commit()
 
         user_id = metadata.get('user_id')
@@ -172,7 +154,7 @@ def handle_create_payment(body):
             cur.execute(f"""
                 INSERT INTO {SCHEMA}.payments (user_id, plan_code, yukassa_payment_id, amount, status, payment_url, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, 'pending', %s, %s, %s)
-            """, (int(user_id), plan_code, invoice_id, amount, payment_url, now, now))
+            """, (int(user_id), plan_code, payment_link_id, amount, payment_url, now, now))
             conn.commit()
 
         send_telegram(
@@ -181,7 +163,7 @@ def handle_create_payment(body):
             f"💰 Сумма: {amount:,.0f} ₽\n".replace(',', ' ') +
             f"👤 {user_name} ({user_email})\n"
             f"📝 {description}\n"
-            f"Invoice ID: {invoice_id}"
+            f"API: {'да' if api_used else 'фоллбэк'}"
         )
 
         return {
@@ -189,7 +171,7 @@ def handle_create_payment(body):
             'headers': JSON_HEADERS,
             'body': json.dumps({
                 'payment_url': payment_url,
-                'invoice_id': invoice_id,
+                'payment_id': payment_link_id,
                 'order_id': order_id,
                 'order_number': order_number,
             })
@@ -223,7 +205,7 @@ def handle_get_payments(params):
 
 
 def handler(event: dict, context) -> dict:
-    """Создание платежей через PayKeeper API (Точка Банк) с уникальной ссылкой на каждый заказ."""
+    """Создание платежей через API Точка Банк с уникальной ссылкой на каждый заказ."""
     if event.get('httpMethod') == 'OPTIONS':
         return {'statusCode': 200, 'headers': CORS, 'body': ''}
 

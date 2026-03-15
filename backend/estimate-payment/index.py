@@ -1,5 +1,5 @@
 """
-Управление заказами смет (estimate_orders) с оплатой через API Точка Банка:
+Управление заказами смет (estimate_orders) с оплатой через Точка Банк:
 - POST action=create_order — создание записи + платёжная ссылка через API Точки
 - POST action=check_status — проверка статуса по order_number
 - POST action=check_user_paid — проверка оплаты по user_id / email
@@ -27,7 +27,9 @@ CORS = {
     "Access-Control-Allow-Headers": "Content-Type",
 }
 
-PAYKEEPER_BASE = "https://checkout.tochka.com"
+TOCHKA_API = "https://enter.tochka.com/uapi/acquiring/v1.0"
+CUSTOMER_CODE = "302664947"
+FALLBACK_CHECKOUT = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32"
 
 
 def get_conn():
@@ -95,70 +97,47 @@ PLAN_LABELS = {
 }
 
 
-def paykeeper_request(path, data=None, method="GET"):
-    """Выполнить запрос к PayKeeper API (Точка Банк эквайринг)."""
-    login = os.environ.get("TOCHKA_LOGIN", "").strip()
-    secret = os.environ.get("TOCHKA_SECRET_KEY", "").strip()
-    if not login or not secret:
-        return None, "TOCHKA_LOGIN или TOCHKA_SECRET_KEY не настроены"
+def create_tochka_payment(amount, purpose, external_id, redirect_url):
+    """Создать платёжную ссылку через API Точка Банка (Open API)."""
+    jwt_token = os.environ.get("TOCHKA_JWT_TOKEN", "").strip()
+    if not jwt_token:
+        return None, "TOCHKA_JWT_TOKEN не настроен"
 
-    import base64
-    auth = base64.b64encode(f"{login}:{secret}".encode()).decode()
-    url = f"{PAYKEEPER_BASE}/{path.lstrip('/')}"
-
-    headers = {"Authorization": f"Basic {auth}"}
-    body = None
-    if data and method == "POST":
-        body = urllib.parse.urlencode(data).encode() if isinstance(data, dict) else data
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-
-    req = urllib.request.Request(url, data=body, headers=headers, method=method)
+    payload = {
+        "Data": {
+            "customerCode": CUSTOMER_CODE,
+            "amount": round(amount, 2),
+            "currency": "RUB",
+            "purpose": purpose[:140],
+            "externalId": external_id,
+            "paymentMode": ["sbp", "card"],
+            "redirectUrl": redirect_url,
+            "failRedirectUrl": redirect_url,
+        }
+    }
+    req = urllib.request.Request(
+        f"{TOCHKA_API}/payments",
+        data=json.dumps(payload).encode(),
+        headers={
+            "Authorization": f"Bearer {jwt_token}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
-            return json.loads(r.read().decode()), None
+            result = json.loads(r.read().decode())
+        data = result.get("Data", {})
+        payment_url = data.get("paymentUrl") or data.get("url") or data.get("link") or ""
+        payment_link_id = data.get("paymentLinkId") or data.get("paymentId") or external_id
+        return {"payment_url": payment_url, "payment_link_id": payment_link_id}, None
     except urllib.error.HTTPError as e:
         err_body = e.read().decode() if e.fp else str(e)
-        print(f"[estimate-payment] PayKeeper error {e.code}: {err_body}")
-        return None, f"PayKeeper ({e.code}): {err_body[:200]}"
+        print(f"[estimate-payment] Tochka API error {e.code}: {err_body[:300]}")
+        return None, f"Tochka API ({e.code})"
     except Exception as e:
-        print(f"[estimate-payment] PayKeeper request error: {e}")
+        print(f"[estimate-payment] Tochka request error: {e}")
         return None, str(e)
-
-
-def create_tochka_payment(amount, purpose, order_id, client_email="", client_phone=""):
-    """Создать уникальную платёжную ссылку через PayKeeper API (Точка Банк)."""
-    token_resp, err = paykeeper_request("/info/settings/token/")
-    if err:
-        return None, err
-    token = token_resp.get("token", "")
-    if not token:
-        return None, "Не удалось получить security token"
-
-    import hashlib
-    sign_str = f"{amount:.2f}{client_email}{order_id}{purpose}{token}"
-    sign = hashlib.md5(sign_str.encode()).hexdigest()
-
-    invoice_data = {
-        "pay_amount": f"{amount:.2f}",
-        "clientid": purpose[:255],
-        "orderid": str(order_id),
-        "service_name": purpose[:255],
-        "client_email": client_email,
-        "client_phone": client_phone,
-        "token": token,
-        "sign": sign,
-    }
-
-    result, err = paykeeper_request("/change/invoice/preview/", data=invoice_data, method="POST")
-    if err:
-        return None, err
-
-    invoice_id = result.get("invoice_id", "")
-    if not invoice_id:
-        return None, f"Нет invoice_id в ответе: {json.dumps(result)[:200]}"
-
-    payment_url = f"{PAYKEEPER_BASE}/bill/{invoice_id}/"
-    return {"payment_url": payment_url, "invoice_id": str(invoice_id)}, None
 
 
 def client_email_html(plan_type: str, order_number: str, client_name: str) -> str:
@@ -295,24 +274,18 @@ def handler(event: dict, context) -> dict:
             conn.commit()
 
         purpose = f"{label} ({order_number})"
-        payment_result, err = create_tochka_payment(
-            amount, purpose, order_number, client_email, client_phone
-        )
+        payment_result, err = create_tochka_payment(amount, purpose, external_id, return_url)
 
-        if err or not payment_result:
-            conn = get_conn()
-            with conn.cursor() as cur:
-                cur.execute(
-                    f"UPDATE {S}estimate_orders SET status='error', updated_at=NOW() WHERE id=%s",
-                    (order_id,),
-                )
-                conn.commit()
-            conn.close()
-            print(f"[estimate-payment] payment creation failed for {order_number}: {err}")
-            return resp(500, {"error": f"Не удалось создать платёж: {err}"})
+        payment_url = FALLBACK_CHECKOUT
+        payment_link_id = external_id
+        api_used = False
 
-        payment_url = payment_result["payment_url"]
-        invoice_id = payment_result["invoice_id"]
+        if payment_result and payment_result.get("payment_url"):
+            payment_url = payment_result["payment_url"]
+            payment_link_id = payment_result.get("payment_link_id", external_id)
+            api_used = True
+        elif err:
+            print(f"[estimate-payment] API fallback for {order_number}: {err}")
 
         conn = get_conn()
         with conn.cursor() as cur:
@@ -320,7 +293,7 @@ def handler(event: dict, context) -> dict:
                 f"""UPDATE {S}estimate_orders
                     SET yookassa_payment_id=%s, payment_id=%s, updated_at=NOW()
                     WHERE id=%s""",
-                (invoice_id, external_id, order_id),
+                (payment_link_id, external_id, order_id),
             )
             conn.commit()
         conn.close()
@@ -332,14 +305,14 @@ def handler(event: dict, context) -> dict:
             f"Сумма: <b>{amount:.0f} ₽</b>\n"
             f"Клиент: {client_name or '—'}\n"
             f"Email: {client_email or '—'}\n"
-            f"Invoice ID: {invoice_id}"
+            f"API: {'да' if api_used else 'фоллбэк'}"
         )
 
         return resp(200, {
             "order_id": order_id,
             "order_number": order_number,
             "payment_url": payment_url,
-            "invoice_id": invoice_id,
+            "payment_id": payment_link_id,
         })
 
     if action == "check_status":
