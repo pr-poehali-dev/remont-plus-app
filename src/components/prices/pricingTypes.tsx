@@ -1,0 +1,30 @@
+import Icon from "@/components/ui/icon";
+
+export const PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
+
+export interface PlanInfo {
+  id: string;
+  name: string;
+  price: number;
+  period?: string;
+}
+
+export const B2C_PLANS: PlanInfo[] = [
+  { id: "b2c_basic", name: "Базовый", price: 1490 },
+  { id: "b2c_professional", name: "Профессиональный", price: 2990 },
+  { id: "b2c_premium", name: "Премиум", price: 4990 },
+];
+
+export const B2B_PLANS: PlanInfo[] = [
+  { id: "b2b_start", name: "Старт", price: 5900, period: "мес" },
+  { id: "b2b_business", name: "Бизнес", price: 12900, period: "мес" },
+  { id: "b2b_pro", name: "Профи", price: 24900, period: "мес" },
+];
+
+export function fmt(n: number) {
+  return n.toLocaleString("ru-RU");
+}
+
+export const Check = () => <Icon name="Check" size={15} className="text-green-500 mt-0.5 shrink-0" />;
+
+export default {};
