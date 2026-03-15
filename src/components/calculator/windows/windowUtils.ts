@@ -41,10 +41,9 @@ export const DEFAULT_CONFIG: Omit<WindowConfig, "id" | "totalPrice"> = {
 
 export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">): number {
   const isStandaloneTransom = cfg.constructionType === "transom";
-  const mainH = isStandaloneTransom ? cfg.height : cfg.height;
   const totalH = cfg.hasTransom && !isStandaloneTransom
     ? cfg.height + cfg.transomHeight
-    : mainH;
+    : cfg.height;
   const area = (cfg.width / 1000) * (totalH / 1000);
 
   const profile = PROFILE_SYSTEMS.find(p => p.id === cfg.profileSystemId);
@@ -75,7 +74,7 @@ export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">): number 
   const lamSides = cfg.laminationBothSides && lam && lam.id !== "none" ? 2 : 1;
   price += (lam?.priceAdd ?? 0) * perim * lamSides;
 
-  const openSashes = cfg.openingTypes.filter(o => o !== "fixed").length || 1;
+  const openSashes = cfg.openingTypes.filter(o => o !== "fixed").length;
   price += (hw?.pricePerSash ?? 0) * openSashes;
 
   if (cfg.hasTransom && !isStandaloneTransom) {

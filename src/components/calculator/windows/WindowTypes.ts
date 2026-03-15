@@ -52,27 +52,28 @@ export interface ProfileSystem {
 
 export const PROFILE_SYSTEMS: ProfileSystem[] = [
   // ── PVC ──
-  { id: "rehau_blitz",     material: "pvc", brand: "REHAU",    series: "BLITZ",          chambers: 3, depth: 60, glassThicknessMax: 24, priceCoeff: 1.0,  description: "Базовая 3-камерная система" },
-  { id: "rehau_euro60",    material: "pvc", brand: "REHAU",    series: "EURO 60",        chambers: 3, depth: 60, glassThicknessMax: 24, priceCoeff: 1.1,  description: "Популярная 3-камерная система" },
-  { id: "rehau_geneo",     material: "pvc", brand: "REHAU",    series: "GENEO",          chambers: 6, depth: 86, glassThicknessMax: 48, priceCoeff: 1.85, description: "6-камерная система премиум-класса" },
-  { id: "veka_softline70", material: "pvc", brand: "VEKA",     series: "Softline 70",    chambers: 5, depth: 70, glassThicknessMax: 36, priceCoeff: 1.25, description: "5-камерная система VEKA" },
-  { id: "veka_spectral",   material: "pvc", brand: "VEKA",     series: "Spectral",       chambers: 6, depth: 82, glassThicknessMax: 48, priceCoeff: 1.75, description: "6-камерная система с арматурой" },
-  { id: "kbe_expert",      material: "pvc", brand: "KBE",      series: "Expert",         chambers: 5, depth: 70, glassThicknessMax: 36, priceCoeff: 1.2,  description: "5-камерная немецкая система" },
-  { id: "kbe_88",          material: "pvc", brand: "KBE",      series: "88mm",           chambers: 6, depth: 88, glassThicknessMax: 52, priceCoeff: 1.8,  description: "6-камерная высокоэффективная" },
-  { id: "gealan_s9000",    material: "pvc", brand: "GEALAN",   series: "S9000 IQ",       chambers: 6, depth: 85, glassThicknessMax: 52, priceCoeff: 1.7,  description: "6-камерная с IQ-технологией" },
-  { id: "deceuninck_2500", material: "pvc", brand: "Deceuninck", series: "Deceuninck 2500", chambers: 3, depth: 60, glassThicknessMax: 24, priceCoeff: 1.05, description: "Бельгийская 3-камерная система" },
-  { id: "deceuninck_3000", material: "pvc", brand: "Deceuninck", series: "Deceuninck 3000", chambers: 5, depth: 70, glassThicknessMax: 36, priceCoeff: 1.3,  description: "5-камерная бельгийская система" },
-  { id: "roplasto_70",     material: "pvc", brand: "Roplasto",  series: "70 Series",     chambers: 5, depth: 70, glassThicknessMax: 36, priceCoeff: 1.15, description: "5-камерная немецкая система" },
-  { id: "exprof_ps58",     material: "pvc", brand: "Exprof",    series: "PS 58",         chambers: 3, depth: 58, glassThicknessMax: 24, priceCoeff: 0.9,  description: "Российская 3-камерная система" },
+  { id: "exprof_ps58",     material: "pvc", brand: "Exprof",     series: "PS 58",          chambers: 3, depth: 58, glassThicknessMax: 24, priceCoeff: 0.85, description: "Российская 3-камерная, эконом" },
+  { id: "rehau_blitz",     material: "pvc", brand: "REHAU",      series: "BLITZ",          chambers: 3, depth: 60, glassThicknessMax: 24, priceCoeff: 0.95, description: "Базовая 3-камерная система" },
+  { id: "deceuninck_2500", material: "pvc", brand: "Deceuninck", series: "Foreks 2500",    chambers: 3, depth: 60, glassThicknessMax: 24, priceCoeff: 0.92, description: "Бельгийская 3-камерная, эконом" },
+  { id: "rehau_euro60",    material: "pvc", brand: "REHAU",      series: "EURO 60",        chambers: 3, depth: 60, glassThicknessMax: 32, priceCoeff: 1.0,  description: "Популярная 3-камерная система" },
+  { id: "roplasto_70",     material: "pvc", brand: "Roplasto",   series: "70 Series",      chambers: 5, depth: 70, glassThicknessMax: 36, priceCoeff: 1.08, description: "5-камерная немецкая система" },
+  { id: "kbe_expert",      material: "pvc", brand: "KBE",        series: "Expert",         chambers: 5, depth: 70, glassThicknessMax: 36, priceCoeff: 1.12, description: "5-камерная немецкая система" },
+  { id: "veka_softline70", material: "pvc", brand: "VEKA",       series: "Softline 70",    chambers: 5, depth: 70, glassThicknessMax: 36, priceCoeff: 1.15, description: "5-камерная система VEKA" },
+  { id: "deceuninck_3000", material: "pvc", brand: "Deceuninck", series: "Baufenster 3000", chambers: 5, depth: 70, glassThicknessMax: 36, priceCoeff: 1.12, description: "5-камерная бельгийская система" },
+  { id: "rehau_delight",   material: "pvc", brand: "REHAU",      series: "Delight",        chambers: 5, depth: 70, glassThicknessMax: 40, priceCoeff: 1.2,  description: "5-камерная, увеличенное светопропускание" },
+  { id: "gealan_s9000",    material: "pvc", brand: "GEALAN",     series: "S9000 IQ",       chambers: 6, depth: 83, glassThicknessMax: 44, priceCoeff: 1.35, description: "6-камерная с IQ-технологией" },
+  { id: "veka_spectral",   material: "pvc", brand: "VEKA",       series: "Spectral",       chambers: 6, depth: 82, glassThicknessMax: 44, priceCoeff: 1.38, description: "6-камерная премиум VEKA" },
+  { id: "kbe_88",          material: "pvc", brand: "KBE",        series: "88mm",           chambers: 6, depth: 88, glassThicknessMax: 52, priceCoeff: 1.45, description: "6-камерная высокоэффективная" },
+  { id: "rehau_geneo",     material: "pvc", brand: "REHAU",      series: "GENEO",          chambers: 6, depth: 86, glassThicknessMax: 48, priceCoeff: 1.55, description: "6-камерная премиум, армирование из фибергласса" },
   // ── Алюминий холодный ──
-  { id: "alutech_s45",     material: "aluminum",      brand: "Alutech",   series: "S45",         chambers: 1, depth: 45, glassThicknessMax: 20, priceCoeff: 1.1,  description: "Холодное остекление, балконы" },
   { id: "provedal_t45",    material: "aluminum",      brand: "Provedal",  series: "T45",         chambers: 1, depth: 45, glassThicknessMax: 20, priceCoeff: 1.0,  description: "Холодное алюминиевое остекление" },
-  { id: "tatprof_aes60",   material: "aluminum",      brand: "Татпроф",   series: "AES 60",      chambers: 1, depth: 60, glassThicknessMax: 28, priceCoeff: 1.05, description: "Российский алюминиевый профиль" },
+  { id: "alutech_s45",     material: "aluminum",      brand: "Alutech",   series: "S45",         chambers: 1, depth: 45, glassThicknessMax: 20, priceCoeff: 1.05, description: "Холодное остекление, балконы" },
+  { id: "tatprof_aes60",   material: "aluminum",      brand: "Татпроф",   series: "AES 60",      chambers: 1, depth: 60, glassThicknessMax: 28, priceCoeff: 1.1,  description: "Российский алюминиевый профиль" },
   // ── Алюминий тёплый ──
-  { id: "schuco_aws75",    material: "aluminum_warm", brand: "Schüco",    series: "AWS 75",      chambers: 1, depth: 75, glassThicknessMax: 48, priceCoeff: 2.4,  description: "Премиум тёплое остекление" },
-  { id: "reynaers_cs77",   material: "aluminum_warm", brand: "Reynaers",  series: "CS 77",       chambers: 1, depth: 77, glassThicknessMax: 50, priceCoeff: 2.6,  description: "Бельгийская тёплая система" },
-  { id: "alutech_w72",     material: "aluminum_warm", brand: "Alutech",   series: "W72",         chambers: 1, depth: 72, glassThicknessMax: 44, priceCoeff: 1.6,  description: "Тёплое алюминиевое остекление" },
-  { id: "krauss_w62",      material: "aluminum_warm", brand: "Kraus",     series: "W62",         chambers: 1, depth: 62, glassThicknessMax: 40, priceCoeff: 1.5,  description: "Тёплое, российское производство" },
+  { id: "krauss_w62",      material: "aluminum_warm", brand: "Krauss",    series: "W62",         chambers: 1, depth: 62, glassThicknessMax: 40, priceCoeff: 1.0,  description: "Тёплое, российское производство" },
+  { id: "alutech_w72",     material: "aluminum_warm", brand: "Alutech",   series: "W72",         chambers: 1, depth: 72, glassThicknessMax: 44, priceCoeff: 1.15, description: "Тёплое алюминиевое остекление" },
+  { id: "schuco_aws75",    material: "aluminum_warm", brand: "Schüco",    series: "AWS 75",      chambers: 1, depth: 75, glassThicknessMax: 48, priceCoeff: 1.55, description: "Премиум тёплое остекление" },
+  { id: "reynaers_cs77",   material: "aluminum_warm", brand: "Reynaers",  series: "CS 77",       chambers: 1, depth: 77, glassThicknessMax: 50, priceCoeff: 1.65, description: "Бельгийская тёплая система" },
 ];
 
 // ─── Стеклопакеты ────────────────────────────────────────────────────────────
@@ -110,12 +111,12 @@ export interface GlassCoating {
 
 export const GLASS_COATINGS: GlassCoating[] = [
   { id: "none",         name: "Без покрытия",         description: "Стандартное стекло",                  priceAdd: 0    },
-  { id: "energy_save",  name: "K-стекло (i-стекло)",  description: "Энергосберегающее покрытие",          priceAdd: 780  },
-  { id: "low_e",        name: "Low-E (мягкое)",        description: "Нейтральное, макс. светопропускание", priceAdd: 1100 },
-  { id: "solar_ctrl",   name: "Солнцезащитное",        description: "Отражение тепла до 60%",              priceAdd: 1380 },
-  { id: "self_clean",   name: "Самоочищающееся",       description: "Гидрофильное покрытие Pilkington",    priceAdd: 2050 },
-  { id: "decorative",   name: "Тонированное",          description: "Серый, бронза, синий",                priceAdd: 1050 },
-  { id: "frosted",      name: "Матовое (сатин)",       description: "Пескоструйное или кислотное травление", priceAdd: 1200 },
+  { id: "energy_save",  name: "K-стекло (i-стекло)",  description: "Энергосберегающее покрытие",          priceAdd: 450  },
+  { id: "low_e",        name: "Low-E (мягкое)",        description: "Нейтральное, макс. светопропускание", priceAdd: 650  },
+  { id: "solar_ctrl",   name: "Солнцезащитное",        description: "Отражение тепла до 60%",              priceAdd: 850  },
+  { id: "self_clean",   name: "Самоочищающееся",       description: "Гидрофильное покрытие Pilkington",    priceAdd: 1400 },
+  { id: "decorative",   name: "Тонированное",          description: "Серый, бронза, синий",                priceAdd: 600  },
+  { id: "frosted",      name: "Матовое (сатин)",       description: "Пескоструйное или кислотное травление", priceAdd: 700  },
 ];
 
 // ─── Ламинирование профиля ───────────────────────────────────────────────────
@@ -137,13 +138,13 @@ export interface LaminationOption {
 
 export const LAMINATION_TYPES: LaminationOption[] = [
   { id: "none",         name: "Без ламинации (белый)",   description: "Стандартный белый профиль",           priceAdd: 0   },
-  { id: "golden_oak",   name: "Золотой дуб",             description: "Тиснение под дерево",                priceAdd: 490 },
-  { id: "dark_oak",     name: "Тёмный дуб",              description: "Тёмная текстура дерева",             priceAdd: 490 },
-  { id: "mahogany",     name: "Махагон",                 description: "Красно-коричневый дуб",               priceAdd: 490 },
-  { id: "antracite",    name: "Антрацит (RAL 7016)",     description: "Тёмно-серый, популярный цвет",        priceAdd: 610 },
-  { id: "black",        name: "Чёрный (RAL 9005)",       description: "Чёрный матовый профиль",              priceAdd: 610 },
-  { id: "silver",       name: "Серебристый металлик",    description: "Алюминий под металл",                 priceAdd: 560 },
-  { id: "ral_custom",   name: "RAL по запросу",          description: "Любой цвет каталога RAL",             priceAdd: 870 },
+  { id: "golden_oak",   name: "Золотой дуб",             description: "Тиснение под дерево",                priceAdd: 380 },
+  { id: "dark_oak",     name: "Тёмный дуб",              description: "Тёмная текстура дерева",             priceAdd: 380 },
+  { id: "mahogany",     name: "Махагон",                 description: "Красно-коричневый дуб",               priceAdd: 380 },
+  { id: "antracite",    name: "Антрацит (RAL 7016)",     description: "Тёмно-серый, популярный цвет",        priceAdd: 450 },
+  { id: "black",        name: "Чёрный (RAL 9005)",       description: "Чёрный матовый профиль",              priceAdd: 450 },
+  { id: "silver",       name: "Серебристый металлик",    description: "Алюминий под металл",                 priceAdd: 420 },
+  { id: "ral_custom",   name: "RAL по запросу",          description: "Любой цвет каталога RAL",             priceAdd: 650 },
 ];
 
 // ─── Регионы ─────────────────────────────────────────────────────────────────
@@ -184,15 +185,15 @@ export interface Hardware {
 }
 
 export const HARDWARE_OPTIONS: Hardware[] = [
-  { id: "maco_multi",     brand: "MACO",    series: "Multi-Matic",    description: "Австрия, базовая",          pricePerSash: 3100 },
-  { id: "maco_smart",     brand: "MACO",    series: "Smart",          description: "Австрия, с микропроветр.",  pricePerSash: 4100 },
-  { id: "roto_nt",        brand: "ROTO",    series: "NT",             description: "Германия, стандарт",        pricePerSash: 3450 },
-  { id: "roto_ntdesign",  brand: "ROTO",    series: "NT Design",      description: "Германия, скрытая петля",   pricePerSash: 5500 },
-  { id: "winkhaus_av2",   brand: "Winkhaus", series: "activPilot",    description: "Германия, автоматика",      pricePerSash: 6500 },
-  { id: "siegenia_ti",    brand: "Siegenia", series: "TITAN AF",      description: "Германия, высокая нагрузка",pricePerSash: 4800 },
-  { id: "gretsch_mf",     brand: "G-U",      series: "Secural MF",    description: "Германия, антивзломная",    pricePerSash: 6000 },
-  { id: "futuruss_301",   brand: "Futuruss", series: "F-301",         description: "Россия, базовая",           pricePerSash: 2100 },
-  { id: "kale_basic",     brand: "Kale",     series: "Basic",         description: "Турция, эконом",            pricePerSash: 1750 },
+  { id: "kale_basic",     brand: "Kale",     series: "Basic",         description: "Турция, эконом",            pricePerSash: 1200 },
+  { id: "futuruss_301",   brand: "Futuruss", series: "F-301",         description: "Россия, базовая",           pricePerSash: 1500 },
+  { id: "maco_multi",     brand: "MACO",    series: "Multi-Matic",    description: "Австрия, базовая",          pricePerSash: 2200 },
+  { id: "roto_nt",        brand: "ROTO",    series: "NT",             description: "Германия, стандарт",        pricePerSash: 2500 },
+  { id: "maco_smart",     brand: "MACO",    series: "Smart",          description: "Австрия, с микропроветр.",  pricePerSash: 2900 },
+  { id: "siegenia_ti",    brand: "Siegenia", series: "TITAN AF",      description: "Германия, высокая нагрузка",pricePerSash: 3500 },
+  { id: "roto_ntdesign",  brand: "ROTO",    series: "NT Designo",     description: "Германия, скрытая петля",   pricePerSash: 4200 },
+  { id: "gretsch_mf",     brand: "G-U",      series: "Secural MF",    description: "Германия, антивзломная RC2",pricePerSash: 4800 },
+  { id: "winkhaus_av2",   brand: "Winkhaus", series: "activPilot",    description: "Германия, автоматика",      pricePerSash: 5200 },
 ];
 
 // ─── Тип открывания ─────────────────────────────────────────────────────────
@@ -225,12 +226,12 @@ export interface WindowSill {
 
 export const WINDOW_SILLS: WindowSill[] = [
   { id: "none",           brand: "—",         material: "Без подоконника",       pricePerMeter: 0    },
-  { id: "pvc_white",      brand: "Danke",     material: "ПВХ белый",             pricePerMeter: 780  },
-  { id: "pvc_marble",     brand: "Danke",     material: "ПВХ под мрамор",        pricePerMeter: 900  },
-  { id: "werzalit",       brand: "Werzalit",  material: "Вержалит (дерево-пластик)", pricePerMeter: 1550 },
-  { id: "mdf_oak",        brand: "Egger",     material: "МДФ дуб",               pricePerMeter: 1900 },
-  { id: "granite",        brand: "—",         material: "Натуральный камень",    pricePerMeter: 6000 },
-  { id: "marble",         brand: "—",         material: "Мрамор",                pricePerMeter: 8500 },
+  { id: "pvc_white",      brand: "Danke",     material: "ПВХ белый",             pricePerMeter: 550  },
+  { id: "pvc_marble",     brand: "Danke",     material: "ПВХ под мрамор",        pricePerMeter: 680  },
+  { id: "werzalit",       brand: "Werzalit",  material: "Вержалит (дерево-пластик)", pricePerMeter: 1200 },
+  { id: "mdf_oak",        brand: "Egger",     material: "МДФ дуб",               pricePerMeter: 1500 },
+  { id: "granite",        brand: "—",         material: "Натуральный камень",    pricePerMeter: 4500 },
+  { id: "marble",         brand: "—",         material: "Мрамор",                pricePerMeter: 7000 },
 ];
 
 // ─── Откос ───────────────────────────────────────────────────────────────────
@@ -243,10 +244,10 @@ export interface Slope {
 
 export const SLOPES: Slope[] = [
   { id: "none",         name: "Без откосов",              pricePerMeter: 0    },
-  { id: "pvc_white",    name: "ПВХ панель белая",         pricePerMeter: 660  },
-  { id: "pvc_marble",   name: "ПВХ панель под мрамор",    pricePerMeter: 780  },
-  { id: "gypsum",       name: "Штукатурные (гипс)",       pricePerMeter: 1100 },
-  { id: "mdf",          name: "МДФ крашеный",             pricePerMeter: 1450 },
+  { id: "pvc_white",    name: "ПВХ панель белая",         pricePerMeter: 480  },
+  { id: "pvc_marble",   name: "ПВХ панель под мрамор",    pricePerMeter: 580  },
+  { id: "gypsum",       name: "Штукатурные (гипс)",       pricePerMeter: 850  },
+  { id: "mdf",          name: "МДФ крашеный",             pricePerMeter: 1100 },
 ];
 
 // ─── Итоговая конструкция ────────────────────────────────────────────────────
@@ -277,14 +278,14 @@ export interface WindowConfig {
   totalPrice: number;
 }
 
-export const TRANSOM_PRICE_ADDON = 4200;
+export const TRANSOM_PRICE_ADDON = 2800;
 
 // ─── Базовая цена за м² конструкции ─────────────────────────────────────────
 
 export const BASE_PRICE_PER_M2: Record<ProfileMaterial, number> = {
-  pvc:           20000,
-  aluminum:      16000,
-  aluminum_warm: 37000,
+  pvc:           8500,
+  aluminum:      6500,
+  aluminum_warm: 14500,
 };
 
-export const INSTALLATION_PRICE_PER_M2 = 3100;
+export const INSTALLATION_PRICE_PER_M2 = 2400;
