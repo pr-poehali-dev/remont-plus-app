@@ -11,7 +11,9 @@ export type ConstructionType =
   | "facade"            // Фасадное остекление
   | "roof_window"       // Мансардное окно
   | "partition"         // Офисная перегородка
-  | "entrance_door";    // Входная дверь ПВХ/алюминий
+  | "entrance_door"     // Входная дверь ПВХ/алюминий
+  | "entrance_group"    // Входная группа (штульповая дверь + глухие части)
+  | "shtulp_door";      // Штульповая входная дверь
 
 export interface ConstructionOption {
   value: ConstructionType;
@@ -32,6 +34,8 @@ export const CONSTRUCTION_TYPES: ConstructionOption[] = [
   { value: "roof_window",     label: "Мансардное окно",         icon: "Home",           sashes: 1 },
   { value: "partition",       label: "Офисная перегородка",     icon: "SplitSquareHorizontal", sashes: 2 },
   { value: "entrance_door",   label: "Входная дверь ПВХ/Алюм.", icon: "DoorClosed",     sashes: 1 },
+  { value: "entrance_group",  label: "Входная группа",          icon: "Building",       sashes: 2 },
+  { value: "shtulp_door",     label: "Штульповая входная дверь", icon: "DoorOpen",      sashes: 2 },
 ];
 
 // ─── Материал профиля ───────────────────────────────────────────────────────
@@ -65,6 +69,7 @@ export const PROFILE_SYSTEMS: ProfileSystem[] = [
   { id: "veka_spectral",   material: "pvc", brand: "VEKA",       series: "Spectral",       chambers: 6, depth: 82, glassThicknessMax: 44, priceCoeff: 1.38, description: "6-камерная премиум VEKA" },
   { id: "kbe_88",          material: "pvc", brand: "KBE",        series: "88mm",           chambers: 6, depth: 88, glassThicknessMax: 52, priceCoeff: 1.45, description: "6-камерная высокоэффективная" },
   { id: "rehau_geneo",     material: "pvc", brand: "REHAU",      series: "GENEO",          chambers: 6, depth: 86, glassThicknessMax: 48, priceCoeff: 1.55, description: "6-камерная премиум, армирование из фибергласса" },
+  { id: "whs_halo72",     material: "pvc", brand: "WHS",        series: "Halo 72 (150)",  chambers: 5, depth: 72, glassThicknessMax: 40, priceCoeff: 1.18, description: "5-камерная, 72мм, входные группы и двери" },
   // ── Алюминий холодный ──
   { id: "provedal_t45",    material: "aluminum",      brand: "Provedal",  series: "T45",         chambers: 1, depth: 45, glassThicknessMax: 20, priceCoeff: 1.0,  description: "Холодное алюминиевое остекление" },
   { id: "alutech_s45",     material: "aluminum",      brand: "Alutech",   series: "S45",         chambers: 1, depth: 45, glassThicknessMax: 20, priceCoeff: 1.05, description: "Холодное остекление, балконы" },
@@ -90,6 +95,7 @@ export interface GlassUnit {
 export const GLASS_UNITS: GlassUnit[] = [
   { id: "1ch_4_16_4",       name: "4-16-4",            description: "Однокамерный, аргон",          thickness: 24, chambers: 1, priceCoeff: 1.0  },
   { id: "1ch_4_16_4i",      name: "4-16-4i",           description: "Однокамерный, энергосберег.",  thickness: 24, chambers: 1, priceCoeff: 1.15 },
+  { id: "2ch_4_12_4_12_4",  name: "4-12-4-12-4",       description: "Двухкамерный, алюм. рамка",   thickness: 32, chambers: 2, priceCoeff: 1.25 },
   { id: "2ch_4_10_4_10_4",  name: "4-10-4-10-4",       description: "Двухкамерный стандарт",        thickness: 32, chambers: 2, priceCoeff: 1.3  },
   { id: "2ch_4_14_4_14_4i", name: "4-14-4-14-4i",      description: "Двухкамерный, i-стекло",       thickness: 36, chambers: 2, priceCoeff: 1.5  },
   { id: "2ch_4_16_4_16_4i", name: "4-16-4-16-4i",      description: "Двухкамерный, аргон+i-стекло", thickness: 40, chambers: 2, priceCoeff: 1.65 },
@@ -194,6 +200,7 @@ export const HARDWARE_OPTIONS: Hardware[] = [
   { id: "roto_ntdesign",  brand: "ROTO",    series: "NT Designo",     description: "Германия, скрытая петля",   pricePerSash: 4200 },
   { id: "gretsch_mf",     brand: "G-U",      series: "Secural MF",    description: "Германия, антивзломная RC2",pricePerSash: 4800 },
   { id: "winkhaus_av2",   brand: "Winkhaus", series: "activPilot",    description: "Германия, автоматика",      pricePerSash: 5200 },
+  { id: "reze_press",     brand: "Reze",     series: "С улучш. прижимом", description: "Франция, усиленный прижим",  pricePerSash: 3200 },
 ];
 
 // ─── Тип открывания ─────────────────────────────────────────────────────────

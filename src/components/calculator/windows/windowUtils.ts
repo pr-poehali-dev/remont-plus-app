@@ -104,6 +104,8 @@ export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">, override
   const o = overrides ?? getDefaultOverrides();
 
   const isStandaloneTransom = cfg.constructionType === "transom";
+  const isEntranceGroup = cfg.constructionType === "entrance_group";
+  const isShtulpDoor = cfg.constructionType === "shtulp_door";
   const totalH = cfg.hasTransom && !isStandaloneTransom
     ? cfg.height + cfg.transomHeight
     : cfg.height;
@@ -151,6 +153,16 @@ export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">, override
     }
   }
 
+  if (isShtulpDoor) {
+    price *= 2.06;
+    price += 2336;
+  }
+
+  if (isEntranceGroup) {
+    price *= 2.0;
+    price += 2336;
+  }
+
   const sillPrice = o.sillPrices[cfg.windowSillId] ?? sill?.pricePerMeter ?? 0;
   const sillLen = cfg.windowSillWidth > 0 ? cfg.width / 1000 : 0;
   price += sillPrice * sillLen;
@@ -168,6 +180,8 @@ export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">, override
 
 export function syncSashes(type: WindowConfig["constructionType"], CONSTRUCTION_TYPES: typeof import("./WindowTypes").CONSTRUCTION_TYPES): OpeningType[] {
   if (type === "transom") return ["fixed"] as OpeningType[];
+  if (type === "shtulp_door") return ["swing", "swing"] as OpeningType[];
+  if (type === "entrance_group") return ["swing", "fixed"] as OpeningType[];
   const ct = CONSTRUCTION_TYPES.find(c => c.value === type);
   const n = ct?.sashes ?? 1;
   return Array.from({ length: n }, (_, i) =>
