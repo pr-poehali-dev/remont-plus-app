@@ -13,8 +13,10 @@ import {
   CONSTRUCTION_TYPES, PROFILE_SYSTEMS, GLASS_UNITS, LAMINATION_TYPES, WINDOW_REGIONS,
 } from "@/components/calculator/windows/WindowTypes";
 import type { WindowConfig, ProfileMaterial, OpeningType } from "@/components/calculator/windows/WindowTypes";
-import { calcPrice, DEFAULT_CONFIG, syncSashes, fmt } from "@/components/calculator/windows/windowUtils";
+import { calcPrice, DEFAULT_CONFIG, syncSashes, fmt, loadPriceOverrides, savePriceOverrides, resetPriceOverrides } from "@/components/calculator/windows/windowUtils";
+import type { PriceOverrides } from "@/components/calculator/windows/windowUtils";
 import WindowConfigForm from "@/components/calculator/windows/WindowConfigForm";
+import WindowPriceSettings from "@/components/calculator/windows/WindowPriceSettings";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import DocsTab from "@/components/calculator/DocsTab";
@@ -48,10 +50,12 @@ export default function Windows() {
   const [markupPct, setMarkupPct] = useState<number>(loadMarkup);
   const [showMarkup, setShowMarkup] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [showPriceSettings, setShowPriceSettings] = useState(false);
+  const [priceOverrides, setPriceOverrides] = useState<PriceOverrides>(loadPriceOverrides);
 
   const update = (patch: Partial<typeof cfg>) => setCfg(prev => ({ ...prev, ...patch }));
 
-  const basePrice = calcPrice(cfg);
+  const basePrice = calcPrice(cfg, priceOverrides);
   const markup = markupPct > 0 ? Math.round(basePrice * markupPct / 100) : 0;
   const price = basePrice + markup;
 
@@ -149,6 +153,15 @@ export default function Windows() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPriceSettings(true)}
+                className={JSON.stringify(priceOverrides) !== JSON.stringify(loadPriceOverrides()) ? "" : ""}
+              >
+                <Icon name="Settings" size={15} className="mr-1.5" />
+                Мои цены
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -426,6 +439,14 @@ export default function Windows() {
         />
       )}
       <SalesWidget calcContext={{ calcName: "Калькулятор окон", totalPrice: totalSum }} />
+
+      <WindowPriceSettings
+        open={showPriceSettings}
+        onOpenChange={setShowPriceSettings}
+        overrides={priceOverrides}
+        onSave={o => { savePriceOverrides(o); setPriceOverrides(o); }}
+        onReset={() => { resetPriceOverrides(); setPriceOverrides(loadPriceOverrides()); }}
+      />
     </div>
     </CalcAuthGate>
   );

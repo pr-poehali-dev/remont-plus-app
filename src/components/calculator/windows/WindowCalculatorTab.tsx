@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Icon from "@/components/ui/icon";
 import type { EstimateItem } from "@/pages/Calculator";
 import {
   CONSTRUCTION_TYPES, GLASS_UNITS, LAMINATION_TYPES, PROFILE_SYSTEMS,
 } from "./WindowTypes";
 import type { WindowConfig, ProfileMaterial, OpeningType } from "./WindowTypes";
-import { calcPrice, DEFAULT_CONFIG, syncSashes } from "./windowUtils";
+import { calcPrice, DEFAULT_CONFIG, syncSashes, loadPriceOverrides, savePriceOverrides, resetPriceOverrides } from "./windowUtils";
+import type { PriceOverrides } from "./windowUtils";
 import WindowConfigForm from "./WindowConfigForm";
 import WindowSummaryPanel from "./WindowSummaryPanel";
+import WindowPriceSettings from "./WindowPriceSettings";
 
 interface Props {
   onAddToEstimate: (item: EstimateItem) => void;
@@ -17,10 +21,12 @@ export default function WindowCalculatorTab({ onAddToEstimate }: Props) {
   const [cfg, setCfg] = useState<Omit<WindowConfig, "id" | "totalPrice">>(DEFAULT_CONFIG);
   const [configs, setConfigs] = useState<WindowConfig[]>([]);
   const [matFilter, setMatFilter] = useState<ProfileMaterial | "all">("all");
+  const [showPriceSettings, setShowPriceSettings] = useState(false);
+  const [priceOverrides, setPriceOverrides] = useState<PriceOverrides>(loadPriceOverrides);
 
   const update = (patch: Partial<typeof cfg>) => setCfg(prev => ({ ...prev, ...patch }));
 
-  const price = calcPrice(cfg);
+  const price = calcPrice(cfg, priceOverrides);
 
   const handleSashOpeningChange = (idx: number, val: OpeningType) => {
     const arr = [...cfg.openingTypes];
@@ -73,11 +79,17 @@ export default function WindowCalculatorTab({ onAddToEstimate }: Props) {
           <h3 className="text-lg font-semibold">Расчёт окон и остекления</h3>
           <p className="text-sm text-gray-500">ПВХ и алюминиевые конструкции любых производителей</p>
         </div>
-        {configs.length > 0 && (
-          <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-            {configs.length} позиц. в смете
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowPriceSettings(true)}>
+            <Icon name="Settings" size={14} className="mr-1.5" />
+            Мои цены
+          </Button>
+          {configs.length > 0 && (
+            <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+              {configs.length} позиц. в смете
+            </Badge>
+          )}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-5 gap-6">
@@ -102,6 +114,14 @@ export default function WindowCalculatorTab({ onAddToEstimate }: Props) {
           />
         </div>
       </div>
+
+      <WindowPriceSettings
+        open={showPriceSettings}
+        onOpenChange={setShowPriceSettings}
+        overrides={priceOverrides}
+        onSave={o => { savePriceOverrides(o); setPriceOverrides(o); }}
+        onReset={() => { resetPriceOverrides(); setPriceOverrides(loadPriceOverrides()); }}
+      />
     </div>
   );
 }
