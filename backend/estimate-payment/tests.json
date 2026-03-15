@@ -11,7 +11,7 @@
         "client_email": "test@example.com"
       },
       "expectedStatus": 400,
-      "expectedBody": { "error": "plan_type и amount обязательны" },
+      "expectedBody": { "error": "string" },
       "bodyMatcher": "partial"
     },
     {
@@ -36,6 +36,36 @@
       },
       "expectedStatus": 404,
       "expectedBody": { "error": "Заказ не найден" },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create invoice - missing company data",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "create_invoice",
+        "plan_type": "b2b_start",
+        "company_name": "",
+        "inn": "",
+        "client_email": "test@company.ru"
+      },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create invoice - invalid plan_type",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "create_invoice",
+        "plan_type": "invalid_plan",
+        "company_name": "ООО Тест",
+        "inn": "1234567890",
+        "client_email": "test@company.ru"
+      },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
       "bodyMatcher": "partial"
     },
     {

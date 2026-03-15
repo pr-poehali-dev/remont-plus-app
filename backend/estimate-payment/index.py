@@ -94,6 +94,21 @@ PLAN_LABELS = {
     "estimate_print": "Смета + распечатка",
     "estimate_digital": "Смета в PDF",
     "estimate_consult": "Смета + консультация эксперта",
+    "b2c_basic": "Базовый (B2C)",
+    "b2c_professional": "Профессиональный (B2C)",
+    "b2c_premium": "Премиум (B2C)",
+    "b2b_start": "Старт (B2B)",
+    "b2b_business": "Бизнес (B2B)",
+    "b2b_pro": "Профи (B2B)",
+}
+
+PLAN_PRICES = {
+    "b2c_basic": 1490,
+    "b2c_professional": 2990,
+    "b2c_premium": 4990,
+    "b2b_start": 5900,
+    "b2b_business": 12900,
+    "b2b_pro": 24900,
 }
 
 
@@ -194,6 +209,38 @@ def admin_email_html(plan_type: str, order_number: str, client_name: str,
 </body></html>"""
 
 
+def invoice_request_email_html(plan_type: str, order_number: str, contact_name: str,
+                               company_name: str, amount: float) -> str:
+    label = PLAN_LABELS.get(plan_type, plan_type)
+    fmt = lambda n: f"{n:,.0f}".replace(",", " ")
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px;">
+  <div style="max-width: 540px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 28px 32px;">
+      <h1 style="color: #fff; margin: 0; font-size: 20px;">Запрос на выставление счёта принят</h1>
+      <p style="color: rgba(255,255,255,0.85); margin: 6px 0 0; font-size: 14px;">Авангард &middot; {order_number}</p>
+    </div>
+    <div style="padding: 28px 32px;">
+      <p style="color: #333; font-size: 15px;">Здравствуйте, <strong>{contact_name or 'уважаемый клиент'}</strong>!</p>
+      <p style="color: #555; font-size: 14px; margin-bottom: 20px;">
+        Ваш запрос на счёт для компании <strong>{company_name}</strong> принят. Мы подготовим счёт и отправим его вам в ближайшее рабочее время.
+      </p>
+      <div style="background: #f0f7ff; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px;">
+        <p style="margin: 0 0 8px; color: #888; font-size: 13px;">Детали запроса</p>
+        <p style="margin: 4px 0; color: #111; font-size: 14px;"><strong>Тариф:</strong> {label}</p>
+        <p style="margin: 4px 0; color: #111; font-size: 14px;"><strong>Сумма:</strong> {fmt(amount)} &#8381;/мес</p>
+        <p style="margin: 4px 0; color: #111; font-size: 14px;"><strong>Номер заявки:</strong> {order_number}</p>
+      </div>
+      <p style="color: #888; font-size: 13px;">Если у вас есть вопросы &mdash; звоните: <strong>8 (927) 748-68-68</strong></p>
+    </div>
+    <div style="background: #f9fafb; padding: 14px 32px; text-align: center;">
+      <p style="color: #bbb; font-size: 11px; margin: 0;">Авангард &middot; avangard-ai.ru &middot; Автоматическое уведомление</p>
+    </div>
+  </div>
+</body></html>"""
+
+
 def handler(event: dict, context) -> dict:
     """Обработка запросов на создание и проверку заказов смет с оплатой через Точка Банк."""
     if event.get("httpMethod") == "OPTIONS":
@@ -241,7 +288,7 @@ def handler(event: dict, context) -> dict:
 
     if action == "create_order":
         plan_type = body.get("plan_type", "")
-        amount = float(body.get("amount", 0))
+        amount = body.get("amount")
         client_name = body.get("client_name", "")
         client_email = body.get("client_email", "")
         client_phone = body.get("client_phone", "")
@@ -249,8 +296,14 @@ def handler(event: dict, context) -> dict:
         user_id = body.get("user_id")
         return_url = body.get("return_url", "https://avangard-ai.ru/prices")
 
-        if not plan_type or not amount:
+        if not plan_type:
+            return resp(400, {"error": "plan_type обязателен"})
+
+        if plan_type in PLAN_PRICES:
+            amount = PLAN_PRICES[plan_type]
+        elif not amount:
             return resp(400, {"error": "plan_type и amount обязательны"})
+        amount = float(amount)
 
         external_id = str(uuid.uuid4())
         label = PLAN_LABELS.get(plan_type, plan_type)
@@ -332,6 +385,81 @@ def handler(event: dict, context) -> dict:
         return resp(200, {
             "order_id": row[0], "status": row[1], "plan_type": row[2],
             "amount": float(row[3]), "paid_at": str(row[4]) if row[4] else None,
+        })
+
+    if action == "create_invoice":
+        plan_type = body.get("plan_type", "")
+        company_name = body.get("company_name", "")
+        inn = body.get("inn", "")
+        contact_name = body.get("contact_name", "")
+        client_email = body.get("client_email", "")
+        client_phone = body.get("client_phone", "")
+        client_comment = body.get("client_comment", "")
+
+        if not plan_type or plan_type not in PLAN_PRICES:
+            return resp(400, {"error": "Некорректный plan_type для выставления счёта"})
+        if not company_name.strip() or not inn.strip():
+            return resp(400, {"error": "Название компании и ИНН обязательны"})
+        if not client_email.strip():
+            return resp(400, {"error": "Email обязателен"})
+
+        amount = PLAN_PRICES[plan_type]
+        label = PLAN_LABELS.get(plan_type, plan_type)
+
+        external_id = str(uuid.uuid4())
+        comment_full = f"Компания: {company_name}, ИНН: {inn}"
+        if client_comment.strip():
+            comment_full += f", {client_comment.strip()}"
+
+        conn = get_conn()
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""INSERT INTO {S}estimate_orders
+                    (plan_type, amount, client_name, client_email, client_phone, client_comment, status, payment_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, 'invoice', %s)
+                    RETURNING id""",
+                (plan_type, amount, contact_name, client_email, client_phone, comment_full, external_id),
+            )
+            order_id = cur.fetchone()[0]
+            order_number = f"INV-{order_id:05d}"
+            cur.execute(
+                f"UPDATE {S}estimate_orders SET order_number=%s WHERE id=%s",
+                (order_number, order_id),
+            )
+            conn.commit()
+        conn.close()
+
+        send_telegram(
+            f"<b>Запрос счёта (B2B)</b>\n"
+            f"Заказ: <b>{order_number}</b>\n"
+            f"Тариф: {label}\n"
+            f"Сумма: <b>{amount:,.0f} ₽</b>/мес\n"
+            f"Компания: {company_name}\n"
+            f"ИНН: {inn}\n"
+            f"Контакт: {contact_name or '—'}\n"
+            f"Email: {client_email}\n"
+            f"Телефон: {client_phone or '—'}"
+        )
+
+        admin_email = os.environ.get("ADMIN_EMAIL", "")
+        if admin_email:
+            send_email(
+                admin_email,
+                f"Запрос счёта {order_number} — {company_name}",
+                admin_email_html(plan_type, order_number, contact_name, client_email, client_phone, comment_full, amount),
+            )
+
+        if client_email:
+            send_email(
+                client_email,
+                f"Ваш запрос на счёт {order_number} принят — Авангард",
+                invoice_request_email_html(plan_type, order_number, contact_name, company_name, amount),
+            )
+
+        return resp(200, {
+            "order_id": order_id,
+            "order_number": order_number,
+            "status": "invoice",
         })
 
     return resp(400, {"error": f"Неизвестный action: {action}"})
