@@ -6,7 +6,6 @@ import {
 } from "@/components/calculator/newbuild/NewbuildTypes";
 import type { NewbuildConfig } from "@/components/calculator/newbuild/NewbuildTypes";
 import { calcNewbuildPrice, calcNewbuildProjectTotals, calcNewbuildMaterials, fmt } from "@/components/calculator/newbuild/newbuildUtils";
-import PrintPaywall from "@/components/print/PrintPaywall";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
@@ -113,9 +112,9 @@ export default function NewbuildPrint() {
       projectTitle: "Ремонт в новостройке",
     };
     return (
-      <PrintPaywall>
+      <>
         <UniversalDocView data={docData} />
-      </PrintPaywall>
+      </>
     );
   }
 
@@ -130,7 +129,7 @@ export default function NewbuildPrint() {
         body { font-family: Arial, sans-serif; background: #f9fafb; }
       `}</style>
 
-      <PrintPaywall>
+      <>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         {/* Шапка */}
         <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-800">
@@ -381,7 +380,7 @@ export default function NewbuildPrint() {
           </div>
         )}
       </div>
-      </PrintPaywall>
+      </>
     </>
   );
 }

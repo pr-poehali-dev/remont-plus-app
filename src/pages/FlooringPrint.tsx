@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import { FLOORING_PRODUCTS, FLOORING_CATEGORIES, SUBSTRATE_OPTIONS, INSTALL_PATTERNS, SKIRTING_OPTIONS, REGIONS } from "@/components/calculator/flooring/FlooringTypes";
 import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTypes";
 import { calcFlooringPrice, fmt } from "@/components/calculator/flooring/flooringUtils";
-import PrintPaywall from "@/components/print/PrintPaywall";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
@@ -100,9 +99,9 @@ export default function FlooringPrint() {
       projectTitle: "Укладка напольных покрытий",
     };
     return (
-      <PrintPaywall>
+      <>
         <UniversalDocView data={docData} />
-      </PrintPaywall>
+      </>
     );
   }
 
@@ -117,7 +116,7 @@ export default function FlooringPrint() {
         body { font-family: 'Arial', sans-serif; background: #f9fafb; }
       `}</style>
 
-      <PrintPaywall>
+      <>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         {/* Шапка */}
         <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-800">
@@ -317,7 +316,7 @@ export default function FlooringPrint() {
           Документ сформирован {date} · АВАНГАРД · avangard-ai.ru
         </p>
       </div>
-      </PrintPaywall>
+      </>
     </>
   );
 }

@@ -4,7 +4,6 @@ import { COMMON_STYLES } from "@/components/print/PrintTypes";
 import type { PrintData } from "@/components/print/PrintTypes";
 import SmetaView from "@/components/print/SmetaView";
 import KpView from "@/components/print/KpView";
-import PrintPaywall from "@/components/print/PrintPaywall";
 
 export default function EstimatePrint() {
   const location = useLocation();
@@ -72,8 +71,8 @@ export default function EstimatePrint() {
   );
 
   return (
-    <PrintPaywall>
+    <>
       {docContent}
-    </PrintPaywall>
+    </>
   );
 }

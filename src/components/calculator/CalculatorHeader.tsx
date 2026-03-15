@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
-import { FREE_PRINTS_LIMIT } from "@/hooks/useCalculatorState";
 
 interface CalculatorHeaderProps {
   currentRegionName: string | undefined;
@@ -9,10 +8,6 @@ interface CalculatorHeaderProps {
   itemsCount: number;
   savedToDb: boolean;
   loading: boolean;
-  hasPaidPlan: boolean;
-  hasFreePrints: boolean;
-  freePrintsUsed: number;
-  canExport: boolean;
   onShowTemplates: () => void;
   onExport: () => void;
 }
@@ -23,10 +18,6 @@ export default function CalculatorHeader({
   itemsCount,
   savedToDb,
   loading,
-  hasPaidPlan,
-  hasFreePrints,
-  freePrintsUsed,
-  canExport,
   onShowTemplates,
   onExport,
 }: CalculatorHeaderProps) {
@@ -62,17 +53,10 @@ export default function CalculatorHeader({
               <Icon name={loading ? "Loader2" : "LayoutTemplate"} className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               Шаблоны
             </Button>
-            <div className="relative">
-              <Button onClick={onExport}>
-                <Icon name={canExport ? "Download" : "Lock"} className="mr-2 h-4 w-4" />
-                Скачать PDF
-              </Button>
-              {!hasPaidPlan && hasFreePrints && (
-                <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
-                  {FREE_PRINTS_LIMIT - freePrintsUsed}
-                </span>
-              )}
-            </div>
+            <Button onClick={onExport}>
+              <Icon name="Download" className="mr-2 h-4 w-4" />
+              Скачать PDF
+            </Button>
           </div>
         </div>
       </div>

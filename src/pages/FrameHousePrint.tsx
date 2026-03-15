@@ -9,7 +9,6 @@ import type { FrameHouseConfig } from "@/components/calculator/framehouse/FrameH
 import type { FrameHouseBreakdown } from "@/components/calculator/framehouse/frameHouseUtils";
 import { fmt, calcFrameHouseMaterials } from "@/components/calculator/framehouse/frameHouseUtils";
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
-import PrintPaywall from "@/components/print/PrintPaywall";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
@@ -141,9 +140,9 @@ export default function FrameHousePrint() {
       projectTitle: "Строительство каркасного дома под ключ",
     };
     return (
-      <PrintPaywall>
+      <>
         <UniversalDocView data={docData} />
-      </PrintPaywall>
+      </>
     );
   }
 
@@ -160,7 +159,7 @@ export default function FrameHousePrint() {
         th, td { border: 1px solid #e5e7eb; }
       `}</style>
 
-      <PrintPaywall>
+      <>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         {/* Шапка */}
         <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-800">
@@ -334,7 +333,7 @@ export default function FrameHousePrint() {
           {isKp && validDays && <p className="mt-1">* Коммерческое предложение действительно {validDays} дней с даты составления.</p>}
         </div>
       </div>
-      </PrintPaywall>
+      </>
     </>
   );
 }

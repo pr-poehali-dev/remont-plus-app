@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import { CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS, CEILING_COLORS, LIGHTING_OPTIONS, PROFILE_OPTIONS } from "@/components/calculator/ceilings/CeilingTypes";
 import { fmt, CEILING_PRINT_STYLES } from "@/components/print/CeilingPrintTypes";
 import type { CeilingPrintState } from "@/components/print/CeilingPrintTypes";
-import PrintPaywall from "@/components/print/PrintPaywall";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
@@ -79,9 +78,9 @@ export default function CeilingPrint() {
       projectTitle: "Монтаж натяжных потолков",
     };
     return (
-      <PrintPaywall>
+      <>
         <UniversalDocView data={docData} />
-      </PrintPaywall>
+      </>
     );
   }
 
@@ -89,7 +88,7 @@ export default function CeilingPrint() {
     <>
       <style>{CEILING_PRINT_STYLES}</style>
 
-      <PrintPaywall>
+      <>
       <div className="page">
 
         {/* Шапка */}
@@ -278,7 +277,7 @@ export default function CeilingPrint() {
           Документ сформирован с помощью АВАНГАРД · avangard-ai.ru
         </div>
       </div>
-      </PrintPaywall>
+      </>
     </>
   );
 }

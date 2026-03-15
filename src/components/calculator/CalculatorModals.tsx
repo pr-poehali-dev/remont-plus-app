@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { type EstimateSavedItem } from "@/lib/lemanapro-data";
-import { type EstimateItem, type PriceCategory, incrementFreePrints } from "@/hooks/useCalculatorState";
+import { type EstimateItem, type PriceCategory } from "@/hooks/useCalculatorState";
 
 import ExportDialog from "@/components/calculator/ExportDialog";
 import TemplatesDialog from "@/components/calculator/TemplatesDialog";
-import PaywallModal from "@/components/calculator/PaywallModal";
+
 import CalcTour from "@/components/calculator/CalcTour";
 import SalesWidget from "@/components/calculator/SalesWidget";
 
@@ -17,10 +17,6 @@ interface CalculatorModalsProps {
   setShowTemplates: (v: boolean) => void;
   showExportDialog: boolean;
   setShowExportDialog: (v: boolean) => void;
-  showPaywall: boolean;
-  setShowPaywall: (v: boolean) => void;
-  hasPaidPlan: boolean;
-  reloadSub: () => void;
   totalWithDelivery: number;
   currentRegionName: string | undefined;
   totalMaterials: number;
@@ -42,10 +38,6 @@ export default function CalculatorModals({
   setShowTemplates,
   showExportDialog,
   setShowExportDialog,
-  showPaywall,
-  setShowPaywall,
-  hasPaidPlan,
-  reloadSub,
   totalWithDelivery,
   currentRegionName,
   totalMaterials,
@@ -76,7 +68,6 @@ export default function CalculatorModals({
           onCancel={() => setShowExportDialog(false)}
           onConfirm={({ customer, contractor, address, phone, email, validDays, docType, inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount }) => {
             setShowExportDialog(false);
-            if (!hasPaidPlan) incrementFreePrints();
             const docNum = Date.now().toString().slice(-6);
             const date = new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
             navigate("/estimate/print", {
@@ -109,17 +100,6 @@ export default function CalculatorModals({
                 date,
               },
             });
-          }}
-        />
-      )}
-
-      {showPaywall && (
-        <PaywallModal
-          onClose={() => setShowPaywall(false)}
-          onSuccess={() => {
-            setShowPaywall(false);
-            reloadSub();
-            setShowExportDialog(true);
           }}
         />
       )}

@@ -6,7 +6,6 @@ import {
 } from "@/components/calculator/turnkey/TurnkeyTypes";
 import type { TurnkeyConfig } from "@/components/calculator/turnkey/TurnkeyTypes";
 import { calcTurnkeyPrice, calcTurnkeyMaterials, fmt } from "@/components/calculator/turnkey/turnkeyUtils";
-import PrintPaywall from "@/components/print/PrintPaywall";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
@@ -167,9 +166,9 @@ export default function TurnkeyPrint() {
       projectTitle: "Ремонт под ключ",
     };
     return (
-      <PrintPaywall>
+      <>
         <UniversalDocView data={docData} />
-      </PrintPaywall>
+      </>
     );
   }
 
@@ -184,7 +183,7 @@ export default function TurnkeyPrint() {
         body { font-family: Arial, sans-serif; background: #f9fafb; }
       `}</style>
 
-      <PrintPaywall>
+      <>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         {/* Шапка */}
         <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-800">
@@ -357,7 +356,7 @@ export default function TurnkeyPrint() {
           </div>
         )}
       </div>
-      </PrintPaywall>
+      </>
     </>
   );
 }

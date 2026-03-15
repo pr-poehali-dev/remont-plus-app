@@ -10,7 +10,6 @@ import type { BathHouseConfig } from "@/components/calculator/bathhouse/BathHous
 import type { BathHouseBreakdown } from "@/components/calculator/bathhouse/bathHouseUtils";
 import { fmt, calcBathHouseMaterials } from "@/components/calculator/bathhouse/bathHouseUtils";
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
-import PrintPaywall from "@/components/print/PrintPaywall";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
@@ -143,9 +142,9 @@ export default function BathHousePrint() {
       projectTitle: "Строительство бани под ключ",
     };
     return (
-      <PrintPaywall>
+      <>
         <UniversalDocView data={docData} />
-      </PrintPaywall>
+      </>
     );
   }
 
@@ -163,7 +162,7 @@ export default function BathHousePrint() {
         th, td { border: 1px solid #e5e7eb; }
       `}</style>
 
-      <PrintPaywall>
+      <>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
 
         {/* Шапка документа */}
@@ -411,7 +410,7 @@ export default function BathHousePrint() {
           <span>{date}</span>
         </div>
       </div>
-      </PrintPaywall>
+      </>
     </>
   );
 }

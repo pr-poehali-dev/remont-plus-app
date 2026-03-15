@@ -98,12 +98,8 @@ export default function Calculator() {
         itemsCount={state.items.length}
         savedToDb={state.savedToDb}
         loading={state.loading}
-        hasPaidPlan={state.hasPaidPlan}
-        hasFreePrints={state.hasFreePrints}
-        freePrintsUsed={state.freePrintsUsed}
-        canExport={state.canExport}
         onShowTemplates={() => state.setShowTemplates(true)}
-        onExport={() => state.canExport ? state.setShowExportDialog(true) : state.setShowPaywall(true)}
+        onExport={() => state.setShowExportDialog(true)}
       />
 
       <CalculatorBody
@@ -147,10 +143,6 @@ export default function Calculator() {
         setShowTemplates={state.setShowTemplates}
         showExportDialog={state.showExportDialog}
         setShowExportDialog={state.setShowExportDialog}
-        showPaywall={state.showPaywall}
-        setShowPaywall={state.setShowPaywall}
-        hasPaidPlan={state.hasPaidPlan}
-        reloadSub={state.reloadSub}
         totalWithDelivery={state.totalWithDelivery}
         currentRegionName={state.currentRegion?.name}
         totalMaterials={state.totalMaterials}

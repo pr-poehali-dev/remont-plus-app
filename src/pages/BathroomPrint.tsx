@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import { REGIONS, BATHROOM_TYPES, FLOOR_TILES, WALL_TILES, WATERPROOFING_TYPES } from "@/components/calculator/bathroom/BathroomTypes";
 import type { BathroomConfig } from "@/components/calculator/bathroom/BathroomTypes";
 import { calcBathroomPrice, fmt } from "@/components/calculator/bathroom/bathroomUtils";
-import PrintPaywall from "@/components/print/PrintPaywall";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
@@ -93,9 +92,9 @@ export default function BathroomPrint() {
       projectTitle: "Ремонт санузла",
     };
     return (
-      <PrintPaywall>
+      <>
         <UniversalDocView data={docData} />
-      </PrintPaywall>
+      </>
     );
   }
 
@@ -110,7 +109,7 @@ export default function BathroomPrint() {
         body { font-family: 'Arial', sans-serif; background: #f9fafb; }
       `}</style>
 
-      <PrintPaywall>
+      <>
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         {/* Шапка */}
         <div className="flex justify-between items-start mb-6 pb-4 border-b-2 border-gray-800">
@@ -330,7 +329,7 @@ export default function BathroomPrint() {
           </div>
         </div>
       </div>
-      </PrintPaywall>
+      </>
     </>
   );
 }

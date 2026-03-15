@@ -1,16 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { getEstimateItems, type EstimateSavedItem } from "@/lib/lemanapro-data";
-import { useSubscription } from "@/hooks/useSubscription";
-
-export const FREE_PRINTS_KEY = "calc_free_prints_used";
-export const FREE_PRINTS_LIMIT = 3;
-
-export function getFreePrintsUsed(): number {
-  return parseInt(localStorage.getItem(FREE_PRINTS_KEY) || "0", 10);
-}
-export function incrementFreePrints() {
-  localStorage.setItem(FREE_PRINTS_KEY, String(getFreePrintsUsed() + 1));
-}
 
 export const SERVICE_PRICES_URL = "https://functions.poehali.dev/4dae7ba0-b573-436a-b4c6-d3b0abf69fce";
 export const ESTIMATES_URL = "https://functions.poehali.dev/2be69072-d4ba-493f-b89e-575fbbd70e8e";
@@ -58,15 +47,9 @@ export function useCalculatorState() {
   const [loading, setLoading] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
 
   const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
   const userId: number | null = storedUser?.id ?? null;
-  const { subscription, reload: reloadSub } = useSubscription(userId);
-  const hasPaidPlan = true;
-  const freePrintsUsed = getFreePrintsUsed();
-  const hasFreePrints = true;
-  const canExport = true;
 
   const [deliveryFloor, setDeliveryFloor] = useState<number>(1);
   const [deliveryHasElevator, setDeliveryHasElevator] = useState<boolean>(true);
@@ -183,13 +166,7 @@ export function useCalculatorState() {
     loading,
     showExportDialog, setShowExportDialog,
     showTemplates, setShowTemplates,
-    showPaywall, setShowPaywall,
     userId,
-    hasPaidPlan,
-    freePrintsUsed,
-    hasFreePrints,
-    canExport,
-    reloadSub,
     savedToDb,
     deliveryFloor, setDeliveryFloor,
     deliveryHasElevator, setDeliveryHasElevator,

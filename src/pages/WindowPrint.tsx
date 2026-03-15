@@ -4,7 +4,6 @@ import { CONSTRUCTION_TYPES, PROFILE_SYSTEMS, GLASS_UNITS } from "@/components/c
 import { fmt, WINDOW_PRINT_STYLES } from "@/components/print/WindowPrintTypes";
 import type { WindowPrintState } from "@/components/print/WindowPrintTypes";
 import WindowCard from "@/components/print/WindowCard";
-import PrintPaywall from "@/components/print/PrintPaywall";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 
@@ -79,9 +78,9 @@ export default function WindowPrint() {
       projectTitle: "Поставка и монтаж окон",
     };
     return (
-      <PrintPaywall>
+      <>
         <UniversalDocView data={docData} />
-      </PrintPaywall>
+      </>
     );
   }
 
@@ -89,7 +88,7 @@ export default function WindowPrint() {
     <>
       <style>{WINDOW_PRINT_STYLES}</style>
 
-      <PrintPaywall>
+      <>
       <div className="page">
 
         {/* Шапка */}
@@ -238,7 +237,7 @@ export default function WindowPrint() {
           {isKp ? `КП-${docNum}` : `Смета № С-${docNum}`} от {date} г. · Документ сформирован автоматически
         </div>
       </div>
-      </PrintPaywall>
+      </>
     </>
   );
 }
