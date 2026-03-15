@@ -52,7 +52,7 @@ export default function WindowPrint() {
       const gl = GLASS_UNITS.find(g => g.id === cfg.glassUnitId);
       return {
         num: idx + 1,
-        name: `${ct?.label || "Конструкция"}, ${cfg.width}×${cfg.height} мм${pf ? `, ${pf.brand} ${pf.series}` : ""}${gl ? `, ${gl.name}` : ""}`,
+        name: `${ct?.label || "Конструкция"}, ${cfg.width}×${cfg.height} мм${cfg.hasTransom && cfg.constructionType !== "transom" ? ` + фрамуга ${cfg.transomHeight} мм` : ""}${pf ? `, ${pf.brand} ${pf.series}` : ""}${gl ? `, ${gl.name}` : ""}`,
         unit: "шт.",
         qty: cfg.quantity,
         pricePerUnit: Math.round(cfg.totalPrice / cfg.quantity),

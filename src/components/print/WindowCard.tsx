@@ -42,7 +42,12 @@ export default function WindowCard({ cfg, idx, markupPct }: Props) {
           <table>
             <tbody>
               <tr><td>Ширина × Высота</td><td>{cfg.width} × {cfg.height} мм</td></tr>
-              <tr><td>Площадь</td><td>{((cfg.width / 1000) * (cfg.height / 1000)).toFixed(2)} м²</td></tr>
+              {cfg.hasTransom && cfg.constructionType !== "transom" && (
+                <tr><td>Фрамуга</td><td>{cfg.transomHeight} мм (высота){cfg.transomOpeningType !== "fixed" ? ", откидная" : ", глухая"}</td></tr>
+              )}
+              <tr><td>Площадь</td><td>{cfg.hasTransom && cfg.constructionType !== "transom"
+                ? ((cfg.width / 1000) * ((cfg.height + cfg.transomHeight) / 1000)).toFixed(2)
+                : ((cfg.width / 1000) * (cfg.height / 1000)).toFixed(2)} м²</td></tr>
               <tr><td>Профиль</td><td>{pf?.brand} {pf?.series} ({pf?.chambers}к., {pf?.depth}мм)</td></tr>
               <tr><td>Стеклопакет</td><td>{gl?.name} — {gl?.description}</td></tr>
               {co?.id !== "none" && <tr><td>Покрытие стекла</td><td>{co?.name}</td></tr>}

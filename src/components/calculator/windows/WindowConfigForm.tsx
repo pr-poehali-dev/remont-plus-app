@@ -10,7 +10,7 @@ import Icon from "@/components/ui/icon";
 import {
   CONSTRUCTION_TYPES, PROFILE_SYSTEMS, GLASS_UNITS, GLASS_COATINGS,
   LAMINATION_TYPES, HARDWARE_OPTIONS, OPENING_TYPES, WINDOW_SILLS, SLOPES,
-  INSTALLATION_PRICE_PER_M2, WINDOW_REGIONS,
+  INSTALLATION_PRICE_PER_M2, WINDOW_REGIONS, TRANSOM_PRICE_ADDON,
 } from "./WindowTypes";
 import type { WindowConfig, ProfileMaterial, OpeningType } from "./WindowTypes";
 import { MAT_LABEL, fmt } from "./windowUtils";
@@ -100,13 +100,62 @@ export default function WindowConfigForm({
         </div>
         <p className="text-xs text-gray-400 mt-2">
           Площадь одной конструкции: {((cfg.width / 1000) * (cfg.height / 1000)).toFixed(2)} м²
+          {cfg.hasTransom && cfg.constructionType !== "transom" && (
+            <> (с фрамугой: {((cfg.width / 1000) * ((cfg.height + cfg.transomHeight) / 1000)).toFixed(2)} м²)</>
+          )}
         </p>
       </Card>
+
+      {cfg.constructionType !== "transom" && (
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+              <Icon name="PanelTop" size={13} />
+              Фрамуга
+            </p>
+            <Checkbox
+              id="has-transom"
+              checked={cfg.hasTransom}
+              onCheckedChange={v => onUpdate({ hasTransom: !!v })}
+            />
+          </div>
+          {cfg.hasTransom && (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500">
+                Верхняя часть конструкции над основным окном/дверью
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Высота фрамуги, мм</Label>
+                  <Input type="number" min={150} max={800} step={10}
+                    value={cfg.transomHeight} onChange={e => onUpdate({ transomHeight: +e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Открывание</Label>
+                  <Select value={cfg.transomOpeningType} onValueChange={v => onUpdate({ transomOpeningType: v as import("./WindowTypes").OpeningType })}>
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {OPENING_TYPES.filter(o => ["fixed", "tilt", "tilt_swing"].includes(o.value)).map(opt => (
+                        <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <p className="text-xs text-blue-600">+{fmt(TRANSOM_PRICE_ADDON)} ₽ за фрамугу</p>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Тип открывания по створкам */}
       <Card className="p-4">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Тип открывания ({selectedConstruction?.sashes ?? 1} створк{(selectedConstruction?.sashes ?? 1) === 1 ? "а" : "и"})
+          {cfg.constructionType === "transom" ? "Тип открывания фрамуги" : `Тип открывания (${selectedConstruction?.sashes ?? 1} створк${(selectedConstruction?.sashes ?? 1) === 1 ? "а" : "и"})`}
         </p>
         <div className="space-y-2">
           {cfg.openingTypes.map((ot, idx) => (

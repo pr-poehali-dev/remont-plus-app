@@ -46,6 +46,7 @@ export default function WindowCalculatorTab({ onAddToEstimate }: Props) {
     const name = [
       ct?.label,
       `${cfg.width}×${cfg.height} мм`,
+      cfg.hasTransom && cfg.constructionType !== "transom" ? `+ фрамуга ${cfg.transomHeight} мм` : "",
       profile ? `${profile.brand} ${profile.series}` : "",
       glass?.name,
       lam?.id !== "none" ? lam?.name : "",

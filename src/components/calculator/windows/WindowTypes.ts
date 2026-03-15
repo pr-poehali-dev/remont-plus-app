@@ -4,6 +4,7 @@ export type ConstructionType =
   | "window_single"     // Одностворчатое окно
   | "window_double"     // Двухстворчатое окно
   | "window_triple"     // Трёхстворчатое окно
+  | "transom"           // Фрамуга (самостоятельная)
   | "door_balcony"      // Балконная дверь
   | "balcony_block"     // Балконный блок (окно + дверь)
   | "balcony_glazing"   // Остекление балкона/лоджии
@@ -23,6 +24,7 @@ export const CONSTRUCTION_TYPES: ConstructionOption[] = [
   { value: "window_single",   label: "Одностворчатое окно",     icon: "Square",         sashes: 1 },
   { value: "window_double",   label: "Двухстворчатое окно",     icon: "Columns2",       sashes: 2 },
   { value: "window_triple",   label: "Трёхстворчатое окно",     icon: "Columns3",       sashes: 3 },
+  { value: "transom",         label: "Фрамуга",                icon: "PanelTop",       sashes: 1 },
   { value: "door_balcony",    label: "Балконная дверь",         icon: "DoorOpen",       sashes: 1 },
   { value: "balcony_block",   label: "Балконный блок",          icon: "LayoutTemplate", sashes: 2 },
   { value: "balcony_glazing", label: "Остекление балкона/лоджии", icon: "PanelTop",    sashes: 3 },
@@ -259,18 +261,23 @@ export interface WindowConfig {
   glassUnitId: string;
   glassCoatingId: string;
   laminationId: string;
-  laminationBothSides: boolean; // ламинирование с двух сторон
+  laminationBothSides: boolean;
   hardwareId: string;
-  openingTypes: OpeningType[]; // для каждой створки
+  openingTypes: OpeningType[];
+  hasTransom: boolean;         // добавлена фрамуга (верхняя глухая часть)
+  transomHeight: number;       // высота фрамуги, мм
+  transomOpeningType: OpeningType; // тип открывания фрамуги
   windowSillId: string;
-  windowSillWidth: number;   // мм, глубина подоконника
+  windowSillWidth: number;     // мм, глубина подоконника
   slopeId: string;
-  slopePerimeter: number;    // пм
+  slopePerimeter: number;      // пм
   installationIncluded: boolean;
   regionId: string;
   note: string;
   totalPrice: number;
 }
+
+export const TRANSOM_PRICE_ADDON = 4200;
 
 // ─── Базовая цена за м² конструкции ─────────────────────────────────────────
 

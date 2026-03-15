@@ -1,7 +1,7 @@
 import {
   PROFILE_SYSTEMS, GLASS_UNITS, GLASS_COATINGS, LAMINATION_TYPES,
   HARDWARE_OPTIONS, WINDOW_SILLS, SLOPES, OPENING_TYPES, WINDOW_REGIONS,
-  BASE_PRICE_PER_M2, INSTALLATION_PRICE_PER_M2,
+  BASE_PRICE_PER_M2, INSTALLATION_PRICE_PER_M2, TRANSOM_PRICE_ADDON,
 } from "./WindowTypes";
 import type { WindowConfig, ProfileMaterial, OpeningType } from "./WindowTypes";
 
@@ -27,6 +27,9 @@ export const DEFAULT_CONFIG: Omit<WindowConfig, "id" | "totalPrice"> = {
   laminationBothSides: false,
   hardwareId: "maco_multi",
   openingTypes: ["tilt_swing", "fixed"],
+  hasTransom: false,
+  transomHeight: 400,
+  transomOpeningType: "fixed",
   windowSillId: "pvc_white",
   windowSillWidth: 300,
   slopeId: "pvc_white",
@@ -37,7 +40,13 @@ export const DEFAULT_CONFIG: Omit<WindowConfig, "id" | "totalPrice"> = {
 };
 
 export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">): number {
-  const area = (cfg.width / 1000) * (cfg.height / 1000);
+  const isStandaloneTransom = cfg.constructionType === "transom";
+  const mainH = isStandaloneTransom ? cfg.height : cfg.height;
+  const totalH = cfg.hasTransom && !isStandaloneTransom
+    ? cfg.height + cfg.transomHeight
+    : mainH;
+  const area = (cfg.width / 1000) * (totalH / 1000);
+
   const profile = PROFILE_SYSTEMS.find(p => p.id === cfg.profileSystemId);
   const glass = GLASS_UNITS.find(g => g.id === cfg.glassUnitId);
   const coating = GLASS_COATINGS.find(c => c.id === cfg.glassCoatingId);
@@ -62,12 +71,19 @@ export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">): number 
 
   price += (coating?.priceAdd ?? 0) * area;
 
-  const perim = 2 * ((cfg.width + cfg.height) / 1000);
+  const perim = 2 * ((cfg.width + totalH) / 1000);
   const lamSides = cfg.laminationBothSides && lam && lam.id !== "none" ? 2 : 1;
   price += (lam?.priceAdd ?? 0) * perim * lamSides;
 
   const openSashes = cfg.openingTypes.filter(o => o !== "fixed").length || 1;
   price += (hw?.pricePerSash ?? 0) * openSashes;
+
+  if (cfg.hasTransom && !isStandaloneTransom) {
+    price += TRANSOM_PRICE_ADDON;
+    if (cfg.transomOpeningType !== "fixed") {
+      price += (hw?.pricePerSash ?? 0);
+    }
+  }
 
   const sillLen = cfg.windowSillWidth > 0 ? cfg.width / 1000 : 0;
   price += (sill?.pricePerMeter ?? 0) * sillLen;
@@ -83,6 +99,7 @@ export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">): number 
 }
 
 export function syncSashes(type: WindowConfig["constructionType"], CONSTRUCTION_TYPES: typeof import("./WindowTypes").CONSTRUCTION_TYPES): OpeningType[] {
+  if (type === "transom") return ["fixed"] as OpeningType[];
   const ct = CONSTRUCTION_TYPES.find(c => c.value === type);
   const n = ct?.sashes ?? 1;
   return Array.from({ length: n }, (_, i) =>

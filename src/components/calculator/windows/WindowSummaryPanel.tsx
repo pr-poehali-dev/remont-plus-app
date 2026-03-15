@@ -35,9 +35,17 @@ export default function WindowSummaryPanel({ cfg, price, configs, onAdd, onRemov
           <div className="flex justify-between">
             <span>Площадь</span>
             <span className="font-medium text-gray-900">
-              {((cfg.width / 1000) * (cfg.height / 1000)).toFixed(2)} м²
+              {cfg.hasTransom && cfg.constructionType !== "transom"
+                ? ((cfg.width / 1000) * ((cfg.height + cfg.transomHeight) / 1000)).toFixed(2)
+                : ((cfg.width / 1000) * (cfg.height / 1000)).toFixed(2)} м²
             </span>
           </div>
+          {cfg.hasTransom && cfg.constructionType !== "transom" && (
+            <div className="flex justify-between">
+              <span>Фрамуга</span>
+              <span className="font-medium text-gray-900">{cfg.transomHeight} мм</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span>Профиль</span>
             <span className="font-medium text-gray-900 text-right">

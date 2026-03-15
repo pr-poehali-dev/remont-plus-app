@@ -108,7 +108,7 @@ export default function Windows() {
     const ct = CONSTRUCTION_TYPES.find(x => x.value === c.constructionType);
     const pf = PROFILE_SYSTEMS.find(x => x.id === c.profileSystemId);
     const gl = GLASS_UNITS.find(x => x.id === c.glassUnitId);
-    const name = [ct?.label, `${c.width}×${c.height} мм`, pf ? `${pf.brand} ${pf.series}` : "", gl?.name].filter(Boolean).join(", ");
+    const name = [ct?.label, `${c.width}×${c.height} мм`, c.hasTransom && c.constructionType !== "transom" ? `+ фрамуга ${c.transomHeight} мм` : "", pf ? `${pf.brand} ${pf.series}` : "", gl?.name].filter(Boolean).join(", ");
     return {
       id: c.id,
       category: "Окна и остекление",
@@ -236,9 +236,17 @@ export default function Windows() {
                       <div className="flex justify-between">
                         <span>Площадь</span>
                         <span className="font-medium text-gray-900">
-                          {((cfg.width / 1000) * (cfg.height / 1000)).toFixed(2)} м²
+                          {cfg.hasTransom && cfg.constructionType !== "transom"
+                            ? ((cfg.width / 1000) * ((cfg.height + cfg.transomHeight) / 1000)).toFixed(2)
+                            : ((cfg.width / 1000) * (cfg.height / 1000)).toFixed(2)} м²
                         </span>
                       </div>
+                      {cfg.hasTransom && cfg.constructionType !== "transom" && (
+                        <div className="flex justify-between">
+                          <span>Фрамуга</span>
+                          <span className="font-medium text-gray-900">{cfg.transomHeight} мм</span>
+                        </div>
+                      )}
                       <div className="flex justify-between">
                         <span>Профиль</span>
                         <span className="font-medium text-gray-900 text-right">
@@ -326,7 +334,7 @@ export default function Windows() {
                             <div key={c.id} className="flex items-start justify-between gap-2 text-xs border-b pb-2 last:border-0 last:pb-0">
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-gray-900 truncate">{ct?.label}</p>
-                                <p className="text-gray-500">{c.width}×{c.height} · {pf?.brand} · {c.quantity} шт.</p>
+                                <p className="text-gray-500">{c.width}×{c.height}{c.hasTransom && c.constructionType !== "transom" ? ` +фр.${c.transomHeight}` : ""} · {pf?.brand} · {c.quantity} шт.</p>
                                 <p className="text-blue-600 font-semibold">{fmt(c.totalPrice)} ₽</p>
                               </div>
                               <button
