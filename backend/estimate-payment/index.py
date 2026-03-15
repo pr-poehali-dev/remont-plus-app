@@ -146,6 +146,43 @@ def handler(event: dict, context) -> dict:
     body = json.loads(raw)
     action = body.get("action", "")
 
+    # --- Проверка оплаты пользователя (по user_id или email) ---
+    if action == "check_user_paid":
+        user_id = body.get("user_id")
+        client_email = body.get("client_email", "")
+
+        if not user_id and not client_email:
+            return resp(400, {"error": "user_id или client_email обязательны"})
+
+        conn = get_conn()
+        with conn.cursor() as cur:
+            if user_id:
+                cur.execute(
+                    f"""SELECT id, order_number, plan_type, amount, paid_at
+                        FROM {S}estimate_orders
+                        WHERE user_id=%s AND status='paid'
+                        ORDER BY paid_at DESC LIMIT 1""",
+                    (int(user_id),),
+                )
+            else:
+                cur.execute(
+                    f"""SELECT id, order_number, plan_type, amount, paid_at
+                        FROM {S}estimate_orders
+                        WHERE LOWER(client_email)=LOWER(%s) AND status='paid'
+                        ORDER BY paid_at DESC LIMIT 1""",
+                    (client_email,),
+                )
+            row = cur.fetchone()
+        conn.close()
+
+        if row:
+            return resp(200, {
+                "paid": True,
+                "order_id": row[0], "order_number": row[1], "plan_type": row[2],
+                "amount": float(row[3]), "paid_at": str(row[4]) if row[4] else None,
+            })
+        return resp(200, {"paid": False})
+
     # --- Создание заказа (перед переходом к оплате) ---
     if action == "create_order":
         plan_type = body.get("plan_type", "")
@@ -154,6 +191,7 @@ def handler(event: dict, context) -> dict:
         client_email = body.get("client_email", "")
         client_phone = body.get("client_phone", "")
         client_comment = body.get("client_comment", "")
+        user_id = body.get("user_id")
 
         if not plan_type or not amount:
             return resp(400, {"error": "plan_type и amount обязательны"})
@@ -162,10 +200,10 @@ def handler(event: dict, context) -> dict:
         with conn.cursor() as cur:
             cur.execute(
                 f"""INSERT INTO {S}estimate_orders
-                    (plan_type, amount, client_name, client_email, client_phone, client_comment, status)
-                    VALUES (%s, %s, %s, %s, %s, %s, 'pending')
+                    (plan_type, amount, client_name, client_email, client_phone, client_comment, user_id, status)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending')
                     RETURNING id""",
-                (plan_type, amount, client_name, client_email, client_phone, client_comment),
+                (plan_type, amount, client_name, client_email, client_phone, client_comment, int(user_id) if user_id else None),
             )
             order_id = cur.fetchone()[0]
             order_number = f"EST-{order_id:05d}"
@@ -221,7 +259,7 @@ def handler(event: dict, context) -> dict:
                 f"""UPDATE {S}estimate_orders
                     SET status='paid', yookassa_payment_id=%s, paid_at=NOW(), updated_at=NOW()
                     WHERE order_number=%s AND status='pending'
-                    RETURNING id, plan_type, client_name, client_email, client_phone, client_comment, amount""",
+                    RETURNING id, plan_type, client_name, client_email, client_phone, client_comment, amount, user_id""",
                 (payment_link_id, order_number),
             )
             row = cur.fetchone()

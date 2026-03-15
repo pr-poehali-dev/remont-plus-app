@@ -73,21 +73,40 @@ const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7
 
 const PRICE = 399;
 const PAID_KEY = "avangard_estimate_paid";
-const PAID_TTL_MS = 24 * 60 * 60 * 1000; // 24 часа
 
-function isPaidRecently(): boolean {
+function isPaidLocal(): boolean {
   try {
     const raw = localStorage.getItem(PAID_KEY);
     if (!raw) return false;
-    const { ts } = JSON.parse(raw);
-    return Date.now() - ts < PAID_TTL_MS;
+    const { paid } = JSON.parse(raw);
+    return paid === true;
   } catch {
     return false;
   }
 }
 
 function markPaid() {
-  localStorage.setItem(PAID_KEY, JSON.stringify({ ts: Date.now() }));
+  localStorage.setItem(PAID_KEY, JSON.stringify({ paid: true, ts: Date.now() }));
+}
+
+async function checkPaidOnServer(userId?: number, email?: string): Promise<boolean> {
+  if (!userId && !email) return false;
+  try {
+    const res = await fetch(ESTIMATE_PAYMENT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "check_user_paid",
+        ...(userId ? { user_id: userId } : {}),
+        ...(email ? { client_email: email } : {}),
+      }),
+    });
+    const raw = await res.json();
+    const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+    return data.paid === true;
+  } catch {
+    return false;
+  }
 }
 
 interface Props {
@@ -116,10 +135,26 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
   const fmt = (n: number) =>
     n.toLocaleString("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 });
 
+  const [checking, setChecking] = useState(true);
+
   useEffect(() => {
-    if (isAdmin || isPaidRecently()) {
+    if (isAdmin) {
       setUnlocked(true);
+      setChecking(false);
+      return;
     }
+    if (isPaidLocal()) {
+      setUnlocked(true);
+      setChecking(false);
+      return;
+    }
+    checkPaidOnServer(storedUser?.id, storedUser?.email).then((paid) => {
+      if (paid) {
+        markPaid();
+        setUnlocked(true);
+      }
+      setChecking(false);
+    });
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
@@ -150,6 +185,7 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
           client_email: email.trim(),
           client_phone: phone.trim(),
           client_comment: comment.trim() || docTitle,
+          user_id: storedUser?.id || null,
         }),
       });
       const orderRaw = await orderRes.json();
@@ -191,6 +227,13 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
   };
 
   if (unlocked) return <>{children}</>;
+
+  if (checking) return (
+    <div className="flex items-center justify-center min-h-[40vh] gap-3 text-gray-400">
+      <Icon name="Loader2" size={20} className="animate-spin" />
+      <span className="text-sm">Проверяем статус оплаты…</span>
+    </div>
+  );
 
   return (
     <div className="relative bg-gray-50 min-h-screen">

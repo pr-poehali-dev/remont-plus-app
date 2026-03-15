@@ -7,7 +7,7 @@
       "expectedStatus": 200
     },
     {
-      "name": "GET без user_id — 400",
+      "name": "GET without user_id returns 400",
       "method": "GET",
       "path": "/",
       "expectedStatus": 400,
@@ -15,11 +15,11 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "GET несуществующий пользователь — бесплатный план",
+      "name": "GET non-existent user returns null subscription",
       "method": "GET",
       "path": "/?user_id=999999",
       "expectedStatus": 200,
-      "expectedBody": {"subscription": {"status": "active"}},
+      "expectedBody": {"subscription": null},
       "bodyMatcher": "partial"
     }
   ]

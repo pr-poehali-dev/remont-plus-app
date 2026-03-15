@@ -1,11 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 
-const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
-const SUBS_URL = "https://functions.poehali.dev/52ea78ee-5f41-4904-b547-d60063d9da0a";
+const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
+const PAID_KEY = "avangard_estimate_paid";
 
 const SINGLE_PRICE = 149;
 
@@ -48,7 +48,40 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
   const [paying, setPaying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"single" | "plans">("single");
+  const [checking, setChecking] = useState(true);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (isAdmin) { onSuccess(); return; }
+    try {
+      const raw = localStorage.getItem(PAID_KEY);
+      if (raw) {
+        const { paid } = JSON.parse(raw);
+        if (paid) { onSuccess(); return; }
+      }
+    } catch { /* */ }
+    if (!userId && !storedUser?.email) { setChecking(false); return; }
+    fetch(ESTIMATE_PAYMENT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "check_user_paid",
+        ...(userId ? { user_id: userId } : {}),
+        ...(storedUser?.email ? { client_email: storedUser.email } : {}),
+      }),
+    })
+      .then(r => r.json())
+      .then(raw => {
+        const d = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+        if (d.paid) {
+          localStorage.setItem(PAID_KEY, JSON.stringify({ paid: true, ts: Date.now() }));
+          onSuccess();
+        } else {
+          setChecking(false);
+        }
+      })
+      .catch(() => setChecking(false));
+  }, []);
 
   const stopPoll = () => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
@@ -60,6 +93,8 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
     window.open(TOCHKA_CHECKOUT_URL, "_blank");
     setPaying(null);
   };
+
+  if (checking) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">

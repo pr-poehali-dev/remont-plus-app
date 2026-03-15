@@ -17,6 +17,18 @@
       "bodyMatcher": "partial"
     },
     {
+      "name": "Check user paid - not found",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "check_user_paid",
+        "client_email": "nonexistent@example.com"
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "paid": false },
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "Check status missing",
       "method": "POST",
       "path": "/",

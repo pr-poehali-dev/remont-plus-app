@@ -48,33 +48,42 @@ def handler(event: dict, context) -> dict:
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        # GET — статус подписки (касса временно отключена — возвращаем активный безлимитный план)
         if method == 'GET':
             sub = get_active_sub(cur, user_id)
             if sub:
                 sub = dict(sub)
-                sub['projects_left'] = 9999
-                sub['visualizations_left'] = 9999
-                sub['revisions_left'] = 9999
-                sub['activated_at'] = str(sub['activated_at']) if sub['activated_at'] else None
-                sub['expires_at'] = str(sub['expires_at']) if sub['expires_at'] else None
-                sub['created_at'] = str(sub['created_at']) if sub['created_at'] else None
-                sub['updated_at'] = str(sub['updated_at']) if sub['updated_at'] else None
+                sub['projects_left'] = max(0, (sub.get('max_projects') or 9999) - sub.get('projects_used', 0))
+                sub['visualizations_left'] = max(0, (sub.get('max_visualizations') or 9999) - sub.get('visualizations_used', 0))
+                sub['revisions_left'] = max(0, (sub.get('max_revisions') or 9999) - sub.get('revisions_used', 0))
+                sub['activated_at'] = str(sub['activated_at']) if sub.get('activated_at') else None
+                sub['expires_at'] = str(sub['expires_at']) if sub.get('expires_at') else None
+                sub['created_at'] = str(sub['created_at']) if sub.get('created_at') else None
+                sub['updated_at'] = str(sub['updated_at']) if sub.get('updated_at') else None
             else:
-                sub = {
-                    'status': 'active',
-                    'plan_code': 'max',
-                    'plan_name': 'MAX',
-                    'is_unlimited': True,
-                    'projects_left': 9999,
-                    'visualizations_left': 9999,
-                    'revisions_left': 9999,
-                    'has_materials': True,
-                    'has_manager': True,
-                    'has_crm': True,
-                    'has_whitelabel': False,
-                    'expires_at': None,
-                }
+                cur.execute("""
+                    SELECT id FROM estimate_orders
+                    WHERE (user_id = %s) AND status = 'paid'
+                    LIMIT 1
+                """, (user_id,))
+                has_paid = cur.fetchone()
+
+                if has_paid:
+                    sub = {
+                        'status': 'active',
+                        'plan_code': 'estimate_paid',
+                        'plan_name': 'Смета (оплачено)',
+                        'is_unlimited': False,
+                        'projects_left': 3,
+                        'visualizations_left': 5,
+                        'revisions_left': 3,
+                        'has_materials': True,
+                        'has_manager': False,
+                        'has_crm': False,
+                        'has_whitelabel': False,
+                        'expires_at': None,
+                    }
+                else:
+                    sub = None
             return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'subscription': sub}, default=str)}
 
         # POST — активация или списание
@@ -110,11 +119,14 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'success': True, 'subscription_id': new_sub['id']}, default=str)}
 
-        # Проверить лимит (касса отключена — всегда разрешено)
         if action == 'check':
-            return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'allowed': True})}
+            sub = get_active_sub(cur, user_id)
+            if sub:
+                return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'allowed': True})}
+            cur.execute("SELECT id FROM estimate_orders WHERE user_id = %s AND status = 'paid' LIMIT 1", (user_id,))
+            has_paid = cur.fetchone()
+            return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'allowed': bool(has_paid)})}
 
-        # Списать использование (касса отключена — просто отвечаем успехом)
         if action == 'consume':
             return {'statusCode': 200, 'headers': JSON, 'body': json.dumps({'success': True, 'consumed': 1})}
 

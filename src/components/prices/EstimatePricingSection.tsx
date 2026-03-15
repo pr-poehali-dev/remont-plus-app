@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +69,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
           client_email: email.trim(),
           client_phone: phone.trim(),
           client_comment: comment.trim(),
+          user_id: (() => { try { return JSON.parse(localStorage.getItem("avangard_user") || "null")?.id || null; } catch { return null; } })(),
         }),
       });
       const orderRaw = await orderRes.json();
@@ -184,8 +185,19 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
 
 const PAID_KEY = "avangard_estimate_paid";
 
+function isPaidLocal(): boolean {
+  try {
+    const raw = localStorage.getItem(PAID_KEY);
+    if (!raw) return false;
+    const { paid } = JSON.parse(raw);
+    return paid === true;
+  } catch {
+    return false;
+  }
+}
+
 function markPaid() {
-  localStorage.setItem(PAID_KEY, JSON.stringify({ ts: Date.now() }));
+  localStorage.setItem(PAID_KEY, JSON.stringify({ paid: true, ts: Date.now() }));
 }
 
 function CheckOrderModal({ onClose }: { onClose: () => void }) {
@@ -280,7 +292,27 @@ function CheckOrderModal({ onClose }: { onClose: () => void }) {
 export default function EstimatePricingSection() {
   const [showModal, setShowModal] = useState(false);
   const [showCheckOrder, setShowCheckOrder] = useState(false);
+  const [alreadyPaid, setAlreadyPaid] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isPaidLocal()) { setAlreadyPaid(true); return; }
+    let storedUser: { id?: number; email?: string } | null = null;
+    try { storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null"); } catch { /* */ }
+    if (!storedUser?.id && !storedUser?.email) return;
+    fetch(ESTIMATE_PAYMENT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "check_user_paid",
+        ...(storedUser.id ? { user_id: storedUser.id } : {}),
+        ...(storedUser.email ? { client_email: storedUser.email } : {}),
+      }),
+    })
+      .then(r => r.json())
+      .then(raw => { const d = typeof raw.body === "string" ? JSON.parse(raw.body) : raw; if (d.paid) { markPaid(); setAlreadyPaid(true); } })
+      .catch(() => {});
+  }, []);
 
   return (
     <section className="mt-10 mb-8">
@@ -330,6 +362,13 @@ export default function EstimatePricingSection() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-3">
+            {alreadyPaid ? (
+              <div className="w-full sm:w-auto flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-6 py-3">
+                <Icon name="CheckCircle" size={20} className="text-green-500" />
+                <span className="text-green-700 font-semibold text-sm">Оплачено — доступ открыт</span>
+              </div>
+            ) : (
+            <>
             <Button
               onClick={() => setShowModal(true)}
               className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 px-8 text-base"
@@ -359,6 +398,8 @@ export default function EstimatePricingSection() {
                 Смета на email
               </span>
             </div>
+            </>
+            )}
           </div>
         </div>
       </div>
