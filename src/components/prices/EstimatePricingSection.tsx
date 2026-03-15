@@ -7,7 +7,8 @@ import Icon from "@/components/ui/icon";
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
-const PAYMENTS_ENABLED = false;
+const PAYMENTS_ENABLED = true;
+const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
 
 const PLAN = {
   id: "estimate_print",
@@ -75,29 +76,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
       const oNum = orderData.order_number;
       setOrderNumber(oNum);
 
-      const payRes = await fetch(PAYMENT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: PLAN.price,
-          user_email: email.trim(),
-          user_name: name.trim(),
-          user_phone: phone.trim(),
-          description: `Смета + доступ к сервисам АВАНГАРД · ${oNum}`,
-          return_url: `${window.location.origin}/tariffs?order=${oNum}`,
-          cart_items: [{ id: PLAN.id, name: PLAN.title, price: PLAN.price, quantity: 1 }],
-          metadata: { estimate_order_number: oNum },
-        }),
-      });
-      const payRaw = await payRes.json();
-      const payData = typeof payRaw.body === "string" ? JSON.parse(payRaw.body) : payRaw;
-      const payStatusCode = payRaw.statusCode ?? (payRes.ok ? 200 : payRes.status);
-
-      if (!payRes.ok || payStatusCode >= 400 || !payData.payment_url) {
-        throw new Error(payData.error || "Ошибка создания платежа");
-      }
-
-      window.open(payData.payment_url, "_blank");
+      window.open(TOCHKA_CHECKOUT_URL, "_blank");
       setStep("success");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Что-то пошло не так. Попробуйте ещё раз.");

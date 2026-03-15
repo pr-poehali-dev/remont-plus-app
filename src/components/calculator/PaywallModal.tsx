@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
 const SUBS_URL = "https://functions.poehali.dev/52ea78ee-5f41-4904-b547-d60063d9da0a";
+const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
 
 const SINGLE_PRICE = 149;
 
@@ -49,54 +50,15 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
   const [tab, setTab] = useState<"single" | "plans">("single");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Касса временно отключена — всё бесплатно
-  onSuccess();
-  return null;
-
   const stopPoll = () => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
   };
 
-  const handlePay = async (code: string, price: number, name: string) => {
-    if (!userId) { navigate("/login"); return; }
+  const handlePay = async (_code: string, _price: number, _name: string) => {
     setError(null);
-    setPaying(code);
-
-    try {
-      const res = await fetch(PAYMENT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: price,
-          user_email: storedUser?.email || `user${userId}@remont.ru`,
-          user_name: storedUser?.name || "",
-          description: name,
-          return_url: window.location.origin + "/calculator?payment=success",
-          cart_items: [{ id: code, name, price, quantity: 1 }],
-          metadata: { user_id: String(userId), plan_code: code },
-        }),
-      });
-      const data = await res.json();
-      if (!data.payment_url) { setError("Не удалось создать платёж"); setPaying(null); return; }
-
-      const win = window.open(data.payment_url, "_blank", "width=800,height=700");
-
-      pollRef.current = setInterval(async () => {
-        try {
-          const r = await fetch(`${SUBS_URL}?user_id=${userId}`);
-          const d = await r.json();
-          if (d.subscription?.status === "active") {
-            stopPoll();
-            win?.close();
-            setPaying(null);
-            onSuccess();
-          }
-        } catch { /* continue */ }
-      }, 3000);
-    } catch {
-      setError("Ошибка соединения. Попробуйте ещё раз.");
-      setPaying(null);
-    }
+    setPaying(_code);
+    window.open(TOCHKA_CHECKOUT_URL, "_blank");
+    setPaying(null);
   };
 
   return (

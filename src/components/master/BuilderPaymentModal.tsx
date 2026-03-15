@@ -6,7 +6,8 @@ import Icon from "@/components/ui/icon";
 
 const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
 const RETURN_URL = `${window.location.origin}/masters`;
-const PAYMENTS_ENABLED = false;
+const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
+const PAYMENTS_ENABLED = true;
 
 interface BuilderPlan {
   code: string;
@@ -55,39 +56,8 @@ export default function BuilderPaymentModal({
     setError("");
 
     try {
-      const res = await fetch(PAYMENT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: plan.price,
-          user_email: email,
-          user_name: contractorName,
-          description: `Тариф «${plan.name}» — строительная компания`,
-          return_url: RETURN_URL,
-          cart_items: [
-            {
-              id: `builder-${plan.code}`,
-              name: `Тариф «${plan.name}» для строительной компании`,
-              price: plan.price,
-              quantity: 1,
-            },
-          ],
-          // Метаданные для вебхука — активируют builder_subscriptions
-          metadata: {
-            contractor_id: String(contractorId),
-            builder_plan_code: plan.code,
-            months: "1",
-          },
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Ошибка создания платежа");
-
-      if (data.payment_url) {
-        window.open(data.payment_url, "_blank");
-        onSuccess();
-      }
+      window.open(TOCHKA_CHECKOUT_URL, "_blank");
+      onSuccess();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Что-то пошло не так");
     } finally {

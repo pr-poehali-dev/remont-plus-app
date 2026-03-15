@@ -4,7 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import Icon from "@/components/ui/icon";
 
 const YK_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
-const PAYMENTS_ENABLED = false;
+const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
+const PAYMENTS_ENABLED = true;
 
 const PLANS = [
   {
@@ -89,56 +90,13 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
   }, []);
 
   const startPayment = async (plan: (typeof PLANS)[0]) => {
-    if (!userId) return;
     setLoading(true);
     setError(null);
     setSelectedPlan(plan);
 
-    const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
-    const userEmail = storedUser?.email || `user${userId}@avangard-ai.ru`;
-
     try {
-      const res = await fetch(YK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: plan.price,
-          user_email: userEmail,
-          user_name: storedUser?.name || "",
-          description: `Тариф ${plan.name}`,
-          return_url: window.location.origin + "/dashboard?payment=success",
-          cart_items: [{ id: plan.code, name: `Тариф ${plan.name}`, price: plan.price, quantity: 1 }],
-          metadata: { user_id: String(userId), plan_code: plan.code },
-        }),
-      });
-      const data = await res.json();
-
-      if (!data.payment_url) {
-        setError(data.error || "Не удалось создать платёж");
-        setLoading(false);
-        return;
-      }
-
+      window.open(TOCHKA_CHECKOUT_URL, "_blank");
       setStep("paying");
-      const win = window.open(data.payment_url, "_blank", "width=800,height=700");
-      setPaymentWindow(win);
-
-      const SUBS_URL = "https://functions.poehali.dev/52ea78ee-5f41-4904-b547-d60063d9da0a";
-      pollRef.current = setInterval(async () => {
-        try {
-          const r = await fetch(`${SUBS_URL}?user_id=${userId}`);
-          const d = await r.json();
-          if (d.subscription?.plan_code === plan.code) {
-            stopPolling();
-            win?.close();
-            setStep("success");
-            onActivated();
-          }
-        } catch {
-          // продолжаем поллинг при сетевых ошибках
-        }
-      }, 3000);
-
     } catch {
       setError("Ошибка подключения. Попробуйте позже.");
     } finally {

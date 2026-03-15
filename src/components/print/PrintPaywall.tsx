@@ -68,7 +68,8 @@ function CheckOrderPanel({ onUnlock }: { onUnlock: () => void }) {
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
-const PAYMENTS_ENABLED = false;
+const PAYMENTS_ENABLED = true;
+const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
 
 const PRICE = 399;
 const PAID_KEY = "avangard_estimate_paid";
@@ -138,7 +139,6 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
     setLoading(true);
     setError("");
     try {
-      // 1. Создаём заказ в БД
       const orderRes = await fetch(ESTIMATE_PAYMENT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -157,32 +157,9 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
       const oNum = orderData.order_number;
       setOrderNumber(oNum);
 
-      // 2. Создаём платёж
-      const payRes = await fetch(PAYMENT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: PRICE,
-          user_email: email.trim(),
-          user_name: name.trim(),
-          user_phone: phone.trim(),
-          description: `Смета + доступ к сервисам АВАНГАРД · ${oNum}`,
-          return_url: window.location.href,
-          cart_items: [{ id: "estimate_print", name: "Смета + доступ к сервисам", price: PRICE, quantity: 1 }],
-          metadata: { estimate_order_number: oNum },
-        }),
-      });
-      const payRaw = await payRes.json();
-      const payData = typeof payRaw.body === "string" ? JSON.parse(payRaw.body) : payRaw;
-
-      if (!payRes.ok || !payData.payment_url) {
-        throw new Error(payData.error || "Ошибка создания платежа");
-      }
-
-      window.open(payData.payment_url, "_blank");
+      window.open(TOCHKA_CHECKOUT_URL, "_blank");
       setStep("waiting");
 
-      // Поллинг статуса заказа
       pollRef.current = setInterval(async () => {
         try {
           const statusRes = await fetch(ESTIMATE_PAYMENT_URL, {
