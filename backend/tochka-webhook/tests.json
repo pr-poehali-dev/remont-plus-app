@@ -1,0 +1,41 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Webhook with unknown status",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "Data": {
+          "status": "PENDING",
+          "paymentLinkId": "test-id-123",
+          "amount": 399
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "ok": true },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Webhook with APPROVED status",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "Data": {
+          "status": "APPROVED",
+          "paymentLinkId": "test-approved-456",
+          "amount": 399,
+          "payerEmail": "test-webhook@example.com"
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "ok": true },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
