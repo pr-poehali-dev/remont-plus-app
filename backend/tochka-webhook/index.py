@@ -1,7 +1,8 @@
-"""Вебхук от Точка Банк: подтверждение оплаты и обновление статуса заказов."""
+"""Вебхук от Точка Банк (PayKeeper): подтверждение оплаты и обновление статуса заказов."""
 import json
 import os
 import urllib.request
+import urllib.parse
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
@@ -105,171 +106,180 @@ def client_paid_email(order_number: str, client_name: str, amount: float) -> str
 </body></html>"""
 
 
-def decode_jwt_payload(token_str: str) -> dict:
-    import base64
-    parts = token_str.strip().split(".")
-    if len(parts) != 3:
+def parse_webhook_body(raw_body: str) -> dict:
+    """Парсинг тела вебхука — поддержка JSON и form-urlencoded (PayKeeper)."""
+    if not raw_body:
         return {}
-    payload_b64 = parts[1]
-    padding = 4 - len(payload_b64) % 4
-    if padding != 4:
-        payload_b64 += "=" * padding
-    decoded = base64.urlsafe_b64decode(payload_b64)
-    return json.loads(decoded)
+
+    raw_body = raw_body.strip()
+
+    if raw_body.startswith("{"):
+        return json.loads(raw_body)
+
+    try:
+        parsed = urllib.parse.parse_qs(raw_body, keep_blank_values=True)
+        return {k: v[0] if len(v) == 1 else v for k, v in parsed.items()}
+    except Exception:
+        pass
+
+    try:
+        return json.loads(raw_body)
+    except Exception:
+        print(f"[tochka-webhook] cannot parse body: {raw_body[:500]}")
+        return {}
 
 
 def handler(event: dict, context) -> dict:
-    """Обработка вебхука от Точка Банка."""
+    """Обработка вебхука от Точка Банка (PayKeeper) — сопоставление по orderid/invoice_id."""
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": CORS, "body": ""}
 
     raw_body = event.get("body") or ""
+    body = parse_webhook_body(raw_body)
 
-    body = {}
-    if raw_body.startswith("{"):
-        body = json.loads(raw_body)
-    elif "." in raw_body and raw_body.count(".") == 2:
-        body = decode_jwt_payload(raw_body)
-    else:
-        try:
-            body = json.loads(raw_body)
-        except Exception:
-            print(f"[tochka-webhook] cannot parse body: {raw_body[:500]}")
-            return resp(200, {"ok": True, "note": "unrecognized format"})
+    if not body:
+        return resp(200, {"ok": True, "note": "empty or unrecognized"})
 
-    payment_data = body.get("Data", body)
-    payment_status = str(payment_data.get("status", payment_data.get("paymentStatus", ""))).upper()
-    payment_amount = payment_data.get("amount", payment_data.get("Amount", 0))
-    payment_id = payment_data.get("paymentLinkId", payment_data.get("paymentId", payment_data.get("externalId", "")))
-    payer_email = payment_data.get("payerEmail", payment_data.get("email", ""))
-    purpose = payment_data.get("purpose", payment_data.get("description", ""))
+    pk_id = body.get("id", "")
+    pk_orderid = body.get("orderid", "")
+    pk_sum = body.get("sum", body.get("pay_amount", body.get("amount", 0)))
+    pk_clientid = body.get("clientid", "")
+    pk_client_email = body.get("client_email", body.get("payerEmail", body.get("email", "")))
+    pk_status = body.get("status", "")
+    pk_key = body.get("key", "")
+    pk_service_name = body.get("service_name", body.get("purpose", body.get("description", "")))
 
-    print(f"[tochka-webhook] status={payment_status} amount={payment_amount} id={payment_id} email={payer_email} purpose={purpose}")
+    payment_data = body.get("Data", {})
+    if payment_data and isinstance(payment_data, dict):
+        pk_status = pk_status or str(payment_data.get("status", payment_data.get("paymentStatus", ""))).upper()
+        pk_id = pk_id or payment_data.get("paymentLinkId", payment_data.get("paymentId", ""))
+        pk_sum = pk_sum or payment_data.get("amount", 0)
+        pk_client_email = pk_client_email or payment_data.get("payerEmail", "")
+        pk_orderid = pk_orderid or payment_data.get("externalId", "")
 
-    is_paid = payment_status in ("APPROVED", "PAID", "AUTHORIZED", "SUCCEEDED", "COMPLETED")
+    print(f"[tochka-webhook] id={pk_id} orderid={pk_orderid} sum={pk_sum} "
+          f"email={pk_client_email} status={pk_status} clientid={pk_clientid}")
+
+    is_paid = str(pk_status).upper() in ("APPROVED", "PAID", "AUTHORIZED", "SUCCEEDED", "COMPLETED", "")
+
+    if pk_id and not pk_status:
+        is_paid = True
+
     if not is_paid:
         send_telegram(
-            f"<b>Точка webhook</b>: статус {payment_status}\n"
-            f"ID: {payment_id}\nСумма: {payment_amount}\nEmail: {payer_email or '—'}"
+            f"<b>Точка webhook</b>: статус {pk_status}\n"
+            f"id: {pk_id}\norderid: {pk_orderid}\n"
+            f"Сумма: {pk_sum}\nEmail: {pk_client_email or '—'}"
         )
-        return resp(200, {"ok": True, "status": payment_status})
+        return resp(200, {"ok": True, "status": pk_status})
 
     conn = get_conn()
+    updated_estimate_orders = []
     updated_orders = []
 
     try:
         with conn.cursor() as cur:
-            if payment_id:
+            if pk_orderid:
                 cur.execute(
                     f"""UPDATE {S}estimate_orders
-                        SET status='paid', yookassa_payment_id=%s, paid_at=NOW(), updated_at=NOW()
+                        SET status='paid', paid_at=NOW(), updated_at=NOW()
+                        WHERE order_number=%s AND status='pending'
+                        RETURNING id, order_number, client_name, client_email, client_phone, amount, user_id""",
+                    (pk_orderid,),
+                )
+                updated_estimate_orders.extend(cur.fetchall())
+
+            if not updated_estimate_orders and pk_id:
+                cur.execute(
+                    f"""UPDATE {S}estimate_orders
+                        SET status='paid', paid_at=NOW(), updated_at=NOW()
                         WHERE yookassa_payment_id=%s AND status='pending'
                         RETURNING id, order_number, client_name, client_email, client_phone, amount, user_id""",
-                    (payment_id, payment_id),
+                    (str(pk_id),),
                 )
-                rows = cur.fetchall()
-                updated_orders.extend(rows)
+                updated_estimate_orders.extend(cur.fetchall())
 
-            if payment_id:
+            if pk_orderid:
                 cur.execute(
                     f"""UPDATE {S}orders
                         SET status='paid', paid_at=NOW(), updated_at=NOW()
-                        WHERE yookassa_payment_id=%s AND status='pending'""",
-                    (payment_id,),
+                        WHERE order_number=%s AND status='pending'
+                        RETURNING id, order_number, user_name, user_email, amount""",
+                    (pk_orderid,),
                 )
+                updated_orders.extend(cur.fetchall())
 
-            if not updated_orders and payer_email:
+            if not updated_orders and pk_id:
                 cur.execute(
-                    f"""UPDATE {S}estimate_orders
-                        SET status='paid', yookassa_payment_id=%s, paid_at=NOW(), updated_at=NOW()
-                        WHERE LOWER(client_email)=LOWER(%s) AND status='pending'
-                          AND amount=%s
-                        RETURNING id, order_number, client_name, client_email, client_phone, amount, user_id""",
-                    (payment_id or "tochka-webhook", payer_email, float(payment_amount) if payment_amount else 399),
+                    f"""UPDATE {S}orders
+                        SET status='paid', paid_at=NOW(), updated_at=NOW()
+                        WHERE yookassa_payment_id=%s AND status='pending'
+                        RETURNING id, order_number, user_name, user_email, amount""",
+                    (str(pk_id),),
                 )
-                rows = cur.fetchall()
-                updated_orders.extend(rows)
+                updated_orders.extend(cur.fetchall())
 
-            if not updated_orders and payer_email:
+            if pk_id:
                 cur.execute(
-                    f"""UPDATE {S}estimate_orders
-                        SET status='paid', yookassa_payment_id=%s, paid_at=NOW(), updated_at=NOW()
-                        WHERE id = (
-                            SELECT id FROM {S}estimate_orders
-                            WHERE LOWER(client_email)=LOWER(%s) AND status='pending'
-                            ORDER BY created_at DESC LIMIT 1
-                        )
-                        RETURNING id, order_number, client_name, client_email, client_phone, amount, user_id""",
-                    (payment_id or "tochka-webhook", payer_email),
+                    f"""UPDATE {S}payments
+                        SET status='paid', updated_at=NOW()
+                        WHERE yukassa_payment_id=%s AND status='pending'""",
+                    (str(pk_id),),
                 )
-                rows = cur.fetchall()
-                updated_orders.extend(rows)
-
-            if not updated_orders:
-                cur.execute(
-                    f"""UPDATE {S}estimate_orders
-                        SET status='paid', yookassa_payment_id=%s, paid_at=NOW(), updated_at=NOW()
-                        WHERE id = (
-                            SELECT id FROM {S}estimate_orders
-                            WHERE status='pending'
-                            ORDER BY created_at DESC LIMIT 1
-                        )
-                        RETURNING id, order_number, client_name, client_email, client_phone, amount, user_id""",
-                    (payment_id or "tochka-webhook",),
-                )
-                rows = cur.fetchall()
-                updated_orders.extend(rows)
 
             conn.commit()
+
     except Exception as e:
         conn.rollback()
         print(f"[tochka-webhook] DB error: {e}")
-        return resp(500, {"error": str(e)})
+        send_telegram(f"[tochka-webhook] DB error: {e}\nid: {pk_id}\norderid: {pk_orderid}")
+        return resp(200, {"ok": True, "error": str(e)})
     finally:
         conn.close()
 
-    for row in updated_orders:
-        order_id, order_number, client_name, client_email, client_phone, amount, user_id = row
-        fmt_amount = f"{float(amount):,.0f}".replace(",", " ")
-
+    for row in updated_estimate_orders:
+        oid, order_number, client_name, client_email, client_phone, amount, user_id = row
         if client_email:
             send_email(
                 client_email,
-                f"Авангард: оплата {order_number} подтверждена",
+                f"Авангард: ваш заказ {order_number} оплачен",
                 client_paid_email(order_number, client_name, float(amount)),
             )
-
-        admin_email = os.environ.get("SMTP_USER", "")
-        if admin_email:
-            send_email(
-                admin_email,
-                f"Оплата подтверждена: {order_number} ({fmt_amount} ₽)",
-                f"<p>Заказ <b>{order_number}</b> оплачен.</p>"
-                f"<p>Клиент: {client_name or '—'}<br>Email: {client_email or '—'}<br>"
-                f"Телефон: {client_phone or '—'}<br>Сумма: {fmt_amount} ₽<br>"
-                f"User ID: {user_id or '—'}</p>",
-            )
-
-        tg_msg = (
-            f"<b>Оплата подтверждена!</b>\n"
+        send_telegram(
+            f"<b>Оплата получена (смета)</b>\n"
             f"Заказ: <b>{order_number}</b>\n"
-            f"Сумма: <b>{fmt_amount} ₽</b>\n"
+            f"Сумма: <b>{float(amount):.0f} ₽</b>\n"
             f"Клиент: {client_name or '—'}\n"
             f"Email: {client_email or '—'}\n"
-            f"Тел: {client_phone or '—'}\n"
-            f"User ID: {user_id or '—'}"
+            f"Тел: {client_phone or '—'}"
         )
-        send_telegram(tg_msg)
 
-    if not updated_orders:
+    for row in updated_orders:
+        oid, order_number, user_name, user_email, amount = row
+        if user_email:
+            send_email(
+                user_email,
+                f"Авангард: заказ {order_number} оплачен",
+                client_paid_email(order_number, user_name, float(amount)),
+            )
         send_telegram(
-            f"<b>Точка webhook: оплата получена, но заказ не найден</b>\n"
-            f"ID: {payment_id}\nСумма: {payment_amount}\nEmail: {payer_email or '—'}\n"
-            f"Purpose: {purpose or '—'}"
+            f"<b>Оплата получена (заказ)</b>\n"
+            f"Заказ: <b>{order_number}</b>\n"
+            f"Сумма: <b>{float(amount):.0f} ₽</b>\n"
+            f"Клиент: {user_name or '—'} ({user_email or '—'})"
+        )
+
+    total_updated = len(updated_estimate_orders) + len(updated_orders)
+    if total_updated == 0:
+        send_telegram(
+            f"<b>Точка webhook — оплата без заказа!</b>\n"
+            f"id: {pk_id}\norderid: {pk_orderid}\n"
+            f"Сумма: {pk_sum}\nEmail: {pk_client_email or '—'}\n"
+            f"Описание: {pk_service_name or '—'}"
         )
 
     return resp(200, {
         "ok": True,
-        "matched_orders": len(updated_orders),
-        "order_numbers": [r[1] for r in updated_orders],
+        "updated_estimate_orders": len(updated_estimate_orders),
+        "updated_orders": len(updated_orders),
     })

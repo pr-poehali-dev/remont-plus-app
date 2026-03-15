@@ -1,15 +1,17 @@
 """
-Webhook и управление заказами смет (estimate_orders):
-- POST action=create_order — создание записи перед оплатой
+Управление заказами смет (estimate_orders) с оплатой через API Точка Банка:
+- POST action=create_order — создание записи + платёжная ссылка через API Точки
 - POST action=check_status — проверка статуса по order_number
-- POST (без action) — webhook от Точка Банка
+- POST action=check_user_paid — проверка оплаты по user_id / email
 """
 import json
 import os
+import uuid
 import smtplib
 import ssl
 import urllib.request
-import hmac
+import urllib.error
+import urllib.parse
 import hashlib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -24,6 +26,8 @@ CORS = {
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
 }
+
+PAYKEEPER_BASE = "https://checkout.tochka.com"
 
 
 def get_conn():
@@ -49,7 +53,10 @@ def send_telegram(message: str) -> None:
         data=data,
         headers={"Content-Type": "application/json"},
     )
-    urllib.request.urlopen(req, timeout=10)
+    try:
+        urllib.request.urlopen(req, timeout=10)
+    except Exception:
+        pass
 
 
 def send_email(to_email: str, subject: str, html_body: str) -> bool:
@@ -65,16 +72,20 @@ def send_email(to_email: str, subject: str, html_body: str) -> bool:
     msg["To"] = to_email
     msg.attach(MIMEText(html_body, "html", "utf-8"))
     context = ssl.create_default_context()
-    if smtp_port == 465:
-        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
-            server.login(smtp_user, smtp_password)
-            server.sendmail(smtp_user, to_email, msg.as_string())
-    else:
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls(context=context)
-            server.login(smtp_user, smtp_password)
-            server.sendmail(smtp_user, to_email, msg.as_string())
-    return True
+    try:
+        if smtp_port == 465:
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
+                server.login(smtp_user, smtp_password)
+                server.sendmail(smtp_user, to_email, msg.as_string())
+        else:
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
+                server.starttls(context=context)
+                server.login(smtp_user, smtp_password)
+                server.sendmail(smtp_user, to_email, msg.as_string())
+        return True
+    except Exception as e:
+        print(f"[estimate-payment] email error: {e}")
+        return False
 
 
 PLAN_LABELS = {
@@ -82,6 +93,72 @@ PLAN_LABELS = {
     "estimate_digital": "Смета в PDF",
     "estimate_consult": "Смета + консультация эксперта",
 }
+
+
+def paykeeper_request(path, data=None, method="GET"):
+    """Выполнить запрос к PayKeeper API (Точка Банк эквайринг)."""
+    login = os.environ.get("TOCHKA_LOGIN", "").strip()
+    secret = os.environ.get("TOCHKA_SECRET_KEY", "").strip()
+    if not login or not secret:
+        return None, "TOCHKA_LOGIN или TOCHKA_SECRET_KEY не настроены"
+
+    import base64
+    auth = base64.b64encode(f"{login}:{secret}".encode()).decode()
+    url = f"{PAYKEEPER_BASE}/{path.lstrip('/')}"
+
+    headers = {"Authorization": f"Basic {auth}"}
+    body = None
+    if data and method == "POST":
+        body = urllib.parse.urlencode(data).encode() if isinstance(data, dict) else data
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+
+    req = urllib.request.Request(url, data=body, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read().decode()), None
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode() if e.fp else str(e)
+        print(f"[estimate-payment] PayKeeper error {e.code}: {err_body}")
+        return None, f"PayKeeper ({e.code}): {err_body[:200]}"
+    except Exception as e:
+        print(f"[estimate-payment] PayKeeper request error: {e}")
+        return None, str(e)
+
+
+def create_tochka_payment(amount, purpose, order_id, client_email="", client_phone=""):
+    """Создать уникальную платёжную ссылку через PayKeeper API (Точка Банк)."""
+    token_resp, err = paykeeper_request("/info/settings/token/")
+    if err:
+        return None, err
+    token = token_resp.get("token", "")
+    if not token:
+        return None, "Не удалось получить security token"
+
+    import hashlib
+    sign_str = f"{amount:.2f}{client_email}{order_id}{purpose}{token}"
+    sign = hashlib.md5(sign_str.encode()).hexdigest()
+
+    invoice_data = {
+        "pay_amount": f"{amount:.2f}",
+        "clientid": purpose[:255],
+        "orderid": str(order_id),
+        "service_name": purpose[:255],
+        "client_email": client_email,
+        "client_phone": client_phone,
+        "token": token,
+        "sign": sign,
+    }
+
+    result, err = paykeeper_request("/change/invoice/preview/", data=invoice_data, method="POST")
+    if err:
+        return None, err
+
+    invoice_id = result.get("invoice_id", "")
+    if not invoice_id:
+        return None, f"Нет invoice_id в ответе: {json.dumps(result)[:200]}"
+
+    payment_url = f"{PAYKEEPER_BASE}/bill/{invoice_id}/"
+    return {"payment_url": payment_url, "invoice_id": str(invoice_id)}, None
 
 
 def client_email_html(plan_type: str, order_number: str, client_name: str) -> str:
@@ -139,6 +216,7 @@ def admin_email_html(plan_type: str, order_number: str, client_name: str,
 
 
 def handler(event: dict, context) -> dict:
+    """Обработка запросов на создание и проверку заказов смет с оплатой через Точка Банк."""
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": CORS, "body": ""}
 
@@ -146,7 +224,6 @@ def handler(event: dict, context) -> dict:
     body = json.loads(raw)
     action = body.get("action", "")
 
-    # --- Проверка оплаты пользователя (по user_id или email) ---
     if action == "check_user_paid":
         user_id = body.get("user_id")
         client_email = body.get("client_email", "")
@@ -183,7 +260,6 @@ def handler(event: dict, context) -> dict:
             })
         return resp(200, {"paid": False})
 
-    # --- Создание заказа (перед переходом к оплате) ---
     if action == "create_order":
         plan_type = body.get("plan_type", "")
         amount = float(body.get("amount", 0))
@@ -192,18 +268,23 @@ def handler(event: dict, context) -> dict:
         client_phone = body.get("client_phone", "")
         client_comment = body.get("client_comment", "")
         user_id = body.get("user_id")
+        return_url = body.get("return_url", "https://avangard-ai.ru/prices")
 
         if not plan_type or not amount:
             return resp(400, {"error": "plan_type и amount обязательны"})
+
+        external_id = str(uuid.uuid4())
+        label = PLAN_LABELS.get(plan_type, plan_type)
 
         conn = get_conn()
         with conn.cursor() as cur:
             cur.execute(
                 f"""INSERT INTO {S}estimate_orders
-                    (plan_type, amount, client_name, client_email, client_phone, client_comment, user_id, status)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending')
+                    (plan_type, amount, client_name, client_email, client_phone, client_comment, user_id, status, payment_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending', %s)
                     RETURNING id""",
-                (plan_type, amount, client_name, client_email, client_phone, client_comment, int(user_id) if user_id else None),
+                (plan_type, amount, client_name, client_email, client_phone, client_comment,
+                 int(user_id) if user_id else None, external_id),
             )
             order_id = cur.fetchone()[0]
             order_number = f"EST-{order_id:05d}"
@@ -212,10 +293,55 @@ def handler(event: dict, context) -> dict:
                 (order_number, order_id),
             )
             conn.commit()
-        conn.close()
-        return resp(200, {"order_id": order_id, "order_number": order_number})
 
-    # --- Проверка статуса ---
+        purpose = f"{label} ({order_number})"
+        payment_result, err = create_tochka_payment(
+            amount, purpose, order_number, client_email, client_phone
+        )
+
+        if err or not payment_result:
+            conn = get_conn()
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"UPDATE {S}estimate_orders SET status='error', updated_at=NOW() WHERE id=%s",
+                    (order_id,),
+                )
+                conn.commit()
+            conn.close()
+            print(f"[estimate-payment] payment creation failed for {order_number}: {err}")
+            return resp(500, {"error": f"Не удалось создать платёж: {err}"})
+
+        payment_url = payment_result["payment_url"]
+        invoice_id = payment_result["invoice_id"]
+
+        conn = get_conn()
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""UPDATE {S}estimate_orders
+                    SET yookassa_payment_id=%s, payment_id=%s, updated_at=NOW()
+                    WHERE id=%s""",
+                (invoice_id, external_id, order_id),
+            )
+            conn.commit()
+        conn.close()
+
+        send_telegram(
+            f"<b>Новый заказ сметы</b>\n"
+            f"Заказ: <b>{order_number}</b>\n"
+            f"Тариф: {label}\n"
+            f"Сумма: <b>{amount:.0f} ₽</b>\n"
+            f"Клиент: {client_name or '—'}\n"
+            f"Email: {client_email or '—'}\n"
+            f"Invoice ID: {invoice_id}"
+        )
+
+        return resp(200, {
+            "order_id": order_id,
+            "order_number": order_number,
+            "payment_url": payment_url,
+            "invoice_id": invoice_id,
+        })
+
     if action == "check_status":
         order_number = body.get("order_number", "")
         if not order_number:
@@ -235,65 +361,4 @@ def handler(event: dict, context) -> dict:
             "amount": float(row[3]), "paid_at": str(row[4]) if row[4] else None,
         })
 
-    # --- Webhook от Точка Банка ---
-    # Точка отправляет { "Data": { "status": "APPROVED", "paymentLinkId": "...", "description": "..." } }
-    payment_data = body.get("Data", body)
-    payment_status = payment_data.get("status", "").upper()
-    payment_link_id = payment_data.get("paymentLinkId", payment_data.get("paymentId", ""))
-
-    # Пробуем достать order_number из description (JSON-строка с метаданными)
-    description_raw = payment_data.get("description", "")
-    metadata = {}
-    if description_raw:
-        try:
-            metadata = json.loads(description_raw)
-        except Exception:
-            pass
-
-    order_number = metadata.get("estimate_order_number", "")
-
-    if payment_status in ("APPROVED", "PAID", "AUTHORIZED") and order_number:
-        conn = get_conn()
-        with conn.cursor() as cur:
-            cur.execute(
-                f"""UPDATE {S}estimate_orders
-                    SET status='paid', yookassa_payment_id=%s, paid_at=NOW(), updated_at=NOW()
-                    WHERE order_number=%s AND status='pending'
-                    RETURNING id, plan_type, client_name, client_email, client_phone, client_comment, amount, user_id""",
-                (payment_link_id, order_number),
-            )
-            row = cur.fetchone()
-            conn.commit()
-        conn.close()
-
-        if row:
-            _, plan_type, client_name, client_email, client_phone, client_comment, amount = row
-
-            if client_email:
-                send_email(
-                    client_email,
-                    f"Авангард: ваш заказ {order_number} оплачен",
-                    client_email_html(plan_type, order_number, client_name),
-                )
-
-            admin_email = os.environ.get("SMTP_USER", "")
-            if admin_email:
-                send_email(
-                    admin_email,
-                    f"Новый заказ сметы: {order_number} ({float(amount):.0f} ₽)",
-                    admin_email_html(plan_type, order_number, client_name, client_email or "", client_phone or "", client_comment or "", float(amount)),
-                )
-
-            label = PLAN_LABELS.get(plan_type, plan_type)
-            tg_msg = (
-                f"<b>Новый заказ сметы оплачен!</b>\n"
-                f"Заказ: <b>{order_number}</b>\n"
-                f"Тариф: {label}\n"
-                f"Сумма: <b>{float(amount):.0f} ₽</b>\n"
-                f"Клиент: {client_name or '—'}\n"
-                f"Тел: {client_phone or '—'}\n"
-                f"Email: {client_email or '—'}"
-            )
-            send_telegram(tg_msg)
-
-    return resp(200, {"ok": True})
+    return resp(400, {"error": f"Неизвестный action: {action}"})

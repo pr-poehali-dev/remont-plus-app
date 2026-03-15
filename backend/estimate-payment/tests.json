@@ -1,19 +1,17 @@
 {
   "tests": [
     {
-      "name": "Create estimate order",
+      "name": "Create order - missing plan_type",
       "method": "POST",
       "path": "/",
       "body": {
         "action": "create_order",
-        "plan_type": "estimate_print",
         "amount": 399,
-        "client_name": "Тест Тестов",
-        "client_email": "test@example.com",
-        "client_phone": "+79001234567"
+        "client_name": "Тест",
+        "client_email": "test@example.com"
       },
-      "expectedStatus": 200,
-      "expectedBody": { "order_number": "string" },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "plan_type и amount обязательны" },
       "bodyMatcher": "partial"
     },
     {
@@ -38,6 +36,17 @@
       },
       "expectedStatus": 404,
       "expectedBody": { "error": "Заказ не найден" },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Unknown action",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "unknown"
+      },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
       "bodyMatcher": "partial"
     }
   ]

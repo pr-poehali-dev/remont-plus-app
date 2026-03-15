@@ -26,16 +26,16 @@
       "name": "POST create payment - missing email",
       "method": "POST",
       "path": "/",
-      "body": {"amount": 399, "return_url": "https://avangard-ai.ru/tariffs"},
+      "body": {"amount": 399},
       "expectedStatus": 400,
       "expectedBody": {"error": "string"},
       "bodyMatcher": "partial"
     },
     {
-      "name": "POST create payment - missing return_url",
+      "name": "POST create payment - low amount",
       "method": "POST",
       "path": "/",
-      "body": {"amount": 399, "user_email": "test@test.ru"},
+      "body": {"amount": 0, "user_email": "test@test.ru"},
       "expectedStatus": 400,
       "expectedBody": {"error": "string"},
       "bodyMatcher": "partial"

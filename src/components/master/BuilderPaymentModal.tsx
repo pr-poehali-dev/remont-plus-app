@@ -6,7 +6,6 @@ import Icon from "@/components/ui/icon";
 
 const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
 const RETURN_URL = `${window.location.origin}/masters`;
-const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
 const PAYMENTS_ENABLED = true;
 
 interface BuilderPlan {
@@ -56,7 +55,29 @@ export default function BuilderPaymentModal({
     setError("");
 
     try {
-      window.open(TOCHKA_CHECKOUT_URL, "_blank");
+      const res = await fetch(PAYMENT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: plan.price,
+          user_email: email.trim(),
+          user_name: contractorName,
+          description: `Тариф ${plan.name} для ${contractorName}`,
+          return_url: RETURN_URL,
+          metadata: { user_id: contractorId, plan_code: plan.code },
+        }),
+      });
+      const raw = await res.json();
+      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+
+      if (data.error) {
+        setError(data.error);
+        return;
+      }
+
+      if (data.payment_url) {
+        window.open(data.payment_url, "_blank");
+      }
       onSuccess();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Что-то пошло не так");

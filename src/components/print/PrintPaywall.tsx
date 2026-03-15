@@ -67,9 +67,7 @@ function CheckOrderPanel({ onUnlock }: { onUnlock: () => void }) {
 }
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
-const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
 const PAYMENTS_ENABLED = true;
-const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
 
 const PRICE = 399;
 const PAID_KEY = "avangard_estimate_paid";
@@ -186,14 +184,25 @@ export default function PrintPaywall({ children, docTitle = "Смета", totalS
           client_phone: phone.trim(),
           client_comment: comment.trim() || docTitle,
           user_id: storedUser?.id || null,
+          return_url: window.location.href,
         }),
       });
       const orderRaw = await orderRes.json();
       const orderData = typeof orderRaw.body === "string" ? JSON.parse(orderRaw.body) : orderRaw;
+
+      if (orderData.error) {
+        setError(orderData.error);
+        setLoading(false);
+        return;
+      }
+
       const oNum = orderData.order_number;
+      const paymentUrl = orderData.payment_url;
       setOrderNumber(oNum);
 
-      window.open(TOCHKA_CHECKOUT_URL, "_blank");
+      if (paymentUrl) {
+        window.open(paymentUrl, "_blank");
+      }
       setStep("waiting");
 
       pollRef.current = setInterval(async () => {

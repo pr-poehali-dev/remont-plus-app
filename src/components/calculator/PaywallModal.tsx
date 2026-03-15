@@ -4,7 +4,6 @@ import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
-const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
 const PAID_KEY = "avangard_estimate_paid";
 
 const SINGLE_PRICE = 149;
@@ -87,10 +86,36 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
   };
 
-  const handlePay = async (_code: string, _price: number, _name: string) => {
+  const handlePay = async (code: string, price: number, planName: string) => {
     setError(null);
-    setPaying(_code);
-    window.open(TOCHKA_CHECKOUT_URL, "_blank");
+    setPaying(code);
+    try {
+      const res = await fetch(ESTIMATE_PAYMENT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_order",
+          plan_type: code,
+          amount: price,
+          client_name: storedUser?.name || "",
+          client_email: storedUser?.email || "",
+          user_id: userId,
+          return_url: window.location.href,
+        }),
+      });
+      const raw = await res.json();
+      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+      if (data.error) {
+        setError(data.error);
+        setPaying(null);
+        return;
+      }
+      if (data.payment_url) {
+        window.open(data.payment_url, "_blank");
+      }
+    } catch {
+      setError("Ошибка соединения. Попробуйте ещё раз.");
+    }
     setPaying(null);
   };
 

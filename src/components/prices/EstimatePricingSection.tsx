@@ -6,9 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
-const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
 const PAYMENTS_ENABLED = true;
-const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
 
 const PLAN = {
   id: "estimate_print",
@@ -70,14 +68,25 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
           client_phone: phone.trim(),
           client_comment: comment.trim(),
           user_id: (() => { try { return JSON.parse(localStorage.getItem("avangard_user") || "null")?.id || null; } catch { return null; } })(),
+          return_url: window.location.href,
         }),
       });
       const orderRaw = await orderRes.json();
       const orderData = typeof orderRaw.body === "string" ? JSON.parse(orderRaw.body) : orderRaw;
+
+      if (orderData.error) {
+        setError(orderData.error);
+        setLoading(false);
+        return;
+      }
+
       const oNum = orderData.order_number;
+      const paymentUrl = orderData.payment_url;
       setOrderNumber(oNum);
 
-      window.open(TOCHKA_CHECKOUT_URL, "_blank");
+      if (paymentUrl) {
+        window.open(paymentUrl, "_blank");
+      }
       setStep("success");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Что-то пошло не так. Попробуйте ещё раз.");

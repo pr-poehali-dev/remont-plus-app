@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Icon from "@/components/ui/icon";
 
-const YK_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
-const TOCHKA_CHECKOUT_URL = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32";
+const PAYMENTS_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
+const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 const PAYMENTS_ENABLED = true;
 
 const PLANS = [
@@ -95,7 +95,30 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
     setSelectedPlan(plan);
 
     try {
-      window.open(TOCHKA_CHECKOUT_URL, "_blank");
+      const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
+      const res = await fetch(PAYMENTS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: plan.price,
+          user_email: storedUser?.email || "",
+          user_name: storedUser?.name || "",
+          description: `Тариф ${plan.name}`,
+          return_url: window.location.href,
+          metadata: { user_id: userId, plan_code: plan.code },
+        }),
+      });
+      const raw = await res.json();
+      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+
+      if (data.error) {
+        setError(data.error);
+        return;
+      }
+
+      if (data.payment_url) {
+        window.open(data.payment_url, "_blank");
+      }
       setStep("paying");
     } catch {
       setError("Ошибка подключения. Попробуйте позже.");
@@ -223,7 +246,7 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
               <Icon name="Clock" size={28} className="text-blue-500 animate-pulse" />
             </div>
             <h3 className="font-bold text-lg mb-2">Ожидаем оплату</h3>
-            <p className="text-sm text-gray-500 mb-1">Окно оплаты ЮKassa открыто в новой вкладке</p>
+            <p className="text-sm text-gray-500 mb-1">Окно оплаты открыто в новой вкладке</p>
             <p className="text-xs text-gray-400 mb-6">
               Тариф <b>{selectedPlan?.name}</b> активируется автоматически после успешной оплаты
             </p>
