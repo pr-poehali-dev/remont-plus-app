@@ -29,7 +29,7 @@ CORS = {
 
 TOCHKA_API = "https://enter.tochka.com/uapi/acquiring/v1.0"
 CUSTOMER_CODE = "302664947"
-FALLBACK_CHECKOUT = "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32"
+
 
 
 def get_conn():
@@ -329,16 +329,21 @@ def handler(event: dict, context) -> dict:
         purpose = f"{label} ({order_number})"
         payment_result, err = create_tochka_payment(amount, purpose, external_id, return_url)
 
-        payment_url = FALLBACK_CHECKOUT
-        payment_link_id = external_id
-        api_used = False
+        if not payment_result or not payment_result.get("payment_url"):
+            print(f"[estimate-payment] API error for {order_number}: {err}")
+            conn.close()
+            send_telegram(
+                f"<b>Ошибка создания платежа</b>\n"
+                f"Заказ: <b>{order_number}</b>\n"
+                f"Тариф: {label}\n"
+                f"Сумма: <b>{amount:.0f} ₽</b>\n"
+                f"Клиент: {client_name or '—'}\n"
+                f"Ошибка: {err or 'нет payment_url'}"
+            )
+            return resp(500, {"error": "Не удалось создать платёж. Попробуйте позже или позвоните нам: 8 (927) 748-68-68"})
 
-        if payment_result and payment_result.get("payment_url"):
-            payment_url = payment_result["payment_url"]
-            payment_link_id = payment_result.get("payment_link_id", external_id)
-            api_used = True
-        elif err:
-            print(f"[estimate-payment] API fallback for {order_number}: {err}")
+        payment_url = payment_result["payment_url"]
+        payment_link_id = payment_result.get("payment_link_id", external_id)
 
         conn = get_conn()
         with conn.cursor() as cur:
@@ -357,8 +362,7 @@ def handler(event: dict, context) -> dict:
             f"Тариф: {label}\n"
             f"Сумма: <b>{amount:.0f} ₽</b>\n"
             f"Клиент: {client_name or '—'}\n"
-            f"Email: {client_email or '—'}\n"
-            f"API: {'да' if api_used else 'фоллбэк'}"
+            f"Email: {client_email or '—'}"
         )
 
         return resp(200, {
