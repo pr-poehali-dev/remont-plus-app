@@ -300,12 +300,10 @@ export default function HomeHero({ user, regionLabel, onLogout }: Props) {
               </a>
               {user ? (
                 <>
-                  <div className="hidden sm:flex items-center gap-2 text-sm bg-white/10 px-3 py-1.5 rounded-full">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                      <Icon name="User" className="h-3 w-3 text-white" />
-                    </div>
-                    <span className="font-medium text-white/80">{user.name}</span>
-                  </div>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/account")} className="rounded-full border-white/20 text-white/80 hover:bg-white/10 gap-1.5">
+                    <Icon name="User" className="h-3.5 w-3.5" />
+                    Личный кабинет
+                  </Button>
                   {user.role === "admin" && (
                     <Button variant="outline" size="sm" onClick={() => navigate("/admin")} className="rounded-full border-white/20 text-white/80 hover:bg-white/10">
                       <Icon name="Shield" className="mr-1.5 h-4 w-4" />

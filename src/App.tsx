@@ -56,6 +56,7 @@ import OfficeCalc from "./pages/OfficeCalc";
 import CityLanding from "./pages/CityLanding";
 import Furniture from "./pages/Furniture";
 import ReadyProjects from "./pages/ReadyProjects";
+import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import PriceMonitor from "./pages/PriceMonitor";
 import CookieBanner from "./components/CookieBanner";
@@ -127,6 +128,7 @@ const App = () => {
             <Route path="/city/:slug" element={<CityLanding />} />
             <Route path="/ready-projects" element={<ReadyProjects />} />
             <Route path="/price-monitor" element={<PriceMonitor />} />
+            <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

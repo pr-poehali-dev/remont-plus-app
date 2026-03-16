@@ -104,6 +104,10 @@ export default function EstimateActions({
           variant={showEmailForm ? "secondary" : "outline"}
           size="sm"
           onClick={() => {
+            if (!hasTariff) {
+              redirectToTariffs();
+              return;
+            }
             setShowEmailForm((v) => !v);
             setStatus("idle");
           }}

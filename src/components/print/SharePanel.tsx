@@ -1,5 +1,20 @@
 import { useState } from "react";
 
+function checkTariffAccess(): boolean {
+  try {
+    const user = JSON.parse(localStorage.getItem("avangard_user") || "null");
+    if (user?.role === "admin") return true;
+    const tariff = localStorage.getItem("avangard_tariff");
+    if (tariff) return true;
+    const legacy = localStorage.getItem("avangard_estimate_paid");
+    if (legacy) {
+      const { paid } = JSON.parse(legacy);
+      if (paid) return true;
+    }
+    return false;
+  } catch { return false; }
+}
+
 const NOTIFY_EMAIL_URL =
   "https://functions.poehali.dev/a8b87e78-89d1-48d8-ba76-8da2e0df32a3";
 
@@ -68,10 +83,18 @@ export default function SharePanel({
   };
 
   const handlePrint = () => {
+    if (!checkTariffAccess()) {
+      window.location.href = "https://avangard-ai.ru/tariffs";
+      return;
+    }
     window.print();
   };
 
   const handleEmailSend = async () => {
+    if (!checkTariffAccess()) {
+      window.location.href = "https://avangard-ai.ru/tariffs";
+      return;
+    }
     if (!emailTo) return;
 
     setEmailStatus("loading");
@@ -332,7 +355,13 @@ export default function SharePanel({
 
         {/* Email */}
         <button
-          onClick={() => setShowEmail((v) => !v)}
+          onClick={() => {
+            if (!checkTariffAccess()) {
+              window.location.href = "https://avangard-ai.ru/tariffs";
+              return;
+            }
+            setShowEmail((v) => !v);
+          }}
           style={{
             ...btnStyle,
             background: showEmail ? "#f3f4f6" : "#fff",
