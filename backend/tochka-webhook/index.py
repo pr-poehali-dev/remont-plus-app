@@ -9,9 +9,30 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import psycopg2
+from datetime import datetime, timedelta
 
 SCHEMA = os.environ.get("MAIN_DB_SCHEMA", "public")
 S = f"{SCHEMA}."
+
+AMOUNT_TO_PLAN = {
+    1490: "b2c_basic",
+    2990: "b2c_professional",
+    4990: "b2c_premium",
+    5900: "b2b_start",
+    12900: "b2b_business",
+    24900: "b2b_pro",
+}
+
+PLAN_NAMES = {
+    "b2c_basic": "Базовый",
+    "b2c_professional": "Профессиональный",
+    "b2c_premium": "Премиум",
+    "b2b_start": "Старт",
+    "b2b_business": "Бизнес",
+    "b2b_pro": "Профи",
+}
+
+B2B_PLANS = {"b2b_start", "b2b_business", "b2b_pro"}
 
 CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -104,6 +125,46 @@ def client_paid_email(order_number: str, client_name: str, amount: float) -> str
     </div>
   </div>
 </body></html>"""
+
+
+def activate_tariff_from_payment(conn, amount, user_id=None, email=None):
+    try:
+        amt = int(round(float(amount)))
+    except (ValueError, TypeError):
+        return None
+    plan_id = AMOUNT_TO_PLAN.get(amt)
+    if not plan_id:
+        return None
+    plan_name = PLAN_NAMES.get(plan_id, plan_id)
+    is_monthly = plan_id in B2B_PLANS
+    expires_at = datetime.utcnow() + timedelta(days=30)
+    price = float(amt)
+    with conn.cursor() as cur:
+        if user_id:
+            cur.execute(
+                f"UPDATE {S}client_tariffs SET status='replaced', updated_at=NOW() "
+                f"WHERE user_id=%s AND status='active'",
+                (user_id,),
+            )
+        elif email:
+            cur.execute(
+                f"UPDATE {S}client_tariffs SET status='replaced', updated_at=NOW() "
+                f"WHERE email=%s AND status='active'",
+                (email,),
+            )
+        cur.execute(
+            f"INSERT INTO {S}client_tariffs (user_id, email, plan_id, plan_name, price, is_monthly, status, activated_at, expires_at) "
+            f"VALUES (%s, %s, %s, %s, %s, %s, 'active', NOW(), %s) RETURNING id",
+            (user_id, email, plan_id, plan_name, price, is_monthly, expires_at),
+        )
+        tariff_id = cur.fetchone()[0]
+        cur.execute(
+            f"INSERT INTO {S}tariff_payments (user_id, email, plan_id, plan_name, amount, status, paid_at) "
+            f"VALUES (%s, %s, %s, %s, %s, 'paid', NOW()) RETURNING id",
+            (user_id, email, plan_id, plan_name, price),
+        )
+        payment_id = cur.fetchone()[0]
+    return {"tariff_id": tariff_id, "payment_id": payment_id, "plan_id": plan_id, "plan_name": plan_name}
 
 
 def parse_webhook_body(raw_body: str) -> dict:
@@ -226,6 +287,23 @@ def handler(event: dict, context) -> dict:
                         WHERE yukassa_payment_id=%s AND status='pending'""",
                     (str(pk_id),),
                 )
+
+            tariff_user_id = None
+            tariff_email = pk_client_email or None
+            for row in updated_estimate_orders:
+                if row[6]:
+                    tariff_user_id = row[6]
+                if row[3]:
+                    tariff_email = row[3]
+            for row in updated_orders:
+                if row[3]:
+                    tariff_email = row[3]
+
+            tariff_result = activate_tariff_from_payment(
+                conn, pk_sum, user_id=tariff_user_id, email=tariff_email
+            )
+            if tariff_result:
+                print(f"[tochka-webhook] tariff activated: {tariff_result}")
 
             conn.commit()
 

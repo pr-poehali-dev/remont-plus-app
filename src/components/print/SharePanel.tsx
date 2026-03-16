@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const TARIFF_API = "https://functions.poehali.dev/aae7e353-917d-4759-9f27-a78f28be0084";
 
 function checkTariffAccess(): boolean {
   try {
@@ -13,6 +15,40 @@ function checkTariffAccess(): boolean {
     }
     return false;
   } catch { return false; }
+}
+
+function syncTariffFromBackend() {
+  try {
+    const user = JSON.parse(localStorage.getItem("avangard_user") || "null");
+    if (!user || user.role === "admin") return;
+    if (!user.id && !user.email) return;
+    fetch(TARIFF_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "get_tariff",
+        user_id: user.id,
+        email: user.email,
+      }),
+    })
+      .then((res) => res.json())
+      .then((raw) => {
+        const d = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+        const t = d?.tariff;
+        if (t && t.plan_id) {
+          localStorage.setItem(
+            "avangard_tariff",
+            JSON.stringify({
+              plan_id: t.plan_id,
+              paid: true,
+              ts: t.activated_at ? new Date(t.activated_at).getTime() : Date.now(),
+              days_total: t.days_total || 30,
+            }),
+          );
+        }
+      })
+      .catch(() => {});
+  } catch { /* ignore */ }
 }
 
 const NOTIFY_EMAIL_URL =
@@ -58,6 +94,10 @@ export default function SharePanel({
   const [emailStatus, setEmailStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
+
+  useEffect(() => {
+    syncTariffFromBackend();
+  }, []);
 
   const text = `${docType === "kp" ? "Коммерческое предложение" : "Смета"}: ${docTitle}\nИтоговая стоимость: ${fmt(totalSum)} ₽\n\nСформировано в АВАНГАРД: https://avangard.pro`;
 

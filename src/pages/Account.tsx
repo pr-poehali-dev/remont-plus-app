@@ -4,17 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import Icon from "@/components/ui/icon";
+import useTariffAccess from "@/hooks/useTariffAccess";
 
-const PLAN_NAMES: Record<string, string> = {
-  b2c_basic: "Базовый",
-  b2c_professional: "Профессиональный",
-  b2c_premium: "Премиум",
-  b2b_start: "Старт",
-  b2b_business: "Бизнес",
-  b2b_pro: "Профи",
-};
-
-const TARIFF_DURATION_DAYS = 30;
+const TARIFF_API = "https://functions.poehali.dev/aae7e353-917d-4759-9f27-a78f28be0084";
 
 interface User {
   id: number;
@@ -24,10 +16,11 @@ interface User {
   role: string;
 }
 
-interface TariffData {
-  plan_id: string;
-  paid: boolean;
-  ts: number;
+interface Payment {
+  date: string;
+  plan_name: string;
+  amount: number;
+  status: string;
 }
 
 const quickActions = [
@@ -40,38 +33,76 @@ const quickActions = [
 export default function Account() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [tariff, setTariff] = useState<TariffData | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(true);
+
+  const { planName, daysRemaining, daysTotal, loading: tariffLoading } = useTariffAccess();
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem("avangard_user");
       if (raw) setUser(JSON.parse(raw));
     } catch { /* ignore */ }
-
-    try {
-      const raw = localStorage.getItem("avangard_tariff");
-      if (raw) setTariff(JSON.parse(raw));
-    } catch { /* ignore */ }
   }, []);
 
-  const planName = tariff?.plan_id ? PLAN_NAMES[tariff.plan_id] || tariff.plan_id : null;
+  useEffect(() => {
+    if (!user?.id && !user?.email) {
+      setPaymentsLoading(false);
+      return;
+    }
 
-  const getDaysRemaining = (): number => {
-    if (!tariff?.ts) return 0;
-    const expiresAt = tariff.ts + TARIFF_DURATION_DAYS * 24 * 60 * 60 * 1000;
-    const remaining = Math.ceil((expiresAt - Date.now()) / (24 * 60 * 60 * 1000));
-    return Math.max(0, remaining);
+    fetch(TARIFF_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "get_payments",
+        user_id: user.id,
+        email: user.email,
+      }),
+    })
+      .then((res) => res.json())
+      .then((raw) => {
+        const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+        if (Array.isArray(data?.payments)) {
+          setPayments(data.payments);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setPaymentsLoading(false));
+  }, [user?.id, user?.email]);
+
+  const daysPassed = daysTotal - daysRemaining;
+  const progressValue = daysTotal > 0 ? (daysPassed / daysTotal) * 100 : 0;
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString("ru-RU");
+    } catch {
+      return dateStr;
+    }
   };
 
-  const getDaysPassed = (): number => {
-    if (!tariff?.ts) return 0;
-    const passed = Math.floor((Date.now() - tariff.ts) / (24 * 60 * 60 * 1000));
-    return Math.min(TARIFF_DURATION_DAYS, Math.max(0, passed));
+  const formatAmount = (n: number) => n.toLocaleString("ru-RU");
+
+  const statusLabel = (status: string) => {
+    const map: Record<string, string> = {
+      paid: "Оплачен",
+      pending: "Ожидает",
+      failed: "Ошибка",
+      refunded: "Возврат",
+    };
+    return map[status] || status;
   };
 
-  const daysRemaining = getDaysRemaining();
-  const daysPassed = getDaysPassed();
-  const progressValue = (daysPassed / TARIFF_DURATION_DAYS) * 100;
+  const statusColor = (status: string) => {
+    const map: Record<string, string> = {
+      paid: "text-green-600",
+      pending: "text-amber-600",
+      failed: "text-red-600",
+      refunded: "text-gray-500",
+    };
+    return map[status] || "text-gray-600";
+  };
 
   return (
     <div className="min-h-screen bg-[#fafaf8]">
@@ -108,7 +139,12 @@ export default function Account() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {planName ? (
+            {tariffLoading ? (
+              <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
+                <Icon name="Loader2" size={18} className="animate-spin" />
+                <span className="text-sm">Загрузка тарифа...</span>
+              </div>
+            ) : planName ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -127,7 +163,7 @@ export default function Account() {
                 </div>
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Прошло {daysPassed} из {TARIFF_DURATION_DAYS} дней</span>
+                    <span>Прошло {daysPassed} из {daysTotal} дней</span>
                     <span>{Math.round(progressValue)}%</span>
                   </div>
                   <Progress value={progressValue} className="h-2" />
@@ -185,9 +221,39 @@ export default function Account() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground text-center py-6">
-              История платежей будет доступна в ближайшее время
-            </p>
+            {paymentsLoading ? (
+              <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
+                <Icon name="Loader2" size={18} className="animate-spin" />
+                <span className="text-sm">Загрузка платежей...</span>
+              </div>
+            ) : payments.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-2 pr-4 font-medium">Дата</th>
+                      <th className="pb-2 pr-4 font-medium">Тариф</th>
+                      <th className="pb-2 pr-4 font-medium text-right">Сумма</th>
+                      <th className="pb-2 font-medium">Статус</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payments.map((p, i) => (
+                      <tr key={i} className="border-b last:border-0">
+                        <td className="py-2.5 pr-4">{formatDate(p.date)}</td>
+                        <td className="py-2.5 pr-4">{p.plan_name}</td>
+                        <td className="py-2.5 pr-4 text-right">{formatAmount(p.amount)} &#8381;</td>
+                        <td className={`py-2.5 font-medium ${statusColor(p.status)}`}>{statusLabel(p.status)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-6">
+                Платежей пока нет
+              </p>
+            )}
           </CardContent>
         </Card>
       </main>

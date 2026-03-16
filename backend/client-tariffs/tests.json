@@ -1,0 +1,24 @@
+{
+  "tests": [
+    {
+      "name": "Get tariff without params",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Check access without user",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "check_access", "doc_type": "smeta"},
+      "expectedStatus": 200
+    },
+    {
+      "name": "Get payments without user",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "get_payments"},
+      "expectedStatus": 200
+    }
+  ]
+}

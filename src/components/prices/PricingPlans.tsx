@@ -5,6 +5,31 @@ import { type PlanInfo, B2C_PLANS, B2B_PLANS, Check, TOCHKA_CHECKOUT_URLS } from
 import PaymentModal from "./PaymentModal";
 import B2BPaymentChoice from "./InvoiceModal";
 
+const TARIFF_API = "https://functions.poehali.dev/aae7e353-917d-4759-9f27-a78f28be0084";
+
+function getStoredUser(): { id?: number; email?: string } | null {
+  try {
+    return JSON.parse(localStorage.getItem("avangard_user") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function fireActivate(planId: string) {
+  const user = getStoredUser();
+  if (!user?.id && !user?.email) return;
+  fetch(TARIFF_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "activate",
+      plan_id: planId,
+      user_id: user.id,
+      email: user.email,
+    }),
+  }).catch(() => {});
+}
+
 export default function PricingPlans() {
   const [payPlan, setPayPlan] = useState<PlanInfo | null>(null);
   const [b2bPlan, setB2bPlan] = useState<PlanInfo | null>(null);
@@ -18,6 +43,7 @@ export default function PricingPlans() {
     const checkoutUrl = TOCHKA_CHECKOUT_URLS[plan.id];
     if (checkoutUrl) {
       window.open(checkoutUrl, "_blank");
+      fireActivate(plan.id);
     } else {
       setPayPlan(plan);
     }
@@ -141,6 +167,7 @@ export default function PricingPlans() {
             <Button variant="outline" className="w-full" onClick={() => {
               saveTariffChoice(B2B_PLANS[0]);
               setB2bPlan(B2B_PLANS[0]);
+              fireActivate(B2B_PLANS[0].id);
             }}>
               Подключить
             </Button>
@@ -170,6 +197,7 @@ export default function PricingPlans() {
             <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => {
               saveTariffChoice(B2B_PLANS[1]);
               setB2bPlan(B2B_PLANS[1]);
+              fireActivate(B2B_PLANS[1].id);
             }}>
               Подключить
             </Button>
@@ -195,6 +223,7 @@ export default function PricingPlans() {
             <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => {
               saveTariffChoice(B2B_PLANS[2]);
               setB2bPlan(B2B_PLANS[2]);
+              fireActivate(B2B_PLANS[2].id);
             }}>
               Подключить
             </Button>
