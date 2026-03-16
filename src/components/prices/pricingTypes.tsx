@@ -30,6 +30,17 @@ export const B2B_PLANS: PlanInfo[] = [
   { id: "b2b_pro", name: "Профи", price: 24900, period: "мес" },
 ];
 
+export const COMPANY_REQUISITES = {
+  name: 'ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ "МАТ-ЛАБС"',
+  shortName: 'ООО "МАТ-ЛАБС"',
+  inn: "6312223437",
+  kpp: "631201001",
+  account: "40702810220000292435",
+  bankName: 'ООО "Банк Точка"',
+  bik: "044525104",
+  corrAccount: "30101810745374525104",
+};
+
 export function fmt(n: number) {
   return n.toLocaleString("ru-RU");
 }

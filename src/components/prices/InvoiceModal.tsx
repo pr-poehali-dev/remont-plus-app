@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
-import { type PlanInfo, PAYMENT_URL, fmt, TOCHKA_CHECKOUT_URLS } from "./pricingTypes";
+import { type PlanInfo, PAYMENT_URL, fmt, TOCHKA_CHECKOUT_URLS, COMPANY_REQUISITES } from "./pricingTypes";
 
 function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void }) {
   const [companyName, setCompanyName] = useState("");
@@ -77,17 +77,59 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
 
         <div className="p-6">
           {step === "success" ? (
-            <div className="text-center py-4">
-              <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                <Icon name="FileCheck" size={32} className="text-blue-500" />
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                  <Icon name="CheckCircle" size={22} className="text-green-500" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base">Заявка #{orderNumber} принята</h3>
+                  <p className="text-xs text-gray-400">Счёт отправим на {email}</p>
+                </div>
               </div>
-              <h3 className="font-bold text-lg mb-2">Заявка принята!</h3>
-              <p className="text-gray-500 text-sm mb-3">
-                Номер заявки: <strong>{orderNumber}</strong>
-              </p>
-              <p className="text-gray-400 text-xs mb-1">Мы подготовим счёт и отправим на {email}</p>
-              <p className="text-gray-400 text-xs">Обычно это занимает 1 рабочий день</p>
-              <Button className="mt-5 w-full" variant="outline" onClick={onClose}>Закрыть</Button>
+
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Реквизиты для оплаты</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-gray-500">Получатель</span><span className="font-medium text-gray-900 text-right max-w-[60%]">{COMPANY_REQUISITES.shortName}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">ИНН</span><span className="font-mono text-gray-900">{COMPANY_REQUISITES.inn}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">КПП</span><span className="font-mono text-gray-900">{COMPANY_REQUISITES.kpp}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Р/с</span><span className="font-mono text-gray-900 text-xs">{COMPANY_REQUISITES.account}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Банк</span><span className="font-medium text-gray-900 text-right max-w-[60%]">{COMPANY_REQUISITES.bankName}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">БИК</span><span className="font-mono text-gray-900">{COMPANY_REQUISITES.bik}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">К/с</span><span className="font-mono text-gray-900 text-xs">{COMPANY_REQUISITES.corrAccount}</span></div>
+                </div>
+                <div className="border-t border-gray-200 mt-3 pt-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Назначение платежа</span>
+                  </div>
+                  <p className="text-xs text-gray-700 mt-1 font-medium">Оплата по тарифу «{plan.name}» ({fmt(plan.price)} ₽/мес), заявка #{orderNumber}. Без НДС.</p>
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mb-2"
+                onClick={() => {
+                  const text = [
+                    `Получатель: ${COMPANY_REQUISITES.name}`,
+                    `ИНН: ${COMPANY_REQUISITES.inn}`,
+                    `КПП: ${COMPANY_REQUISITES.kpp}`,
+                    `Р/с: ${COMPANY_REQUISITES.account}`,
+                    `Банк: ${COMPANY_REQUISITES.bankName}`,
+                    `БИК: ${COMPANY_REQUISITES.bik}`,
+                    `К/с: ${COMPANY_REQUISITES.corrAccount}`,
+                    `Назначение: Оплата по тарифу «${plan.name}» (${fmt(plan.price)} руб./мес), заявка #${orderNumber}. Без НДС.`,
+                  ].join("\n");
+                  navigator.clipboard.writeText(text);
+                }}
+              >
+                <Icon name="Copy" size={14} className="mr-1.5" />
+                Скопировать реквизиты
+              </Button>
+
+              <Button className="w-full" variant="outline" onClick={onClose}>Закрыть</Button>
             </div>
           ) : (
             <div className="space-y-4">
