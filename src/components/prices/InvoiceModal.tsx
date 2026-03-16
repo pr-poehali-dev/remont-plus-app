@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
-import { type PlanInfo, PAYMENT_URL, fmt } from "./pricingTypes";
-import PaymentModal from "./PaymentModal";
+import { type PlanInfo, PAYMENT_URL, fmt, TOCHKA_CHECKOUT_URLS } from "./pricingTypes";
 
 function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void }) {
   const [companyName, setCompanyName] = useState("");
@@ -151,9 +150,8 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
 }
 
 export default function B2BPaymentChoice({ plan, onClose }: { plan: PlanInfo; onClose: () => void }) {
-  const [mode, setMode] = useState<"choose" | "online" | "invoice">("choose");
+  const [mode, setMode] = useState<"choose" | "invoice">("choose");
 
-  if (mode === "online") return <PaymentModal plan={plan} onClose={onClose} />;
   if (mode === "invoice") return <InvoiceForm plan={plan} onClose={onClose} />;
 
   return (
@@ -178,7 +176,11 @@ export default function B2BPaymentChoice({ plan, onClose }: { plan: PlanInfo; on
 
           <button
             className="w-full border border-gray-200 rounded-xl p-4 flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/50 transition-colors text-left"
-            onClick={() => setMode("online")}
+            onClick={() => {
+              const url = TOCHKA_CHECKOUT_URLS[plan.id];
+              if (url) window.open(url, "_blank");
+              onClose();
+            }}
           >
             <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
               <Icon name="CreditCard" size={20} className="text-orange-500" />

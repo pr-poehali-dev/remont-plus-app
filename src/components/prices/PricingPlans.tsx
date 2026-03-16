@@ -140,8 +140,7 @@ export default function PricingPlans() {
             </ul>
             <Button variant="outline" className="w-full" onClick={() => {
               saveTariffChoice(B2B_PLANS[0]);
-              const url = TOCHKA_CHECKOUT_URLS[B2B_PLANS[0].id];
-              if (url) window.open(url, "_blank"); else setB2bPlan(B2B_PLANS[0]);
+              setB2bPlan(B2B_PLANS[0]);
             }}>
               Подключить
             </Button>
@@ -170,8 +169,7 @@ export default function PricingPlans() {
             </ul>
             <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => {
               saveTariffChoice(B2B_PLANS[1]);
-              const url = TOCHKA_CHECKOUT_URLS[B2B_PLANS[1].id];
-              if (url) window.open(url, "_blank"); else setB2bPlan(B2B_PLANS[1]);
+              setB2bPlan(B2B_PLANS[1]);
             }}>
               Подключить
             </Button>
@@ -196,8 +194,7 @@ export default function PricingPlans() {
             </ul>
             <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => {
               saveTariffChoice(B2B_PLANS[2]);
-              const url = TOCHKA_CHECKOUT_URLS[B2B_PLANS[2].id];
-              if (url) window.open(url, "_blank"); else setB2bPlan(B2B_PLANS[2]);
+              setB2bPlan(B2B_PLANS[2]);
             }}>
               Подключить
             </Button>
