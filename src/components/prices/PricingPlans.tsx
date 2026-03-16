@@ -133,7 +133,10 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Учёт региональных коэффициентов</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Выгрузка в PDF</li>
             </ul>
-            <Button variant="outline" className="w-full" onClick={() => setB2bPlan(B2B_PLANS[0])}>
+            <Button variant="outline" className="w-full" onClick={() => {
+              const url = TOCHKA_CHECKOUT_URLS[B2B_PLANS[0].id];
+              if (url) window.open(url, "_blank"); else setB2bPlan(B2B_PLANS[0]);
+            }}>
               Подключить
             </Button>
           </div>

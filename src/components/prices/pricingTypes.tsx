@@ -6,6 +6,7 @@ export const TOCHKA_CHECKOUT_URLS: Record<string, string> = {
   b2c_basic: "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32",
   b2c_professional: "https://checkout.tochka.com/81599376-f33c-4d28-90f5-917eee673289",
   b2c_premium: "https://checkout.tochka.com/4a412bae-2f37-49f7-ac2f-b90ac933b79f",
+  b2b_start: "https://checkout.tochka.com/64207214-077c-46ff-988a-78911b76bfa7",
 };
 
 export interface PlanInfo {
