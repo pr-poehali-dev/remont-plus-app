@@ -36,7 +36,7 @@ export const RENOVATION_LEVELS: RenovationLevelOption[] = [
     label: "Эконом",
     description: "Минимальный набор работ, бюджетные материалы",
     includes: ["Стяжка", "Штукатурка", "Обои/покраска", "Линолеум/ламинат эконом"],
-    basePriceM2: 15000,
+    basePriceM2: 16500,
     priceCoeff: 0.7,
   },
   {
@@ -44,7 +44,7 @@ export const RENOVATION_LEVELS: RenovationLevelOption[] = [
     label: "Стандарт",
     description: "Оптимальное соотношение цены и качества",
     includes: ["Стяжка", "Штукатурка гипс", "Покраска 2 слоя", "Ламинат 33кл", "Электрика базовая"],
-    basePriceM2: 23000,
+    basePriceM2: 25300,
     priceCoeff: 1.0,
   },
   {
@@ -52,7 +52,7 @@ export const RENOVATION_LEVELS: RenovationLevelOption[] = [
     label: "Комфорт",
     description: "Качественные материалы, детальная проработка",
     includes: ["Стяжка самонивелир", "Штукатурка+шпаклёвка", "Покраска 3 слоя", "Паркетная доска", "Электрика полная"],
-    basePriceM2: 36000,
+    basePriceM2: 39600,
     priceCoeff: 1.4,
   },
   {
@@ -60,7 +60,7 @@ export const RENOVATION_LEVELS: RenovationLevelOption[] = [
     label: "Премиум",
     description: "Материалы премиум-класса, авторские решения",
     includes: ["Все работы комфорт", "Дизайн-проект", "Авторский надзор", "Паркет/натуральный камень", "Умный дом"],
-    basePriceM2: 58000,
+    basePriceM2: 63800,
     priceCoeff: 2.0,
   },
 ];
@@ -75,9 +75,9 @@ export interface ScreedTypeOption {
 }
 
 export const SCREED_TYPES: ScreedTypeOption[] = [
-  { id: "dry",           label: "Сухая стяжка",          description: "Быстрый монтаж, лёгкая конструкция", priceM2: 1100 },
-  { id: "wet",           label: "Мокрая стяжка",         description: "Цементно-песчаная, прочная",          priceM2: 1350 },
-  { id: "self-leveling", label: "Самовыравнивающаяся",   description: "Идеально ровная поверхность",          priceM2: 1700 },
+  { id: "dry",           label: "Сухая стяжка",          description: "Быстрый монтаж, лёгкая конструкция", priceM2: 1210 },
+  { id: "wet",           label: "Мокрая стяжка",         description: "Цементно-песчаная, прочная",          priceM2: 1485 },
+  { id: "self-leveling", label: "Самовыравнивающаяся",   description: "Идеально ровная поверхность",          priceM2: 1870 },
 ];
 
 // ─── Типы штукатурки ──────────────────────────────────────────────────────────
@@ -90,8 +90,8 @@ export interface PlasterTypeOption {
 }
 
 export const PLASTER_TYPES: PlasterTypeOption[] = [
-  { id: "gypsum",  label: "Гипсовая штукатурка",  description: "Для жилых помещений, ровная поверхность", priceM2: 900 },
-  { id: "cement",  label: "Цементная штукатурка",  description: "Для влажных помещений, прочная",           priceM2: 1050 },
+  { id: "gypsum",  label: "Гипсовая штукатурка",  description: "Для жилых помещений, ровная поверхность", priceM2: 990 },
+  { id: "cement",  label: "Цементная штукатурка",  description: "Для влажных помещений, прочная",           priceM2: 1155 },
 ];
 
 // ─── Типы потолка ─────────────────────────────────────────────────────────────
@@ -104,9 +104,9 @@ export interface CeilingTypeOption {
 }
 
 export const CEILING_FINISH_TYPES: CeilingTypeOption[] = [
-  { id: "paint",        label: "Покраска потолка",      description: "Шпаклёвка + грунт + покраска",  priceM2: 950  },
-  { id: "stretch",      label: "Натяжной потолок",      description: "ПВХ полотно, любой цвет",        priceM2: 1400 },
-  { id: "gypsum-board", label: "Гипсокартонный потолок",description: "С подсветкой, сложные формы",    priceM2: 1900 },
+  { id: "paint",        label: "Покраска потолка",      description: "Шпаклёвка + грунт + покраска",  priceM2: 1045 },
+  { id: "stretch",      label: "Натяжной потолок",      description: "ПВХ полотно, любой цвет",        priceM2: 1540 },
+  { id: "gypsum-board", label: "Гипсокартонный потолок",description: "С подсветкой, сложные формы",    priceM2: 2090 },
 ];
 
 // ─── Типы напольного покрытия ────────────────────────────────────────────────
@@ -119,10 +119,10 @@ export interface FlooringTypeOption {
 }
 
 export const FLOORING_TYPES: FlooringTypeOption[] = [
-  { id: "laminate",  label: "Ламинат 33 класс",     description: "Универсальный вариант",               priceM2: 1400 },
-  { id: "tile",      label: "Плитка / керамогранит", description: "Для кухни, ванной, прихожей",         priceM2: 2100 },
-  { id: "parquet",   label: "Паркетная доска",       description: "Для гостиной, спальни",               priceM2: 3200 },
-  { id: "linoleum",  label: "Линолеум",              description: "Бюджетный, быстрый монтаж",           priceM2: 800  },
+  { id: "laminate",  label: "Ламинат 33 класс",     description: "Универсальный вариант",               priceM2: 1540 },
+  { id: "tile",      label: "Плитка / керамогранит", description: "Для кухни, ванной, прихожей",         priceM2: 2310 },
+  { id: "parquet",   label: "Паркетная доска",       description: "Для гостиной, спальни",               priceM2: 3520 },
+  { id: "linoleum",  label: "Линолеум",              description: "Бюджетный, быстрый монтаж",           priceM2: 880  },
 ];
 
 // ─── Типы дверей ─────────────────────────────────────────────────────────────
@@ -135,9 +135,9 @@ export interface DoorTypeOption {
 }
 
 export const DOOR_TYPES: DoorTypeOption[] = [
-  { id: "economy",  label: "Эконом (ламинат)",  description: "МДФ с ламинатом, коробка в комплекте",  pricePerDoor: 14000 },
-  { id: "standard", label: "Стандарт (шпон)",   description: "Шпонированная дверь + коробка + установка", pricePerDoor: 24000 },
-  { id: "premium",  label: "Премиум (массив)",  description: "Массив дерева, фурнитура, установка",   pricePerDoor: 45000 },
+  { id: "economy",  label: "Эконом (ламинат)",  description: "МДФ с ламинатом, коробка в комплекте",  pricePerDoor: 15400 },
+  { id: "standard", label: "Стандарт (шпон)",   description: "Шпонированная дверь + коробка + установка", pricePerDoor: 26400 },
+  { id: "premium",  label: "Премиум (массив)",  description: "Массив дерева, фурнитура, установка",   pricePerDoor: 49500 },
 ];
 
 // ─── Регионы ─────────────────────────────────────────────────────────────────

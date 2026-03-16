@@ -80,16 +80,16 @@ export function calcNewbuildPrice(
   if (cfg.paintingWalls) paintArea += wallArea;
   if (cfg.paintingCeiling) paintArea += area;
   const paintCost = paintArea > 0
-    ? Math.round(paintArea * 200 * (cfg.paintLayersCount || 2) * lc * rc)
+    ? Math.round(paintArea * 220 * (cfg.paintLayersCount || 2) * lc * rc)
     : 0;
 
   // ── Напольное покрытие: работа 700 ₽/м² + материал × уровень ─────────────
   const floorMaterialM2 = flooringType?.priceM2 ?? 1100;
-  const flooringCost = Math.round(area * (700 + floorMaterialM2 * lc) * tc * rc);
+  const flooringCost = Math.round(area * (770 + floorMaterialM2 * lc) * tc * rc);
 
   // ── Электрика: 900 ₽/м² разводка + 800 ₽/точка ───────────────────────────
   const electricsCost = cfg.electricsIncluded
-    ? Math.round((area * 900 + (cfg.outletsCount + cfg.switchesCount) * 800) * lc * tc * rc)
+    ? Math.round((area * 990 + (cfg.outletsCount + cfg.switchesCount) * 880) * lc * tc * rc)
     : 0;
 
   // ── Двери: pricePerDoor × количество × уровень (материал + монтаж) ───────
@@ -100,7 +100,7 @@ export function calcNewbuildPrice(
 
   // ── Откосы: 4 000 ₽/проём (ПВХ-панель + монтаж) ─────────────────────────
   const windowSlopesCost = cfg.windowSlopesCount > 0
-    ? Math.round(cfg.windowSlopesCount * 4000 * rc)
+    ? Math.round(cfg.windowSlopesCount * 4400 * rc)
     : 0;
 
   const worksSubtotal = screedCost + plasterCost + ceilingCost + paintCost +
