@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
+import { useTariffAccess } from "@/hooks/useTariffAccess";
 
 const NOTIFY_EMAIL_URL =
   "https://functions.poehali.dev/a8b87e78-89d1-48d8-ba76-8da2e0df32a3";
@@ -27,6 +28,7 @@ export default function EstimateActions({
   contractor,
   address,
 }: EstimateActionsProps) {
+  const { hasTariff, redirectToTariffs } = useTariffAccess();
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<
@@ -85,7 +87,13 @@ export default function EstimateActions({
         <Button
           variant="outline"
           size="sm"
-          onClick={onPrint}
+          onClick={() => {
+            if (!hasTariff) {
+              redirectToTariffs();
+              return;
+            }
+            onPrint();
+          }}
           className="gap-1.5"
         >
           <Icon name="Printer" size={15} />

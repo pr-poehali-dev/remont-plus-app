@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
+import { useTariffAccess } from "@/hooks/useTariffAccess";
 
 export type DocType = "smeta" | "kp" | "ks2" | "ks3" | "act" | "contract";
 
@@ -76,6 +77,8 @@ const CONTRACT_DOCS: DocType[] = ["contract", "ks2", "ks3", "act"];
 export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps) {
   const saved = loadSaved();
   const today = new Date().toISOString().slice(0, 10);
+  const { hasTariff, canAccessDoc, redirectToTariffs } = useTariffAccess();
+  const [tariffBlock, setTariffBlock] = useState<string | null>(null);
 
   const [docType, setDocType] = useState<DocType>("smeta");
   const [customer, setCustomer] = useState("");
@@ -101,6 +104,14 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
   const isContract = CONTRACT_DOCS.includes(docType);
 
   const handleConfirm = () => {
+    if (!hasTariff) {
+      redirectToTariffs();
+      return;
+    }
+    if (!canAccessDoc(docType)) {
+      setTariffBlock(docType);
+      return;
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ contractor, phone, email, inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount, contractNum }));
     if (typeof window !== "undefined" && (window as unknown as { ym?: (id: number, action: string, goal: string) => void }).ym) {
       (window as unknown as { ym: (id: number, action: string, goal: string) => void }).ym(107009331, "reachGoal", "turnkey_document_confirm");
@@ -126,7 +137,7 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
           {DOC_TYPES.map(d => (
             <button
               key={d.type}
-              onClick={() => setDocType(d.type)}
+              onClick={() => { setDocType(d.type); setTariffBlock(null); }}
               className={`flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-lg text-xs font-medium transition-all ${
                 docType === d.type
                   ? "bg-white text-orange-600 shadow-sm"
@@ -188,6 +199,27 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
         <p className="text-xs text-gray-400 mt-4">
           Поля необязательны — можно заполнить вручную после печати.
         </p>
+
+        {tariffBlock && (
+          <div className="mt-4 bg-orange-50 border border-orange-200 rounded-xl p-4 text-center">
+            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Icon name="Lock" size={20} className="text-orange-500" />
+            </div>
+            <p className="text-sm font-semibold text-gray-800 mb-1">
+              Этот документ доступен начиная с тарифа «Профессиональный»
+            </p>
+            <p className="text-xs text-gray-500 mb-3">
+              Ваш текущий тариф не включает формирование этого типа документов
+            </p>
+            <Button
+              className="bg-orange-500 hover:bg-orange-600 text-white text-sm"
+              onClick={redirectToTariffs}
+            >
+              <Icon name="ArrowRight" size={14} className="mr-1.5" />
+              Перейти к тарифам
+            </Button>
+          </div>
+        )}
 
         <div className="flex gap-3 mt-5">
           <Button variant="outline" className="flex-1" onClick={onCancel}>

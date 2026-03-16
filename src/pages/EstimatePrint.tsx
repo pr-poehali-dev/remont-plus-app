@@ -4,10 +4,18 @@ import { COMMON_STYLES } from "@/components/print/PrintTypes";
 import type { PrintData } from "@/components/print/PrintTypes";
 import SmetaView from "@/components/print/SmetaView";
 import KpView from "@/components/print/KpView";
+import { useTariffAccess } from "@/hooks/useTariffAccess";
 
 export default function EstimatePrint() {
   const location = useLocation();
   const data: PrintData | null = location.state ?? null;
+  const { hasTariff, redirectToTariffs } = useTariffAccess();
+
+  useEffect(() => {
+    if (!hasTariff) {
+      redirectToTariffs();
+    }
+  }, [hasTariff, redirectToTariffs]);
   const docTitle = data
     ? data.docType === "kp"
       ? `КП-${data.docNum} от ${data.date}`

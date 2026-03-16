@@ -9,7 +9,12 @@ export default function PricingPlans() {
   const [payPlan, setPayPlan] = useState<PlanInfo | null>(null);
   const [b2bPlan, setB2bPlan] = useState<PlanInfo | null>(null);
 
+  const saveTariffChoice = (plan: PlanInfo) => {
+    localStorage.setItem("avangard_tariff", JSON.stringify({ plan_id: plan.id, paid: false, ts: Date.now() }));
+  };
+
   const handleB2CPay = (plan: PlanInfo) => {
+    saveTariffChoice(plan);
     const checkoutUrl = TOCHKA_CHECKOUT_URLS[plan.id];
     if (checkoutUrl) {
       window.open(checkoutUrl, "_blank");
@@ -134,6 +139,7 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Выгрузка в PDF</li>
             </ul>
             <Button variant="outline" className="w-full" onClick={() => {
+              saveTariffChoice(B2B_PLANS[0]);
               const url = TOCHKA_CHECKOUT_URLS[B2B_PLANS[0].id];
               if (url) window.open(url, "_blank"); else setB2bPlan(B2B_PLANS[0]);
             }}>
@@ -163,6 +169,7 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Обновление коэффициентов</li>
             </ul>
             <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => {
+              saveTariffChoice(B2B_PLANS[1]);
               const url = TOCHKA_CHECKOUT_URLS[B2B_PLANS[1].id];
               if (url) window.open(url, "_blank"); else setB2bPlan(B2B_PLANS[1]);
             }}>
@@ -188,6 +195,7 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Приоритетные обновления</li>
             </ul>
             <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => {
+              saveTariffChoice(B2B_PLANS[2]);
               const url = TOCHKA_CHECKOUT_URLS[B2B_PLANS[2].id];
               if (url) window.open(url, "_blank"); else setB2bPlan(B2B_PLANS[2]);
             }}>
