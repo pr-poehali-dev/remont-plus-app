@@ -162,7 +162,10 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Приоритетная поддержка</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Обновление коэффициентов</li>
             </ul>
-            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => setB2bPlan(B2B_PLANS[1])}>
+            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => {
+              const url = TOCHKA_CHECKOUT_URLS[B2B_PLANS[1].id];
+              if (url) window.open(url, "_blank"); else setB2bPlan(B2B_PLANS[1]);
+            }}>
               Подключить
             </Button>
           </div>
@@ -184,7 +187,10 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Персональный менеджер</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Приоритетные обновления</li>
             </ul>
-            <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => setB2bPlan(B2B_PLANS[2])}>
+            <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => {
+              const url = TOCHKA_CHECKOUT_URLS[B2B_PLANS[2].id];
+              if (url) window.open(url, "_blank"); else setB2bPlan(B2B_PLANS[2]);
+            }}>
               Подключить
             </Button>
           </div>
