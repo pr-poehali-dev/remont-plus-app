@@ -21,6 +21,7 @@ import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import EstimateActions from "@/components/calculator/EstimateActions";
+import ScreenProtection from "@/components/print/ScreenProtection";
 
 const MARKUP_KEY = "newbuild_markup_pct";
 const REGION_KEY = "newbuild_region";
@@ -368,6 +369,7 @@ export default function NewbuildRenovation() {
             </div>
 
             {/* Итого */}
+            <ScreenProtection>
             <Card className="p-4 bg-gradient-to-br from-orange-600 to-orange-800 border-0 text-white">
               <p className="text-xs font-semibold opacity-70 uppercase tracking-wide mb-2">Итого по всем помещениям</p>
               <div className="flex items-end justify-between">
@@ -436,6 +438,7 @@ export default function NewbuildRenovation() {
                 />
               </div>
             </Card>
+            </ScreenProtection>
           </div>
 
           {/* Правая панель — редактор */}

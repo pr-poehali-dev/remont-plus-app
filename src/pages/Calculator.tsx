@@ -7,6 +7,7 @@ import CalculatorHeader from "@/components/calculator/CalculatorHeader";
 import CalculatorBody from "@/components/calculator/CalculatorBody";
 import CalculatorCities from "@/components/calculator/CalculatorCities";
 import CalculatorModals from "@/components/calculator/CalculatorModals";
+import ScreenProtection from "@/components/print/ScreenProtection";
 
 export type { EstimateItem, PriceCategory, PriceItem, Region } from "@/hooks/useCalculatorState";
 
@@ -102,35 +103,37 @@ export default function Calculator() {
         onExport={() => state.setShowExportDialog(true)}
       />
 
-      <CalculatorBody
-        items={state.items}
-        lemanaItems={state.lemanaItems}
-        setLemanaItems={state.setLemanaItems}
-        priceCatalog={state.priceCatalog}
-        loading={state.loading}
-        regions={state.regions}
-        selectedRegion={state.selectedRegion}
-        onRegionChange={state.setSelectedRegion}
-        currentRegionName={state.currentRegion?.name}
-        totalMaterials={state.totalMaterials}
-        totalWorks={state.totalWorks}
-        adjustedWorks={state.adjustedWorks}
-        materialSurcharge={state.materialSurcharge}
-        grandTotal={state.grandTotal}
-        totalWithDelivery={state.totalWithDelivery}
-        deliveryCost={state.deliveryCost}
-        deliveryEnabled={state.deliveryEnabled}
-        deliveryFloor={state.deliveryFloor}
-        deliveryHasElevator={state.deliveryHasElevator}
-        onDeliveryEnabledChange={state.setDeliveryEnabled}
-        onDeliveryFloorChange={state.setDeliveryFloor}
-        onDeliveryElevatorChange={state.setDeliveryHasElevator}
-        onAddFromPriceList={state.addFromPriceList}
-        onRemoveItem={state.removeItem}
-        onUpdateItem={state.updateItem}
-        onAddItem={state.addItem}
-        onExportPdf={() => state.setShowExportDialog(true)}
-      />
+      <ScreenProtection>
+        <CalculatorBody
+          items={state.items}
+          lemanaItems={state.lemanaItems}
+          setLemanaItems={state.setLemanaItems}
+          priceCatalog={state.priceCatalog}
+          loading={state.loading}
+          regions={state.regions}
+          selectedRegion={state.selectedRegion}
+          onRegionChange={state.setSelectedRegion}
+          currentRegionName={state.currentRegion?.name}
+          totalMaterials={state.totalMaterials}
+          totalWorks={state.totalWorks}
+          adjustedWorks={state.adjustedWorks}
+          materialSurcharge={state.materialSurcharge}
+          grandTotal={state.grandTotal}
+          totalWithDelivery={state.totalWithDelivery}
+          deliveryCost={state.deliveryCost}
+          deliveryEnabled={state.deliveryEnabled}
+          deliveryFloor={state.deliveryFloor}
+          deliveryHasElevator={state.deliveryHasElevator}
+          onDeliveryEnabledChange={state.setDeliveryEnabled}
+          onDeliveryFloorChange={state.setDeliveryFloor}
+          onDeliveryElevatorChange={state.setDeliveryHasElevator}
+          onAddFromPriceList={state.addFromPriceList}
+          onRemoveItem={state.removeItem}
+          onUpdateItem={state.updateItem}
+          onAddItem={state.addItem}
+          onExportPdf={() => state.setShowExportDialog(true)}
+        />
+      </ScreenProtection>
 
       <CalculatorCities />
 

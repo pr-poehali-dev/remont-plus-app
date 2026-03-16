@@ -7,6 +7,7 @@ import { DocFormat, OfficeExportState, DOC_TABS } from "./officeExportTypes";
 import { buildSmeta, buildKS2, buildKS3, buildAct } from "./officeExportHtml";
 import OfficeExportForm from "./OfficeExportForm";
 import OfficeMatEditor from "./OfficeMatEditor";
+import { useTariffAccess } from "@/hooks/useTariffAccess";
 
 export type { DocFormat };
 export type { OfficeExportState };
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export default function OfficeExportPanel({ exportState, onChange, zones, totalAll, regionId, markupPct }: Props) {
+  const { hasTariff, redirectToTariffs } = useTariffAccess();
   const [printing, setPrinting] = useState(false);
   const [matEditorOpen, setMatEditorOpen] = useState(false);
   const { docType, showForm } = exportState;
@@ -29,6 +31,7 @@ export default function OfficeExportPanel({ exportState, onChange, zones, totalA
   const regionLabel = REGIONS.find(r => r.id === regionId)?.label ?? regionId;
 
   const handlePrint = () => {
+    if (!hasTariff) { redirectToTariffs(); return; }
     setPrinting(true);
     const dateStr = new Date().toLocaleDateString("ru-RU");
 

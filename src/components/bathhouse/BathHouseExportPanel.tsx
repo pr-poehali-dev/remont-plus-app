@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
+import { useTariffAccess } from "@/hooks/useTariffAccess";
 
 export type BathDocType = "smeta" | "kp" | "contract" | "ks2" | "ks3" | "act";
 
@@ -41,6 +42,7 @@ const DOC_TYPES: { type: BathDocType; label: string; icon: string }[] = [
 const CONTRACT_DOCS: BathDocType[] = ["contract", "ks2", "ks3", "act"];
 
 export default function BathHouseExportPanel({ exportState, onExportChange, onPrint }: Props) {
+  const { hasTariff, redirectToTariffs } = useTariffAccess();
   const { showExportPanel, customer, contractor, address, phone, email, inn, docType, validDays,
     startDate, endDate, contractNum, contractDate, advancePct, warrantyMonths } = exportState;
   const isContract = CONTRACT_DOCS.includes(docType);
@@ -153,7 +155,7 @@ export default function BathHouseExportPanel({ exportState, onExportChange, onPr
         </div>
       )}
 
-      <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white" onClick={onPrint}>
+      <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white" onClick={() => { if (!hasTariff) { redirectToTariffs(); return; } onPrint(); }}>
         <Icon name="Printer" size={15} className="mr-2" />
         Открыть / Печать PDF
       </Button>

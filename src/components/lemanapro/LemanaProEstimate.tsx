@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { type EstimateSavedItem, saveEstimateItems, roundUpToPackaging } from "@/lib/lemanapro-data";
 import { exportLemanaProPdf } from "@/lib/export-pdf";
 import MaterialCalculator from "./MaterialCalculator";
+import { useTariffAccess } from "@/hooks/useTariffAccess";
 
 interface LemanaProEstimateProps {
   estimateItems: EstimateSavedItem[];
@@ -20,6 +21,7 @@ export default function LemanaProEstimate({
   setShowEstimate,
 }: LemanaProEstimateProps) {
   const navigate = useNavigate();
+  const { hasTariff, redirectToTariffs } = useTariffAccess();
 
   const update = (updated: EstimateSavedItem[]) => {
     setEstimateItems(updated);
@@ -237,7 +239,7 @@ export default function LemanaProEstimate({
                 )}
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Button variant="outline" onClick={() => exportLemanaProPdf(estimateItems)}>
+                <Button variant="outline" onClick={() => { if (!hasTariff) { redirectToTariffs(); return; } exportLemanaProPdf(estimateItems); }}>
                   <Icon name="Download" className="mr-1.5 h-4 w-4" />
                   PDF
                 </Button>

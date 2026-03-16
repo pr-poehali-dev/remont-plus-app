@@ -9,6 +9,7 @@ import { ZoneConfig, fmtPrice, REGIONS } from "./officeCalcTypes";
 import { OfficeExportState } from "./officeExportTypes";
 import { getZoneLines } from "./officeExportHtml";
 import { CSS } from "./officeExportHtml";
+import { useTariffAccess } from "@/hooks/useTariffAccess";
 
 // ── Тип строки ведомости ────────────────────────────────────────────────────
 
@@ -139,6 +140,7 @@ interface Props {
 }
 
 export default function OfficeMatEditor({ open, onClose, exportState, zones, regionId, markupPct }: Props) {
+  const { hasTariff, redirectToTariffs } = useTariffAccess();
   const [items, setItems] = useState<MatItem[]>([]);
   const [printing, setPrinting] = useState(false);
 
@@ -163,6 +165,7 @@ export default function OfficeMatEditor({ open, onClose, exportState, zones, reg
   };
 
   const handlePrint = () => {
+    if (!hasTariff) { redirectToTariffs(); return; }
     setPrinting(true);
     const dateStr = new Date().toLocaleDateString("ru-RU");
     const html = buildHtmlFromItems(items, exportState, zones, regionLabel, dateStr);

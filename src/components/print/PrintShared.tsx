@@ -3,6 +3,18 @@ import type { EstimateItem } from "@/pages/Calculator";
 import type { EstimateSavedItem } from "@/lib/lemanapro-data";
 import SharePanel from "./SharePanel";
 
+function checkTariffAccess(): boolean {
+  try {
+    const user = JSON.parse(localStorage.getItem("avangard_user") || "null");
+    if (user?.role === "admin") return true;
+    const tariff = localStorage.getItem("avangard_tariff");
+    if (tariff) return true;
+    const legacy = localStorage.getItem("avangard_estimate_paid");
+    if (legacy) { const { paid } = JSON.parse(legacy); if (paid) return true; }
+    return false;
+  } catch { return false; }
+}
+
 interface PrintButtonsProps {
   docTitle?: string;
   totalSum?: number;
@@ -31,7 +43,7 @@ export function PrintButtons({ docTitle, totalSum, customerEmail, customerPhone,
           ← Назад
         </button>
         <button
-          onClick={() => window.print()}
+          onClick={() => { if (!checkTariffAccess()) { window.location.href = "https://avangard-ai.ru/tariffs"; return; } window.print(); }}
           style={{ background: "#111", color: "#fff", border: "none", borderRadius: 4, padding: "7px 18px", fontFamily: "inherit", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
         >
           🖨 Распечатать / PDF

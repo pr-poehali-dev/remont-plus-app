@@ -22,6 +22,7 @@ import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import EstimateActions from "@/components/calculator/EstimateActions";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import ScreenProtection from "@/components/print/ScreenProtection";
 
 const MARKUP_KEY = "turnkey_markup_pct";
 const REGION_KEY = "turnkey_region";
@@ -231,6 +232,7 @@ export default function TurnkeyRenovation() {
 
           {/* Правая панель — итог и breakdown */}
           <div className="lg:col-span-2">
+            <ScreenProtection>
             <div className="sticky top-24 space-y-4">
               {/* Большой итог */}
               <Card className="p-5 bg-gradient-to-br from-emerald-600 to-emerald-800 border-0 text-white">
@@ -370,6 +372,7 @@ export default function TurnkeyRenovation() {
                 accentColor="green"
               />
             </div>
+            </ScreenProtection>
           </div>
         </div>
       </div>
