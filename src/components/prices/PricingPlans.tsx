@@ -1,13 +1,22 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import { type PlanInfo, B2C_PLANS, B2B_PLANS, Check } from "./pricingTypes";
+import { type PlanInfo, B2C_PLANS, B2B_PLANS, Check, TOCHKA_CHECKOUT_URLS } from "./pricingTypes";
 import PaymentModal from "./PaymentModal";
 import B2BPaymentChoice from "./InvoiceModal";
 
 export default function PricingPlans() {
   const [payPlan, setPayPlan] = useState<PlanInfo | null>(null);
   const [b2bPlan, setB2bPlan] = useState<PlanInfo | null>(null);
+
+  const handleB2CPay = (plan: PlanInfo) => {
+    const checkoutUrl = TOCHKA_CHECKOUT_URLS[plan.id];
+    if (checkoutUrl) {
+      window.open(checkoutUrl, "_blank");
+    } else {
+      setPayPlan(plan);
+    }
+  };
 
   return (
     <div className="mb-12 space-y-14">
@@ -41,7 +50,7 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Итоговая стоимость работ и материалов</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Выгрузка сметы в PDF</li>
             </ul>
-            <Button variant="outline" className="w-full" onClick={() => setPayPlan(B2C_PLANS[0])}>
+            <Button variant="outline" className="w-full" onClick={() => handleB2CPay(B2C_PLANS[0])}>
               <Icon name="CreditCard" size={16} className="mr-2" />Оплатить 1 490 ₽
             </Button>
           </div>
@@ -69,7 +78,7 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Акт выполненных работ</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Проверка корректности расчётов</li>
             </ul>
-            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => setPayPlan(B2C_PLANS[1])}>
+            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => handleB2CPay(B2C_PLANS[1])}>
               <Icon name="CreditCard" size={16} className="mr-2" />Оплатить 2 990 ₽
             </Button>
           </div>
@@ -91,7 +100,7 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Подбор альтернативных решений</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Приоритетная поддержка</li>
             </ul>
-            <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => setPayPlan(B2C_PLANS[2])}>
+            <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => handleB2CPay(B2C_PLANS[2])}>
               <Icon name="CreditCard" size={16} className="mr-2" />Оплатить 4 990 ₽
             </Button>
           </div>

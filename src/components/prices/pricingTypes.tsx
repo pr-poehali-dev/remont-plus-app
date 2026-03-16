@@ -2,6 +2,10 @@ import Icon from "@/components/ui/icon";
 
 export const PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 
+export const TOCHKA_CHECKOUT_URLS: Record<string, string> = {
+  b2c_professional: "https://checkout.tochka.com/81599376-f33c-4d28-90f5-917eee673289",
+};
+
 export interface PlanInfo {
   id: string;
   name: string;
