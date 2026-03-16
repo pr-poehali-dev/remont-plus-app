@@ -5,6 +5,156 @@ import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { type PlanInfo, PAYMENT_URL, fmt, TOCHKA_CHECKOUT_URLS, COMPANY_REQUISITES } from "./pricingTypes";
 
+function copyToClipboard(text: string): Promise<void> {
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.left = "-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand("copy");
+  document.body.removeChild(ta);
+  return Promise.resolve();
+}
+
+function generateInvoiceHTML(plan: PlanInfo, orderNumber: string, buyerName: string, buyerInn: string) {
+  const today = new Date();
+  const dateStr = today.toLocaleDateString("ru-RU");
+  const r = COMPANY_REQUISITES;
+  const amount = plan.price;
+  const amountFmt = amount.toLocaleString("ru-RU");
+
+  const units = amount % 100;
+  const tens = Math.floor(amount / 10) % 10;
+  let word = "рублей";
+  if (tens !== 1) {
+    if (units === 1) word = "рубль";
+    else if (units >= 2 && units <= 4) word = "рубля";
+  }
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>Счёт ${orderNumber}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Roboto',Arial,sans-serif;font-size:11pt;color:#111;background:#fff}
+  .page{max-width:210mm;margin:0 auto;padding:15mm}
+  h1{font-size:16pt;font-weight:700;margin-bottom:20px;color:#1e40af}
+  .header-line{border-bottom:3px solid #1e40af;margin-bottom:20px;padding-bottom:10px}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px}
+  .info-table td{padding:4px 8px;font-size:10pt;vertical-align:top}
+  .info-table .label{color:#666;width:140px}
+  .items-table{border:1px solid #ccc}
+  .items-table th{background:#1e40af;color:#fff;padding:8px 10px;text-align:left;font-size:9.5pt;font-weight:600}
+  .items-table td{padding:8px 10px;border-bottom:1px solid #eee;font-size:10pt}
+  .items-table td.r{text-align:right}
+  .total-row td{font-weight:700;border-top:2px solid #1e40af;font-size:11pt}
+  .section{margin-bottom:18px}
+  .section-title{font-size:9pt;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #e5e7eb}
+  .sig{display:flex;justify-content:space-between;margin-top:40px}
+  .sig-block{width:45%}
+  .sig-line{border-bottom:1px solid #333;height:30px;margin-top:8px}
+  .sig-label{font-size:9pt;color:#666;margin-top:4px}
+  .footer{text-align:center;font-size:8pt;color:#aaa;margin-top:30px;padding-top:10px;border-top:1px solid #eee}
+  .stamp{display:inline-block;border:2px solid #1e40af;border-radius:8px;padding:6px 16px;font-weight:700;color:#1e40af;font-size:9pt;margin-top:12px}
+  @media print{@page{size:A4;margin:10mm} body{font-size:10pt}}
+</style>
+</head><body>
+<div class="page">
+  <div class="header-line">
+    <h1>СЧЁТ НА ОПЛАТУ № ${orderNumber}</h1>
+    <p style="font-size:10pt;color:#666">от ${dateStr} г.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Поставщик</div>
+    <table class="info-table">
+      <tr><td class="label">Наименование</td><td><strong>${r.name}</strong></td></tr>
+      <tr><td class="label">ИНН / КПП</td><td>${r.inn} / ${r.kpp}</td></tr>
+      <tr><td class="label">Расчётный счёт</td><td>${r.account}</td></tr>
+      <tr><td class="label">Банк</td><td>${r.bankName}</td></tr>
+      <tr><td class="label">БИК</td><td>${r.bik}</td></tr>
+      <tr><td class="label">Корр. счёт</td><td>${r.corrAccount}</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Покупатель</div>
+    <table class="info-table">
+      <tr><td class="label">Наименование</td><td><strong>${buyerName || "—"}</strong></td></tr>
+      <tr><td class="label">ИНН</td><td>${buyerInn || "—"}</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Товары / Услуги</div>
+    <table class="items-table">
+      <thead><tr><th style="width:40px">№</th><th>Наименование</th><th style="width:60px">Кол.</th><th style="width:100px;text-align:right">Цена</th><th style="width:100px;text-align:right">Сумма</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Тариф «${plan.name}» — подписка на 1 месяц</td><td>1</td><td class="r">${amountFmt} &#8381;</td><td class="r">${amountFmt} &#8381;</td></tr>
+        <tr class="total-row"><td colspan="4" style="text-align:right;padding-right:16px">Итого:</td><td class="r">${amountFmt} &#8381;</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:10pt"><strong>Итого к оплате: ${amountFmt} (${numberToWords(amount)}) ${word} 00 копеек.</strong></p>
+    <p style="font-size:9pt;color:#666;margin-top:4px">Без НДС (УСН)</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Назначение платежа</div>
+    <p style="font-size:10pt">Оплата по счёту № ${orderNumber} от ${dateStr} за тариф «${plan.name}». Без НДС.</p>
+  </div>
+
+  <div class="sig">
+    <div class="sig-block">
+      <div class="section-title">Поставщик</div>
+      <div class="sig-line"></div>
+      <div class="sig-label">Подпись / Печать</div>
+      <div class="stamp">ООО "МАТ-ЛАБС"</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Счёт сформирован автоматически и действителен без подписи и печати</p>
+    <p style="margin-top:4px">АВАНГАРД &middot; avangard-ai.ru</p>
+  </div>
+</div>
+</body></html>`;
+}
+
+function numberToWords(n: number): string {
+  const ones = ["", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять",
+    "десять", "одиннадцать", "двенадцать", "тринадцать", "четырнадцать", "пятнадцать",
+    "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать"];
+  const tens = ["", "", "двадцать", "тридцать", "сорок", "пятьдесят", "шестьдесят", "семьдесят", "восемьдесят", "девяносто"];
+  const hundreds = ["", "сто", "двести", "триста", "четыреста", "пятьсот", "шестьсот", "семьсот", "восемьсот", "девятьсот"];
+  const thousands = ["", "одна тысяча", "две тысячи", "три тысячи", "четыре тысячи", "пять тысяч",
+    "шесть тысяч", "семь тысяч", "восемь тысяч", "девять тысяч", "десять тысяч",
+    "одиннадцать тысяч", "двенадцать тысяч", "тринадцать тысяч", "четырнадцать тысяч",
+    "пятнадцать тысяч", "шестнадцать тысяч", "семнадцать тысяч", "восемнадцать тысяч",
+    "девятнадцать тысяч", "двадцать тысяч", "двадцать одна тысяча", "двадцать две тысячи",
+    "двадцать три тысячи", "двадцать четыре тысячи", "двадцать пять тысяч"];
+
+  if (n === 0) return "ноль";
+  const th = Math.floor(n / 1000);
+  const rem = n % 1000;
+  const h = Math.floor(rem / 100);
+  const t = rem % 100;
+  const parts: string[] = [];
+  if (th > 0 && th < thousands.length) parts.push(thousands[th]);
+  else if (th > 0) parts.push(`${th} тысяч`);
+  if (h > 0) parts.push(hundreds[h]);
+  if (t > 0 && t < 20) parts.push(ones[t]);
+  else if (t >= 20) {
+    parts.push(tens[Math.floor(t / 10)]);
+    if (t % 10 > 0) parts.push(ones[t % 10]);
+  }
+  return parts.join(" ");
+}
+
 function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void }) {
   const [companyName, setCompanyName] = useState("");
   const [inn, setInn] = useState("");
@@ -16,6 +166,7 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
   const [error, setError] = useState("");
   const [step, setStep] = useState<"form" | "success">("form");
   const [orderNumber, setOrderNumber] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const validate = () => {
     if (!companyName.trim()) { setError("Введите название компании"); return false; }
@@ -107,27 +258,52 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
                 </div>
               </div>
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full mb-2"
-                onClick={() => {
-                  const text = [
-                    `Получатель: ${COMPANY_REQUISITES.name}`,
-                    `ИНН: ${COMPANY_REQUISITES.inn}`,
-                    `КПП: ${COMPANY_REQUISITES.kpp}`,
-                    `Р/с: ${COMPANY_REQUISITES.account}`,
-                    `Банк: ${COMPANY_REQUISITES.bankName}`,
-                    `БИК: ${COMPANY_REQUISITES.bik}`,
-                    `К/с: ${COMPANY_REQUISITES.corrAccount}`,
-                    `Назначение: Оплата по тарифу «${plan.name}» (${fmt(plan.price)} руб./мес), заявка #${orderNumber}. Без НДС.`,
-                  ].join("\n");
-                  navigator.clipboard.writeText(text);
-                }}
-              >
-                <Icon name="Copy" size={14} className="mr-1.5" />
-                Скопировать реквизиты
-              </Button>
+              <div className="flex gap-2 mb-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    const text = [
+                      `Получатель: ${COMPANY_REQUISITES.name}`,
+                      `ИНН: ${COMPANY_REQUISITES.inn}`,
+                      `КПП: ${COMPANY_REQUISITES.kpp}`,
+                      `Р/с: ${COMPANY_REQUISITES.account}`,
+                      `Банк: ${COMPANY_REQUISITES.bankName}`,
+                      `БИК: ${COMPANY_REQUISITES.bik}`,
+                      `К/с: ${COMPANY_REQUISITES.corrAccount}`,
+                      `Назначение: Оплата по тарифу «${plan.name}» (${fmt(plan.price)} руб./мес), заявка #${orderNumber}. Без НДС.`,
+                    ].join("\n");
+                    copyToClipboard(text).then(() => {
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    });
+                  }}
+                >
+                  {copied
+                    ? <><Icon name="Check" size={14} className="mr-1.5 text-green-500" />Скопировано</>
+                    : <><Icon name="Copy" size={14} className="mr-1.5" />Скопировать</>
+                  }
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    const html = generateInvoiceHTML(plan, orderNumber, companyName, inn);
+                    const w = window.open("", "_blank");
+                    if (w) {
+                      w.document.write(html);
+                      w.document.close();
+                      setTimeout(() => w.print(), 500);
+                    }
+                  }}
+                >
+                  <Icon name="Download" size={14} className="mr-1.5" />
+                  Скачать PDF
+                </Button>
+              </div>
 
               <Button className="w-full" variant="outline" onClick={onClose}>Закрыть</Button>
             </div>
