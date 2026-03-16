@@ -5,6 +5,7 @@ export const PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f
 export const TOCHKA_CHECKOUT_URLS: Record<string, string> = {
   b2c_basic: "https://checkout.tochka.com/d527d3a3-af1a-49cf-b2f7-87b76ce2ff32",
   b2c_professional: "https://checkout.tochka.com/81599376-f33c-4d28-90f5-917eee673289",
+  b2c_premium: "https://checkout.tochka.com/4a412bae-2f37-49f7-ac2f-b90ac933b79f",
 };
 
 export interface PlanInfo {
