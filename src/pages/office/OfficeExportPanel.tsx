@@ -100,7 +100,7 @@ export default function OfficeExportPanel({ exportState, onChange, zones, totalA
           <OfficeExportForm exportState={exportState} onChange={onChange} />
         )}
 
-        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={handlePrint} disabled={printing || printingMat}>
+        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={handlePrint} disabled={printing}>
           {printing
             ? <Icon name="Loader2" size={15} className="animate-spin mr-2" />
             : <Icon name="Printer" size={15} className="mr-2" />
