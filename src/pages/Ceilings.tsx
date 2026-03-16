@@ -14,6 +14,7 @@ import CeilingsHeader from "@/components/calculator/ceilings/CeilingsHeader";
 import CeilingsZoneList from "@/components/calculator/ceilings/CeilingsZoneList";
 import CeilingsZoneSummary from "@/components/calculator/ceilings/CeilingsZoneSummary";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const MARKUP_KEY = "ceilings_markup_pct";
