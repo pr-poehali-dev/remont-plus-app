@@ -9,6 +9,8 @@ import Icon from "@/components/ui/icon";
 import {
   ROOM_TYPES, RENOVATION_LEVELS, SCREED_TYPES, PLASTER_TYPES,
   CEILING_FINISH_TYPES, FLOORING_TYPES, DOOR_TYPES,
+  HEATED_FLOOR_TYPES, BACKSPLASH_TYPES, COUNTERTOP_TYPES,
+  CONDITIONER_TYPES, SOUNDPROOF_TYPES,
 } from "./NewbuildTypes";
 import type { NewbuildConfig } from "./NewbuildTypes";
 import { fmt } from "./newbuildUtils";
@@ -22,7 +24,8 @@ const STEPS = [
   { id: 1, label: "Помещение", icon: "Home" },
   { id: 2, label: "Уровень",   icon: "Star" },
   { id: 3, label: "Работы",    icon: "Hammer" },
-  { id: 4, label: "Финиш",     icon: "Sparkles" },
+  { id: 4, label: "Доп. опции", icon: "Flame" },
+  { id: 5, label: "Финиш",     icon: "Sparkles" },
 ];
 
 function Counter({
@@ -348,14 +351,244 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             </button>
             <button type="button" onClick={() => setStep(4)}
               className="flex-1 h-10 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors">
+              Далее: доп. опции →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Шаг 4: Дополнительные опции */}
+      {step === 4 && (
+        <div className="space-y-4">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Тёплый пол</p>
+          <ToggleRow
+            label="Тёплый пол"
+            description="Комфортная температура пола в любое время года"
+            checked={cfg.heatedFloorIncluded}
+            onChange={v => onUpdate({ heatedFloorIncluded: v })}
+          />
+          {cfg.heatedFloorIncluded && (
+            <div className="ml-4 space-y-3">
+              <div>
+                <Label className="text-xs text-gray-500 mb-1.5 block">Тип тёплого пола</Label>
+                <div className="space-y-1.5">
+                  {HEATED_FLOOR_TYPES.map(ht => (
+                    <button
+                      key={ht.id}
+                      type="button"
+                      onClick={() => onUpdate({ heatedFloorType: ht.id })}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                        cfg.heatedFloorType === ht.id
+                          ? "border-orange-500 bg-orange-50"
+                          : "border-gray-200 hover:border-orange-200"
+                      }`}
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{ht.label}</p>
+                        <p className="text-xs text-gray-500">{ht.description}</p>
+                      </div>
+                      <span className={`text-sm font-bold shrink-0 ml-3 ${cfg.heatedFloorType === ht.id ? "text-orange-700" : "text-gray-500"}`}>
+                        {fmt(ht.priceM2)} ₽/м²
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-gray-500 mb-1 block">Площадь обогрева, м² (0 = 70% от комнаты)</Label>
+                <Input
+                  type="number" min={0} max={cfg.area} step={0.5}
+                  value={cfg.heatedFloorArea}
+                  onChange={e => onUpdate({ heatedFloorArea: parseFloat(e.target.value) || 0 })}
+                  className="h-9"
+                />
+              </div>
+            </div>
+          )}
+
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Кухонный фартук и столешница</p>
+          <ToggleRow
+            label="Кухонный фартук"
+            description="Защитная отделка стены над рабочей зоной"
+            checked={cfg.backsplashIncluded}
+            onChange={v => onUpdate({ backsplashIncluded: v })}
+          />
+          {cfg.backsplashIncluded && (
+            <div className="ml-4 space-y-3">
+              <div>
+                <Label className="text-xs text-gray-500 mb-1.5 block">Тип фартука</Label>
+                <div className="space-y-1.5">
+                  {BACKSPLASH_TYPES.map(bs => (
+                    <button
+                      key={bs.id}
+                      type="button"
+                      onClick={() => onUpdate({ backsplashType: bs.id })}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                        cfg.backsplashType === bs.id
+                          ? "border-orange-500 bg-orange-50"
+                          : "border-gray-200 hover:border-orange-200"
+                      }`}
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{bs.label}</p>
+                        <p className="text-xs text-gray-500">{bs.description}</p>
+                      </div>
+                      <span className={`text-sm font-bold shrink-0 ml-3 ${cfg.backsplashType === bs.id ? "text-orange-700" : "text-gray-500"}`}>
+                        {fmt(bs.priceM2)} ₽/м²
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-gray-500 mb-1 block">Площадь фартука, м²</Label>
+                <Input
+                  type="number" min={0.5} max={20} step={0.5}
+                  value={cfg.backsplashArea}
+                  onChange={e => onUpdate({ backsplashArea: parseFloat(e.target.value) || 3 })}
+                  className="h-9"
+                />
+              </div>
+            </div>
+          )}
+
+          <ToggleRow
+            label="Столешница"
+            description="Рабочая поверхность для кухонного гарнитура"
+            checked={cfg.countertopIncluded}
+            onChange={v => onUpdate({ countertopIncluded: v })}
+          />
+          {cfg.countertopIncluded && (
+            <div className="ml-4 space-y-3">
+              <div>
+                <Label className="text-xs text-gray-500 mb-1.5 block">Материал столешницы</Label>
+                <div className="space-y-1.5">
+                  {COUNTERTOP_TYPES.map(ct => (
+                    <button
+                      key={ct.id}
+                      type="button"
+                      onClick={() => onUpdate({ countertopType: ct.id })}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                        cfg.countertopType === ct.id
+                          ? "border-orange-500 bg-orange-50"
+                          : "border-gray-200 hover:border-orange-200"
+                      }`}
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{ct.label}</p>
+                        <p className="text-xs text-gray-500">{ct.description}</p>
+                      </div>
+                      <span className={`text-sm font-bold shrink-0 ml-3 ${cfg.countertopType === ct.id ? "text-orange-700" : "text-gray-500"}`}>
+                        {fmt(ct.pricePerMeter)} ₽/м.п.
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-gray-500 mb-1 block">Длина столешницы, м.п.</Label>
+                <Input
+                  type="number" min={0.5} max={10} step={0.5}
+                  value={cfg.countertopLength}
+                  onChange={e => onUpdate({ countertopLength: parseFloat(e.target.value) || 3 })}
+                  className="h-9"
+                />
+              </div>
+            </div>
+          )}
+
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Кондиционирование</p>
+          <ToggleRow
+            label="Кондиционер"
+            description="Закладка трасс до отделки + монтаж оборудования"
+            checked={cfg.conditionerIncluded}
+            onChange={v => onUpdate({ conditionerIncluded: v })}
+          />
+          {cfg.conditionerIncluded && (
+            <div className="ml-4 space-y-3">
+              <div>
+                <Label className="text-xs text-gray-500 mb-1.5 block">Тип кондиционера</Label>
+                <div className="space-y-1.5">
+                  {CONDITIONER_TYPES.map(ac => (
+                    <button
+                      key={ac.id}
+                      type="button"
+                      onClick={() => onUpdate({ conditionerType: ac.id })}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                        cfg.conditionerType === ac.id
+                          ? "border-orange-500 bg-orange-50"
+                          : "border-gray-200 hover:border-orange-200"
+                      }`}
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{ac.label}</p>
+                        <p className="text-xs text-gray-500">{ac.description}</p>
+                      </div>
+                      <span className={`text-sm font-bold shrink-0 ml-3 ${cfg.conditionerType === ac.id ? "text-orange-700" : "text-gray-500"}`}>
+                        {fmt(ac.pricePerUnit)} ₽
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <div className="px-4 py-1">
+                  <Counter label="Количество точек" value={cfg.conditionerCount} onChange={v => onUpdate({ conditionerCount: v })} min={1} max={10} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Шумоизоляция</p>
+          <ToggleRow
+            label="Шумоизоляция"
+            description="Защита от шума соседей — актуально для новостроек"
+            checked={cfg.soundproofIncluded}
+            onChange={v => onUpdate({ soundproofIncluded: v })}
+          />
+          {cfg.soundproofIncluded && (
+            <div className="ml-4">
+              <Label className="text-xs text-gray-500 mb-1.5 block">Уровень шумоизоляции</Label>
+              <div className="space-y-1.5">
+                {SOUNDPROOF_TYPES.map(sp => (
+                  <button
+                    key={sp.id}
+                    type="button"
+                    onClick={() => onUpdate({ soundproofType: sp.id })}
+                    className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                      cfg.soundproofType === sp.id
+                        ? "border-orange-500 bg-orange-50"
+                        : "border-gray-200 hover:border-orange-200"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{sp.label}</p>
+                      <p className="text-xs text-gray-500">{sp.description}</p>
+                    </div>
+                    <span className={`text-sm font-bold shrink-0 ml-3 ${cfg.soundproofType === sp.id ? "text-orange-700" : "text-gray-500"}`}>
+                      {fmt(sp.priceM2)} ₽/м²
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-2">
+            <button type="button" onClick={() => setStep(3)}
+              className="flex-1 h-10 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+              ← Назад
+            </button>
+            <button type="button" onClick={() => setStep(5)}
+              className="flex-1 h-10 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors">
               Далее: финиш →
             </button>
           </div>
         </div>
       )}
 
-      {/* Шаг 4: Двери и финишные работы */}
-      {step === 4 && (
+      {/* Шаг 5: Двери и финишные работы */}
+      {step === 5 && (
         <div className="space-y-4">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Потолок</p>
           <ToggleRow
@@ -472,7 +705,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             />
           </div>
 
-          <button type="button" onClick={() => setStep(3)}
+          <button type="button" onClick={() => setStep(4)}
             className="w-full h-10 border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
             ← Назад
           </button>

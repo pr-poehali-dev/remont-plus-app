@@ -140,6 +140,79 @@ export const DOOR_TYPES: DoorTypeOption[] = [
   { id: "premium",  label: "Премиум (массив)",  description: "Массив дерева, фурнитура, установка",   pricePerDoor: 49500 },
 ];
 
+// ─── Тёплый пол ─────────────────────────────────────────────────────────────
+
+export interface HeatedFloorTypeOption {
+  id: string;
+  label: string;
+  description: string;
+  priceM2: number;
+}
+
+export const HEATED_FLOOR_TYPES: HeatedFloorTypeOption[] = [
+  { id: "electric-cable",  label: "Электрический кабельный",  description: "Кабель в стяжку, терморегулятор",           priceM2: 2750 },
+  { id: "electric-mat",    label: "Электрический мат",        description: "Нагревательный мат под плитку/ламинат",     priceM2: 3300 },
+  { id: "water",           label: "Водяной тёплый пол",       description: "Трубы + коллектор, подключение к отоплению", priceM2: 4400 },
+];
+
+// ─── Кухонный фартук ────────────────────────────────────────────────────────
+
+export interface BacksplashTypeOption {
+  id: string;
+  label: string;
+  description: string;
+  priceM2: number;
+}
+
+export const BACKSPLASH_TYPES: BacksplashTypeOption[] = [
+  { id: "ceramic",    label: "Керамическая плитка",  description: "Классический вариант, водостойкий",      priceM2: 3850 },
+  { id: "mosaic",     label: "Мозаика",              description: "Стеклянная/керамическая мозаика",        priceM2: 5500 },
+  { id: "glass",      label: "Стеклянный скинали",   description: "Закалённое стекло с фотопечатью",        priceM2: 6600 },
+];
+
+export interface CountertopTypeOption {
+  id: string;
+  label: string;
+  description: string;
+  pricePerMeter: number;
+}
+
+export const COUNTERTOP_TYPES: CountertopTypeOption[] = [
+  { id: "laminate",    label: "Ламинированная ДСП",     description: "Бюджет, быстрая замена",                pricePerMeter: 4400  },
+  { id: "acrylic",     label: "Искусственный камень",   description: "Акрил/кварц, бесшовная стыковка",       pricePerMeter: 12100 },
+  { id: "natural",     label: "Натуральный камень",     description: "Гранит/мрамор, премиум-класс",          pricePerMeter: 22000 },
+];
+
+// ─── Кондиционирование ──────────────────────────────────────────────────────
+
+export interface ConditionerTypeOption {
+  id: string;
+  label: string;
+  description: string;
+  pricePerUnit: number;
+}
+
+export const CONDITIONER_TYPES: ConditionerTypeOption[] = [
+  { id: "split-economy",  label: "Сплит-система эконом",    description: "Бытовая, до 25 м², монтаж + трасса",       pricePerUnit: 38500  },
+  { id: "split-inverter", label: "Сплит-система инвертор",  description: "Инверторная, до 35 м², тихая работа",       pricePerUnit: 55000  },
+  { id: "multi-split",    label: "Мульти-сплит (1 блок)",   description: "Один внешний блок на несколько комнат",     pricePerUnit: 72600  },
+];
+
+// ─── Шумоизоляция ───────────────────────────────────────────────────────────
+
+export interface SoundproofTypeOption {
+  id: string;
+  label: string;
+  description: string;
+  priceM2: number;
+}
+
+export const SOUNDPROOF_TYPES: SoundproofTypeOption[] = [
+  { id: "basic",    label: "Базовая (стены)",         description: "Минвата 50 мм + ГКЛ, снижение до 10 дБ",  priceM2: 1650 },
+  { id: "enhanced", label: "Усиленная (стены+пол)",   description: "Минвата + виброподвесы + 2 слоя ГКЛ",      priceM2: 2860 },
+  { id: "premium",  label: "Максимальная (комплекс)",  description: "Стены + пол + потолок, до 20 дБ снижения", priceM2: 4400 },
+];
+
 // ─── Регионы ─────────────────────────────────────────────────────────────────
 
 export { CALC_REGIONS as REGIONS, DEFAULT_REGION_ID } from "@/components/calculator/shared/regions";
@@ -171,6 +244,20 @@ export interface NewbuildConfig {
   windowSlopesCount: number;
   floorNumber: number;
   deliveryIncluded: boolean;
+  heatedFloorIncluded: boolean;
+  heatedFloorType: string;
+  heatedFloorArea: number;
+  backsplashIncluded: boolean;
+  backsplashType: string;
+  backsplashArea: number;
+  countertopIncluded: boolean;
+  countertopType: string;
+  countertopLength: number;
+  conditionerIncluded: boolean;
+  conditionerType: string;
+  conditionerCount: number;
+  soundproofIncluded: boolean;
+  soundproofType: string;
   note: string;
   totalPrice: number;
 }
@@ -201,5 +288,19 @@ export const DEFAULT_NEWBUILD_CONFIG: Omit<NewbuildConfig, "id" | "totalPrice"> 
   windowSlopesCount: 1,
   floorNumber: 3,
   deliveryIncluded: true,
+  heatedFloorIncluded: false,
+  heatedFloorType: "electric-mat",
+  heatedFloorArea: 0,
+  backsplashIncluded: false,
+  backsplashType: "ceramic",
+  backsplashArea: 3,
+  countertopIncluded: false,
+  countertopType: "laminate",
+  countertopLength: 3,
+  conditionerIncluded: false,
+  conditionerType: "split-economy",
+  conditionerCount: 1,
+  soundproofIncluded: false,
+  soundproofType: "basic",
   note: "",
 };

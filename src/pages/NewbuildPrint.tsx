@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import {
   REGIONS, ROOM_TYPES, RENOVATION_LEVELS, SCREED_TYPES, PLASTER_TYPES,
   CEILING_FINISH_TYPES, FLOORING_TYPES, DOOR_TYPES,
+  HEATED_FLOOR_TYPES, BACKSPLASH_TYPES, COUNTERTOP_TYPES,
+  CONDITIONER_TYPES, SOUNDPROOF_TYPES,
 } from "@/components/calculator/newbuild/NewbuildTypes";
 import type { NewbuildConfig } from "@/components/calculator/newbuild/NewbuildTypes";
 import { calcNewbuildPrice, calcNewbuildProjectTotals, calcNewbuildMaterials, fmt } from "@/components/calculator/newbuild/newbuildUtils";
@@ -73,9 +75,14 @@ export default function NewbuildPrint() {
     const ceilingType = CEILING_FINISH_TYPES.find(c => c.id === z.ceilingType);
     const flooringType = FLOORING_TYPES.find(f => f.id === z.flooringType);
     const doorType = DOOR_TYPES.find(d => d.id === z.doorType);
+    const heatedFloorType = HEATED_FLOOR_TYPES.find(h => h.id === z.heatedFloorType);
+    const backsplashType = BACKSPLASH_TYPES.find(b => b.id === z.backsplashType);
+    const countertopType = COUNTERTOP_TYPES.find(c => c.id === z.countertopType);
+    const conditionerType = CONDITIONER_TYPES.find(c => c.id === z.conditionerType);
+    const soundproofType = SOUNDPROOF_TYPES.find(s => s.id === z.soundproofType);
     const bd = calcNewbuildPrice(z, regionId, 0);
     const mats = calcNewbuildMaterials(z, bd, regionId);
-    return { z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, bd, mats };
+    return { z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, heatedFloorType, backsplashType, countertopType, conditionerType, soundproofType, bd, mats };
   });
 
   const allBreakdowns = rowsData.map(r => r.bd);
@@ -168,7 +175,7 @@ export default function NewbuildPrint() {
 
         <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ по помещениям</h2>
 
-        {rowsData.map(({ z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, bd }, idx) => (
+        {rowsData.map(({ z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, heatedFloorType, backsplashType, countertopType, conditionerType, soundproofType, bd }, idx) => (
           <div key={z.id} className="mb-6">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-5 h-5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">{idx + 1}</div>
@@ -262,6 +269,51 @@ export default function NewbuildPrint() {
                     <td className="px-2 py-1.5 text-center text-gray-500">проём</td>
                     <td className="px-2 py-1.5 text-right">3 500 ₽</td>
                     <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.windowSlopesCost)} ₽</td>
+                  </tr>
+                )}
+                {bd.heatedFloorCost > 0 && (
+                  <tr className="border-t border-gray-100 bg-orange-50/30">
+                    <td className="px-2 py-1.5">Тёплый пол: {heatedFloorType?.label}</td>
+                    <td className="px-2 py-1.5 text-center">{z.heatedFloorArea > 0 ? z.heatedFloorArea : Math.round(z.area * 0.7)}</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">м²</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(heatedFloorType?.priceM2 ?? 0)} ₽</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.heatedFloorCost)} ₽</td>
+                  </tr>
+                )}
+                {bd.backsplashCost > 0 && (
+                  <tr className="border-t border-gray-100">
+                    <td className="px-2 py-1.5">Кухонный фартук: {backsplashType?.label}</td>
+                    <td className="px-2 py-1.5 text-center">{z.backsplashArea || 3}</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">м²</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(backsplashType?.priceM2 ?? 0)} ₽</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.backsplashCost)} ₽</td>
+                  </tr>
+                )}
+                {bd.countertopCost > 0 && (
+                  <tr className="border-t border-gray-100 bg-orange-50/30">
+                    <td className="px-2 py-1.5">Столешница: {countertopType?.label}</td>
+                    <td className="px-2 py-1.5 text-center">{z.countertopLength || 3}</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">м.п.</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(countertopType?.pricePerMeter ?? 0)} ₽</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.countertopCost)} ₽</td>
+                  </tr>
+                )}
+                {bd.conditionerCost > 0 && (
+                  <tr className="border-t border-gray-100">
+                    <td className="px-2 py-1.5">Кондиционирование: {conditionerType?.label}</td>
+                    <td className="px-2 py-1.5 text-center">{z.conditionerCount || 1}</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">шт.</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(conditionerType?.pricePerUnit ?? 0)} ₽</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.conditionerCost)} ₽</td>
+                  </tr>
+                )}
+                {bd.soundproofCost > 0 && (
+                  <tr className="border-t border-gray-100 bg-orange-50/30">
+                    <td className="px-2 py-1.5">Шумоизоляция: {soundproofType?.label}</td>
+                    <td className="px-2 py-1.5 text-center">{z.area}</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">м²</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(soundproofType?.priceM2 ?? 0)} ₽</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.soundproofCost)} ₽</td>
                   </tr>
                 )}
                 <tr className="border-t-2 border-gray-300 bg-gray-50 font-bold">

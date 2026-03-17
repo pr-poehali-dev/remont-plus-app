@@ -1,6 +1,8 @@
 import {
   REGIONS, ROOM_TYPES, RENOVATION_LEVELS, SCREED_TYPES,
   PLASTER_TYPES, CEILING_FINISH_TYPES, FLOORING_TYPES, DOOR_TYPES,
+  HEATED_FLOOR_TYPES, BACKSPLASH_TYPES, COUNTERTOP_TYPES,
+  CONDITIONER_TYPES, SOUNDPROOF_TYPES,
 } from "./NewbuildTypes";
 import type { NewbuildConfig } from "./NewbuildTypes";
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
@@ -18,6 +20,11 @@ export interface NewbuildPriceBreakdown {
   electricsCost: number;
   doorsCost: number;
   windowSlopesCost: number;
+  heatedFloorCost: number;
+  backsplashCost: number;
+  countertopCost: number;
+  conditionerCost: number;
+  soundproofCost: number;
   materialsCost: number;
   subtotal: number;
   levelCoeff: number;
@@ -103,10 +110,41 @@ export function calcNewbuildPrice(
     ? Math.round(cfg.windowSlopesCount * 4400 * rc)
     : 0;
 
-  const worksSubtotal = screedCost + plasterCost + ceilingCost + paintCost +
-    flooringCost + electricsCost + doorsCost + windowSlopesCost;
+  // ── Тёплый пол: цена из типа × площадь ────────────────────────────────
+  const heatedFloorType = HEATED_FLOOR_TYPES.find(h => h.id === cfg.heatedFloorType);
+  const hfArea = cfg.heatedFloorArea > 0 ? cfg.heatedFloorArea : area * 0.7;
+  const heatedFloorCost = cfg.heatedFloorIncluded
+    ? Math.round(hfArea * (heatedFloorType?.priceM2 ?? 2750) * lc * rc)
+    : 0;
 
-  // Материальная составляющая
+  // ── Кухонный фартук: цена из типа × площадь ──────────────────────────
+  const backsplashType = BACKSPLASH_TYPES.find(b => b.id === cfg.backsplashType);
+  const backsplashCost = cfg.backsplashIncluded
+    ? Math.round((cfg.backsplashArea || 3) * (backsplashType?.priceM2 ?? 3850) * lc * rc)
+    : 0;
+
+  // ── Столешница: цена из типа × длина ──────────────────────────────────
+  const countertopType = COUNTERTOP_TYPES.find(c => c.id === cfg.countertopType);
+  const countertopCost = cfg.countertopIncluded
+    ? Math.round((cfg.countertopLength || 3) * (countertopType?.pricePerMeter ?? 4400) * lc * rc)
+    : 0;
+
+  // ── Кондиционирование: цена за точку × количество ─────────────────────
+  const conditionerType = CONDITIONER_TYPES.find(c => c.id === cfg.conditionerType);
+  const conditionerCost = cfg.conditionerIncluded
+    ? Math.round((cfg.conditionerCount || 1) * (conditionerType?.pricePerUnit ?? 38500) * rc)
+    : 0;
+
+  // ── Шумоизоляция: цена из типа × площадь ──────────────────────────────
+  const soundproofType = SOUNDPROOF_TYPES.find(s => s.id === cfg.soundproofType);
+  const soundproofCost = cfg.soundproofIncluded
+    ? Math.round(area * (soundproofType?.priceM2 ?? 1650) * lc * rc)
+    : 0;
+
+  const worksSubtotal = screedCost + plasterCost + ceilingCost + paintCost +
+    flooringCost + electricsCost + doorsCost + windowSlopesCost +
+    heatedFloorCost + backsplashCost + countertopCost + conditionerCost + soundproofCost;
+
   const materialsCost = Math.round(
     screedCost       * 0.60 +
     plasterCost      * 0.55 +
@@ -115,7 +153,12 @@ export function calcNewbuildPrice(
     flooringCost     * 0.65 +
     electricsCost    * 0.50 +
     doorsCost        * 0.70 +
-    windowSlopesCost * 0.50,
+    windowSlopesCost * 0.50 +
+    heatedFloorCost    * 0.55 +
+    backsplashCost     * 0.60 +
+    countertopCost     * 0.75 +
+    conditionerCost    * 0.70 +
+    soundproofCost     * 0.60,
   );
 
   const subtotal = worksSubtotal;
@@ -131,6 +174,11 @@ export function calcNewbuildPrice(
     electricsCost,
     doorsCost,
     windowSlopesCost,
+    heatedFloorCost,
+    backsplashCost,
+    countertopCost,
+    conditionerCost,
+    soundproofCost,
     materialsCost: Math.round(materialsCost),
     subtotal,
     levelCoeff: lc,
@@ -253,6 +301,57 @@ export function calcNewbuildMaterials(
   if (cfg.windowSlopesCount > 0 && bd.windowSlopesCost > 0) {
     items.push({ name: "Откосы оконные ПВХ", unit: "компл.", qty: cfg.windowSlopesCount, pricePerUnit: Math.round(bd.windowSlopesCost * 0.50 / cfg.windowSlopesCount), total: Math.round(bd.windowSlopesCost * 0.50) });
     items.push({ name: "Монтажная пена, герметик", unit: "компл.", qty: 1, pricePerUnit: Math.round(cfg.windowSlopesCount * 490), total: Math.round(cfg.windowSlopesCount * 490), isConsumable: true });
+  }
+
+  if (cfg.heatedFloorIncluded && bd.heatedFloorCost > 0) {
+    const hfType = HEATED_FLOOR_TYPES.find(h => h.id === cfg.heatedFloorType);
+    const hfA = cfg.heatedFloorArea > 0 ? cfg.heatedFloorArea : area * 0.7;
+    if (cfg.heatedFloorType === "water") {
+      items.push({ name: "Труба PEX-a для тёплого пола", spec: "16×2 мм, бухта", unit: "м.п.", qty: Math.round(hfA * 6.5), pricePerUnit: 85, total: Math.round(hfA * 6.5 * 85) });
+      items.push({ name: "Коллектор тёплого пола", unit: "компл.", qty: 1, pricePerUnit: Math.round(8500 * rc), total: Math.round(8500 * rc) });
+    } else {
+      items.push({ name: `Нагревательный ${cfg.heatedFloorType === "electric-mat" ? "мат" : "кабель"}`, spec: hfType?.description ?? "", unit: "м²", qty: Math.round(hfA * 10) / 10, pricePerUnit: Math.round((hfType?.priceM2 ?? 2750) * 0.55), total: Math.round(hfA * (hfType?.priceM2 ?? 2750) * 0.55) });
+    }
+    items.push({ name: "Терморегулятор с датчиком", unit: "шт.", qty: 1, pricePerUnit: Math.round(3200 * rc), total: Math.round(3200 * rc) });
+    items.push({ name: "Теплоизоляция (пенополистирол 20 мм)", unit: "м²", qty: Math.round(hfA * 1.05), pricePerUnit: 180, total: Math.round(hfA * 1.05 * 180), isConsumable: true });
+  }
+
+  if (cfg.backsplashIncluded && bd.backsplashCost > 0) {
+    const bsType = BACKSPLASH_TYPES.find(b => b.id === cfg.backsplashType);
+    const bsArea = cfg.backsplashArea || 3;
+    items.push({ name: `Фартук: ${bsType?.label ?? "плитка"}`, spec: bsType?.description ?? "", unit: "м²", qty: Math.round(bsArea * 1.1 * 10) / 10, pricePerUnit: Math.round((bsType?.priceM2 ?? 3850) * 0.6), total: Math.round(bsArea * 1.1 * (bsType?.priceM2 ?? 3850) * 0.6) });
+    if (cfg.backsplashType !== "glass") {
+      items.push({ name: "Плиточный клей, затирка", unit: "компл.", qty: 1, pricePerUnit: Math.round(bsArea * 350), total: Math.round(bsArea * 350), isConsumable: true });
+    }
+  }
+
+  if (cfg.countertopIncluded && bd.countertopCost > 0) {
+    const ctType = COUNTERTOP_TYPES.find(c => c.id === cfg.countertopType);
+    const ctLen = cfg.countertopLength || 3;
+    items.push({ name: `Столешница: ${ctType?.label ?? "ДСП"}`, spec: `${ctLen} м.п., глубина 600 мм`, unit: "м.п.", qty: ctLen, pricePerUnit: Math.round((ctType?.pricePerMeter ?? 4400) * 0.75 * rc), total: Math.round(ctLen * (ctType?.pricePerMeter ?? 4400) * 0.75 * rc) });
+    items.push({ name: "Кромка, торцевые планки, герметик", unit: "компл.", qty: 1, pricePerUnit: Math.round(ctLen * 420), total: Math.round(ctLen * 420), isConsumable: true });
+  }
+
+  if (cfg.conditionerIncluded && bd.conditionerCost > 0) {
+    const acType = CONDITIONER_TYPES.find(c => c.id === cfg.conditionerType);
+    const acQty = cfg.conditionerCount || 1;
+    items.push({ name: `${acType?.label ?? "Сплит-система"}`, spec: acType?.description ?? "", unit: "компл.", qty: acQty, pricePerUnit: Math.round((acType?.pricePerUnit ?? 38500) * 0.70), total: Math.round(acQty * (acType?.pricePerUnit ?? 38500) * 0.70) });
+    items.push({ name: "Медная трасса + дренаж", spec: "до 5 м.п.", unit: "компл.", qty: acQty, pricePerUnit: Math.round(4500 * rc), total: Math.round(acQty * 4500 * rc), isConsumable: true });
+  }
+
+  if (cfg.soundproofIncluded && bd.soundproofCost > 0) {
+    const spType = SOUNDPROOF_TYPES.find(s => s.id === cfg.soundproofType);
+    if (cfg.soundproofType === "premium") {
+      items.push({ name: "Минвата акустическая 50 мм", unit: "м²", qty: Math.round(area * 2.5), pricePerUnit: 320, total: Math.round(area * 2.5 * 320) });
+      items.push({ name: "ГКЛ акустический (стены+потолок)", unit: "м²", qty: Math.round(area * 3), pricePerUnit: 480, total: Math.round(area * 3 * 480) });
+    } else if (cfg.soundproofType === "enhanced") {
+      items.push({ name: "Минвата акустическая 50 мм", unit: "м²", qty: Math.round(area * 1.8), pricePerUnit: 320, total: Math.round(area * 1.8 * 320) });
+      items.push({ name: "ГКЛ акустический 12.5 мм (2 слоя)", unit: "м²", qty: Math.round(area * 1.5 * 2), pricePerUnit: 480, total: Math.round(area * 1.5 * 2 * 480) });
+    } else {
+      items.push({ name: "Минвата акустическая 50 мм", unit: "м²", qty: Math.round(area * 1.2), pricePerUnit: 320, total: Math.round(area * 1.2 * 320) });
+      items.push({ name: "ГКЛ 12.5 мм", unit: "м²", qty: Math.round(area * 1.2), pricePerUnit: 360, total: Math.round(area * 1.2 * 360) });
+    }
+    items.push({ name: "Виброподвесы, профиль, уплотнители", spec: spType?.label ?? "", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 180 * rc), total: Math.round(area * 180 * rc), isConsumable: true });
   }
 
   // ── Малярный инструмент и расходники ────────────────────────────────────────

@@ -536,7 +536,36 @@ export default function NewbuildRenovation() {
                       <span className="font-medium">{fmt(activeBreakdown.windowSlopesCost)} ₽</span>
                     </div>
                   )}
-
+                  {activeBreakdown.heatedFloorCost > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Тёплый пол</span>
+                      <span className="font-medium">{fmt(activeBreakdown.heatedFloorCost)} ₽</span>
+                    </div>
+                  )}
+                  {activeBreakdown.backsplashCost > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Кухонный фартук</span>
+                      <span className="font-medium">{fmt(activeBreakdown.backsplashCost)} ₽</span>
+                    </div>
+                  )}
+                  {activeBreakdown.countertopCost > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Столешница</span>
+                      <span className="font-medium">{fmt(activeBreakdown.countertopCost)} ₽</span>
+                    </div>
+                  )}
+                  {activeBreakdown.conditionerCost > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Кондиционирование</span>
+                      <span className="font-medium">{fmt(activeBreakdown.conditionerCost)} ₽</span>
+                    </div>
+                  )}
+                  {activeBreakdown.soundproofCost > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Шумоизоляция</span>
+                      <span className="font-medium">{fmt(activeBreakdown.soundproofCost)} ₽</span>
+                    </div>
+                  )}
 
                   <div className="border-t border-orange-200 pt-1.5 mt-1.5 space-y-1">
                     <div className="flex justify-between text-gray-500 text-xs">
