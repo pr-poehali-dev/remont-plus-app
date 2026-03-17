@@ -10,6 +10,7 @@ import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { usePageGoal } from "@/lib/metrika";
 import ElectricsHeader from "@/components/calculator/electrics/ElectricsHeader";
 import ElectricsZoneList from "@/components/calculator/electrics/ElectricsZoneList";
 import ElectricsZoneEditor from "@/components/calculator/electrics/ElectricsZoneEditor";
@@ -36,6 +37,7 @@ function makeZone(name = ""): ElectricsConfig {
 
 export default function Electrics() {
   const navigate = useNavigate();
+  usePageGoal("view_calc_electrics");
   useEffect(() => { trackCalcEvent('electrics', 'open'); }, []);
 
   useMeta({

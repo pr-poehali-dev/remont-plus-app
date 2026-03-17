@@ -12,6 +12,7 @@ import FrameHouseTabResult from "@/components/framehouse/FrameHouseTabResult";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { usePageGoal } from "@/lib/metrika";
 
 const REGION_KEY = "framehouse_region";
 const MARKUP_KEY = "framehouse_markup";
@@ -43,6 +44,7 @@ interface ExportState {
 
 export default function FrameHouse() {
   const navigate = useNavigate();
+  usePageGoal("view_calc_framehouse");
   useEffect(() => { trackCalcEvent('framehouse', 'open'); }, []);
 
   useMeta({

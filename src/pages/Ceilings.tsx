@@ -16,6 +16,7 @@ import CeilingsZoneSummary from "@/components/calculator/ceilings/CeilingsZoneSu
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { usePageGoal } from "@/lib/metrika";
 
 const MARKUP_KEY = "ceilings_markup_pct";
 const REGION_KEY = "ceilings_region";
@@ -40,6 +41,7 @@ function makeZone(name = "", regionId = "moscow"): CeilingConfig {
 
 export default function Ceilings() {
   const navigate = useNavigate();
+  usePageGoal("view_calc_ceilings");
   useEffect(() => { trackCalcEvent('ceilings', 'open'); }, []);
 
   useMeta({

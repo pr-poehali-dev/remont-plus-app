@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import reachGoal from "@/lib/metrika";
 import { useMeta } from "@/hooks/useMeta";
 import SEOMeta from "@/components/SEOMeta";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
@@ -81,6 +82,8 @@ export default function Calculator() {
       document.getElementById(scriptId)?.remove();
     };
   }, []);
+
+  useEffect(() => { reachGoal("view_calculator"); }, []);
 
   const state = useCalculatorState();
 

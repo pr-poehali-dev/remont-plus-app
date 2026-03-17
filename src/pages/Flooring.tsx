@@ -9,6 +9,7 @@ import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { usePageGoal } from "@/lib/metrika";
 import FlooringHeader from "@/components/calculator/flooring/FlooringHeader";
 import FlooringZoneList from "@/components/calculator/flooring/FlooringZoneList";
 import FlooringZoneEditor from "@/components/calculator/flooring/FlooringZoneEditor";
@@ -35,6 +36,7 @@ function makeZone(name = ""): FlooringConfig {
 
 export default function Flooring() {
   const navigate = useNavigate();
+  usePageGoal("view_calc_flooring");
   useEffect(() => { trackCalcEvent('flooring', 'open'); }, []);
 
   useMeta({

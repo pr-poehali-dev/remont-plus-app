@@ -22,6 +22,7 @@ import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import EstimateActions from "@/components/calculator/EstimateActions";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { usePageGoal } from "@/lib/metrika";
 import ScreenProtection from "@/components/print/ScreenProtection";
 
 const MARKUP_KEY = "turnkey_markup_pct";
@@ -45,6 +46,7 @@ function makeConfig(): TurnkeyConfig {
 
 export default function TurnkeyRenovation() {
   const navigate = useNavigate();
+  usePageGoal("view_calc_turnkey");
   useEffect(() => { trackCalcEvent('turnkey', 'open'); }, []);
 
   useMeta({

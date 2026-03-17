@@ -12,6 +12,7 @@ import BathHouseTabResult from "@/components/bathhouse/BathHouseTabResult";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { usePageGoal } from "@/lib/metrika";
 
 const REGION_KEY = "bathhouse_region";
 const MARKUP_KEY = "bathhouse_markup";
@@ -45,6 +46,7 @@ interface ExportState {
 
 export default function BathHouse() {
   const navigate = useNavigate();
+  usePageGoal("view_calc_bathhouse");
   useEffect(() => { trackCalcEvent('bathhouse', 'open'); }, []);
 
   useMeta({

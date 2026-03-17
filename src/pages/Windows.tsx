@@ -25,6 +25,7 @@ import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import EstimateActions from "@/components/calculator/EstimateActions";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { usePageGoal } from "@/lib/metrika";
 
 const MARKUP_KEY = "windows_markup_pct";
 
@@ -35,6 +36,7 @@ function loadMarkup(): number {
 
 export default function Windows() {
   const navigate = useNavigate();
+  usePageGoal("view_calc_windows");
   useEffect(() => { trackCalcEvent('windows', 'open'); }, []);
 
   useMeta({

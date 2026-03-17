@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
+import reachGoal from "@/lib/metrika";
 import PricingPlans from "@/components/prices/PricingPlans";
 
 import PageTour from "@/components/ui/PageTour";
@@ -43,6 +44,8 @@ export default function Tariffs() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => { reachGoal("view_tariffs"); }, []);
+
   useMeta({
     title: "Тарифы — сметы для частных клиентов и строительных компаний — АВАНГАРД",
     description: "Тарифы АВАНГАРД: сметы от 1 490 ₽ для частных клиентов, подписки от 5 900 ₽/мес для строительных компаний. КП, КС-2, КС-3, акты, оптимизация бюджета.",
@@ -67,6 +70,7 @@ export default function Tariffs() {
         }),
       });
       setSent(true);
+      reachGoal("tariff_lead", { name: name.trim() });
     } catch {
       setError("Не удалось отправить заявку. Попробуйте позже или позвоните нам.");
     } finally {

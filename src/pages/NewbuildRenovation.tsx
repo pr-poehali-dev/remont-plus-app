@@ -4,6 +4,7 @@ import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { usePageGoal } from "@/lib/metrika";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,7 @@ function makeZone(name = ""): NewbuildConfig {
 
 export default function NewbuildRenovation() {
   const navigate = useNavigate();
+  usePageGoal("view_calc_newbuild");
 
   useEffect(() => { trackCalcEvent('newbuild', 'open'); }, []);
 

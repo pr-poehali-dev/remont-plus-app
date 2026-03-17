@@ -12,6 +12,7 @@ import BathroomZoneList from "@/components/bathroom/BathroomZoneList";
 import BathroomZoneEditor from "@/components/bathroom/BathroomZoneEditor";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { usePageGoal } from "@/lib/metrika";
 
 const MARKUP_KEY = "bathroom_markup_pct";
 const REGION_KEY = "bathroom_region";
@@ -35,6 +36,7 @@ function makeZone(name = ""): BathroomConfig {
 
 export default function Bathroom() {
   const navigate = useNavigate();
+  usePageGoal("view_calc_bathroom");
   useEffect(() => { trackCalcEvent('bathroom', 'open'); }, []);
 
   useMeta({
