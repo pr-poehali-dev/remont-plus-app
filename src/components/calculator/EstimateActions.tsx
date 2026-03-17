@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import { useTariffAccess } from "@/hooks/useTariffAccess";
+import reachGoal from "@/lib/metrika";
 
 const NOTIFY_EMAIL_URL =
   "https://functions.poehali.dev/a8b87e78-89d1-48d8-ba76-8da2e0df32a3";
@@ -58,6 +59,7 @@ export default function EstimateActions({
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        reachGoal("estimate_email", { calc_name: calcName });
         setStatus("success");
         setTimeout(() => {
           setStatus("idle");

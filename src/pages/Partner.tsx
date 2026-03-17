@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 const API_URL = "https://functions.poehali.dev/89a93896-7725-4f8e-b42b-561db9546fd8";
 
@@ -87,6 +88,7 @@ export default function Partner() {
       const data = await res.json();
       if (res.ok && data.ok) {
         setSuccess(true);
+        reachGoal("partner_lead", { partner_type: form.partner_type });
       } else {
         setError(data.error || "Что-то пошло не так. Попробуйте ещё раз.");
       }

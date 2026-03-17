@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
+import reachGoal from "@/lib/metrika";
 import { YandexLoginButton } from "@/components/extensions/yandex-auth/YandexLoginButton";
 import { useYandexAuth } from "@/components/extensions/yandex-auth/useYandexAuth";
 
@@ -30,6 +31,7 @@ export default function Login() {
     onAuthChange: (user) => {
       if (user) {
         localStorage.setItem("avangard_user", JSON.stringify(user));
+        reachGoal("login", { method: "yandex" });
         navigate(redirectTo || "/");
       }
     },
@@ -60,6 +62,7 @@ export default function Login() {
 
       localStorage.setItem("avangard_user", JSON.stringify(data.user));
       localStorage.setItem("avangard_token", data.token);
+      reachGoal("login", { method: "email" });
 
       if (data.user.role === "admin") {
         navigate("/admin");

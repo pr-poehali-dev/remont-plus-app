@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import reachGoal from '@/lib/metrika';
 
 const PROJECTS_API_URL = 'https://functions.poehali.dev/91a90ccd-9392-4390-8d40-9b2eb3908daa';
 
@@ -58,6 +59,7 @@ export const CreateProjectForm = ({ userId, onClose, onSuccess }: CreateProjectF
       const data = await response.json();
 
       if (data.success) {
+        reachGoal('create_project', { project_type: formData.project_type });
         toast({
           title: 'Проект создан!',
           description: 'Вы можете приступить к работе над проектом'

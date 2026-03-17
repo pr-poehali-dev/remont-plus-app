@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Icon from "@/components/ui/icon";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useState } from "react";
+import reachGoal from "@/lib/metrika";
 
 const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
 
@@ -54,6 +55,7 @@ export default function Register() {
 
       localStorage.setItem("avangard_user", JSON.stringify(data.user));
       localStorage.setItem("avangard_token", data.token);
+      reachGoal("registration", { user_type: userType });
 
       if (userType === "contractor") {
         navigate("/master-profile");

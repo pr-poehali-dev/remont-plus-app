@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 const AI_CHAT_URL = "https://functions.poehali.dev/bead5363-79de-43a3-8d46-8c1cc2b00ad4";
 const SESSION_KEY = "avangard_chat_session";
@@ -71,6 +72,7 @@ export default function ChatWidget() {
 
       const assistantMsg: Message = { role: "assistant", content: data.message };
       setMessages((prev) => [...prev, assistantMsg]);
+      if (newMessages.length === 1) reachGoal("chat_started");
 
       if (!open) setUnread((n) => n + 1);
     } catch {

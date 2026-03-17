@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 const VISITOR_LEADS_URL = "https://functions.poehali.dev/69fd9787-d0eb-4342-b94b-9d14bb3f36e7";
 const STORAGE_KEY = "lead_popup_dismissed";
@@ -51,6 +52,7 @@ export default function LeadCapturePopup() {
         }),
       });
       setDone(true);
+      reachGoal("lead_popup", { source: "lead_capture" });
       localStorage.setItem(STORAGE_KEY, "1");
       setTimeout(() => setVisible(false), 3000);
     } catch {

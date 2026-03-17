@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 const VISITOR_LEADS_URL = "https://functions.poehali.dev/536b1902-f1a6-497f-811d-d2fbad49442a";
 const POPUP_KEY = "visitor_lead_shown";
@@ -53,6 +54,7 @@ export default function VisitorLeadPopup() {
         }),
       });
       setSent(true);
+      reachGoal("lead_popup", { source: "visitor_popup" });
       localStorage.setItem(POPUP_KEY, "1");
       setTimeout(() => setVisible(false), 3000);
     } catch {

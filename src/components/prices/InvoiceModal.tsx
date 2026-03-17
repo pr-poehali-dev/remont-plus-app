@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { type PlanInfo, PAYMENT_URL, fmt, TOCHKA_CHECKOUT_URLS, COMPANY_REQUISITES } from "./pricingTypes";
+import reachGoal from "@/lib/metrika";
 
 function copyToClipboard(text: string): Promise<void> {
   if (navigator.clipboard && window.isSecureContext) {
@@ -200,6 +201,7 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
       if (data.error) { setError(data.error); setLoading(false); return; }
 
       setOrderNumber(data.order_number);
+      reachGoal("invoice_request", { plan: plan.id, price: plan.price });
       setStep("success");
     } catch {
       setError("Не удалось отправить запрос. Попробуйте позже.");

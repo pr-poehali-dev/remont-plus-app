@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { type PlanInfo, PAYMENT_URL, fmt } from "./pricingTypes";
+import reachGoal from "@/lib/metrika";
 
 export default function PaymentModal({ plan, onClose }: { plan: PlanInfo; onClose: () => void }) {
   const [name, setName] = useState("");
@@ -48,6 +49,7 @@ export default function PaymentModal({ plan, onClose }: { plan: PlanInfo; onClos
       if (data.error) { setError(data.error); setLoading(false); return; }
 
       setOrderNumber(data.order_number);
+      reachGoal("payment_started", { plan: plan.id, price: plan.price });
       if (data.payment_url) window.open(data.payment_url, "_blank");
       setStep("success");
     } catch {
