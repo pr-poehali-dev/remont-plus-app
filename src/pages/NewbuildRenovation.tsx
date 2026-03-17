@@ -566,6 +566,12 @@ export default function NewbuildRenovation() {
                       <span className="font-medium">{fmt(activeBreakdown.soundproofCost)} ₽</span>
                     </div>
                   )}
+                  {activeBreakdown.plumbingCost > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Сантехника</span>
+                      <span className="font-medium">{fmt(activeBreakdown.plumbingCost)} ₽</span>
+                    </div>
+                  )}
 
                   <div className="border-t border-orange-200 pt-1.5 mt-1.5 space-y-1">
                     <div className="flex justify-between text-gray-500 text-xs">

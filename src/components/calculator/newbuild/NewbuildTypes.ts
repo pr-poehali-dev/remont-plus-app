@@ -213,6 +213,52 @@ export const SOUNDPROOF_TYPES: SoundproofTypeOption[] = [
   { id: "premium",  label: "Максимальная (комплекс)",  description: "Стены + пол + потолок, до 20 дБ снижения", priceM2: 4400 },
 ];
 
+// ─── Сантехника ─────────────────────────────────────────────────────────────
+
+export interface PlumbingItemOption {
+  id: string;
+  label: string;
+  description: string;
+  pricePerUnit: number;
+}
+
+export const BATHTUB_TYPES: PlumbingItemOption[] = [
+  { id: "acrylic-standard", label: "Акриловая стандарт",    description: "150×70 см, с каркасом и экраном",            pricePerUnit: 18700  },
+  { id: "acrylic-premium",  label: "Акриловая премиум",     description: "170×80 см, усиленный каркас, гидромассаж",   pricePerUnit: 42900  },
+  { id: "cast-iron",        label: "Чугунная",              description: "150×70 см, эмалированная, долговечная",       pricePerUnit: 33000  },
+];
+
+export const SHOWER_TYPES: PlumbingItemOption[] = [
+  { id: "cabin-economy",   label: "Душевая кабина эконом",  description: "90×90 см, стекло 5 мм, поддон",              pricePerUnit: 22000  },
+  { id: "cabin-standard",  label: "Душевая кабина стандарт", description: "100×100 см, закалённое стекло, тропический душ", pricePerUnit: 38500 },
+  { id: "walk-in",         label: "Walk-in (перегородка)",  description: "Стеклянная перегородка + трап в полу",        pricePerUnit: 55000  },
+];
+
+export const TOILET_TYPES: PlumbingItemOption[] = [
+  { id: "floor-economy",    label: "Напольный эконом",      description: "Компакт, косой выпуск, сиденье в комплекте", pricePerUnit: 8800   },
+  { id: "floor-standard",   label: "Напольный стандарт",    description: "Безободковый, микролифт, нижний подвод",     pricePerUnit: 16500  },
+  { id: "wall-hung",        label: "Подвесной с инсталляцией", description: "Скрытый бачок Geberit, лёгкая уборка",    pricePerUnit: 33000  },
+];
+
+export const SINK_TYPES: PlumbingItemOption[] = [
+  { id: "pedestal",        label: "На пьедестале",          description: "Раковина 55 см + пьедестал, бюджет",          pricePerUnit: 6600   },
+  { id: "cabinet",         label: "С тумбой",              description: "Раковина 60 см + тумба с ящиками",            pricePerUnit: 15400  },
+  { id: "countertop",      label: "Накладная на столешницу", description: "Дизайнерская раковина + столешница",          pricePerUnit: 26400  },
+];
+
+export interface PlumbingPipesOption {
+  id: string;
+  label: string;
+  description: string;
+  pricePerPoint: number;
+}
+
+export const PLUMBING_PIPES_TYPES: PlumbingPipesOption[] = [
+  { id: "polypropylene", label: "Полипропилен (ППР)",    description: "Бюджетный вариант, сварные соединения",       pricePerPoint: 4400  },
+  { id: "metal-plastic",  label: "Металлопластик",       description: "Гибкий, пресс-фитинги, надёжный",             pricePerPoint: 5500  },
+  { id: "copper",         label: "Медные трубы",          description: "Премиум, пайка, срок службы 50+ лет",         pricePerPoint: 8800  },
+];
+
 // ─── Регионы ─────────────────────────────────────────────────────────────────
 
 export { CALC_REGIONS as REGIONS, DEFAULT_REGION_ID } from "@/components/calculator/shared/regions";
@@ -258,6 +304,19 @@ export interface NewbuildConfig {
   conditionerCount: number;
   soundproofIncluded: boolean;
   soundproofType: string;
+  plumbingIncluded: boolean;
+  plumbingPipesType: string;
+  plumbingPointsCount: number;
+  bathtubIncluded: boolean;
+  bathtubType: string;
+  showerIncluded: boolean;
+  showerType: string;
+  toiletIncluded: boolean;
+  toiletType: string;
+  toiletCount: number;
+  sinkIncluded: boolean;
+  sinkType: string;
+  sinkCount: number;
   note: string;
   totalPrice: number;
 }
@@ -302,5 +361,18 @@ export const DEFAULT_NEWBUILD_CONFIG: Omit<NewbuildConfig, "id" | "totalPrice"> 
   conditionerCount: 1,
   soundproofIncluded: false,
   soundproofType: "basic",
+  plumbingIncluded: false,
+  plumbingPipesType: "polypropylene",
+  plumbingPointsCount: 4,
+  bathtubIncluded: false,
+  bathtubType: "acrylic-standard",
+  showerIncluded: false,
+  showerType: "cabin-economy",
+  toiletIncluded: false,
+  toiletType: "floor-standard",
+  toiletCount: 1,
+  sinkIncluded: false,
+  sinkType: "cabinet",
+  sinkCount: 1,
   note: "",
 };

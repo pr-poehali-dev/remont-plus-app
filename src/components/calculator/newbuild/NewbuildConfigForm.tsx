@@ -11,6 +11,7 @@ import {
   CEILING_FINISH_TYPES, FLOORING_TYPES, DOOR_TYPES,
   HEATED_FLOOR_TYPES, BACKSPLASH_TYPES, COUNTERTOP_TYPES,
   CONDITIONER_TYPES, SOUNDPROOF_TYPES,
+  BATHTUB_TYPES, SHOWER_TYPES, TOILET_TYPES, SINK_TYPES, PLUMBING_PIPES_TYPES,
 } from "./NewbuildTypes";
 import type { NewbuildConfig } from "./NewbuildTypes";
 import { fmt } from "./newbuildUtils";
@@ -536,6 +537,192 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
                   <Counter label="Количество точек" value={cfg.conditionerCount} onChange={v => onUpdate({ conditionerCount: v })} min={1} max={10} />
                 </div>
               </div>
+            </div>
+          )}
+
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Сантехника</p>
+          <ToggleRow
+            label="Сантехника и разводка труб"
+            description="Разводка водоснабжения и канализации, установка приборов"
+            checked={cfg.plumbingIncluded}
+            onChange={v => onUpdate({ plumbingIncluded: v })}
+          />
+          {cfg.plumbingIncluded && (
+            <div className="ml-4 space-y-4">
+              <div>
+                <Label className="text-xs text-gray-500 mb-1.5 block">Тип труб</Label>
+                <div className="space-y-1.5">
+                  {PLUMBING_PIPES_TYPES.map(pt => (
+                    <button
+                      key={pt.id}
+                      type="button"
+                      onClick={() => onUpdate({ plumbingPipesType: pt.id })}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                        cfg.plumbingPipesType === pt.id
+                          ? "border-orange-500 bg-orange-50"
+                          : "border-gray-200 hover:border-orange-200"
+                      }`}
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{pt.label}</p>
+                        <p className="text-xs text-gray-500">{pt.description}</p>
+                      </div>
+                      <span className={`text-sm font-bold shrink-0 ml-3 ${cfg.plumbingPipesType === pt.id ? "text-orange-700" : "text-gray-500"}`}>
+                        {fmt(pt.pricePerPoint)} ₽/точка
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <div className="px-4 py-1">
+                  <Counter label="Точек водоснабжения" value={cfg.plumbingPointsCount} onChange={v => onUpdate({ plumbingPointsCount: v })} min={1} max={20} />
+                </div>
+              </div>
+
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Сантехнические приборы</p>
+
+              <ToggleRow
+                label="Ванна"
+                description="Ванна с каркасом, экраном и монтажом"
+                checked={cfg.bathtubIncluded}
+                onChange={v => onUpdate({ bathtubIncluded: v })}
+              />
+              {cfg.bathtubIncluded && (
+                <div className="ml-4">
+                  <div className="space-y-1.5">
+                    {BATHTUB_TYPES.map(bt => (
+                      <button
+                        key={bt.id}
+                        type="button"
+                        onClick={() => onUpdate({ bathtubType: bt.id })}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                          cfg.bathtubType === bt.id
+                            ? "border-orange-500 bg-orange-50"
+                            : "border-gray-200 hover:border-orange-200"
+                        }`}
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{bt.label}</p>
+                          <p className="text-xs text-gray-500">{bt.description}</p>
+                        </div>
+                        <span className={`text-sm font-bold shrink-0 ml-3 ${cfg.bathtubType === bt.id ? "text-orange-700" : "text-gray-500"}`}>
+                          {fmt(bt.pricePerUnit)} ₽
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <ToggleRow
+                label="Душевая кабина / зона"
+                description="Душ с поддоном или walk-in перегородка"
+                checked={cfg.showerIncluded}
+                onChange={v => onUpdate({ showerIncluded: v })}
+              />
+              {cfg.showerIncluded && (
+                <div className="ml-4">
+                  <div className="space-y-1.5">
+                    {SHOWER_TYPES.map(sh => (
+                      <button
+                        key={sh.id}
+                        type="button"
+                        onClick={() => onUpdate({ showerType: sh.id })}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                          cfg.showerType === sh.id
+                            ? "border-orange-500 bg-orange-50"
+                            : "border-gray-200 hover:border-orange-200"
+                        }`}
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{sh.label}</p>
+                          <p className="text-xs text-gray-500">{sh.description}</p>
+                        </div>
+                        <span className={`text-sm font-bold shrink-0 ml-3 ${cfg.showerType === sh.id ? "text-orange-700" : "text-gray-500"}`}>
+                          {fmt(sh.pricePerUnit)} ₽
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <ToggleRow
+                label="Унитаз"
+                description="Напольный или подвесной с инсталляцией"
+                checked={cfg.toiletIncluded}
+                onChange={v => onUpdate({ toiletIncluded: v })}
+              />
+              {cfg.toiletIncluded && (
+                <div className="ml-4 space-y-3">
+                  <div className="space-y-1.5">
+                    {TOILET_TYPES.map(tl => (
+                      <button
+                        key={tl.id}
+                        type="button"
+                        onClick={() => onUpdate({ toiletType: tl.id })}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                          cfg.toiletType === tl.id
+                            ? "border-orange-500 bg-orange-50"
+                            : "border-gray-200 hover:border-orange-200"
+                        }`}
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{tl.label}</p>
+                          <p className="text-xs text-gray-500">{tl.description}</p>
+                        </div>
+                        <span className={`text-sm font-bold shrink-0 ml-3 ${cfg.toiletType === tl.id ? "text-orange-700" : "text-gray-500"}`}>
+                          {fmt(tl.pricePerUnit)} ₽
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="px-4 py-1">
+                      <Counter label="Количество унитазов" value={cfg.toiletCount} onChange={v => onUpdate({ toiletCount: v })} min={1} max={5} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <ToggleRow
+                label="Раковина"
+                description="Раковина с тумбой или на пьедестале"
+                checked={cfg.sinkIncluded}
+                onChange={v => onUpdate({ sinkIncluded: v })}
+              />
+              {cfg.sinkIncluded && (
+                <div className="ml-4 space-y-3">
+                  <div className="space-y-1.5">
+                    {SINK_TYPES.map(sk => (
+                      <button
+                        key={sk.id}
+                        type="button"
+                        onClick={() => onUpdate({ sinkType: sk.id })}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-all ${
+                          cfg.sinkType === sk.id
+                            ? "border-orange-500 bg-orange-50"
+                            : "border-gray-200 hover:border-orange-200"
+                        }`}
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{sk.label}</p>
+                          <p className="text-xs text-gray-500">{sk.description}</p>
+                        </div>
+                        <span className={`text-sm font-bold shrink-0 ml-3 ${cfg.sinkType === sk.id ? "text-orange-700" : "text-gray-500"}`}>
+                          {fmt(sk.pricePerUnit)} ₽
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="px-4 py-1">
+                      <Counter label="Количество раковин" value={cfg.sinkCount} onChange={v => onUpdate({ sinkCount: v })} min={1} max={5} />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

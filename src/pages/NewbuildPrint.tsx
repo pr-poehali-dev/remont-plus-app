@@ -5,6 +5,7 @@ import {
   CEILING_FINISH_TYPES, FLOORING_TYPES, DOOR_TYPES,
   HEATED_FLOOR_TYPES, BACKSPLASH_TYPES, COUNTERTOP_TYPES,
   CONDITIONER_TYPES, SOUNDPROOF_TYPES,
+  BATHTUB_TYPES, SHOWER_TYPES, TOILET_TYPES, SINK_TYPES, PLUMBING_PIPES_TYPES,
 } from "@/components/calculator/newbuild/NewbuildTypes";
 import type { NewbuildConfig } from "@/components/calculator/newbuild/NewbuildTypes";
 import { calcNewbuildPrice, calcNewbuildProjectTotals, calcNewbuildMaterials, fmt } from "@/components/calculator/newbuild/newbuildUtils";
@@ -80,9 +81,10 @@ export default function NewbuildPrint() {
     const countertopType = COUNTERTOP_TYPES.find(c => c.id === z.countertopType);
     const conditionerType = CONDITIONER_TYPES.find(c => c.id === z.conditionerType);
     const soundproofType = SOUNDPROOF_TYPES.find(s => s.id === z.soundproofType);
+    const plumbingPipesType = PLUMBING_PIPES_TYPES.find(p => p.id === z.plumbingPipesType);
     const bd = calcNewbuildPrice(z, regionId, 0);
     const mats = calcNewbuildMaterials(z, bd, regionId);
-    return { z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, heatedFloorType, backsplashType, countertopType, conditionerType, soundproofType, bd, mats };
+    return { z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, heatedFloorType, backsplashType, countertopType, conditionerType, soundproofType, plumbingPipesType, bd, mats };
   });
 
   const allBreakdowns = rowsData.map(r => r.bd);
@@ -175,7 +177,7 @@ export default function NewbuildPrint() {
 
         <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ по помещениям</h2>
 
-        {rowsData.map(({ z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, heatedFloorType, backsplashType, countertopType, conditionerType, soundproofType, bd }, idx) => (
+        {rowsData.map(({ z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, heatedFloorType, backsplashType, countertopType, conditionerType, soundproofType, plumbingPipesType, bd }, idx) => (
           <div key={z.id} className="mb-6">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-5 h-5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">{idx + 1}</div>
@@ -314,6 +316,15 @@ export default function NewbuildPrint() {
                     <td className="px-2 py-1.5 text-center text-gray-500">м²</td>
                     <td className="px-2 py-1.5 text-right">{fmt(soundproofType?.priceM2 ?? 0)} ₽</td>
                     <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.soundproofCost)} ₽</td>
+                  </tr>
+                )}
+                {bd.plumbingCost > 0 && (
+                  <tr className="border-t border-gray-100">
+                    <td className="px-2 py-1.5">Сантехника: {plumbingPipesType?.label}, {z.plumbingPointsCount || 4} точек{z.bathtubIncluded ? ", ванна" : ""}{z.showerIncluded ? ", душ" : ""}{z.toiletIncluded ? `, унитаз ×${z.toiletCount || 1}` : ""}{z.sinkIncluded ? `, раковина ×${z.sinkCount || 1}` : ""}</td>
+                    <td className="px-2 py-1.5 text-center">—</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">—</td>
+                    <td className="px-2 py-1.5 text-right">—</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.plumbingCost)} ₽</td>
                   </tr>
                 )}
                 <tr className="border-t-2 border-gray-300 bg-gray-50 font-bold">

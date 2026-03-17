@@ -3,6 +3,7 @@ import {
   PLASTER_TYPES, CEILING_FINISH_TYPES, FLOORING_TYPES, DOOR_TYPES,
   HEATED_FLOOR_TYPES, BACKSPLASH_TYPES, COUNTERTOP_TYPES,
   CONDITIONER_TYPES, SOUNDPROOF_TYPES,
+  BATHTUB_TYPES, SHOWER_TYPES, TOILET_TYPES, SINK_TYPES, PLUMBING_PIPES_TYPES,
 } from "./NewbuildTypes";
 import type { NewbuildConfig } from "./NewbuildTypes";
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
@@ -25,6 +26,7 @@ export interface NewbuildPriceBreakdown {
   countertopCost: number;
   conditionerCost: number;
   soundproofCost: number;
+  plumbingCost: number;
   materialsCost: number;
   subtotal: number;
   levelCoeff: number;
@@ -141,9 +143,34 @@ export function calcNewbuildPrice(
     ? Math.round(area * (soundproofType?.priceM2 ?? 1650) * lc * rc)
     : 0;
 
+  // ── Сантехника: разводка труб + приборы ────────────────────────────────
+  let plumbingCost = 0;
+  if (cfg.plumbingIncluded) {
+    const pipesType = PLUMBING_PIPES_TYPES.find(p => p.id === cfg.plumbingPipesType);
+    plumbingCost += Math.round((cfg.plumbingPointsCount || 4) * (pipesType?.pricePerPoint ?? 4400) * rc);
+
+    if (cfg.bathtubIncluded) {
+      const bt = BATHTUB_TYPES.find(b => b.id === cfg.bathtubType);
+      plumbingCost += Math.round((bt?.pricePerUnit ?? 18700) * lc * rc);
+    }
+    if (cfg.showerIncluded) {
+      const sh = SHOWER_TYPES.find(s => s.id === cfg.showerType);
+      plumbingCost += Math.round((sh?.pricePerUnit ?? 22000) * lc * rc);
+    }
+    if (cfg.toiletIncluded) {
+      const tl = TOILET_TYPES.find(t => t.id === cfg.toiletType);
+      plumbingCost += Math.round((cfg.toiletCount || 1) * (tl?.pricePerUnit ?? 16500) * lc * rc);
+    }
+    if (cfg.sinkIncluded) {
+      const sk = SINK_TYPES.find(s => s.id === cfg.sinkType);
+      plumbingCost += Math.round((cfg.sinkCount || 1) * (sk?.pricePerUnit ?? 15400) * lc * rc);
+    }
+  }
+
   const worksSubtotal = screedCost + plasterCost + ceilingCost + paintCost +
     flooringCost + electricsCost + doorsCost + windowSlopesCost +
-    heatedFloorCost + backsplashCost + countertopCost + conditionerCost + soundproofCost;
+    heatedFloorCost + backsplashCost + countertopCost + conditionerCost + soundproofCost +
+    plumbingCost;
 
   const materialsCost = Math.round(
     screedCost       * 0.60 +
@@ -158,7 +185,8 @@ export function calcNewbuildPrice(
     backsplashCost     * 0.60 +
     countertopCost     * 0.75 +
     conditionerCost    * 0.70 +
-    soundproofCost     * 0.60,
+    soundproofCost     * 0.60 +
+    plumbingCost       * 0.65,
   );
 
   const subtotal = worksSubtotal;
@@ -179,6 +207,7 @@ export function calcNewbuildPrice(
     countertopCost,
     conditionerCost,
     soundproofCost,
+    plumbingCost,
     materialsCost: Math.round(materialsCost),
     subtotal,
     levelCoeff: lc,
@@ -352,6 +381,36 @@ export function calcNewbuildMaterials(
       items.push({ name: "ГКЛ 12.5 мм", unit: "м²", qty: Math.round(area * 1.2), pricePerUnit: 360, total: Math.round(area * 1.2 * 360) });
     }
     items.push({ name: "Виброподвесы, профиль, уплотнители", spec: spType?.label ?? "", unit: "компл.", qty: 1, pricePerUnit: Math.round(area * 180 * rc), total: Math.round(area * 180 * rc), isConsumable: true });
+  }
+
+  if (cfg.plumbingIncluded && bd.plumbingCost > 0) {
+    const pipesType = PLUMBING_PIPES_TYPES.find(p => p.id === cfg.plumbingPipesType);
+    const pts = cfg.plumbingPointsCount || 4;
+    items.push({ name: `Трубы ${pipesType?.label ?? "ППР"}`, spec: `разводка, ${pts} точек`, unit: "компл.", qty: 1, pricePerUnit: Math.round(pts * (pipesType?.pricePerPoint ?? 4400) * 0.5 * rc), total: Math.round(pts * (pipesType?.pricePerPoint ?? 4400) * 0.5 * rc) });
+    items.push({ name: "Фитинги, запорная арматура, краны", unit: "компл.", qty: 1, pricePerUnit: Math.round(pts * 850 * rc), total: Math.round(pts * 850 * rc), isConsumable: true });
+
+    if (cfg.bathtubIncluded) {
+      const bt = BATHTUB_TYPES.find(b => b.id === cfg.bathtubType);
+      items.push({ name: `Ванна: ${bt?.label ?? "акриловая"}`, spec: bt?.description ?? "", unit: "шт.", qty: 1, pricePerUnit: Math.round((bt?.pricePerUnit ?? 18700) * 0.65 * rc), total: Math.round((bt?.pricePerUnit ?? 18700) * 0.65 * rc) });
+      items.push({ name: "Смеситель для ванны + сифон", unit: "компл.", qty: 1, pricePerUnit: Math.round(4200 * lc * rc), total: Math.round(4200 * lc * rc), isConsumable: true });
+    }
+    if (cfg.showerIncluded) {
+      const sh = SHOWER_TYPES.find(s => s.id === cfg.showerType);
+      items.push({ name: `Душ: ${sh?.label ?? "кабина"}`, spec: sh?.description ?? "", unit: "шт.", qty: 1, pricePerUnit: Math.round((sh?.pricePerUnit ?? 22000) * 0.65 * rc), total: Math.round((sh?.pricePerUnit ?? 22000) * 0.65 * rc) });
+      items.push({ name: "Смеситель душа + лейка + шланг", unit: "компл.", qty: 1, pricePerUnit: Math.round(3800 * lc * rc), total: Math.round(3800 * lc * rc), isConsumable: true });
+    }
+    if (cfg.toiletIncluded) {
+      const tl = TOILET_TYPES.find(t => t.id === cfg.toiletType);
+      const tqty = cfg.toiletCount || 1;
+      items.push({ name: `Унитаз: ${tl?.label ?? "напольный"}`, spec: tl?.description ?? "", unit: "шт.", qty: tqty, pricePerUnit: Math.round((tl?.pricePerUnit ?? 16500) * 0.65 * rc), total: Math.round(tqty * (tl?.pricePerUnit ?? 16500) * 0.65 * rc) });
+      items.push({ name: "Гофра, крепёж, герметик", unit: "компл.", qty: tqty, pricePerUnit: Math.round(650 * rc), total: Math.round(tqty * 650 * rc), isConsumable: true });
+    }
+    if (cfg.sinkIncluded) {
+      const sk = SINK_TYPES.find(s => s.id === cfg.sinkType);
+      const sqty = cfg.sinkCount || 1;
+      items.push({ name: `Раковина: ${sk?.label ?? "с тумбой"}`, spec: sk?.description ?? "", unit: "шт.", qty: sqty, pricePerUnit: Math.round((sk?.pricePerUnit ?? 15400) * 0.65 * rc), total: Math.round(sqty * (sk?.pricePerUnit ?? 15400) * 0.65 * rc) });
+      items.push({ name: "Смеситель + сифон для раковины", unit: "компл.", qty: sqty, pricePerUnit: Math.round(3200 * lc * rc), total: Math.round(sqty * 3200 * lc * rc), isConsumable: true });
+    }
   }
 
   // ── Малярный инструмент и расходники ────────────────────────────────────────
