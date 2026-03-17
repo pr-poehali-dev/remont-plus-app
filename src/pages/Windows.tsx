@@ -23,6 +23,8 @@ import DocsTab from "@/components/calculator/DocsTab";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
+import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import SimilarProjects from "@/components/calculator/SimilarProjects";
 import EstimateActions from "@/components/calculator/EstimateActions";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
@@ -413,6 +415,7 @@ export default function Windows() {
                       total={`от ${fmt(totalSum)} ₽`}
                     />
                   )}
+                  <SimilarProjects totalSum={totalSum} calcType="windows" />
                 </div>
               </div>
             </div>
@@ -441,6 +444,7 @@ export default function Windows() {
         />
       )}
       <SalesWidget calcContext={{ calcName: "Калькулятор окон", totalPrice: totalSum }} />
+      <CalcStickyBar totalSum={totalSum} calcType="windows" />
 
       <WindowPriceSettings
         open={showPriceSettings}

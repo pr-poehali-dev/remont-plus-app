@@ -11,6 +11,8 @@ import BathroomHeader from "@/components/bathroom/BathroomHeader";
 import BathroomZoneList from "@/components/bathroom/BathroomZoneList";
 import BathroomZoneEditor from "@/components/bathroom/BathroomZoneEditor";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 
@@ -215,6 +217,8 @@ export default function Bathroom() {
           onCancel={() => setShowExport(false)}
         />
       )}
+      <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="bathroom" />
+      <SimilarProjects totalSum={totalSum} calcType="bathroom" />
     </div>
     </CalcAuthGate>
   );

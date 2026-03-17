@@ -11,6 +11,8 @@ import FrameHouseTabConfig from "@/components/framehouse/FrameHouseTabConfig";
 import FrameHouseTabResult from "@/components/framehouse/FrameHouseTabResult";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
+import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 
@@ -181,6 +183,8 @@ export default function FrameHouse() {
         )}
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор каркасного дома", totalPrice: bd.total }} />
+      <CalcStickyBar totalSum={bd.total} calcType="framehouse" />
+      <SimilarProjects totalSum={bd.total} calcType="framehouse" />
     </div>
     </CalcAuthGate>
   );

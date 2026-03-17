@@ -14,11 +14,15 @@ import {
   BATHTUB_TYPES, SHOWER_TYPES, TOILET_TYPES, SINK_TYPES, PLUMBING_PIPES_TYPES,
 } from "./NewbuildTypes";
 import type { NewbuildConfig } from "./NewbuildTypes";
-import { fmt } from "./newbuildUtils";
+import { fmt, calcNewbuildPrice } from "./newbuildUtils";
+import type { NewbuildPriceBreakdown } from "./newbuildUtils";
 
 interface Props {
   cfg: NewbuildConfig;
   onUpdate: (patch: Partial<Omit<NewbuildConfig, "id">>) => void;
+  breakdown?: NewbuildPriceBreakdown;
+  regionId?: string;
+  markupPct?: number;
 }
 
 const STEPS = [
@@ -53,9 +57,9 @@ function Counter({
 }
 
 function ToggleRow({
-  label, description, checked, onChange,
+  label, description, checked, onChange, priceDelta,
 }: {
-  label: string; description?: string; checked: boolean; onChange: (v: boolean) => void;
+  label: string; description?: string; checked: boolean; onChange: (v: boolean) => void; priceDelta?: number;
 }) {
   return (
     <div
@@ -70,16 +74,51 @@ function ToggleRow({
         className="mt-0.5 data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600"
         onClick={e => e.stopPropagation()}
       />
-      <div>
-        <p className="text-sm font-medium text-gray-900">{label}</p>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-gray-900">{label}</p>
+          {priceDelta !== undefined && priceDelta > 0 && (
+            <span className={`text-xs font-semibold shrink-0 px-2 py-0.5 rounded-full ${
+              checked ? "bg-orange-200 text-orange-800" : "bg-gray-100 text-gray-500"
+            }`}>
+              +{fmt(priceDelta)} ₽
+            </span>
+          )}
+        </div>
         {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
       </div>
     </div>
   );
 }
 
-export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
+function calcDelta(cfg: NewbuildConfig, field: string, regionId: string, markupPct: number): number {
+  const on = calcNewbuildPrice({ ...cfg, [field]: true }, regionId, markupPct).total;
+  const off = calcNewbuildPrice({ ...cfg, [field]: false }, regionId, markupPct).total;
+  return Math.max(0, on - off);
+}
+
+export default function NewbuildConfigForm({ cfg, onUpdate, regionId = "moscow", markupPct = 0 }: Props) {
   const [step, setStep] = useState(1);
+
+  const deltas = {
+    screed: calcDelta(cfg, "screedIncluded", regionId, markupPct),
+    plaster: calcDelta(cfg, "plasterIncluded", regionId, markupPct),
+    electrics: calcDelta(cfg, "electricsIncluded", regionId, markupPct),
+    ceiling: calcDelta(cfg, "ceilingLevelIncluded", regionId, markupPct),
+    paintWalls: calcDelta(cfg, "paintingWalls", regionId, markupPct),
+    paintCeiling: calcDelta(cfg, "paintingCeiling", regionId, markupPct),
+    delivery: calcDelta(cfg, "deliveryIncluded", regionId, markupPct),
+    heatedFloor: calcDelta(cfg, "heatedFloorIncluded", regionId, markupPct),
+    backsplash: calcDelta(cfg, "backsplashIncluded", regionId, markupPct),
+    countertop: calcDelta(cfg, "countertopIncluded", regionId, markupPct),
+    conditioner: calcDelta(cfg, "conditionerIncluded", regionId, markupPct),
+    soundproof: calcDelta(cfg, "soundproofIncluded", regionId, markupPct),
+    plumbing: calcDelta(cfg, "plumbingIncluded", regionId, markupPct),
+    bathtub: calcDelta({ ...cfg, plumbingIncluded: true }, "bathtubIncluded", regionId, markupPct),
+    shower: calcDelta({ ...cfg, plumbingIncluded: true }, "showerIncluded", regionId, markupPct),
+    toilet: calcDelta({ ...cfg, plumbingIncluded: true }, "toiletIncluded", regionId, markupPct),
+    sink: calcDelta({ ...cfg, plumbingIncluded: true }, "sinkIncluded", regionId, markupPct),
+  };
 
   return (
     <div className="space-y-5">
@@ -258,6 +297,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Выравнивание основания под финишное покрытие"
             checked={cfg.screedIncluded}
             onChange={v => onUpdate({ screedIncluded: v })}
+            priceDelta={deltas.screed}
           />
           {cfg.screedIncluded && (
             <div className="ml-4">
@@ -283,6 +323,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Выравнивание стен под финишную отделку"
             checked={cfg.plasterIncluded}
             onChange={v => onUpdate({ plasterIncluded: v })}
+            priceDelta={deltas.plaster}
           />
           {cfg.plasterIncluded && (
             <div className="ml-4">
@@ -308,6 +349,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Разводка кабелей, подрозетники, монтаж"
             checked={cfg.electricsIncluded}
             onChange={v => onUpdate({ electricsIncluded: v })}
+            priceDelta={deltas.electrics}
           />
           {cfg.electricsIncluded && (
             <div className="ml-4 rounded-xl border border-gray-200 overflow-hidden">
@@ -367,6 +409,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Комфортная температура пола в любое время года"
             checked={cfg.heatedFloorIncluded}
             onChange={v => onUpdate({ heatedFloorIncluded: v })}
+            priceDelta={deltas.heatedFloor}
           />
           {cfg.heatedFloorIncluded && (
             <div className="ml-4 space-y-3">
@@ -413,6 +456,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Защитная отделка стены над рабочей зоной"
             checked={cfg.backsplashIncluded}
             onChange={v => onUpdate({ backsplashIncluded: v })}
+            priceDelta={deltas.backsplash}
           />
           {cfg.backsplashIncluded && (
             <div className="ml-4 space-y-3">
@@ -458,6 +502,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Рабочая поверхность для кухонного гарнитура"
             checked={cfg.countertopIncluded}
             onChange={v => onUpdate({ countertopIncluded: v })}
+            priceDelta={deltas.countertop}
           />
           {cfg.countertopIncluded && (
             <div className="ml-4 space-y-3">
@@ -504,6 +549,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Закладка трасс до отделки + монтаж оборудования"
             checked={cfg.conditionerIncluded}
             onChange={v => onUpdate({ conditionerIncluded: v })}
+            priceDelta={deltas.conditioner}
           />
           {cfg.conditionerIncluded && (
             <div className="ml-4 space-y-3">
@@ -546,6 +592,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Разводка водоснабжения и канализации, установка приборов"
             checked={cfg.plumbingIncluded}
             onChange={v => onUpdate({ plumbingIncluded: v })}
+            priceDelta={deltas.plumbing}
           />
           {cfg.plumbingIncluded && (
             <div className="ml-4 space-y-4">
@@ -587,6 +634,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
                 description="Ванна с каркасом, экраном и монтажом"
                 checked={cfg.bathtubIncluded}
                 onChange={v => onUpdate({ bathtubIncluded: v })}
+                priceDelta={deltas.bathtub}
               />
               {cfg.bathtubIncluded && (
                 <div className="ml-4">
@@ -620,6 +668,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
                 description="Душ с поддоном или walk-in перегородка"
                 checked={cfg.showerIncluded}
                 onChange={v => onUpdate({ showerIncluded: v })}
+                priceDelta={deltas.shower}
               />
               {cfg.showerIncluded && (
                 <div className="ml-4">
@@ -653,6 +702,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
                 description="Напольный или подвесной с инсталляцией"
                 checked={cfg.toiletIncluded}
                 onChange={v => onUpdate({ toiletIncluded: v })}
+                priceDelta={deltas.toilet}
               />
               {cfg.toiletIncluded && (
                 <div className="ml-4 space-y-3">
@@ -691,6 +741,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
                 description="Раковина с тумбой или на пьедестале"
                 checked={cfg.sinkIncluded}
                 onChange={v => onUpdate({ sinkIncluded: v })}
+                priceDelta={deltas.sink}
               />
               {cfg.sinkIncluded && (
                 <div className="ml-4 space-y-3">
@@ -732,6 +783,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Защита от шума соседей — актуально для новостроек"
             checked={cfg.soundproofIncluded}
             onChange={v => onUpdate({ soundproofIncluded: v })}
+            priceDelta={deltas.soundproof}
           />
           {cfg.soundproofIncluded && (
             <div className="ml-4">
@@ -783,6 +835,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Выравнивание и финишная отделка потолка"
             checked={cfg.ceilingLevelIncluded}
             onChange={v => onUpdate({ ceilingLevelIncluded: v })}
+            priceDelta={deltas.ceiling}
           />
           {cfg.ceilingLevelIncluded && (
             <div className="ml-4">
@@ -808,12 +861,14 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description="Грунтовка + шпаклёвка + покраска"
             checked={cfg.paintingWalls}
             onChange={v => onUpdate({ paintingWalls: v })}
+            priceDelta={deltas.paintWalls}
           />
           <ToggleRow
             label="Покраска потолка"
             description="Грунтовка + шпаклёвка + покраска"
             checked={cfg.paintingCeiling}
             onChange={v => onUpdate({ paintingCeiling: v })}
+            priceDelta={deltas.paintCeiling}
           />
           {(cfg.paintingWalls || cfg.paintingCeiling) && (
             <div className="ml-4">
@@ -879,6 +934,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate }: Props) {
             description={`Доставка до подъезда и подъём на ${cfg.floorNumber || 1}-й этаж (расчёт по весу)`}
             checked={cfg.deliveryIncluded}
             onChange={v => onUpdate({ deliveryIncluded: v })}
+            priceDelta={deltas.delivery}
           />
 
           <div>

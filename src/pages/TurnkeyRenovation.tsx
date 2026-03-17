@@ -20,6 +20,8 @@ import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
+import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import SimilarProjects from "@/components/calculator/SimilarProjects";
 import EstimateActions from "@/components/calculator/EstimateActions";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
@@ -368,6 +370,8 @@ export default function TurnkeyRenovation() {
                 total={`от ${fmt(breakdown.total)} ₽`}
               />
 
+              <SimilarProjects totalSum={cfg.totalPrice} calcType="turnkey" />
+
               {/* Ведомость материалов */}
               <MaterialsTable
                 items={calcTurnkeyMaterials(cfg, breakdown, regionId)}
@@ -385,6 +389,7 @@ export default function TurnkeyRenovation() {
           onCancel={() => setShowExport(false)}
         />
       )}
+      <CalcStickyBar totalSum={cfg.totalPrice} totalArea={cfg.totalAreaM2} calcType="turnkey" />
     </div>
     </CalcAuthGate>
   );

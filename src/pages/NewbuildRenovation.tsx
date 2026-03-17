@@ -23,6 +23,8 @@ import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import EstimateActions from "@/components/calculator/EstimateActions";
 import ScreenProtection from "@/components/print/ScreenProtection";
+import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import SimilarProjects from "@/components/calculator/SimilarProjects";
 
 const MARKUP_KEY = "newbuild_markup_pct";
 const REGION_KEY = "newbuild_region";
@@ -457,7 +459,7 @@ export default function NewbuildRenovation() {
               </div>
 
               <Card className="p-5">
-                <NewbuildConfigForm cfg={activeZone} onUpdate={updateZone} />
+                <NewbuildConfigForm cfg={activeZone} onUpdate={updateZone} regionId={regionId} markupPct={markupPct} />
               </Card>
 
               {/* Детализация */}
@@ -616,6 +618,8 @@ export default function NewbuildRenovation() {
                 total={`от ${fmt(totalSum)} ₽`}
               />
 
+              <SimilarProjects totalSum={totalSum} calcType="newbuild" />
+
               {/* Управление объектом — один раз на весь объект */}
               <Card className="p-4 border-gray-200">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
@@ -685,6 +689,7 @@ export default function NewbuildRenovation() {
         />
       )}
       <SalesWidget calcContext={{ calcName: "Калькулятор новостройки", totalPrice: totalSum }} />
+      <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="newbuild" />
     </div>
     </CalcAuthGate>
   );

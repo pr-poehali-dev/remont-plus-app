@@ -11,6 +11,8 @@ import BathHouseTabScheme from "@/components/bathhouse/BathHouseTabScheme";
 import BathHouseTabResult from "@/components/bathhouse/BathHouseTabResult";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
+import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 
@@ -188,6 +190,8 @@ export default function BathHouse() {
         )}
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор бани", totalPrice: bd.total }} />
+      <CalcStickyBar totalSum={bd.total} calcType="bathhouse" />
+      <SimilarProjects totalSum={bd.total} calcType="bathhouse" />
     </div>
     </CalcAuthGate>
   );

@@ -9,6 +9,8 @@ import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
+import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import ElectricsHeader from "@/components/calculator/electrics/ElectricsHeader";
@@ -214,6 +216,8 @@ export default function Electrics() {
           />
         )}
         <SalesWidget calcContext={{ calcName: "Калькулятор электрики", totalPrice: totalSum }} />
+        <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="electrics" />
+        <SimilarProjects totalSum={totalSum} calcType="electrics" />
       </div>
     </CalcAuthGate>
   );

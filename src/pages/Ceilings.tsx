@@ -15,6 +15,8 @@ import CeilingsZoneList from "@/components/calculator/ceilings/CeilingsZoneList"
 import CeilingsZoneSummary from "@/components/calculator/ceilings/CeilingsZoneSummary";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
+import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 
@@ -264,6 +266,8 @@ export default function Ceilings() {
         />
       )}
       <SalesWidget calcContext={{ calcName: "Калькулятор потолков", totalPrice: totalSum }} />
+      <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="ceilings" />
+      <SimilarProjects totalSum={totalSum} calcType="ceilings" />
     </div>
     </CalcAuthGate>
   );

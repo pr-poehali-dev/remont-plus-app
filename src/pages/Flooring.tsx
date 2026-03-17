@@ -8,6 +8,8 @@ import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
+import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import FlooringHeader from "@/components/calculator/flooring/FlooringHeader";
@@ -214,6 +216,8 @@ export default function Flooring() {
           />
         )}
         <SalesWidget calcContext={{ calcName: "Калькулятор напольных покрытий", totalPrice: totalSum }} />
+        <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="flooring" />
+        <SimilarProjects totalSum={totalSum} calcType="flooring" />
       </div>
     </CalcAuthGate>
   );
