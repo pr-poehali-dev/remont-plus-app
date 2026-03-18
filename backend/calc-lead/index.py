@@ -5,6 +5,7 @@ import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import urllib.request
+import urllib.parse
 import psycopg2
 
 
@@ -92,6 +93,26 @@ def build_html(calc_type: str, name: str, phone: str, comment: str, total: str) 
 </html>"""
 
 
+def send_sms(phone: str, message: str) -> bool:
+    api_key = os.environ.get('SMS_API_KEY', '')
+    if not api_key:
+        return False
+    phone_clean = phone.replace('+', '').replace('-', '').replace(' ', '').replace('(', '').replace(')', '')
+    params = urllib.parse.urlencode({
+        'api_id': api_key,
+        'to': phone_clean,
+        'msg': message,
+        'json': 1,
+    })
+    req = urllib.request.Request(
+        f'https://sms.ru/sms/send?{params}',
+        method='GET',
+    )
+    resp = urllib.request.urlopen(req, timeout=10)
+    result = json.loads(resp.read().decode('utf-8'))
+    return result.get('status') == 'OK'
+
+
 def save_to_db(name, phone, calc_type, total_sum, items_count, region, source, page_url):
     dsn = os.environ.get('DATABASE_URL')
     if not dsn:
@@ -173,6 +194,18 @@ def handler(event: dict, context) -> dict:
         send_telegram(tg_text)
     except Exception as e:
         print(f'TELEGRAM ERROR: {e}')
+
+    try:
+        greeting = f'{name}, в' if name else 'В'
+        sms_text = (
+            f'{greeting}аша смета готова! '
+            f'Сумма: {total or "рассчитана"}. '
+            f'Наш менеджер свяжется с вами для уточнения деталей. '
+            f'Авангард avangard-ai.ru'
+        )
+        send_sms(phone, sms_text)
+    except Exception as e:
+        print(f'SMS ERROR: {e}')
 
     return {
         'statusCode': 200,
