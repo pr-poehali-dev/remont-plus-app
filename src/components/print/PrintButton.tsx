@@ -1,9 +1,15 @@
-import { checkTariffAccess, TARIFFS_URL } from "./sharePanelUtils";
+import { isLeadGatePassed } from "@/components/calculator/LeadGateModal";
 
-export default function PrintButton() {
+interface PrintButtonProps {
+  onRequestLeadGate?: () => void;
+}
+
+export default function PrintButton({ onRequestLeadGate }: PrintButtonProps) {
   const handlePrint = () => {
-    if (!checkTariffAccess()) {
-      window.location.href = TARIFFS_URL;
+    if (!isLeadGatePassed()) {
+      if (onRequestLeadGate) {
+        onRequestLeadGate();
+      }
       return;
     }
     window.print();

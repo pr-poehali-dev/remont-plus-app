@@ -1,0 +1,36 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Missing phone returns 400",
+      "method": "POST",
+      "path": "/",
+      "body": {"name": "Тест", "phone": ""},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Valid lead saves successfully",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Тестовый клиент",
+        "phone": "+79001234567",
+        "calc_type": "Калькулятор ремонта",
+        "total_sum": "450 000 ₽",
+        "items_count": 12,
+        "region": "Москва",
+        "source": "export_pdf"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"success": true, "lead_id": "number"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

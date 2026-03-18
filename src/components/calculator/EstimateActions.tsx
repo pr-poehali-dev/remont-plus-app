@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
-import { useTariffAccess } from "@/hooks/useTariffAccess";
 import reachGoal from "@/lib/metrika";
 
 const NOTIFY_EMAIL_URL =
@@ -29,7 +28,6 @@ export default function EstimateActions({
   contractor,
   address,
 }: EstimateActionsProps) {
-  const { hasTariff, redirectToTariffs } = useTariffAccess();
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<
@@ -89,13 +87,7 @@ export default function EstimateActions({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => {
-            if (!hasTariff) {
-              redirectToTariffs();
-              return;
-            }
-            onPrint();
-          }}
+          onClick={() => onPrint()}
           className="gap-1.5"
         >
           <Icon name="Printer" size={15} />
@@ -106,10 +98,6 @@ export default function EstimateActions({
           variant={showEmailForm ? "secondary" : "outline"}
           size="sm"
           onClick={() => {
-            if (!hasTariff) {
-              redirectToTariffs();
-              return;
-            }
             setShowEmailForm((v) => !v);
             setStatus("idle");
           }}

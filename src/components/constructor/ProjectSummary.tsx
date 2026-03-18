@@ -7,7 +7,7 @@ import { Wall } from './types';
 import { wallLength, formatDimension } from './canvasEngine';
 import { calculateEstimate, formatPrice, exportEstimatePDF } from './materialsEstimate';
 import { Label, PropertyRow } from './sidebarShared';
-import { useTariffAccess } from '@/hooks/useTariffAccess';
+
 
 interface ProjectSummaryProps {
   walls: Wall[];
@@ -22,7 +22,6 @@ export default function ProjectSummary({
   onWallThicknessChange,
   onSelect,
 }: ProjectSummaryProps) {
-  const { hasTariff, redirectToTariffs } = useTariffAccess();
   const [ceilingHeight, setCeilingHeight] = useState(2700);
   const [showEstimate, setShowEstimate] = useState(false);
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
@@ -180,7 +179,7 @@ export default function ProjectSummary({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => { if (!hasTariff) { redirectToTariffs(); return; } exportEstimatePDF(estimate, ceilingHeight); }}
+                onClick={() => exportEstimatePDF(estimate, ceilingHeight)}
                 className="w-full h-8 text-xs text-[#4ade80] hover:bg-[#4ade80]/10 hover:text-[#4ade80] border border-[#4ade80]/30"
               >
                 <Icon name="FileDown" size={14} className="mr-1.5" />

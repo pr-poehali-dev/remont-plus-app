@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { btnStyle, checkTariffAccess, TARIFFS_URL, NOTIFY_EMAIL_URL } from "./sharePanelUtils";
+import { btnStyle, NOTIFY_EMAIL_URL } from "./sharePanelUtils";
 
 interface SocialShareButtonsProps {
   text: string;
@@ -53,10 +53,6 @@ export default function SocialShareButtons({
   };
 
   const handleEmailSend = async () => {
-    if (!checkTariffAccess()) {
-      window.location.href = TARIFFS_URL;
-      return;
-    }
     if (!emailTo) return;
 
     setEmailStatus("loading");
@@ -185,13 +181,7 @@ export default function SocialShareButtons({
         </a>
 
         <button
-          onClick={() => {
-            if (!checkTariffAccess()) {
-              window.location.href = TARIFFS_URL;
-              return;
-            }
-            setShowEmail((v) => !v);
-          }}
+          onClick={() => setShowEmail((v) => !v)}
           style={{ ...btnStyle, background: showEmail ? "#f3f4f6" : "#fff" }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

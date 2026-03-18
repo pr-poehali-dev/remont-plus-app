@@ -5,6 +5,7 @@ import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import urllib.request
+import psycopg2
 
 
 def send_telegram(message: str) -> None:
@@ -91,8 +92,27 @@ def build_html(calc_type: str, name: str, phone: str, comment: str, total: str) 
 </html>"""
 
 
+def save_to_db(name, phone, calc_type, total_sum, items_count, region, source, page_url):
+    dsn = os.environ.get('DATABASE_URL')
+    if not dsn:
+        return None
+    schema = os.environ.get('MAIN_DB_SCHEMA', 'public')
+    conn = psycopg2.connect(dsn)
+    cur = conn.cursor()
+    cur.execute(
+        f"INSERT INTO {schema}.calculator_leads (name, phone, calc_type, total_sum, items_count, region, source, page_url) "
+        f"VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+        (name or '', phone, calc_type or 'Калькулятор', total_sum or '', items_count or 0, region or '', source or 'calculator', page_url or '')
+    )
+    lead_id = cur.fetchone()[0]
+    conn.commit()
+    cur.close()
+    conn.close()
+    return lead_id
+
+
 def handler(event: dict, context) -> dict:
-    """Приём заявок с калькуляторов и отправка на email менеджеру"""
+    """Приём заявок с калькуляторов: сохранение в БД + email менеджеру + Telegram"""
 
     if event.get('httpMethod') == 'OPTIONS':
         return {
@@ -114,6 +134,10 @@ def handler(event: dict, context) -> dict:
     comment = body.get('comment', '').strip()
     calc_type = body.get('calc_type', 'Калькулятор').strip()
     total = body.get('total', '').strip()
+    items_count = body.get('items_count', 0)
+    region = body.get('region', '').strip()
+    page_url = body.get('page_url', '').strip()
+    source = body.get('source', 'calculator').strip()
 
     if not phone:
         return {
@@ -122,15 +146,20 @@ def handler(event: dict, context) -> dict:
             'body': json.dumps({'error': 'Телефон обязателен'}, ensure_ascii=False)
         }
 
+    lead_id = None
+    try:
+        lead_id = save_to_db(name, phone, calc_type, total, items_count, region, source, page_url)
+    except Exception as e:
+        print(f'DB ERROR: {e}')
+
     to_email = 'maksT77@yandex.ru'
     subject = f'Заявка с калькулятора «{calc_type}» — {phone}'
     html = build_html(calc_type, name, phone, comment, total)
 
     try:
-        ok = send_email(to_email, subject, html)
+        send_email(to_email, subject, html)
     except Exception as e:
         print(f'SMTP ERROR: {e}')
-        ok = False
 
     try:
         tg_text = (
@@ -148,5 +177,5 @@ def handler(event: dict, context) -> dict:
     return {
         'statusCode': 200,
         'headers': headers,
-        'body': json.dumps({'success': ok}, ensure_ascii=False)
+        'body': json.dumps({'success': True, 'id': lead_id}, ensure_ascii=False)
     }

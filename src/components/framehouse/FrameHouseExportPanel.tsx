@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
-import { useTariffAccess } from "@/hooks/useTariffAccess";
+
 
 export type FrameDocType = "smeta" | "kp" | "contract" | "ks2" | "ks3" | "act";
 
@@ -42,7 +42,6 @@ const DOC_TYPES: { type: FrameDocType; label: string; icon: string }[] = [
 const CONTRACT_DOCS: FrameDocType[] = ["contract", "ks2", "ks3", "act"];
 
 export default function FrameHouseExportPanel({ exportState, onExportChange, onPrint }: Props) {
-  const { hasTariff, redirectToTariffs } = useTariffAccess();
   const { showExportPanel, customer, contractor, address, phone, email, inn, docType, validDays,
     startDate, endDate, contractNum, contractDate, advancePct, warrantyMonths } = exportState;
   const isContract = CONTRACT_DOCS.includes(docType);
@@ -155,7 +154,7 @@ export default function FrameHouseExportPanel({ exportState, onExportChange, onP
         </div>
       )}
 
-      <Button onClick={() => { if (!hasTariff) { redirectToTariffs(); return; } onPrint(); }} className="w-full mt-2 bg-green-600 hover:bg-green-700 text-white text-sm">
+      <Button onClick={onPrint} className="w-full mt-2 bg-green-600 hover:bg-green-700 text-white text-sm">
         <Icon name="Printer" size={14} className="mr-2" />
         Открыть / Печать PDF
       </Button>
