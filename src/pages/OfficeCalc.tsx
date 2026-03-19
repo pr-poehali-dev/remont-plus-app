@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMeta } from "@/hooks/useMeta";
 import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
-import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ const REGION_KEY = "office_calc_region";
 
 export default function OfficeCalc() {
   const navigate = useNavigate();
-  useEffect(() => { trackCalcEvent("office", "open"); }, []);
+  const { trackInteract, trackResultView } = useCalcFunnel('office');
 
   useMeta({
     title: "Калькулятор отделки офиса, склада — ОФИС",
@@ -45,6 +45,7 @@ export default function OfficeCalc() {
   const activeZone = zones.find(z => z.id === activeId) ?? zones[0];
 
   const updateZone = (patch: Partial<Omit<ZoneConfig, "id" | "totalPrice">>) => {
+    trackInteract();
     setZones(prev => prev.map(z => {
       if (z.id !== activeId) return z;
       const updated = { ...z, ...patch };
@@ -71,6 +72,8 @@ export default function OfficeCalc() {
   };
 
   const totalAll = zones.reduce((s, z) => s + z.totalPrice, 0);
+
+  useEffect(() => { if (totalAll > 0) trackResultView(); }, [totalAll, trackResultView]);
 
   const handleRegionChange = (rg: string) => {
     setRegionId(rg);

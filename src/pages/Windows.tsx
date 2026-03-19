@@ -26,7 +26,7 @@ import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import EstimateActions from "@/components/calculator/EstimateActions";
-import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 
 const MARKUP_KEY = "windows_markup_pct";
@@ -39,7 +39,7 @@ function loadMarkup(): number {
 export default function Windows() {
   const navigate = useNavigate();
   usePageGoal("view_calc_windows");
-  useEffect(() => { trackCalcEvent('windows', 'open'); }, []);
+  const { trackInteract, trackResultView, trackExportClick } = useCalcFunnel('windows');
 
   useMeta({
     title: "Расчёт окон и остекления",
@@ -57,11 +57,13 @@ export default function Windows() {
   const [showPriceSettings, setShowPriceSettings] = useState(false);
   const [priceOverrides, setPriceOverrides] = useState<PriceOverrides>(loadPriceOverrides);
 
-  const update = (patch: Partial<typeof cfg>) => setCfg(prev => ({ ...prev, ...patch }));
+  const update = (patch: Partial<typeof cfg>) => { trackInteract(); setCfg(prev => ({ ...prev, ...patch })); };
 
   const basePrice = calcPrice(cfg, priceOverrides);
   const markup = markupPct > 0 ? Math.round(basePrice * markupPct / 100) : 0;
   const price = basePrice + markup;
+
+  useEffect(() => { if (price > 0) trackResultView(); }, [price, trackResultView]);
 
   const handleMarkupChange = (v: string) => {
     const n = Math.max(0, Math.min(200, parseFloat(v) || 0));
@@ -178,7 +180,7 @@ export default function Windows() {
               <Button
                 size="sm"
                 disabled={price === 0}
-                onClick={() => setShowExport(true)}
+                onClick={() => { trackExportClick(); setShowExport(true); }}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Icon name="FileText" size={15} className="mr-1.5" />

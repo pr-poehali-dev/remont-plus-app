@@ -33,7 +33,8 @@ def handler(event: dict, context) -> dict:
         event_type = body.get('event_type', '').strip()
         user_id = body.get('user_id')
 
-        if not calc_type or event_type not in ('open', 'calc', 'lead'):
+        allowed = ('open', 'calc', 'lead', 'interact', 'result_view', 'export_click', 'form_open')
+        if not calc_type or event_type not in allowed:
             conn.close()
             return {
                 'statusCode': 400,
@@ -72,6 +73,10 @@ def handler(event: dict, context) -> dict:
             SELECT
                 calc_type,
                 SUM(CASE WHEN event_type = 'open' THEN 1 ELSE 0 END) AS opens,
+                SUM(CASE WHEN event_type = 'interact' THEN 1 ELSE 0 END) AS interacts,
+                SUM(CASE WHEN event_type = 'result_view' THEN 1 ELSE 0 END) AS result_views,
+                SUM(CASE WHEN event_type = 'export_click' THEN 1 ELSE 0 END) AS export_clicks,
+                SUM(CASE WHEN event_type = 'form_open' THEN 1 ELSE 0 END) AS form_opens,
                 SUM(CASE WHEN event_type = 'calc' THEN 1 ELSE 0 END) AS calcs,
                 SUM(CASE WHEN event_type = 'lead' THEN 1 ELSE 0 END) AS leads
             FROM {schema}.calculator_events
@@ -83,6 +88,10 @@ def handler(event: dict, context) -> dict:
         cursor.execute(f"""
             SELECT
                 SUM(CASE WHEN event_type = 'open' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN event_type = 'interact' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN event_type = 'result_view' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN event_type = 'export_click' THEN 1 ELSE 0 END),
+                SUM(CASE WHEN event_type = 'form_open' THEN 1 ELSE 0 END),
                 SUM(CASE WHEN event_type = 'calc' THEN 1 ELSE 0 END),
                 SUM(CASE WHEN event_type = 'lead' THEN 1 ELSE 0 END)
             FROM {schema}.calculator_events
@@ -95,13 +104,21 @@ def handler(event: dict, context) -> dict:
             'headers': headers,
             'body': json.dumps({
                 'by_calc': [
-                    {'calc_type': r[0], 'opens': r[1], 'calcs': r[2], 'leads': r[3]}
+                    {
+                        'calc_type': r[0], 'opens': r[1], 'interacts': r[2],
+                        'result_views': r[3], 'export_clicks': r[4],
+                        'form_opens': r[5], 'calcs': r[6], 'leads': r[7]
+                    }
                     for r in rows
                 ],
                 'totals': {
                     'opens': totals[0] or 0,
-                    'calcs': totals[1] or 0,
-                    'leads': totals[2] or 0
+                    'interacts': totals[1] or 0,
+                    'result_views': totals[2] or 0,
+                    'export_clicks': totals[3] or 0,
+                    'form_opens': totals[4] or 0,
+                    'calcs': totals[5] or 0,
+                    'leads': totals[6] or 0
                 }
             }, ensure_ascii=False)
         }

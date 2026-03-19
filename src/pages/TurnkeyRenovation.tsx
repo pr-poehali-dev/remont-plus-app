@@ -23,7 +23,7 @@ import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import EstimateActions from "@/components/calculator/EstimateActions";
-import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import ScreenProtection from "@/components/print/ScreenProtection";
 
@@ -49,7 +49,7 @@ function makeConfig(): TurnkeyConfig {
 export default function TurnkeyRenovation() {
   const navigate = useNavigate();
   usePageGoal("view_calc_turnkey");
-  useEffect(() => { trackCalcEvent('turnkey', 'open'); }, []);
+  const { trackInteract, trackResultView, trackExportClick } = useCalcFunnel('turnkey');
 
   useMeta({
     title: "Ремонт квартиры под ключ — расчёт стоимости",
@@ -71,6 +71,7 @@ export default function TurnkeyRenovation() {
   const [showExport, setShowExport] = useState(false);
 
   const updateCfg = (patch: Partial<Omit<TurnkeyConfig, "id">>) => {
+    trackInteract();
     setCfg(prev => {
       const updated = { ...prev, ...patch };
       const bd = calcTurnkeyPrice(updated, regionId, markupPct);
@@ -107,6 +108,8 @@ export default function TurnkeyRenovation() {
     sessionStorage.setItem("turnkey_print_state", JSON.stringify(printState));
     window.open("/turnkey/print", "_blank");
   };
+
+  useEffect(() => { if (cfg.totalPrice > 0) trackResultView(); }, [cfg.totalPrice, trackResultView]);
 
   const breakdown = calcTurnkeyPrice(cfg, regionId, markupPct);
   const aptType = APARTMENT_TYPES.find(a => a.id === cfg.apartmentType);
@@ -187,6 +190,7 @@ export default function TurnkeyRenovation() {
               <Button
                 size="sm"
                 onClick={() => {
+                  trackExportClick();
                   setShowExport(true);
                   if (typeof window !== "undefined" && (window as unknown as { ym?: (id: number, action: string, goal: string) => void }).ym) {
                     (window as unknown as { ym: (id: number, action: string, goal: string) => void }).ym(107009331, "reachGoal", "turnkey_document_open");

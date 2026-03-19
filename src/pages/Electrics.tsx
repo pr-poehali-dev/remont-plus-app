@@ -11,7 +11,7 @@ import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
-import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import ElectricsHeader from "@/components/calculator/electrics/ElectricsHeader";
 import ElectricsZoneList from "@/components/calculator/electrics/ElectricsZoneList";
@@ -40,7 +40,7 @@ function makeZone(name = ""): ElectricsConfig {
 export default function Electrics() {
   const navigate = useNavigate();
   usePageGoal("view_calc_electrics");
-  useEffect(() => { trackCalcEvent('electrics', 'open'); }, []);
+  const { trackInteract, trackResultView, trackExportClick } = useCalcFunnel('electrics');
 
   useMeta({
     title: "Расчёт электромонтажных работ",
@@ -66,6 +66,7 @@ export default function Electrics() {
   const activeZone = zones.find(z => z.id === activeId) ?? zones[0];
 
   const updateZone = (patch: Partial<Omit<ElectricsConfig, "id">>) => {
+    trackInteract();
     setZones(prev => prev.map(z => {
       if (z.id !== activeId) return z;
       const updated = { ...z, ...patch };
@@ -139,6 +140,8 @@ export default function Electrics() {
   const totalSum = zones.reduce((s, z) => s + z.totalPrice, 0);
   const totalArea = zones.reduce((s, z) => s + (z.area || 0), 0);
 
+  useEffect(() => { if (totalSum > 0) trackResultView(); }, [totalSum, trackResultView]);
+
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
     const printState = {
@@ -176,7 +179,7 @@ export default function Electrics() {
           onRegionChange={handleRegionChange}
           onMarkupChange={handleMarkupChange}
           onToggleMarkup={() => setShowMarkup(v => !v)}
-          onExport={() => setShowExport(true)}
+          onExport={() => { trackExportClick(); setShowExport(true); }}
           onBack={() => navigate("/")}
         />
 
@@ -196,7 +199,7 @@ export default function Electrics() {
               onRenameZone={renameZone}
               onStartRename={setRenamingId}
               onStopRename={() => setRenamingId(null)}
-              onExport={() => setShowExport(true)}
+              onExport={() => { trackExportClick(); setShowExport(true); }}
             />
 
             <ElectricsZoneEditor

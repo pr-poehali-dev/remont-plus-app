@@ -19,11 +19,70 @@
       "bodyMatcher": "partial"
     },
     {
+      "name": "POST событие interact",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "calc_type": "newbuild",
+        "event_type": "interact"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST событие result_view",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "calc_type": "windows",
+        "event_type": "result_view"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST событие export_click",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "calc_type": "turnkey",
+        "event_type": "export_click"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST событие form_open",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "calc_type": "bathroom",
+        "event_type": "form_open"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "POST без event_type — ошибка",
       "method": "POST",
       "path": "/",
       "body": {
         "calc_type": "newbuild"
+      },
+      "expectedStatus": 400,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST неизвестный event_type — ошибка",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "calc_type": "newbuild",
+        "event_type": "unknown_event"
       },
       "expectedStatus": 400,
       "bodyMatcher": "partial"

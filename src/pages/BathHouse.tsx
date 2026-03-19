@@ -13,7 +13,7 @@ import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
-import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 
 const REGION_KEY = "bathhouse_region";
@@ -49,7 +49,7 @@ interface ExportState {
 export default function BathHouse() {
   const navigate = useNavigate();
   usePageGoal("view_calc_bathhouse");
-  useEffect(() => { trackCalcEvent('bathhouse', 'open'); }, []);
+  const { trackInteract, trackResultView, trackExportClick } = useCalcFunnel('bathhouse');
 
   useMeta({
     title: "Калькулятор строительства бани — АВАНГАРД",
@@ -83,8 +83,9 @@ export default function BathHouse() {
   });
 
   const handleChange = useCallback((patch: Partial<BathHouseConfig>) => {
+    trackInteract();
     setConfig(prev => ({ ...prev, ...patch }));
-  }, []);
+  }, [trackInteract]);
 
   const handleRegionChange = (v: string) => {
     setRegionId(v);
@@ -102,6 +103,8 @@ export default function BathHouse() {
   };
 
   const bd = useMemo(() => calcBathHousePrice(config, regionId, markupPct), [config, regionId, markupPct]);
+
+  useEffect(() => { if (bd.total > 0) trackResultView(); }, [bd.total, trackResultView]);
 
   const handlePrint = () => {
     const now = new Date();
@@ -132,6 +135,7 @@ export default function BathHouse() {
   };
 
   const handlePrintClick = () => {
+    trackExportClick();
     setViewTab("result");
     handleExportChange({ showExportPanel: true });
   };

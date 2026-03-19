@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
@@ -12,6 +12,8 @@ interface Props {
 type Status = "idle" | "sending" | "success" | "error";
 
 export default function CalcOrderForm({ calcType, total, onClose }: Props) {
+  useEffect(() => { trackCalcEvent(calcType, 'form_open'); }, [calcType]);
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [comment, setComment] = useState("");

@@ -1,8 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
+import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const LEAD_GATE_URL = "https://functions.poehali.dev/1106f965-18b2-4e0f-b402-05fa69b8e3e1";
 const STORAGE_KEY = "avangard_lead_gate";
@@ -61,6 +62,10 @@ export default function LeadGateModal({
   const [errorMsg, setErrorMsg] = useState("");
   const phoneRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (open) trackCalcEvent(calcType, 'form_open');
+  }, [open, calcType]);
+
   if (!open) return null;
 
   const phoneDigits = phone.replace(/\D/g, "");
@@ -95,6 +100,7 @@ export default function LeadGateModal({
       if (!res.ok) throw new Error("Server error");
 
       markLeadGatePassed();
+      trackCalcEvent(calcType, 'lead');
       setStatus("success");
 
       setTimeout(() => {

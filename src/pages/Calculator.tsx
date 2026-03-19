@@ -3,6 +3,7 @@ import reachGoal from "@/lib/metrika";
 import { useMeta } from "@/hooks/useMeta";
 import SEOMeta from "@/components/SEOMeta";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
+import { useCalcFunnel } from "@/hooks/useCalcTracking";
 
 import CalculatorHeader from "@/components/calculator/CalculatorHeader";
 import CalculatorBody from "@/components/calculator/CalculatorBody";
@@ -13,6 +14,8 @@ import ScreenProtection from "@/components/print/ScreenProtection";
 export type { EstimateItem, PriceCategory, PriceItem, Region } from "@/hooks/useCalculatorState";
 
 export default function Calculator() {
+  const { trackInteract, trackResultView, trackExportClick } = useCalcFunnel('calculator');
+
   useMeta({
     title: "Калькулятор стоимости ремонта",
     description: "Рассчитайте стоимость ремонта квартиры онлайн. Калькулятор учитывает актуальные цены на работы и материалы по вашему региону — получите смету за 2 минуты.",
@@ -87,6 +90,8 @@ export default function Calculator() {
 
   const state = useCalculatorState();
 
+  useEffect(() => { if (state.grandTotal > 0) trackResultView(); }, [state.grandTotal, trackResultView]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <SEOMeta
@@ -103,7 +108,7 @@ export default function Calculator() {
         savedToDb={state.savedToDb}
         loading={state.loading}
         onShowTemplates={() => state.setShowTemplates(true)}
-        onExport={() => state.setShowExportDialog(true)}
+        onExport={() => { trackExportClick(); state.setShowExportDialog(true); }}
       />
 
       <ScreenProtection>
@@ -130,11 +135,11 @@ export default function Calculator() {
           onDeliveryEnabledChange={state.setDeliveryEnabled}
           onDeliveryFloorChange={state.setDeliveryFloor}
           onDeliveryElevatorChange={state.setDeliveryHasElevator}
-          onAddFromPriceList={state.addFromPriceList}
+          onAddFromPriceList={(...args) => { trackInteract(); state.addFromPriceList(...args); }}
           onRemoveItem={state.removeItem}
-          onUpdateItem={state.updateItem}
-          onAddItem={state.addItem}
-          onExportPdf={() => state.setShowExportDialog(true)}
+          onUpdateItem={(...args) => { trackInteract(); state.updateItem(...args); }}
+          onAddItem={(...args) => { trackInteract(); state.addItem(...args); }}
+          onExportPdf={() => { trackExportClick(); state.setShowExportDialog(true); }}
         />
       </ScreenProtection>
 

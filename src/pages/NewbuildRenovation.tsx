@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
-import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -51,8 +51,7 @@ function makeZone(name = ""): NewbuildConfig {
 export default function NewbuildRenovation() {
   const navigate = useNavigate();
   usePageGoal("view_calc_newbuild");
-
-  useEffect(() => { trackCalcEvent('newbuild', 'open'); }, []);
+  const { trackInteract, trackResultView, trackExportClick } = useCalcFunnel('newbuild');
 
   useMeta({
     title: "Расчёт ремонта в новостройке",
@@ -82,6 +81,7 @@ export default function NewbuildRenovation() {
   const activeZone = zones.find(z => z.id === activeId) ?? zones[0];
 
   const updateZone = (patch: Partial<Omit<NewbuildConfig, "id">>) => {
+    trackInteract();
     setZones(prev => prev.map(z => {
       if (z.id !== activeId) return z;
       const updated = { ...z, ...patch };
@@ -157,6 +157,8 @@ export default function NewbuildRenovation() {
   const totalSum = projectTotals.total;
   const totalArea = zones.reduce((s, z) => s + (z.area || 0), 0);
 
+  useEffect(() => { if (totalSum > 0) trackResultView(); }, [totalSum, trackResultView]);
+
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
     const printState = {
@@ -231,7 +233,7 @@ export default function NewbuildRenovation() {
               </Button>
               <Button
                 size="sm"
-                onClick={() => setShowExport(true)}
+                onClick={() => { trackExportClick(); setShowExport(true); }}
                 className="bg-orange-600 hover:bg-orange-700 text-white"
               >
                 <Icon name="FileText" size={15} className="mr-1.5" />

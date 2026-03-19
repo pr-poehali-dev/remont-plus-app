@@ -13,7 +13,7 @@ import BathroomZoneEditor from "@/components/bathroom/BathroomZoneEditor";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
-import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 
 const MARKUP_KEY = "bathroom_markup_pct";
@@ -39,7 +39,7 @@ function makeZone(name = ""): BathroomConfig {
 export default function Bathroom() {
   const navigate = useNavigate();
   usePageGoal("view_calc_bathroom");
-  useEffect(() => { trackCalcEvent('bathroom', 'open'); }, []);
+  const { trackInteract, trackResultView, trackExportClick } = useCalcFunnel('bathroom');
 
   useMeta({
     title: "Расчёт ремонта санузла",
@@ -65,6 +65,7 @@ export default function Bathroom() {
   const activeZone = zones.find(z => z.id === activeId) ?? zones[0];
 
   const updateZone = (patch: Partial<Omit<BathroomConfig, "id">>) => {
+    trackInteract();
     setZones(prev => prev.map(z => {
       if (z.id !== activeId) return z;
       const updated = { ...z, ...patch };
@@ -138,6 +139,8 @@ export default function Bathroom() {
   const totalSum = zones.reduce((s, z) => s + z.totalPrice, 0);
   const totalArea = zones.reduce((s, z) => s + (z.area || 0), 0);
 
+  useEffect(() => { if (totalSum > 0) trackResultView(); }, [totalSum, trackResultView]);
+
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
     const printState = {
@@ -179,7 +182,7 @@ export default function Bathroom() {
         onRegionChange={handleRegionChange}
         onMarkupChange={handleMarkupChange}
         onToggleMarkup={() => setShowMarkup(v => !v)}
-        onOpenExport={() => setShowExport(true)}
+        onOpenExport={() => { trackExportClick(); setShowExport(true); }}
       />
 
       <div className="container mx-auto px-4 py-6">
@@ -197,7 +200,7 @@ export default function Bathroom() {
             onDuplicateZone={duplicateZone}
             onRenameZone={renameZone}
             onSetRenamingId={setRenamingId}
-            onOpenExport={() => setShowExport(true)}
+            onOpenExport={() => { trackExportClick(); setShowExport(true); }}
           />
 
           <BathroomZoneEditor

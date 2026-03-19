@@ -13,7 +13,7 @@ import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
-import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 
 const REGION_KEY = "framehouse_region";
@@ -47,7 +47,7 @@ interface ExportState {
 export default function FrameHouse() {
   const navigate = useNavigate();
   usePageGoal("view_calc_framehouse");
-  useEffect(() => { trackCalcEvent('framehouse', 'open'); }, []);
+  const { trackInteract, trackResultView, trackExportClick } = useCalcFunnel('framehouse');
 
   useMeta({
     title: "Калькулятор строительства каркасного дома — АВАНГАРД",
@@ -81,8 +81,9 @@ export default function FrameHouse() {
   });
 
   const handleChange = useCallback((patch: Partial<FrameHouseConfig>) => {
+    trackInteract();
     setConfig(prev => ({ ...prev, ...patch }));
-  }, []);
+  }, [trackInteract]);
 
   const handleRegionChange = (v: string) => {
     setRegionId(v);
@@ -100,6 +101,8 @@ export default function FrameHouse() {
   };
 
   const bd = useMemo(() => calcFrameHousePrice(config, regionId, markupPct), [config, regionId, markupPct]);
+
+  useEffect(() => { if (bd.total > 0) trackResultView(); }, [bd.total, trackResultView]);
 
   const handlePrint = () => {
     const now = new Date();
@@ -130,6 +133,7 @@ export default function FrameHouse() {
   };
 
   const handlePrintClick = () => {
+    trackExportClick();
     setViewTab("result");
     handleExportChange({ showExportPanel: true });
   };
