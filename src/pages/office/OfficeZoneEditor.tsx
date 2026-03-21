@@ -8,6 +8,7 @@ import {
   ROOM_TYPES, FINISH_LEVELS, FLOORING_OPTIONS, CEILING_OPTIONS, PARTITION_OPTIONS,
   HEATING_OPTIONS, VENT_OPTIONS, ALARM_OPTIONS, CCTV_OPTIONS, ACCESS_OPTIONS,
   FIRE_PROTECTION_OPTIONS, METAL_FIREPROOF_OPTIONS, WOOD_FIREPROOF_OPTIONS, NETWORK_OPTIONS,
+  STAIR_FINISH_OPTIONS,
   MATERIALS_SUPPLY,
   fmtPrice,
 } from "./officeCalcTypes";
@@ -181,6 +182,36 @@ export default function OfficeZoneEditor({ zone, onChange }: Props) {
         )}
       </BlockToggle>
 
+      {/* ЛЕСТНИЧНЫЕ МАРШИ */}
+      <BlockToggle enabled={zone.blockStairs} onToggle={() => onChange({ blockStairs: !zone.blockStairs })}
+        title="Лестничные марши" icon="Footprints">
+        <p className="text-xs text-gray-500 -mt-1 mb-1">Отделка ступеней, ограждения и противоскользящие покрытия</p>
+        <OptionGrid options={STAIR_FINISH_OPTIONS} value={zone.stairFinish} onChange={v => onChange({ stairFinish: v })} />
+        <NumRow label="Количество маршей" value={zone.stairFlights}
+          onChange={v => onChange({ stairFlights: v })} min={1} max={100} />
+        <NumRow label="Ступеней в марше" value={zone.stairStepsPerFlight}
+          onChange={v => onChange({ stairStepsPerFlight: v })} min={3} max={30} />
+        <div className="flex items-center gap-3 pt-1">
+          <span className="text-sm text-gray-600 flex-1">Ширина марша, м</span>
+          <Input
+            type="number" value={zone.stairWidth} min={0.8} max={3} step={0.1}
+            onChange={e => onChange({ stairWidth: Math.max(0.8, Math.min(3, Number(e.target.value) || 1.2)) })}
+            className="w-20 h-7 text-center text-sm"
+          />
+        </div>
+        <Toggle label="Ограждения (перила, поручни)" value={zone.stairRailing}
+          onChange={v => onChange({ stairRailing: v })}
+          description={`~${fmtPrice(Math.round(zone.stairFlights * zone.stairWidth * 12000))} за ${zone.stairFlights} маршей`} />
+        <Toggle label="Противоскользящее покрытие" value={zone.stairAntiSlip}
+          onChange={v => onChange({ stairAntiSlip: v })}
+          description={`~${fmtPrice(zone.stairFlights * zone.stairStepsPerFlight * 650)}`} />
+        {zone.stairFinish !== "none" && (
+          <div className="text-xs text-gray-400 bg-gray-50 rounded px-3 py-2 mt-1">
+            Всего ступеней: {zone.stairFlights * zone.stairStepsPerFlight} шт. × {fmtPrice(STAIR_FINISH_OPTIONS.find(s => s.id === zone.stairFinish)?.pricePerStep ?? 0)}/шт.
+          </div>
+        )}
+      </BlockToggle>
+
       {/* ПОЖАРНАЯ БЕЗОПАСНОСТЬ */}
       <div className={`rounded-xl border-2 transition-all ${zone.blockFire ? "border-red-200 bg-red-50/40" : "border-dashed border-red-100 bg-gray-50 opacity-60"}`}>
         <button
@@ -259,6 +290,35 @@ export default function OfficeZoneEditor({ zone, onChange }: Props) {
           </div>
         )}
       </div>
+
+      {/* ЛЕСТНИЧНЫЕ МАРШИ */}
+      <BlockToggle enabled={zone.blockStairs} onToggle={() => onChange({ blockStairs: !zone.blockStairs })}
+        title="Лестничные марши" icon="ArrowUpDown">
+        <Section title="Отделка ступеней" icon="Footprints">
+          <OptionGrid options={STAIR_FINISH_OPTIONS} value={zone.stairFinish} onChange={v => onChange({ stairFinish: v })} />
+        </Section>
+        <div className="grid grid-cols-3 gap-3">
+          <NumRow label="Маршей, шт." value={zone.stairFlights}
+            onChange={v => onChange({ stairFlights: v })} min={1} max={100} />
+          <NumRow label="Ступеней в марше" value={zone.stairStepsPerFlight}
+            onChange={v => onChange({ stairStepsPerFlight: v })} min={3} max={25} />
+          <div>
+            <Label className="text-xs text-gray-500 mb-1 block">Ширина, м</Label>
+            <Input type="number" value={zone.stairWidth} min={0.6} max={3} step={0.1}
+              onChange={e => onChange({ stairWidth: Math.max(0.6, Math.min(3, Number(e.target.value) || 1.2)) })} />
+          </div>
+        </div>
+        <div className="text-xs text-gray-500 bg-gray-50 rounded px-3 py-2">
+          Всего ступеней: {zone.stairFlights * zone.stairStepsPerFlight} шт.
+          {zone.stairFinish !== "none" && ` — отделка ~${fmtPrice(STAIR_FINISH_OPTIONS.find(s => s.id === zone.stairFinish)!.pricePerStep * zone.stairFlights * zone.stairStepsPerFlight)}`}
+        </div>
+        <Toggle label="Ограждения (перила, поручни)" value={zone.stairRailing}
+          onChange={v => onChange({ stairRailing: v })}
+          description={`~${fmtPrice(zone.stairFlights * zone.stairWidth * 12000)} за ${zone.stairFlights} маршей`} />
+        <Toggle label="Антискользящее покрытие ступеней" value={zone.stairAntiSlip}
+          onChange={v => onChange({ stairAntiSlip: v })}
+          description={`~${fmtPrice(zone.stairFlights * zone.stairStepsPerFlight * 850)}`} />
+      </BlockToggle>
 
       {/* МАТЕРИАЛЫ */}
       <BlockToggle enabled={zone.blockMaterials} onToggle={() => onChange({ blockMaterials: !zone.blockMaterials })}

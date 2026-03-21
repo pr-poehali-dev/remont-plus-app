@@ -18,6 +18,7 @@ export type MaterialsSupply = "labor_only" | "customer" | "contractor_basic" | "
 export type DocType = "none" | "sketch" | "working" | "bim";
 export type DocEstimate = "none" | "local" | "full" | "expertize";
 export type DocPermit = "none" | "notice" | "permit" | "full_approval";
+export type StairFinishType = "none" | "concrete_plain" | "porcelain" | "granite" | "marble" | "metal" | "epoxy";
 
 // Блок-флаги — включает/выключает целый раздел из расчёта
 export interface ZoneBlocks {
@@ -36,6 +37,7 @@ export interface ZoneBlocks {
   blockMaterials: boolean;
   blockDocs: boolean;
   blockStaff: boolean;
+  blockStairs: boolean;
 }
 
 export interface ZoneConfig extends ZoneBlocks {
@@ -74,6 +76,13 @@ export interface ZoneConfig extends ZoneBlocks {
   fireDoors: number;
   fireHydrantCheck: boolean;
   fireHydrantCount: number;
+  // Лестничные марши
+  stairFinish: StairFinishType;
+  stairFlights: number;
+  stairStepsPerFlight: number;
+  stairWidth: number;
+  stairRailing: boolean;
+  stairAntiSlip: boolean;
   // Материалы
   materialsSupply: MaterialsSupply;
   materialsCoeffCustom: number;
@@ -204,6 +213,16 @@ export const NETWORK_OPTIONS: { id: NetworkType; label: string; pricePerM2: numb
   { id: "basic_lan", label: "Базовая сеть (Cat5e)", pricePerM2: 800 },
   { id: "structured", label: "СКС Cat6a + патч-панели", pricePerM2: 1600 },
   { id: "enterprise", label: "Enterprise (Cat7 + WiFi 6)", pricePerM2: 3200 },
+];
+
+export const STAIR_FINISH_OPTIONS: { id: StairFinishType; label: string; pricePerStep: number }[] = [
+  { id: "none", label: "Без отделки", pricePerStep: 0 },
+  { id: "concrete_plain", label: "Бетон (шлифовка)", pricePerStep: 1200 },
+  { id: "porcelain", label: "Керамогранит", pricePerStep: 2800 },
+  { id: "granite", label: "Гранит натуральный", pricePerStep: 5500 },
+  { id: "marble", label: "Мрамор", pricePerStep: 8500 },
+  { id: "metal", label: "Металл (рифлёный лист)", pricePerStep: 3200 },
+  { id: "epoxy", label: "Наливное покрытие (эпоксид)", pricePerStep: 2400 },
 ];
 
 export const REGIONS: { id: string; label: string; coeff: number; group: string }[] = [
@@ -340,6 +359,7 @@ export function calcPrice(z: ZoneConfig, regionId: string, markupPct: number): n
   const metalFP = METAL_FIREPROOF_OPTIONS.find(m => m.id === z.metalFireProof) ?? METAL_FIREPROOF_OPTIONS[0];
   const woodFP = WOOD_FIREPROOF_OPTIONS.find(w => w.id === z.woodFireProof) ?? WOOD_FIREPROOF_OPTIONS[0];
   const network = NETWORK_OPTIONS.find(n => n.id === z.networkType) ?? NETWORK_OPTIONS[0];
+  const stairFin = STAIR_FINISH_OPTIONS.find(s => s.id === z.stairFinish) ?? STAIR_FINISH_OPTIONS[0];
 
   let total = 0;
 
@@ -369,6 +389,12 @@ export function calcPrice(z: ZoneConfig, regionId: string, markupPct: number): n
     total += woodFP.pricePerM2 * z.woodFireProofM2;
     total += z.fireDoors * 38000;
     if (z.fireHydrantCheck) total += 8500 + z.fireHydrantCount * 3200;
+  }
+  if (z.blockStairs) {
+    const totalSteps = z.stairFlights * z.stairStepsPerFlight;
+    total += stairFin.pricePerStep * totalSteps;
+    if (z.stairRailing) total += z.stairFlights * z.stairWidth * 12000;
+    if (z.stairAntiSlip) total += totalSteps * 850;
   }
 
   // Персонал — % от суммы работ до регионального коэффициента
@@ -425,6 +451,7 @@ export function makeZone(name = ""): ZoneConfig {
     blockMaterials: false,
     blockDocs: false,
     blockStaff: false,
+    blockStairs: false,
     // параметры
     roomType: "office",
     area: 100,
@@ -459,6 +486,13 @@ export function makeZone(name = ""): ZoneConfig {
     fireDoors: 1,
     fireHydrantCheck: false,
     fireHydrantCount: 0,
+    // Лестничные марши
+    stairFinish: "none",
+    stairFlights: 2,
+    stairStepsPerFlight: 10,
+    stairWidth: 1.2,
+    stairRailing: true,
+    stairAntiSlip: false,
     // Материалы
     materialsSupply: "labor_only",
     materialsCoeffCustom: 1.0,

@@ -5,7 +5,7 @@ import {
   ACCESS_OPTIONS, FIRE_PROTECTION_OPTIONS, METAL_FIREPROOF_OPTIONS,
   WOOD_FIREPROOF_OPTIONS, NETWORK_OPTIONS, MATERIALS_SUPPLY,
   DOC_PROJECT_OPTIONS, DOC_ESTIMATE_OPTIONS, DOC_PERMIT_OPTIONS,
-  ROOM_TYPES,
+  ROOM_TYPES, STAIR_FINISH_OPTIONS,
 } from "./officeCalcTypes";
 import { OfficeExportState } from "./officeExportTypes";
 
@@ -258,6 +258,42 @@ export function getZoneLines(z: ZoneConfig, regionId: string, markupPct: number)
           total: Math.round(3200 * z.fireHydrantCount * rc),
         });
       }
+    }
+  }
+
+  if (z.blockStairs) {
+    const stairFin = STAIR_FINISH_OPTIONS.find(s => s.id === z.stairFinish) ?? STAIR_FINISH_OPTIONS[0];
+    const totalSteps = z.stairFlights * z.stairStepsPerFlight;
+    if (stairFin.pricePerStep > 0 && totalSteps > 0) {
+      lines.push({
+        section: "Лестничные марши",
+        name: `Отделка ступеней: ${stairFin.label}`,
+        unit: "ступ.",
+        qty: totalSteps,
+        unitPrice: Math.round(stairFin.pricePerStep * rc),
+        total: Math.round(stairFin.pricePerStep * totalSteps * rc),
+      });
+    }
+    if (z.stairRailing && z.stairFlights > 0) {
+      const railingTotal = z.stairFlights * z.stairWidth * 12000;
+      lines.push({
+        section: "Лестничные марши",
+        name: "Ограждения (перила, поручни)",
+        unit: "м.п.",
+        qty: Math.round(z.stairFlights * z.stairWidth * 10) / 10,
+        unitPrice: Math.round(12000 * rc),
+        total: Math.round(railingTotal * rc),
+      });
+    }
+    if (z.stairAntiSlip && totalSteps > 0) {
+      lines.push({
+        section: "Лестничные марши",
+        name: "Антискользящее покрытие ступеней",
+        unit: "ступ.",
+        qty: totalSteps,
+        unitPrice: Math.round(650 * rc),
+        total: Math.round(650 * totalSteps * rc),
+      });
     }
   }
 
