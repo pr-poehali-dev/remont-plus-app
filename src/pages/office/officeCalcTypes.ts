@@ -19,6 +19,7 @@ export type DocType = "none" | "sketch" | "working" | "bim";
 export type DocEstimate = "none" | "local" | "full" | "expertize";
 export type DocPermit = "none" | "notice" | "permit" | "full_approval";
 export type StairFinishType = "none" | "concrete_plain" | "porcelain" | "granite" | "marble" | "metal" | "epoxy";
+export type StairWallFinishType = "none" | "paint" | "plaster_paint" | "wallpaper" | "tile" | "decorative_plaster";
 
 // Блок-флаги — включает/выключает целый раздел из расчёта
 export interface ZoneBlocks {
@@ -83,6 +84,9 @@ export interface ZoneConfig extends ZoneBlocks {
   stairWidth: number;
   stairRailing: boolean;
   stairAntiSlip: boolean;
+  stairWallFinish: StairWallFinishType;
+  stairWallHeight: number;
+  stairLength: number;
   // Материалы
   materialsSupply: MaterialsSupply;
   materialsCoeffCustom: number;
@@ -224,6 +228,20 @@ export const STAIR_FINISH_OPTIONS: { id: StairFinishType; label: string; pricePe
   { id: "metal", label: "Металл (рифлёный лист)", pricePerStep: 3200 },
   { id: "epoxy", label: "Наливное покрытие (эпоксид)", pricePerStep: 2400 },
 ];
+
+export const STAIR_WALL_FINISH_OPTIONS: { id: StairWallFinishType; label: string; pricePerM2: number }[] = [
+  { id: "none", label: "Без отделки стен", pricePerM2: 0 },
+  { id: "paint", label: "Покраска (по готовому основанию)", pricePerM2: 450 },
+  { id: "plaster_paint", label: "Штукатурка + покраска", pricePerM2: 1200 },
+  { id: "wallpaper", label: "Обои под покраску", pricePerM2: 850 },
+  { id: "tile", label: "Плитка / керамогранит", pricePerM2: 2800 },
+  { id: "decorative_plaster", label: "Декоративная штукатурка", pricePerM2: 2200 },
+];
+
+export function calcStairWallArea(z: { stairFlights: number; stairWidth: number; stairWallHeight: number; stairLength: number }): number {
+  const perimeter = 2 * (z.stairWidth + z.stairLength);
+  return perimeter * z.stairWallHeight * z.stairFlights;
+}
 
 export const REGIONS: { id: string; label: string; coeff: number; group: string }[] = [
   // ЦФО
@@ -395,6 +413,8 @@ export function calcPrice(z: ZoneConfig, regionId: string, markupPct: number): n
     total += stairFin.pricePerStep * totalSteps;
     if (z.stairRailing) total += z.stairFlights * z.stairWidth * 12000;
     if (z.stairAntiSlip) total += totalSteps * 850;
+    const swf = STAIR_WALL_FINISH_OPTIONS.find(w => w.id === z.stairWallFinish) ?? STAIR_WALL_FINISH_OPTIONS[0];
+    if (swf.pricePerM2 > 0) total += swf.pricePerM2 * calcStairWallArea(z);
   }
 
   // Персонал — % от суммы работ до регионального коэффициента
@@ -493,6 +513,9 @@ export function makeZone(name = ""): ZoneConfig {
     stairWidth: 1.2,
     stairRailing: true,
     stairAntiSlip: false,
+    stairWallFinish: "plaster_paint",
+    stairWallHeight: 3,
+    stairLength: 3,
     // Материалы
     materialsSupply: "labor_only",
     materialsCoeffCustom: 1.0,

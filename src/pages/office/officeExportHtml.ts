@@ -5,7 +5,7 @@ import {
   ACCESS_OPTIONS, FIRE_PROTECTION_OPTIONS, METAL_FIREPROOF_OPTIONS,
   WOOD_FIREPROOF_OPTIONS, NETWORK_OPTIONS, MATERIALS_SUPPLY,
   DOC_PROJECT_OPTIONS, DOC_ESTIMATE_OPTIONS, DOC_PERMIT_OPTIONS,
-  ROOM_TYPES, STAIR_FINISH_OPTIONS,
+  ROOM_TYPES, STAIR_FINISH_OPTIONS, STAIR_WALL_FINISH_OPTIONS, calcStairWallArea,
 } from "./officeCalcTypes";
 import { OfficeExportState } from "./officeExportTypes";
 
@@ -293,6 +293,18 @@ export function getZoneLines(z: ZoneConfig, regionId: string, markupPct: number)
         qty: totalSteps,
         unitPrice: Math.round(650 * rc),
         total: Math.round(650 * totalSteps * rc),
+      });
+    }
+    const swf = STAIR_WALL_FINISH_OPTIONS.find(w => w.id === z.stairWallFinish) ?? STAIR_WALL_FINISH_OPTIONS[0];
+    const wallArea = calcStairWallArea(z);
+    if (swf.pricePerM2 > 0 && wallArea > 0) {
+      lines.push({
+        section: "Лестничные марши",
+        name: `Ремонт стен лестничной клетки: ${swf.label}`,
+        unit: "м²",
+        qty: Math.round(wallArea * 10) / 10,
+        unitPrice: Math.round(swf.pricePerM2 * rc),
+        total: Math.round(swf.pricePerM2 * wallArea * rc),
       });
     }
   }
