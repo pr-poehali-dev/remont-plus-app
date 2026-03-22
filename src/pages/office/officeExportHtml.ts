@@ -6,6 +6,7 @@ import {
   WOOD_FIREPROOF_OPTIONS, NETWORK_OPTIONS, MATERIALS_SUPPLY,
   DOC_PROJECT_OPTIONS, DOC_ESTIMATE_OPTIONS, DOC_PERMIT_OPTIONS,
   ROOM_TYPES, STAIR_FINISH_OPTIONS, STAIR_WALL_FINISH_OPTIONS, calcStairWallArea,
+  STAIR_CEILING_OPTIONS, calcStairCeilingArea,
 } from "./officeCalcTypes";
 import { OfficeExportState } from "./officeExportTypes";
 
@@ -305,6 +306,18 @@ export function getZoneLines(z: ZoneConfig, regionId: string, markupPct: number)
         qty: Math.round(wallArea * 10) / 10,
         unitPrice: Math.round(swf.pricePerM2 * rc),
         total: Math.round(swf.pricePerM2 * wallArea * rc),
+      });
+    }
+    const scf = STAIR_CEILING_OPTIONS.find(c => c.id === z.stairCeiling) ?? STAIR_CEILING_OPTIONS[0];
+    const ceilArea = calcStairCeilingArea(z);
+    if (scf.pricePerM2 > 0 && ceilArea > 0) {
+      lines.push({
+        section: "Лестничные марши",
+        name: `Потолки лестничных площадок: ${scf.label}`,
+        unit: "м²",
+        qty: Math.round(ceilArea * 10) / 10,
+        unitPrice: Math.round(scf.pricePerM2 * rc),
+        total: Math.round(scf.pricePerM2 * ceilArea * rc),
       });
     }
   }

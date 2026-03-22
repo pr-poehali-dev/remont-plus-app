@@ -10,6 +10,7 @@ import {
   HEATING_OPTIONS, VENT_OPTIONS, ALARM_OPTIONS, CCTV_OPTIONS, ACCESS_OPTIONS,
   FIRE_PROTECTION_OPTIONS, METAL_FIREPROOF_OPTIONS, WOOD_FIREPROOF_OPTIONS, NETWORK_OPTIONS,
   STAIR_FINISH_OPTIONS, STAIR_WALL_FINISH_OPTIONS, calcStairWallArea,
+  STAIR_CEILING_OPTIONS, calcStairCeilingArea,
   MATERIALS_SUPPLY,
   fmtPrice,
 } from "./officeCalcTypes";
@@ -102,7 +103,7 @@ export default function OfficeSidebar({ zones, activeId, totalAll, markupPct, re
     (az.blockCCTV && az.cctvType !== "none" ? CCTV_OPTIONS.find(c => c.id === az.cctvType)!.dvr + CCTV_OPTIONS.find(c => c.id === az.cctvType)!.pricePerCamera * az.cctvCameras : 0) +
     (az.blockAccess && az.accessType !== "none" ? ACCESS_OPTIONS.find(a => a.id === az.accessType)!.panel + ACCESS_OPTIONS.find(a => a.id === az.accessType)!.pricePerDoor * az.accessDoors : 0) +
     (az.blockFire ? (az.fireSignaling ? 45000 + az.fireSensors * 2800 : 0) + az.fireExtinguishers * 3500 + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.base + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.pricePerHead * az.fireSprinklerHeads + METAL_FIREPROOF_OPTIONS.find(m => m.id === az.metalFireProof)!.pricePerM2 * az.metalFireProofM2 + WOOD_FIREPROOF_OPTIONS.find(w => w.id === az.woodFireProof)!.pricePerM2 * az.woodFireProofM2 + az.fireDoors * 38000 + (az.fireHydrantCheck ? 8500 + az.fireHydrantCount * 3200 : 0) : 0) +
-    (az.blockStairs ? (STAIR_FINISH_OPTIONS.find(s => s.id === az.stairFinish)?.pricePerStep ?? 0) * az.stairFlights * az.stairStepsPerFlight + (az.stairRailing ? az.stairFlights * az.stairWidth * 12000 : 0) + (az.stairAntiSlip ? az.stairFlights * az.stairStepsPerFlight * 850 : 0) + (STAIR_WALL_FINISH_OPTIONS.find(w => w.id === az.stairWallFinish)?.pricePerM2 ?? 0) * calcStairWallArea(az) : 0);
+    (az.blockStairs ? (STAIR_FINISH_OPTIONS.find(s => s.id === az.stairFinish)?.pricePerStep ?? 0) * az.stairFlights * az.stairStepsPerFlight + (az.stairRailing ? az.stairFlights * az.stairWidth * 12000 : 0) + (az.stairAntiSlip ? az.stairFlights * az.stairStepsPerFlight * 850 : 0) + (STAIR_WALL_FINISH_OPTIONS.find(w => w.id === az.stairWallFinish)?.pricePerM2 ?? 0) * calcStairWallArea(az) + (STAIR_CEILING_OPTIONS.find(c => c.id === az.stairCeiling)?.pricePerM2 ?? 0) * calcStairCeilingArea(az) : 0);
 
   const foremanVal = az.blockStaff ? laborBase * az.foremanPct / 100 : 0;
   const supplyVal  = az.blockStaff ? laborBase * az.supplyPct / 100 : 0;
@@ -124,7 +125,7 @@ export default function OfficeSidebar({ zones, activeId, totalAll, markupPct, re
     { label: "Видеонаблюдение",       enabled: az.blockCCTV && az.cctvType !== "none", val: az.cctvType !== "none" ? CCTV_OPTIONS.find(c => c.id === az.cctvType)!.dvr + CCTV_OPTIONS.find(c => c.id === az.cctvType)!.pricePerCamera * az.cctvCameras : 0 },
     { label: "СКУД",                  enabled: az.blockAccess && az.accessType !== "none", val: az.accessType !== "none" ? ACCESS_OPTIONS.find(a => a.id === az.accessType)!.panel + ACCESS_OPTIONS.find(a => a.id === az.accessType)!.pricePerDoor * az.accessDoors : 0 },
     { label: "Пожарная безопасность", enabled: az.blockFire, val: (az.fireSignaling ? 45000 + az.fireSensors * 2800 : 0) + az.fireExtinguishers * 3500 + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.base + FIRE_PROTECTION_OPTIONS.find(f => f.id === az.fireProtection)!.pricePerHead * az.fireSprinklerHeads + METAL_FIREPROOF_OPTIONS.find(m => m.id === az.metalFireProof)!.pricePerM2 * az.metalFireProofM2 + WOOD_FIREPROOF_OPTIONS.find(w => w.id === az.woodFireProof)!.pricePerM2 * az.woodFireProofM2 + az.fireDoors * 38000 + (az.fireHydrantCheck ? 8500 + az.fireHydrantCount * 3200 : 0) },
-    { label: "Лестничные марши",     enabled: az.blockStairs, val: (STAIR_FINISH_OPTIONS.find(s => s.id === az.stairFinish)?.pricePerStep ?? 0) * az.stairFlights * az.stairStepsPerFlight + (az.stairRailing ? az.stairFlights * az.stairWidth * 12000 : 0) + (az.stairAntiSlip ? az.stairFlights * az.stairStepsPerFlight * 850 : 0) + (STAIR_WALL_FINISH_OPTIONS.find(w => w.id === az.stairWallFinish)?.pricePerM2 ?? 0) * calcStairWallArea(az) },
+    { label: "Лестничные марши",     enabled: az.blockStairs, val: (STAIR_FINISH_OPTIONS.find(s => s.id === az.stairFinish)?.pricePerStep ?? 0) * az.stairFlights * az.stairStepsPerFlight + (az.stairRailing ? az.stairFlights * az.stairWidth * 12000 : 0) + (az.stairAntiSlip ? az.stairFlights * az.stairStepsPerFlight * 850 : 0) + (STAIR_WALL_FINISH_OPTIONS.find(w => w.id === az.stairWallFinish)?.pricePerM2 ?? 0) * calcStairWallArea(az) + (STAIR_CEILING_OPTIONS.find(c => c.id === az.stairCeiling)?.pricePerM2 ?? 0) * calcStairCeilingArea(az) },
     { label: `Прораб (${az.foremanPct}%)`,    enabled: az.blockStaff && az.foremanPct > 0, val: foremanVal },
     { label: `Снабженец (${az.supplyPct}%)`,  enabled: az.blockStaff && az.supplyPct > 0,  val: supplyVal },
     { label: `Материалы (${matSupply.label.toLowerCase()})`, enabled: az.blockMaterials && matSupply.coeff > 0, val: materialsVal },

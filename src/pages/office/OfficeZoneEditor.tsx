@@ -9,6 +9,7 @@ import {
   HEATING_OPTIONS, VENT_OPTIONS, ALARM_OPTIONS, CCTV_OPTIONS, ACCESS_OPTIONS,
   FIRE_PROTECTION_OPTIONS, METAL_FIREPROOF_OPTIONS, WOOD_FIREPROOF_OPTIONS, NETWORK_OPTIONS,
   STAIR_FINISH_OPTIONS, STAIR_WALL_FINISH_OPTIONS, calcStairWallArea,
+  STAIR_CEILING_OPTIONS, calcStairCeilingArea,
   MATERIALS_SUPPLY,
   fmtPrice,
 } from "./officeCalcTypes";
@@ -307,6 +308,21 @@ export default function OfficeZoneEditor({ zone, onChange }: Props) {
             <div className="text-xs text-gray-500 bg-gray-50 rounded px-3 py-2">
               Площадь стен: ~{Math.round(calcStairWallArea(zone))} м²
               {` — отделка ~${fmtPrice(Math.round((STAIR_WALL_FINISH_OPTIONS.find(w => w.id === zone.stairWallFinish)?.pricePerM2 ?? 0) * calcStairWallArea(zone)))}`}
+            </div>
+          )}
+        </Section>
+
+        <Section title="Потолки лестничных площадок" icon="ArrowUpFromDot">
+          <OptionGrid options={STAIR_CEILING_OPTIONS} value={zone.stairCeiling} onChange={v => onChange({ stairCeiling: v })} />
+          <div>
+            <Label className="text-xs text-gray-500 mb-1 block">Глубина площадки, м</Label>
+            <Input type="number" value={zone.stairLandingDepth} min={0.8} max={5} step={0.1}
+              onChange={e => onChange({ stairLandingDepth: Math.max(0.8, Math.min(5, Number(e.target.value) || 1.5)) })} />
+          </div>
+          {zone.stairCeiling !== "none" && (
+            <div className="text-xs text-gray-500 bg-gray-50 rounded px-3 py-2">
+              Площадок: {zone.stairFlights + 1} шт., площадь потолков: ~{Math.round(calcStairCeilingArea(zone) * 10) / 10} м²
+              {` — отделка ~${fmtPrice(Math.round((STAIR_CEILING_OPTIONS.find(c => c.id === zone.stairCeiling)?.pricePerM2 ?? 0) * calcStairCeilingArea(zone)))}`}
             </div>
           )}
         </Section>
