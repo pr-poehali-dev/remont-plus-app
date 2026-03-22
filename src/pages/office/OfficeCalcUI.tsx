@@ -25,14 +25,13 @@ export function OptionGrid<T extends string>({
   onChange: (v: T) => void;
   cols?: 2 | 3 | 4;
 }) {
-  const colsClass = cols === 4 ? "grid-cols-4" : cols === 3 ? "grid-cols-3" : "grid-cols-2";
   return (
-    <div className={`grid gap-2 ${colsClass}`}>
+    <div className="flex flex-wrap gap-2">
       {options.map(o => (
         <button
           key={o.id} type="button"
           onClick={() => onChange(o.id)}
-          className={`px-2 py-2 rounded-lg border text-xs font-medium text-center transition-all break-words min-w-0 ${
+          className={`px-3 py-2 rounded-lg border text-xs font-medium whitespace-nowrap transition-all ${
             value === o.id
               ? "bg-blue-600 text-white border-blue-600"
               : "bg-white text-gray-700 border-gray-200 hover:border-blue-400"

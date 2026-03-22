@@ -97,7 +97,7 @@ export default function OfficeZoneEditor({ zone, onChange }: Props) {
       {/* ОТДЕЛКА */}
       <BlockToggle enabled={zone.blockFinish} onToggle={() => onChange({ blockFinish: !zone.blockFinish })}
         title="Базовая отделка" icon="Paintbrush">
-        <OptionGrid options={FINISH_LEVELS} value={zone.finishLevel} onChange={v => onChange({ finishLevel: v })} cols={4} />
+        <OptionGrid options={FINISH_LEVELS} value={zone.finishLevel} onChange={v => onChange({ finishLevel: v })} />
       </BlockToggle>
 
       {/* ПОЛЫ */}
