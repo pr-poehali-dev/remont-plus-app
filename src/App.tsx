@@ -60,6 +60,7 @@ import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import PriceMonitor from "./pages/PriceMonitor";
 import Planoplan from "./pages/Planoplan";
+import InteriorPlanner from "./pages/InteriorPlanner";
 import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
 import InstallPWABanner from "./components/pwa/InstallPWABanner";
@@ -129,6 +130,7 @@ const App = () => {
             <Route path="/ready-projects" element={<ReadyProjects />} />
             <Route path="/price-monitor" element={<PriceMonitor />} />
             <Route path="/planoplan" element={<Planoplan />} />
+            <Route path="/interior-planner" element={<InteriorPlanner />} />
             <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

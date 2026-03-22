@@ -98,7 +98,7 @@ export default function HomeProjects({ region }: Props) {
 
       {/* 3D-планировщик */}
       <section className="mt-16">
-        <a href="/planoplan" className="block group">
+        <a href="/interior-planner" className="block group">
           <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 rounded-2xl p-8 sm:p-10 border border-green-100 hover:border-green-300 hover:shadow-lg transition-all duration-300">
             <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
               <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
@@ -107,7 +107,7 @@ export default function HomeProjects({ region }: Props) {
               <div className="flex-1 text-center md:text-left">
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">3D-планировщик интерьера</h3>
                 <p className="text-gray-600 text-sm sm:text-base max-w-xl">
-                  Изучайте планировки в интерактивном режиме — 2D-план, 3D-визуализация, обзор 360° и виртуальный тур прямо в браузере
+                  Рисуйте стены, расставляйте мебель из каталога, переключайтесь между 2D и 3D видом — бесплатно и без регистрации
                 </p>
               </div>
               <div className="flex-shrink-0">
