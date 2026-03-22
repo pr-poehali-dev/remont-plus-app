@@ -130,8 +130,8 @@ export const FLOORING_OPTIONS: { id: FlooringType; label: string; pricePerM2: nu
   { id: "linoleum", label: "Линолеум коммерческий", pricePerM2: 850 },
   { id: "carpet", label: "Ковролин", pricePerM2: 1100 },
   { id: "porcelain", label: "Керамогранит", pricePerM2: 2400 },
-  { id: "epoxy", label: "Наливной эпоксидный пол", pricePerM2: 3200 },
-  { id: "raised_floor", label: "Фальш-пол (raised floor)", pricePerM2: 5500 },
+  { id: "epoxy", label: "Наливной эпоксидный", pricePerM2: 3200 },
+  { id: "raised_floor", label: "Фальш-пол", pricePerM2: 5500 },
 ];
 
 export const CEILING_OPTIONS: { id: CeilingType; label: string; pricePerM2: number }[] = [
@@ -162,9 +162,9 @@ export const HEATING_OPTIONS: { id: HeatingType; label: string; pricePerM2: numb
 export const VENT_OPTIONS: { id: VentType; label: string; pricePerM2: number }[] = [
   { id: "none", label: "Без вентиляции", pricePerM2: 0 },
   { id: "supply_exhaust", label: "Приточно-вытяжная", pricePerM2: 2200 },
-  { id: "hvac", label: "Центральный кондиционер (HVAC)", pricePerM2: 4800 },
+  { id: "hvac", label: "Центральное (HVAC)", pricePerM2: 4800 },
   { id: "split", label: "Сплит-системы", pricePerM2: 1600 },
-  { id: "precision", label: "Прецизионное кондиционирование", pricePerM2: 9500 },
+  { id: "precision", label: "Прецизионное конд.", pricePerM2: 9500 },
 ];
 
 export const ALARM_OPTIONS: { id: AlarmType; label: string; priceBase: number }[] = [
@@ -185,9 +185,9 @@ export const CCTV_OPTIONS: { id: CCTVType; label: string; pricePerCamera: number
 
 export const ACCESS_OPTIONS: { id: AccessType; label: string; pricePerDoor: number; panel: number }[] = [
   { id: "none", label: "Без СКУД", pricePerDoor: 0, panel: 0 },
-  { id: "card", label: "Карточный доступ (RFID)", pricePerDoor: 18000, panel: 35000 },
-  { id: "biometric", label: "Биометрический (отпечаток)", pricePerDoor: 35000, panel: 45000 },
-  { id: "multi_zone", label: "Многозонный + интеграция", pricePerDoor: 55000, panel: 80000 },
+  { id: "card", label: "Карточный (RFID)", pricePerDoor: 18000, panel: 35000 },
+  { id: "biometric", label: "Биометрия", pricePerDoor: 35000, panel: 45000 },
+  { id: "multi_zone", label: "Многозонный", pricePerDoor: 55000, panel: 80000 },
 ];
 
 export const FIRE_PROTECTION_OPTIONS: { id: FireProtectionType; label: string; pricePerHead: number; base: number }[] = [
@@ -200,26 +200,26 @@ export const FIRE_PROTECTION_OPTIONS: { id: FireProtectionType; label: string; p
 
 export const METAL_FIREPROOF_OPTIONS: { id: MetalFireProofType; label: string; pricePerM2: number }[] = [
   { id: "none", label: "Без огнезащиты металла", pricePerM2: 0 },
-  { id: "R15", label: "R15 — 15 минут (покрытие)", pricePerM2: 280 },
-  { id: "R30", label: "R30 — 30 минут", pricePerM2: 420 },
-  { id: "R45", label: "R45 — 45 минут", pricePerM2: 620 },
-  { id: "R60", label: "R60 — 60 минут (ГОСТ)", pricePerM2: 850 },
-  { id: "R90", label: "R90 — 90 минут", pricePerM2: 1200 },
-  { id: "R120", label: "R120 — 120 минут (max)", pricePerM2: 1700 },
+  { id: "R15", label: "R15 — 15 мин (покрытие)", pricePerM2: 280 },
+  { id: "R30", label: "R30 — 30 мин", pricePerM2: 420 },
+  { id: "R45", label: "R45 — 45 мин", pricePerM2: 620 },
+  { id: "R60", label: "R60 — 60 мин (ГОСТ)", pricePerM2: 850 },
+  { id: "R90", label: "R90 — 90 мин", pricePerM2: 1200 },
+  { id: "R120", label: "R120 — 120 мин (max)", pricePerM2: 1700 },
 ];
 
 export const WOOD_FIREPROOF_OPTIONS: { id: WoodFireProofType; label: string; pricePerM2: number }[] = [
   { id: "none", label: "Без огнезащиты дерева", pricePerM2: 0 },
-  { id: "group1", label: "I группа — огнезащищённые (трудносгораемые)", pricePerM2: 380 },
-  { id: "group2", label: "II группа — трудновоспламеняемые", pricePerM2: 220 },
-  { id: "group3", label: "III группа — трудновоспламеняемая обработка", pricePerM2: 140 },
+  { id: "group1", label: "I группа — трудносгораемые", pricePerM2: 380 },
+  { id: "group2", label: "II группа — трудновоспл.", pricePerM2: 220 },
+  { id: "group3", label: "III группа — обработка", pricePerM2: 140 },
 ];
 
 export const NETWORK_OPTIONS: { id: NetworkType; label: string; pricePerM2: number }[] = [
   { id: "none", label: "Без СКС", pricePerM2: 0 },
   { id: "basic_lan", label: "Базовая сеть (Cat5e)", pricePerM2: 800 },
-  { id: "structured", label: "СКС Cat6a + патч-панели", pricePerM2: 1600 },
-  { id: "enterprise", label: "Enterprise (Cat7 + WiFi 6)", pricePerM2: 3200 },
+  { id: "structured", label: "СКС Cat6a + панели", pricePerM2: 1600 },
+  { id: "enterprise", label: "Cat7 + WiFi 6", pricePerM2: 3200 },
 ];
 
 export const STAIR_FINISH_OPTIONS: { id: StairFinishType; label: string; pricePerStep: number }[] = [
