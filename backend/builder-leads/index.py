@@ -1,9 +1,9 @@
 """
-Управление заявками для строительных компаний:
-- принятие заявок с калькулятора
-- автоматическое распределение по тарифу и загруженности
-- просмотр заявок в личном кабинете
-- отметка о просмотре/обработке
+Биржа заявок — управление лидами для строительных компаний:
+- приём заявок с калькулятора
+- распределение по тарифу и бюджету заявки
+- просмотр заявок в кабинете (с расчётом стоимости лида)
+- раскрытие телефона (списание стоимости лида)
 """
 import json
 import os
@@ -49,6 +49,14 @@ def resp(status, body):
     }
 
 
+def calc_lead_fee(budget, fee_pct, fee_min):
+    """Рассчитать стоимость лида: % от бюджета, но не меньше минимума"""
+    if not budget:
+        return fee_min
+    fee = int(int(budget) * float(fee_pct) / 100)
+    return max(fee_min, fee)
+
+
 def send_email_notification(contractor_email: str, contractor_name: str, lead: dict):
     smtp_host = os.environ.get("SMTP_HOST", "smtp.yandex.ru")
     smtp_port = int(os.environ.get("SMTP_PORT", "465"))
@@ -61,16 +69,18 @@ def send_email_notification(contractor_email: str, contractor_name: str, lead: d
 
     budget_str = f"{lead['budget']:,} ₽".replace(",", " ") if lead.get("budget") else "не указан"
     work_types_str = ", ".join(lead.get("work_types") or []) or "не указаны"
+    lead_fee = lead.get("lead_fee", 5000)
+    lead_fee_str = f"{lead_fee:,} ₽".replace(",", " ")
 
     html = f"""
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
       <div style="background:linear-gradient(135deg,#f97316,#ea580c);padding:24px 32px;border-radius:12px 12px 0 0">
-        <h1 style="color:#fff;margin:0;font-size:22px">Новая заявка на ремонт</h1>
-        <p style="color:#fff9;margin:8px 0 0">АВАНГАРД — система для строительных компаний</p>
+        <h1 style="color:#fff;margin:0;font-size:22px">Новая заявка на бирже</h1>
+        <p style="color:#fff9;margin:8px 0 0">АВАНГАРД — Биржа заявок</p>
       </div>
       <div style="background:#fff;padding:32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px">
         <p style="color:#374151;font-size:16px">Здравствуйте, <strong>{contractor_name}</strong>!</p>
-        <p style="color:#374151">Вам поступила новая заявка от клиента.</p>
+        <p style="color:#374151">Вам доступна новая заявка от клиента.</p>
         <table style="width:100%;border-collapse:collapse;margin:20px 0">
           <tr style="background:#f9fafb"><td style="padding:10px 14px;color:#6b7280;font-size:14px">Город</td>
             <td style="padding:10px 14px;font-weight:600;color:#111827">{lead.get('city') or '—'}</td></tr>
@@ -78,29 +88,23 @@ def send_email_notification(contractor_email: str, contractor_name: str, lead: d
             <td style="padding:10px 14px;font-weight:600;color:#111827">{budget_str}</td></tr>
           <tr style="background:#f9fafb"><td style="padding:10px 14px;color:#6b7280;font-size:14px">Виды работ</td>
             <td style="padding:10px 14px;font-weight:600;color:#111827">{work_types_str}</td></tr>
-          <tr><td style="padding:10px 14px;color:#6b7280;font-size:14px">Имя клиента</td>
-            <td style="padding:10px 14px;font-weight:600;color:#111827">{lead.get('customer_name') or '—'}</td></tr>
-          <tr style="background:#f9fafb"><td style="padding:10px 14px;color:#6b7280;font-size:14px">Телефон клиента</td>
-            <td style="padding:10px 14px;font-weight:600;color:#f97316;font-size:18px">{lead.get('customer_phone') or '—'}</td></tr>
-          {"<tr><td style='padding:10px 14px;color:#6b7280;font-size:14px'>Комментарий</td><td style='padding:10px 14px;color:#374151'>" + str(lead.get('customer_comment')) + "</td></tr>" if lead.get('customer_comment') else ""}
+          <tr><td style="padding:10px 14px;color:#6b7280;font-size:14px">Стоимость контакта</td>
+            <td style="padding:10px 14px;font-weight:600;color:#f97316">{lead_fee_str}</td></tr>
         </table>
         <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:20px 0">
           <p style="margin:0;color:#92400e;font-size:14px">
-            ⏱ Свяжитесь с клиентом в течение 2 часов — это увеличивает вероятность заключения договора в 3 раза.
+            ⏱ Откройте кабинет, чтобы увидеть контакты клиента. Стоимость лида спишется при раскрытии телефона.
           </p>
         </div>
         <a href="https://avangard-remont.ru/masters" style="display:inline-block;background:#f97316;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px">
-          Открыть личный кабинет
+          Открыть кабинет
         </a>
-        <p style="color:#9ca3af;font-size:12px;margin-top:24px">
-          Вы получили это письмо, так как являетесь партнёром АВАНГАРД.
-        </p>
       </div>
     </div>
     """
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"Новая заявка — {lead.get('city', 'неизвестный город')}, бюджет {budget_str}"
+    msg["Subject"] = f"Новая заявка — {lead.get('city', '')}, бюджет {budget_str}"
     msg["From"] = from_email
     msg["To"] = contractor_email
     msg.attach(MIMEText(html, "html", "utf-8"))
@@ -119,12 +123,14 @@ def send_email_notification(contractor_email: str, contractor_name: str, lead: d
         pass
 
 
-def distribute_lead(conn, lead_id: int, city: str):
+def distribute_lead(conn, lead_id: int, city: str, budget: int):
     """
-    Алгоритм распределения:
-    1. Найти компании с активной подпиской в этом городе
-    2. Отсортировать: приоритет тарифа → меньше заявок за месяц → рейтинг
-    3. Назначить топ-3 компании (или меньше, если недостаточно)
+    Распределение заявки по новой модели:
+    1. Найти компании с активной подпиской
+    2. Проверить max_budget тарифа >= бюджета заявки (NULL = без ограничений)
+    3. Проверить лимит заявок
+    4. Сортировка: приоритет тарифа → меньше использовано → рейтинг
+    5. Рассчитать стоимость лида для каждого подрядчика
     """
     with conn.cursor() as cur:
         cur.execute(f"""
@@ -138,13 +144,17 @@ def distribute_lead(conn, lead_id: int, city: str):
                 bp.is_unlimited,
                 bs.leads_used,
                 c.rating,
-                c.location
+                bp.lead_fee_pct,
+                bp.lead_fee_min,
+                bp.max_budget
             FROM {S}contractors c
             JOIN {S}builder_subscriptions bs ON bs.contractor_id = c.id
             JOIN {S}builder_plans bp ON bp.code = bs.plan_code
             WHERE bs.status = 'active'
+              AND bp.is_active = true
               AND (bs.expires_at IS NULL OR bs.expires_at > NOW())
               AND (bp.is_unlimited OR bs.leads_used < bp.leads_per_month)
+              AND (bp.max_budget IS NULL OR bp.max_budget >= %s)
               AND c.id NOT IN (
                 SELECT contractor_id FROM {S}builder_lead_assignments WHERE lead_id = %s
               )
@@ -153,7 +163,7 @@ def distribute_lead(conn, lead_id: int, city: str):
                 bs.leads_used ASC,
                 c.rating DESC
             LIMIT 3
-        """, (lead_id,))
+        """, (budget or 0, lead_id))
         candidates = cur.fetchall()
 
         assigned = []
@@ -161,12 +171,16 @@ def distribute_lead(conn, lead_id: int, city: str):
             contractor_id = row[0]
             email = row[1]
             name = row[2]
+            fee_pct = row[9]
+            fee_min = row[10]
+
+            lead_fee = calc_lead_fee(budget, fee_pct, fee_min)
 
             cur.execute(f"""
-                INSERT INTO {S}builder_lead_assignments (lead_id, contractor_id, status, notified_at)
-                VALUES (%s, %s, 'new', NOW())
+                INSERT INTO {S}builder_lead_assignments (lead_id, contractor_id, status, notified_at, lead_fee)
+                VALUES (%s, %s, 'new', NOW(), %s)
                 ON CONFLICT (lead_id, contractor_id) DO NOTHING
-            """, (lead_id, contractor_id))
+            """, (lead_id, contractor_id, lead_fee))
 
             cur.execute(f"""
                 UPDATE {S}builder_subscriptions
@@ -174,13 +188,19 @@ def distribute_lead(conn, lead_id: int, city: str):
                 WHERE contractor_id = %s AND status = 'active'
             """, (contractor_id,))
 
-            assigned.append({"contractor_id": contractor_id, "email": email, "name": name})
+            assigned.append({
+                "contractor_id": contractor_id,
+                "email": email,
+                "name": name,
+                "lead_fee": lead_fee,
+            })
 
         conn.commit()
         return assigned
 
 
 def handler(event: dict, context) -> dict:
+    """Биржа заявок — приём и распределение лидов строительным компаниям"""
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": CORS, "body": ""}
 
@@ -193,7 +213,6 @@ def handler(event: dict, context) -> dict:
 
     conn = get_conn()
 
-    # POST — принять новую заявку (из калькулятора или формы)
     if method == "POST" and action == "create":
         city = body.get("city", "")
         budget = body.get("budget")
@@ -207,49 +226,47 @@ def handler(event: dict, context) -> dict:
         with conn.cursor() as cur:
             cur.execute(f"""
                 INSERT INTO {S}builder_leads
-                (source, city, work_types, budget, customer_name, customer_phone, customer_comment, calc_type, status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'new')
-                RETURNING id, city, budget, customer_name, customer_phone, customer_comment, work_types, calc_type, created_at
+                (source, city, work_types, budget, customer_name, customer_phone, customer_comment, calc_type)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
             """, (source, city, work_types, budget, customer_name, customer_phone, customer_comment, calc_type))
-            lead = cur.fetchone()
+            lead_id = cur.fetchone()[0]
             conn.commit()
 
-        lead_id = lead[0]
         lead_data = {
-            "id": lead_id, "city": lead[1], "budget": lead[2],
-            "customer_name": lead[3], "customer_phone": lead[4],
-            "customer_comment": lead[5], "work_types": lead[6],
+            "id": lead_id, "city": city, "budget": budget,
+            "customer_name": customer_name, "customer_phone": customer_phone,
+            "customer_comment": customer_comment, "work_types": work_types,
         }
 
-        assigned = distribute_lead(conn, lead_id, city)
+        assigned = distribute_lead(conn, lead_id, city, budget or 0)
 
         for a in assigned:
+            lead_data["lead_fee"] = a["lead_fee"]
             if a.get("email"):
-                send_email_notification(a["email"], a["name"] or "партнёр", lead_data)
+                send_email_notification(a["email"], a["name"], lead_data)
 
+        budget_str = f"{budget:,}".replace(",", " ") if budget else "?"
         try:
-            budget_str = f"{budget:,} ₽".replace(",", " ") if budget else "не указан"
-            work_str = ", ".join(work_types) if work_types else "не указаны"
-            tg_text = (
-                f"🏗 <b>Новая заявка на ремонт</b> (№{lead_id})\n\n"
-                f"📍 Город: {city or '—'}\n"
-                f"💰 Бюджет: {budget_str}\n"
-                f"🔧 Работы: {work_str}\n"
-                f"👤 Имя: {customer_name or '—'}\n"
-                f"📞 Телефон: {customer_phone or '—'}\n"
-                f"💬 Комментарий: {customer_comment or '—'}\n"
-                f"📋 Назначено подрядчиков: {len(assigned)}"
+            send_telegram(
+                f"🏗 <b>Биржа заявок</b>\n"
+                f"Город: {city}\n"
+                f"Бюджет: {budget_str} ₽\n"
+                f"Работы: {', '.join(work_types) if work_types else '—'}\n"
+                f"Распределено: {len(assigned)} подрядчикам"
             )
-            send_telegram(tg_text)
-        except Exception as e:
-            print(f'TELEGRAM ERROR: {e}')
+        except Exception:
+            pass
 
         conn.close()
-        return resp(200, {"success": True, "lead_id": lead_id, "assigned_count": len(assigned)})
+        return resp(200, {
+            "success": True, "lead_id": lead_id,
+            "assigned_count": len(assigned),
+        })
 
-    # GET — список заявок для подрядчика
-    if method == "GET" and action == "my_leads":
-        contractor_id = event.get("queryStringParameters", {}).get("contractor_id")
+    if action == "my_leads":
+        params = event.get("queryStringParameters") or {}
+        contractor_id = params.get("contractor_id")
         if not contractor_id:
             conn.close()
             return resp(400, {"error": "contractor_id required"})
@@ -258,9 +275,10 @@ def handler(event: dict, context) -> dict:
             cur.execute(f"""
                 SELECT
                     bl.id, bl.city, bl.work_types, bl.budget,
-                    bl.customer_name, bl.customer_phone, bl.customer_comment,
-                    bl.calc_type, bl.source, bl.created_at,
-                    bla.status as assignment_status, bla.viewed_at
+                    bl.customer_name, bl.customer_comment,
+                    bl.calc_type, bl.created_at,
+                    bla.status, bla.lead_fee,
+                    CASE WHEN bla.status = 'viewed' THEN bl.customer_phone ELSE NULL END as phone
                 FROM {S}builder_lead_assignments bla
                 JOIN {S}builder_leads bl ON bl.id = bla.lead_id
                 WHERE bla.contractor_id = %s
@@ -269,22 +287,45 @@ def handler(event: dict, context) -> dict:
             """, (contractor_id,))
             rows = cur.fetchall()
 
+        conn.close()
         leads = []
         for r in rows:
             leads.append({
-                "id": r[0], "city": r[1], "work_types": r[2] or [],
-                "budget": r[3], "customer_name": r[4],
-                "customer_phone": r[5] if r[10] == "viewed" else None,
-                "customer_comment": r[6],
-                "calc_type": r[7], "source": r[8],
-                "created_at": str(r[9]),
-                "status": r[10], "viewed_at": str(r[11]) if r[11] else None,
+                "id": r[0], "city": r[1], "work_types": r[2], "budget": r[3],
+                "customer_name": r[4], "customer_comment": r[5],
+                "calc_type": r[6], "created_at": str(r[7]),
+                "status": r[8], "lead_fee": r[9],
+                "customer_phone": r[10],
             })
-
-        conn.close()
         return resp(200, {"leads": leads})
 
-    # POST — отметить заявку просмотренной (раскрыть контакты)
+    if action == "stats":
+        params = event.get("queryStringParameters") or {}
+        contractor_id = params.get("contractor_id")
+        if not contractor_id:
+            conn.close()
+            return resp(400, {"error": "contractor_id required"})
+
+        with conn.cursor() as cur:
+            cur.execute(f"""
+                SELECT
+                    COUNT(*) as total,
+                    COUNT(*) FILTER (WHERE bla.status = 'new') as new,
+                    COUNT(*) FILTER (WHERE bla.status = 'viewed') as viewed,
+                    COUNT(*) FILTER (WHERE bl.created_at > date_trunc('month', NOW())) as this_month,
+                    COALESCE(SUM(bla.lead_fee) FILTER (WHERE bla.status = 'viewed'), 0) as total_spent
+                FROM {S}builder_lead_assignments bla
+                JOIN {S}builder_leads bl ON bl.id = bla.lead_id
+                WHERE bla.contractor_id = %s
+            """, (contractor_id,))
+            row = cur.fetchone()
+
+        conn.close()
+        return resp(200, {
+            "total": row[0], "new": row[1], "viewed": row[2],
+            "this_month": row[3], "total_spent": row[4],
+        })
+
     if method == "POST" and action == "view_lead":
         lead_id = body.get("lead_id")
         contractor_id = body.get("contractor_id")
@@ -294,69 +335,30 @@ def handler(event: dict, context) -> dict:
 
         with conn.cursor() as cur:
             cur.execute(f"""
-                UPDATE {S}builder_lead_assignments
-                SET status = 'viewed', viewed_at = NOW()
-                WHERE lead_id = %s AND contractor_id = %s AND status = 'new'
-            """, (lead_id, contractor_id))
-
-            cur.execute(f"""
-                SELECT bl.customer_phone, bl.customer_name
-                FROM {S}builder_leads bl
-                JOIN {S}builder_lead_assignments bla ON bla.lead_id = bl.id
-                WHERE bl.id = %s AND bla.contractor_id = %s
+                SELECT bla.status, bla.lead_fee, bl.customer_phone
+                FROM {S}builder_lead_assignments bla
+                JOIN {S}builder_leads bl ON bl.id = bla.lead_id
+                WHERE bla.lead_id = %s AND bla.contractor_id = %s
             """, (lead_id, contractor_id))
             row = cur.fetchone()
+
+            if not row:
+                conn.close()
+                return resp(404, {"error": "assignment not found"})
+
+            if row[0] == "viewed":
+                conn.close()
+                return resp(200, {"phone": row[2], "lead_fee": row[1], "already_viewed": True})
+
+            cur.execute(f"""
+                UPDATE {S}builder_lead_assignments
+                SET status = 'viewed', viewed_at = NOW()
+                WHERE lead_id = %s AND contractor_id = %s
+            """, (lead_id, contractor_id))
             conn.commit()
 
         conn.close()
-        if row:
-            return resp(200, {"phone": row[0], "name": row[1]})
-        return resp(404, {"error": "not found"})
-
-    # GET — статистика для личного кабинета
-    if method == "GET" and action == "stats":
-        contractor_id = event.get("queryStringParameters", {}).get("contractor_id")
-        if not contractor_id:
-            conn.close()
-            return resp(400, {"error": "contractor_id required"})
-
-        with conn.cursor() as cur:
-            cur.execute(f"""
-                SELECT
-                    COUNT(*) as total,
-                    SUM(CASE WHEN bla.status = 'new' THEN 1 ELSE 0 END) as new_count,
-                    SUM(CASE WHEN bla.status = 'viewed' THEN 1 ELSE 0 END) as viewed_count,
-                    SUM(CASE WHEN bla.created_at >= NOW() - INTERVAL '30 days' THEN 1 ELSE 0 END) as this_month
-                FROM {S}builder_lead_assignments bla
-                WHERE bla.contractor_id = %s
-            """, (contractor_id,))
-            row = cur.fetchone()
-
-        conn.close()
-        return resp(200, {
-            "total": row[0] or 0,
-            "new": row[1] or 0,
-            "viewed": row[2] or 0,
-            "this_month": row[3] or 0,
-        })
-
-    # GET — список всех заявок (для админа)
-    if method == "GET" and action == "all_leads":
-        with conn.cursor() as cur:
-            cur.execute(f"""
-                SELECT id, city, work_types, budget, customer_name, customer_phone,
-                       calc_type, source, status, created_at
-                FROM {S}builder_leads
-                ORDER BY created_at DESC
-                LIMIT 200
-            """)
-            rows = cur.fetchall()
-
-        leads = [{"id": r[0], "city": r[1], "work_types": r[2] or [], "budget": r[3],
-                  "customer_name": r[4], "customer_phone": r[5], "calc_type": r[6],
-                  "source": r[7], "status": r[8], "created_at": str(r[9])} for r in rows]
-        conn.close()
-        return resp(200, {"leads": leads})
+        return resp(200, {"phone": row[2], "lead_fee": row[1], "already_viewed": False})
 
     conn.close()
     return resp(400, {"error": "unknown action"})

@@ -11,10 +11,9 @@ import MasterCabinet from "@/components/master/MasterCabinet";
 import BuilderDashboard from "@/components/master/BuilderDashboard";
 
 const BUILDER_PLANS = [
-  { code: "start", name: "Старт", price: 25000, leads: 5, color: "border-gray-200" },
-  { code: "business", name: "Бизнес", price: 59000, leads: 15, color: "border-blue-300", popular: true },
-  { code: "pro", name: "Про", price: 99000, leads: 30, color: "border-orange-300" },
-  { code: "unlim", name: "Безлимит", price: 200000, leads: null, color: "border-purple-300" },
+  { code: "start", name: "Старт", price: 9900, maxBudget: "до 500 тыс", color: "border-gray-200" },
+  { code: "business", name: "Бизнес", price: 29900, maxBudget: "до 3 млн", color: "border-blue-300", popular: true },
+  { code: "premium", name: "Премиум", price: 59900, maxBudget: "любой бюджет", color: "border-orange-300" },
 ];
 
 export default function Masters() {
@@ -251,19 +250,19 @@ export default function Masters() {
             <div className="text-white">
               <div className="inline-flex items-center gap-1.5 bg-orange-500/20 text-orange-300 text-xs font-semibold px-3 py-1 rounded-full mb-3">
                 <Icon name="Building2" size={12} />
-                Для строительных компаний
+                Биржа заявок
               </div>
               <h2 className="text-xl md:text-2xl font-extrabold mb-1 leading-snug">
-                Получайте заявки на ремонт от 1.5 млн ₽
+                Получайте заявки на ремонт
               </h2>
               <p className="text-white/70 text-sm md:text-base max-w-md">
-                Автоматическое распределение заявок с калькулятора по 15 городам-миллионникам. Реальные клиенты, проверенный бюджет.
+                Клиенты с калькулятора направляются напрямую вам. Стоимость контакта — 5% от бюджета заявки, минимум 5 000 ₽.
               </p>
               <div className="flex flex-wrap gap-4 mt-3">
                 {BUILDER_PLANS.map(p => (
                   <div key={p.code} className="text-center">
-                    <p className="text-white font-bold">{p.price.toLocaleString("ru-RU")} ₽</p>
-                    <p className="text-white/50 text-xs">{p.name} · {p.leads ? `${p.leads} заявок` : "∞"}</p>
+                    <p className="text-white font-bold">{p.price.toLocaleString("ru-RU")} ₽/мес</p>
+                    <p className="text-white/50 text-xs">{p.name} · {p.maxBudget}</p>
                   </div>
                 ))}
               </div>

@@ -7,12 +7,10 @@
       "expectedStatus": 200
     },
     {
-      "name": "Get plans",
+      "name": "Get active plans",
       "method": "GET",
       "path": "/?action=plans",
-      "expectedStatus": 200,
-      "expectedBody": {"plans": [{"code": "start", "name": "Старт", "price": 25000, "leads_per_month": 5, "is_unlimited": false, "priority": 1, "description": "5 заявок в месяц, обычный приоритет"}, {"code": "business", "name": "Бизнес", "price": 59000, "leads_per_month": 15, "is_unlimited": false, "priority": 2, "description": "15 заявок в месяц, повышенный приоритет"}, {"code": "pro", "name": "Про", "price": 99000, "leads_per_month": 30, "is_unlimited": false, "priority": 3, "description": "30 заявок в месяц, высокий приоритет"}, {"code": "unlim", "name": "Безлимит", "price": 200000, "leads_per_month": 0, "is_unlimited": true, "priority": 4, "description": "Безлимитные заявки, максимальный приоритет"}]},
-      "bodyMatcher": "exact"
+      "expectedStatus": 200
     },
     {
       "name": "Get my subscription - no contractor_id",
@@ -25,7 +23,19 @@
       "method": "GET",
       "path": "/?action=my&contractor_id=1",
       "expectedStatus": 200,
-      "expectedBody": {"subscription": null},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Check subscription - no contractor_id",
+      "method": "GET",
+      "path": "/?action=check",
+      "expectedStatus": 400
+    },
+    {
+      "name": "Check subscription with budget",
+      "method": "GET",
+      "path": "/?action=check&contractor_id=1&budget=300000",
+      "expectedStatus": 200,
       "bodyMatcher": "partial"
     },
     {

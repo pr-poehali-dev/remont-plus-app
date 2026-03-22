@@ -33,6 +33,7 @@ interface Lead {
   city: string;
   work_types: string[];
   budget: number | null;
+  lead_fee: number | null;
   customer_name: string;
   customer_phone: string | null;
   customer_comment: string;
@@ -46,6 +47,7 @@ interface Stats {
   new: number;
   viewed: number;
   this_month: number;
+  total_spent?: number;
 }
 
 interface Props {
@@ -55,10 +57,10 @@ interface Props {
 }
 
 const PLAN_FEATURES: Record<string, string[]> = {
-  start: ["5 заявок в месяц", "Email-уведомления", "Личный кабинет"],
-  business: ["15 заявок в месяц", "Повышенный приоритет в очереди", "Email-уведомления", "Личный кабинет"],
-  pro: ["30 заявок в месяц", "Высокий приоритет", "Email-уведомления", "Личный кабинет"],
-  unlim: ["Безлимитные заявки", "Максимальный приоритет", "Email-уведомления", "Личный кабинет"],
+  start: ["Заявки с бюджетом до 500 тыс ₽", "До 10 заявок в месяц", "Email-уведомления", "Личный кабинет"],
+  business: ["Заявки с бюджетом до 3 млн ₽", "До 30 заявок в месяц", "Высокий приоритет", "Email-уведомления"],
+  pro: ["Любой бюджет заявок", "Безлимит заявок", "Максимальный приоритет", "Email-уведомления"],
+  premium: ["Любой бюджет заявок", "Безлимит заявок", "Максимальный приоритет", "Email-уведомления"],
 };
 
 export default function BuilderDashboard({ user, contractorId, onBack }: Props) {
@@ -135,7 +137,7 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
           </button>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Кабинет строительной компании</h1>
+              <h1 className="text-xl font-bold text-gray-900">Биржа заявок</h1>
               <p className="text-gray-500 text-sm mt-0.5">{user.name}</p>
             </div>
             {subscription && (
@@ -182,10 +184,10 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
             {stats && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                 {[
-                  { label: "Всего заявок", value: stats.total, icon: "Inbox", color: "text-blue-600 bg-blue-50" },
-                  { label: "Новые", value: stats.new, icon: "Bell", color: "text-red-600 bg-red-50" },
-                  { label: "Просмотрено", value: stats.viewed, icon: "Eye", color: "text-green-600 bg-green-50" },
-                  { label: "В этом месяце", value: stats.this_month, icon: "Calendar", color: "text-purple-600 bg-purple-50" },
+                  { label: "Всего заявок", value: String(stats.total), icon: "Inbox", color: "text-blue-600 bg-blue-50" },
+                  { label: "Новые", value: String(stats.new), icon: "Bell", color: "text-red-600 bg-red-50" },
+                  { label: "Просмотрено", value: String(stats.viewed), icon: "Eye", color: "text-green-600 bg-green-50" },
+                  { label: "Потрачено", value: stats.total_spent ? `${(stats.total_spent / 1000).toFixed(0)}K ₽` : "0 ₽", icon: "Wallet", color: "text-orange-600 bg-orange-50" },
                 ].map(s => (
                   <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${s.color}`}>
@@ -204,8 +206,8 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6 flex items-start gap-4">
                 <Icon name="AlertCircle" size={22} className="text-amber-500 mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-semibold text-amber-900">Подключите тариф, чтобы получать заявки</p>
-                  <p className="text-sm text-amber-700 mt-1">Заявки распределяются автоматически между активными подписчиками по тарифу и загруженности.</p>
+                  <p className="font-semibold text-amber-900">Подключите тариф, чтобы получать заявки с калькулятора</p>
+                  <p className="text-sm text-amber-700 mt-1">Заявки распределяются по бюджету и тарифу. Стоимость контакта — 5% от бюджета, минимум 5 000 ₽.</p>
                   <Button
                     size="sm"
                     className="mt-3 bg-amber-500 hover:bg-amber-600 text-white"
@@ -244,7 +246,14 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
                         <span className="text-gray-300">·</span>
                         <span className="text-sm text-gray-500">{formatDate(lead.created_at)}</span>
                       </div>
-                      <span className="font-bold text-gray-900 text-lg">{formatBudget(lead.budget)}</span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="font-bold text-gray-900 text-lg">{formatBudget(lead.budget)}</span>
+                        {lead.lead_fee && (
+                          <span className="text-xs text-orange-600 font-medium">
+                            Стоимость контакта: {lead.lead_fee.toLocaleString("ru-RU")} ₽
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {lead.work_types?.length > 0 && (
@@ -281,7 +290,9 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
                           onClick={() => revealPhone(lead.id)}
                         >
                           <Icon name="Phone" size={14} className="mr-1.5" />
-                          Раскрыть контакт
+                          {lead.lead_fee
+                            ? `Показать телефон · ${lead.lead_fee.toLocaleString("ru-RU")} ₽`
+                            : "Раскрыть контакт"}
                         </Button>
                       )}
                     </div>
@@ -366,11 +377,10 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
                     </div>
 
                     <p className="text-sm text-gray-500 mt-1">
-                      {plan.is_unlimited ? "Безлимитные заявки" : `${plan.leads_per_month} заявок в месяц`}
-                      {" · "}
-                      {plan.price > 0
-                        ? `~${Math.round((plan.is_unlimited ? 5000 : plan.price / plan.leads_per_month)).toLocaleString("ru-RU")} ₽/заявка`
-                        : ""}
+                      {plan.is_unlimited ? "Безлимит заявок" : `До ${plan.leads_per_month} заявок в месяц`}
+                    </p>
+                    <p className="text-xs text-orange-600 mt-1">
+                      5% от бюджета, мин. 5 000 ₽ за контакт
                     </p>
 
                     <ul className="mt-4 space-y-2">
@@ -417,15 +427,15 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
                 </li>
                 <li className="flex items-start gap-2">
                   <Icon name="CheckCircle" size={15} className="text-green-500 mt-0.5 shrink-0" />
-                  Распределение по городу, тарифу и загруженности компании
+                  Распределение по бюджету, городу и тарифу
+                </li>
+                <li className="flex items-start gap-2">
+                  <Icon name="CheckCircle" size={15} className="text-green-500 mt-0.5 shrink-0" />
+                  Стоимость контакта — 5% от бюджета заявки, минимум 5 000 ₽
                 </li>
                 <li className="flex items-start gap-2">
                   <Icon name="CheckCircle" size={15} className="text-green-500 mt-0.5 shrink-0" />
                   Мгновенное уведомление на email при новой заявке
-                </li>
-                <li className="flex items-start gap-2">
-                  <Icon name="CheckCircle" size={15} className="text-green-500 mt-0.5 shrink-0" />
-                  Средний бюджет заявок — от 1.5 млн ₽, реальные клиенты
                 </li>
               </ul>
             </div>

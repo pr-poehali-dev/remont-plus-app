@@ -14,12 +14,12 @@
         "action": "create",
         "city": "Москва",
         "budget": 2500000,
-        "name": "Иван Петров",
+        "name": "Тест Тестов",
         "phone": "+79001234567",
         "comment": "Ремонт квартиры 80м2",
         "work_types": ["Отделка стен", "Полы"],
         "calc_type": "calculator",
-        "source": "calculator"
+        "source": "test"
       },
       "expectedStatus": 200,
       "expectedBody": {"success": true},
@@ -32,9 +32,26 @@
       "expectedStatus": 400
     },
     {
-      "name": "Get stats - no contractor_id",
+      "name": "Get my leads",
       "method": "GET",
-      "path": "/?action=stats",
+      "path": "/?action=my_leads&contractor_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {"leads": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get stats",
+      "method": "GET",
+      "path": "/?action=stats&contractor_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {"total": 0},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "View lead - missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "view_lead"},
       "expectedStatus": 400
     }
   ]
