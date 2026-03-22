@@ -96,6 +96,31 @@ export default function HomeProjects({ region }: Props) {
         </div>
       </section>
 
+      {/* 3D-планировщик */}
+      <section className="mt-16">
+        <a href="/planoplan" className="block group">
+          <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 rounded-2xl p-8 sm:p-10 border border-green-100 hover:border-green-300 hover:shadow-lg transition-all duration-300">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
+              <div className="w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                <Icon name="Box" size={32} className="text-green-600" />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">3D-планировщик интерьера</h3>
+                <p className="text-gray-600 text-sm sm:text-base max-w-xl">
+                  Изучайте планировки в интерактивном режиме — 2D-план, 3D-визуализация, обзор 360° и виртуальный тур прямо в браузере
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <span className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-medium text-sm group-hover:bg-green-700 transition-colors">
+                  Открыть
+                  <Icon name="ArrowRight" size={16} />
+                </span>
+              </div>
+            </div>
+          </div>
+        </a>
+      </section>
+
       {/* Отзывы */}
       <section className="mt-20">
         <div className="text-center mb-10">
