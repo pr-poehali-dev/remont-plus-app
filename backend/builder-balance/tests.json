@@ -1,0 +1,52 @@
+{
+  "tests": [
+    {
+      "name": "CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Get balance - no contractor_id",
+      "method": "GET",
+      "path": "/?action=get",
+      "expectedStatus": 400
+    },
+    {
+      "name": "Get balance",
+      "method": "GET",
+      "path": "/?action=get&contractor_id=1",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Topup balance",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "topup", "contractor_id": 1, "amount": 10000},
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Charge - missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "charge"},
+      "expectedStatus": 400
+    },
+    {
+      "name": "History - no contractor_id",
+      "method": "GET",
+      "path": "/?action=history",
+      "expectedStatus": 400
+    },
+    {
+      "name": "History",
+      "method": "GET",
+      "path": "/?action=history&contractor_id=1",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -335,7 +335,7 @@ def handler(event: dict, context) -> dict:
 
         with conn.cursor() as cur:
             cur.execute(f"""
-                SELECT bla.status, bla.lead_fee, bl.customer_phone
+                SELECT bla.status, bla.lead_fee, bl.customer_phone, bl.city, bl.budget
                 FROM {S}builder_lead_assignments bla
                 JOIN {S}builder_leads bl ON bl.id = bla.lead_id
                 WHERE bla.lead_id = %s AND bla.contractor_id = %s
@@ -350,6 +350,49 @@ def handler(event: dict, context) -> dict:
                 conn.close()
                 return resp(200, {"phone": row[2], "lead_fee": row[1], "already_viewed": True})
 
+            lead_fee = row[1] or 5000
+
+            cur.execute(f"""
+                INSERT INTO {S}builder_balances (contractor_id, amount)
+                VALUES (%s, 0) ON CONFLICT (contractor_id) DO NOTHING
+            """, (contractor_id,))
+
+            cur.execute(f"""
+                SELECT amount FROM {S}builder_balances WHERE contractor_id = %s
+            """, (contractor_id,))
+            bal_row = cur.fetchone()
+            balance = bal_row[0] if bal_row else 0
+
+            if balance < lead_fee:
+                conn.close()
+                return resp(402, {
+                    "error": "insufficient_balance",
+                    "balance": balance,
+                    "required": lead_fee,
+                    "shortfall": lead_fee - balance,
+                })
+
+            cur.execute(f"""
+                UPDATE {S}builder_balances
+                SET amount = amount - %s, updated_at = NOW()
+                WHERE contractor_id = %s AND amount >= %s
+                RETURNING amount
+            """, (lead_fee, contractor_id, lead_fee))
+            new_bal = cur.fetchone()
+            if not new_bal:
+                conn.close()
+                return resp(402, {"error": "insufficient_balance", "balance": balance, "required": lead_fee})
+
+            city = row[3] or ""
+            budget = row[4] or 0
+            budget_str = f"{budget:,}".replace(",", " ") if budget else "?"
+            cur.execute(f"""
+                INSERT INTO {S}builder_transactions
+                (contractor_id, type, amount, balance_after, description, lead_id)
+                VALUES (%s, 'charge', %s, %s, %s, %s)
+            """, (contractor_id, lead_fee, new_bal[0],
+                  f"Контакт: {city}, бюджет {budget_str} ₽", lead_id))
+
             cur.execute(f"""
                 UPDATE {S}builder_lead_assignments
                 SET status = 'viewed', viewed_at = NOW()
@@ -358,7 +401,10 @@ def handler(event: dict, context) -> dict:
             conn.commit()
 
         conn.close()
-        return resp(200, {"phone": row[2], "lead_fee": row[1], "already_viewed": False})
+        return resp(200, {
+            "phone": row[2], "lead_fee": lead_fee,
+            "already_viewed": False, "balance": new_bal[0],
+        })
 
     conn.close()
     return resp(400, {"error": "unknown action"})

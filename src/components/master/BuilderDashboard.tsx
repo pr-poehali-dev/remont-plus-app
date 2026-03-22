@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import { User } from "@/components/master/masterTypes";
 import BuilderPaymentModal from "@/components/master/BuilderPaymentModal";
 
 const BUILDER_LEADS_URL = "https://functions.poehali.dev/69fd9787-d0eb-4342-b94b-9d14bb3f36e7";
 const BUILDER_SUBS_URL = "https://functions.poehali.dev/9993e0fc-25ac-4a65-b8be-49aa089d1585";
+const BUILDER_BALANCE_URL = "https://functions.poehali.dev/d36e0975-2b0e-4dec-915b-b8989dc8b7bd";
 
 interface BuilderPlan {
   code: string;
@@ -50,6 +52,15 @@ interface Stats {
   total_spent?: number;
 }
 
+interface BalanceTransaction {
+  id: number;
+  created_at: string;
+  type: string;
+  amount: number;
+  balance_after: number;
+  description: string;
+}
+
 interface Props {
   user: User;
   contractorId: number | null;
@@ -64,7 +75,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
 };
 
 export default function BuilderDashboard({ user, contractorId, onBack }: Props) {
-  const [tab, setTab] = useState<"leads" | "subscription">("leads");
+  const [tab, setTab] = useState<"leads" | "subscription" | "balance">("leads");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [subscription, setSubscription] = useState<BuilderSubscription | null>(null);
@@ -73,30 +84,59 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
   const [revealedPhones, setRevealedPhones] = useState<Record<number, string>>({});
   const [payingPlan, setPayingPlan] = useState<BuilderPlan | null>(null);
 
+  const [balance, setBalance] = useState<number>(0);
+  const [showTopup, setShowTopup] = useState(false);
+  const [topupAmount, setTopupAmount] = useState("");
+  const [topupLoading, setTopupLoading] = useState(false);
+  const [balanceError, setBalanceError] = useState("");
+
+  const [transactions, setTransactions] = useState<BalanceTransaction[]>([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
+
   useEffect(() => {
     if (!contractorId) return;
     loadData();
   }, [contractorId]);
 
+  useEffect(() => {
+    if (tab === "balance" && contractorId) {
+      loadTransactions();
+    }
+  }, [tab, contractorId]);
+
   const loadData = async () => {
     if (!contractorId) return;
     setLoading(true);
     try {
-      const [leadsRes, statsRes, subRes, plansRes] = await Promise.all([
+      const [leadsRes, statsRes, subRes, plansRes, balanceRes] = await Promise.all([
         fetch(`${BUILDER_LEADS_URL}?action=my_leads&contractor_id=${contractorId}`),
         fetch(`${BUILDER_LEADS_URL}?action=stats&contractor_id=${contractorId}`),
         fetch(`${BUILDER_SUBS_URL}?action=my&contractor_id=${contractorId}`),
         fetch(`${BUILDER_SUBS_URL}?action=plans`),
+        fetch(`${BUILDER_BALANCE_URL}?action=get&contractor_id=${contractorId}`),
       ]);
-      const [leadsData, statsData, subData, plansData] = await Promise.all([
-        leadsRes.json(), statsRes.json(), subRes.json(), plansRes.json(),
+      const [leadsData, statsData, subData, plansData, balanceData] = await Promise.all([
+        leadsRes.json(), statsRes.json(), subRes.json(), plansRes.json(), balanceRes.json(),
       ]);
       setLeads(leadsData.leads || []);
       setStats(statsData);
       setSubscription(subData.subscription || null);
       setPlans(plansData.plans || []);
+      setBalance(balanceData.balance || 0);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTransactions = async () => {
+    if (!contractorId) return;
+    setTransactionsLoading(true);
+    try {
+      const res = await fetch(`${BUILDER_BALANCE_URL}?action=history&contractor_id=${contractorId}`);
+      const data = await res.json();
+      setTransactions(data.transactions || []);
+    } finally {
+      setTransactionsLoading(false);
     }
   };
 
@@ -107,10 +147,52 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "view_lead", lead_id: leadId, contractor_id: contractorId }),
     });
+    if (res.status === 402) {
+      setBalanceError("Недостаточно средств. Пополните баланс.");
+      return;
+    }
     const data = await res.json();
     if (data.phone) {
       setRevealedPhones(prev => ({ ...prev, [leadId]: data.phone }));
       setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: "viewed" } : l));
+      if (typeof data.balance === "number") {
+        setBalance(data.balance);
+      }
+    }
+  };
+
+  const handleTopup = async () => {
+    if (!contractorId) return;
+    const amount = parseInt(topupAmount, 10);
+    if (!amount || amount < 1000) {
+      setBalanceError("Минимальная сумма пополнения: 1 000 ₽");
+      return;
+    }
+    setTopupLoading(true);
+    setBalanceError("");
+    try {
+      const res = await fetch(BUILDER_BALANCE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "topup", contractor_id: contractorId, amount }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setBalanceError(data.error);
+        return;
+      }
+      if (typeof data.balance === "number") {
+        setBalance(data.balance);
+      } else {
+        setBalance(prev => prev + amount);
+      }
+      setShowTopup(false);
+      setTopupAmount("");
+      setBalanceError("");
+    } catch (e) {
+      setBalanceError(e instanceof Error ? e.message : "Ошибка при пополнении");
+    } finally {
+      setTopupLoading(false);
     }
   };
 
@@ -126,6 +208,10 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
 
   const formatDate = (d: string) => {
     return new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+  };
+
+  const formatDateTime = (d: string) => {
+    return new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -151,14 +237,30 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
             )}
           </div>
 
+          {/* Balance widget */}
+          <div className="flex items-center gap-3 mt-3 p-3 bg-green-50 rounded-xl border border-green-100">
+            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+              <Icon name="Wallet" size={20} className="text-green-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs text-green-600 font-medium">Баланс</p>
+              <p className="text-xl font-bold text-green-800">{balance.toLocaleString("ru-RU")} ₽</p>
+            </div>
+            <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setShowTopup(true)}>
+              <Icon name="Plus" size={14} className="mr-1" />
+              Пополнить
+            </Button>
+          </div>
+
           <div className="flex gap-1 mt-4">
             {[
               { key: "leads", label: "Заявки", icon: "FileText" },
               { key: "subscription", label: "Тариф", icon: "CreditCard" },
+              { key: "balance", label: "Баланс", icon: "Wallet" },
             ].map(t => (
               <button
                 key={t.key}
-                onClick={() => setTab(t.key as "leads" | "subscription")}
+                onClick={() => setTab(t.key as "leads" | "subscription" | "balance")}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   tab === t.key ? "bg-orange-500 text-white" : "text-gray-500 hover:bg-gray-100"
                 }`}
@@ -216,6 +318,18 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
                     Выбрать тариф
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {balanceError && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 flex items-center gap-3">
+                <Icon name="AlertCircle" size={20} className="text-red-500 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-red-800">{balanceError}</p>
+                </div>
+                <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white shrink-0" onClick={() => { setBalanceError(""); setShowTopup(true); }}>
+                  Пополнить
+                </Button>
               </div>
             )}
 
@@ -441,6 +555,69 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
             </div>
           </>
         )}
+
+        {/* Вкладка баланса */}
+        {tab === "balance" && (
+          <>
+            {/* Balance summary card */}
+            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-5 mb-6 text-white">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <p className="text-green-100 text-sm">Текущий баланс</p>
+                  <p className="text-3xl font-bold mt-0.5">{balance.toLocaleString("ru-RU")} ₽</p>
+                </div>
+                <Button
+                  className="bg-white text-green-700 hover:bg-green-50 font-semibold"
+                  onClick={() => setShowTopup(true)}
+                >
+                  <Icon name="Plus" size={16} className="mr-1.5" />
+                  Пополнить баланс
+                </Button>
+              </div>
+            </div>
+
+            <h2 className="text-lg font-bold text-gray-900 mb-4">История операций</h2>
+
+            {transactionsLoading ? (
+              <div className="flex items-center justify-center py-16 text-gray-400">
+                <Icon name="Loader2" size={28} className="animate-spin mr-2" /> Загрузка...
+              </div>
+            ) : transactions.length === 0 ? (
+              <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
+                <Icon name="Receipt" size={40} className="text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 font-medium">Операций пока нет</p>
+                <p className="text-sm text-gray-400 mt-1">Пополните баланс, чтобы начать получать заявки</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                {/* Table header */}
+                <div className="hidden md:grid md:grid-cols-4 gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <span>Дата</span>
+                  <span>Описание</span>
+                  <span className="text-right">Сумма</span>
+                  <span className="text-right">Баланс</span>
+                </div>
+                <div className="divide-y divide-gray-50">
+                  {transactions.map(tx => {
+                    const isTopup = tx.type === "topup" || tx.amount > 0;
+                    return (
+                      <div key={tx.id} className="px-5 py-4 md:grid md:grid-cols-4 md:gap-4 md:items-center flex flex-col gap-1">
+                        <span className="text-sm text-gray-500">{formatDateTime(tx.created_at)}</span>
+                        <span className="text-sm text-gray-800">{tx.description}</span>
+                        <span className={`text-sm font-bold text-right ${isTopup ? "text-green-600" : "text-red-600"}`}>
+                          {isTopup ? "+" : ""}{tx.amount.toLocaleString("ru-RU")} ₽
+                        </span>
+                        <span className="text-sm text-gray-600 text-right font-medium">
+                          {tx.balance_after.toLocaleString("ru-RU")} ₽
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Модаль оплаты тарифа */}
@@ -456,6 +633,100 @@ export default function BuilderDashboard({ user, contractorId, onBack }: Props) 
             setTab("leads");
           }}
         />
+      )}
+
+      {/* Модаль пополнения баланса */}
+      {showTopup && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowTopup(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-t-2xl p-6 text-white">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-green-100 text-sm font-medium mb-1">Баланс биржи заявок</p>
+                  <h2 className="text-2xl font-extrabold">Пополнение баланса</h2>
+                  <p className="text-green-100 text-sm mt-2">
+                    Текущий баланс: <span className="text-white font-bold">{balance.toLocaleString("ru-RU")} ₽</span>
+                  </p>
+                </div>
+                <button onClick={() => setShowTopup(false)} className="text-green-200 hover:text-white transition-colors p-1">
+                  <Icon name="X" size={22} />
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">Быстрый выбор</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[10000, 25000, 50000, 100000].map(amount => (
+                    <button
+                      key={amount}
+                      onClick={() => setTopupAmount(String(amount))}
+                      className={`px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                        topupAmount === String(amount)
+                          ? "border-green-500 bg-green-50 text-green-700"
+                          : "border-gray-200 text-gray-700 hover:border-green-300 hover:bg-green-50/50"
+                      }`}
+                    >
+                      {amount.toLocaleString("ru-RU")} ₽
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-1.5">Или введите сумму</p>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    placeholder="Сумма в рублях"
+                    value={topupAmount}
+                    onChange={(e) => { setTopupAmount(e.target.value); setBalanceError(""); }}
+                    min="1000"
+                    step="1000"
+                    className="pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">₽</span>
+                </div>
+              </div>
+
+              {topupAmount && parseInt(topupAmount, 10) > 0 && (
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Пополнение</span>
+                    <span>{parseInt(topupAmount, 10).toLocaleString("ru-RU")} ₽</span>
+                  </div>
+                  <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-gray-900">
+                    <span>Баланс после</span>
+                    <span className="text-green-600">{(balance + parseInt(topupAmount, 10)).toLocaleString("ru-RU")} ₽</span>
+                  </div>
+                </div>
+              )}
+
+              {balanceError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex items-center gap-2">
+                  <Icon name="AlertCircle" size={16} className="shrink-0" />
+                  {balanceError}
+                </div>
+              )}
+
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold h-12 text-base"
+                onClick={handleTopup}
+                disabled={topupLoading || !topupAmount || parseInt(topupAmount, 10) < 1000}
+              >
+                {topupLoading ? (
+                  <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Пополнение...</>
+                ) : (
+                  <><Icon name="Wallet" size={18} className="mr-2" />Пополнить{topupAmount && parseInt(topupAmount, 10) >= 1000 ? ` ${parseInt(topupAmount, 10).toLocaleString("ru-RU")} ₽` : ""}</>
+                )}
+              </Button>
+              <p className="text-center text-xs text-gray-400">Минимальная сумма пополнения: 1 000 ₽</p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
