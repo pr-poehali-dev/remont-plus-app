@@ -1,4 +1,4 @@
-import { useState, Suspense, useCallback } from "react";
+import { useState, Suspense, useCallback, lazy } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
@@ -8,24 +8,10 @@ import { DEFAULT_WALL_STYLES } from "@/components/room-designer/types";
 import { FURNITURE_CATALOG } from "@/components/room-designer/furnitureCatalog";
 import DesignerSidebar from "@/components/room-designer/DesignerSidebar";
 
-const Room3DScene = Suspense ? (
-  await import("@/components/room-designer/Room3DScene").catch(() => null)
-)?.default : null;
-
-const LazyRoom3D = ({ children, ...props }: any) => (
-  <Suspense fallback={
-    <div className="flex-1 flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <Icon name="Loader2" size={32} className="animate-spin text-blue-500 mx-auto mb-3" />
-        <p className="text-sm text-gray-500">Загрузка 3D-сцены...</p>
-      </div>
-    </div>
-  }>
-    {children}
-  </Suspense>
-);
+const Room3DSceneLazy = lazy(() => import("@/components/room-designer/Room3DScene"));
 
 const PROJECTS_KEY = "room_designer_projects";
+const MODEL_MAP_KEY = "furniture-model-map";
 
 function loadProjects(): RoomProject[] {
   try {
@@ -35,6 +21,16 @@ function loadProjects(): RoomProject[] {
 
 function saveProjects(projects: RoomProject[]) {
   localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+}
+
+function loadModelMap(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem(MODEL_MAP_KEY) || "{}");
+  } catch { return {}; }
+}
+
+function saveModelMap(map: Record<string, string>) {
+  localStorage.setItem(MODEL_MAP_KEY, JSON.stringify(map));
 }
 
 export default function RoomDesigner() {
@@ -53,6 +49,7 @@ export default function RoomDesigner() {
   const [showProjects, setShowProjects] = useState(false);
   const [projects, setProjects] = useState<RoomProject[]>(loadProjects);
   const [projectName, setProjectName] = useState("Новая комната");
+  const [modelMap, setModelMap] = useState<Record<string, string>>(loadModelMap);
 
   const handleAddOpening = useCallback((o: WallOpening) => {
     setOpenings(prev => [...prev, o]);
@@ -88,6 +85,19 @@ export default function RoomDesigner() {
 
   const handleUpdateWallStyle = useCallback((wall: string, patch: Partial<WallStyle>) => {
     setWallStyles(prev => prev.map(s => s.wall === wall ? { ...s, ...patch } : s));
+  }, []);
+
+  const handleModelAttached = useCallback((catalogId: string, modelUrl: string | null) => {
+    setModelMap(prev => {
+      const next = { ...prev };
+      if (modelUrl) {
+        next[catalogId] = modelUrl;
+      } else {
+        delete next[catalogId];
+      }
+      saveModelMap(next);
+      return next;
+    });
   }, []);
 
   const handleSaveProject = () => {
@@ -206,16 +216,24 @@ export default function RoomDesigner() {
 
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 relative">
-          <LazyRoom3D>
-            <Room3DSceneWrapper
+          <Suspense fallback={
+            <div className="flex-1 flex items-center justify-center bg-gray-100">
+              <div className="text-center">
+                <Icon name="Loader2" size={32} className="animate-spin text-blue-500 mx-auto mb-3" />
+                <p className="text-sm text-gray-500">Загрузка 3D-сцены...</p>
+              </div>
+            </div>
+          }>
+            <Room3DSceneLazy
               dimensions={dimensions}
               openings={openings}
               furniture={furniture}
               wallStyles={wallStyles}
               selectedFurnitureId={selectedFurnitureId}
               onSelectFurniture={setSelectedFurnitureId}
+              modelMap={modelMap}
             />
-          </LazyRoom3D>
+          </Suspense>
 
           <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur rounded-lg px-3 py-2 text-[11px] text-gray-500 shadow-sm">
             <p>Мышь: вращение · Колесо: масштаб · ПКМ: перемещение</p>
@@ -244,13 +262,11 @@ export default function RoomDesigner() {
           selectedFurnitureId={selectedFurnitureId}
           wallStyles={wallStyles}
           onUpdateWallStyle={handleUpdateWallStyle}
+          modelMap={modelMap}
+          onModelAttached={handleModelAttached}
         />
       </div>
     </div>
   );
 }
 
-function Room3DSceneWrapper(props: any) {
-  const Room3DScene = require("@/components/room-designer/Room3DScene").default;
-  return <Room3DScene {...props} />;
-}

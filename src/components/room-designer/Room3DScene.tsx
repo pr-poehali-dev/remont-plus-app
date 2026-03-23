@@ -4,6 +4,7 @@ import { OrbitControls, PerspectiveCamera, Environment, ContactShadows } from "@
 import * as THREE from "three";
 import type { RoomDimensions, WallOpening, PlacedFurniture, WallStyle } from "./types";
 import { FURNITURE_CATALOG } from "./furnitureCatalog";
+import GLBModel from "@/components/room-designer/GLBModel";
 
 interface Props {
   dimensions: RoomDimensions;
@@ -12,6 +13,7 @@ interface Props {
   wallStyles: WallStyle[];
   selectedFurnitureId: string | null;
   onSelectFurniture: (id: string | null) => void;
+  modelMap?: Record<string, string>;
 }
 
 function WallWithOpenings({
@@ -75,52 +77,85 @@ function WallWithOpenings({
   );
 }
 
+function PrimitiveFallback({
+  item, placed, onSelect, meshRef,
+}: {
+  item: typeof FURNITURE_CATALOG[0];
+  placed: PlacedFurniture;
+  onSelect: () => void;
+  meshRef: React.RefObject<THREE.Mesh | null>;
+}) {
+  if (item.shape === "cylinder") {
+    return (
+      <mesh
+        ref={meshRef}
+        position={[0, item.height / 2, 0]}
+        castShadow
+        onClick={e => { e.stopPropagation(); onSelect(); }}
+      >
+        <cylinderGeometry args={[item.width / 2, item.width / 2, item.height, 16]} />
+        <meshStandardMaterial color={placed.color} roughness={0.5} />
+      </mesh>
+    );
+  }
+
+  if (item.shape === "lshape") {
+    return (
+      <group onClick={e => { e.stopPropagation(); onSelect(); }}>
+        <mesh position={[0, item.height / 2, -item.depth / 2 + item.depth * 0.2]} castShadow>
+          <boxGeometry args={[item.width, item.height, item.depth * 0.4]} />
+          <meshStandardMaterial color={placed.color} roughness={0.5} />
+        </mesh>
+        <mesh position={[-item.width / 2 + item.width * 0.2, item.height / 2, 0]} castShadow>
+          <boxGeometry args={[item.width * 0.4, item.height, item.depth]} />
+          <meshStandardMaterial color={placed.color} roughness={0.5} />
+        </mesh>
+      </group>
+    );
+  }
+
+  return (
+    <mesh
+      ref={meshRef}
+      position={[0, item.height / 2, 0]}
+      castShadow
+      onClick={e => { e.stopPropagation(); onSelect(); }}
+    >
+      <boxGeometry args={[item.width, item.height, item.depth]} />
+      <meshStandardMaterial color={placed.color} roughness={0.5} />
+    </mesh>
+  );
+}
+
 function FurniturePiece({
-  item, placed, isSelected, onSelect,
+  item, placed, isSelected, onSelect, modelMap,
 }: {
   item: typeof FURNITURE_CATALOG[0];
   placed: PlacedFurniture;
   isSelected: boolean;
   onSelect: () => void;
+  modelMap?: Record<string, string>;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const modelUrl = modelMap?.[placed.catalogId] || item.modelUrl;
 
   return (
     <group
       position={[placed.x, 0, placed.z]}
       rotation={[0, (placed.rotation * Math.PI) / 180, 0]}
     >
-      {item.shape === "cylinder" ? (
-        <mesh
-          ref={meshRef}
-          position={[0, item.height / 2, 0]}
-          castShadow
-          onClick={e => { e.stopPropagation(); onSelect(); }}
-        >
-          <cylinderGeometry args={[item.width / 2, item.width / 2, item.height, 16]} />
-          <meshStandardMaterial color={placed.color} roughness={0.5} />
-        </mesh>
-      ) : item.shape === "lshape" ? (
-        <group onClick={e => { e.stopPropagation(); onSelect(); }}>
-          <mesh position={[0, item.height / 2, -item.depth / 2 + item.depth * 0.2]} castShadow>
-            <boxGeometry args={[item.width, item.height, item.depth * 0.4]} />
-            <meshStandardMaterial color={placed.color} roughness={0.5} />
-          </mesh>
-          <mesh position={[-item.width / 2 + item.width * 0.2, item.height / 2, 0]} castShadow>
-            <boxGeometry args={[item.width * 0.4, item.height, item.depth]} />
-            <meshStandardMaterial color={placed.color} roughness={0.5} />
-          </mesh>
-        </group>
+      {modelUrl ? (
+        <GLBModel
+          url={modelUrl}
+          scale={item.modelScale ?? 1}
+          color={placed.color}
+          width={item.width}
+          height={item.height}
+          depth={item.depth}
+          onClick={e => { (e as { stopPropagation: () => void }).stopPropagation(); onSelect(); }}
+        />
       ) : (
-        <mesh
-          ref={meshRef}
-          position={[0, item.height / 2, 0]}
-          castShadow
-          onClick={e => { e.stopPropagation(); onSelect(); }}
-        >
-          <boxGeometry args={[item.width, item.height, item.depth]} />
-          <meshStandardMaterial color={placed.color} roughness={0.5} />
-        </mesh>
+        <PrimitiveFallback item={item} placed={placed} onSelect={onSelect} meshRef={meshRef} />
       )}
       {isSelected && (
         <mesh position={[0, item.height + 0.05, 0]}>
@@ -136,7 +171,7 @@ function FurniturePiece({
   );
 }
 
-function RoomContent({ dimensions, openings, furniture, wallStyles, selectedFurnitureId, onSelectFurniture }: Props) {
+function RoomContent({ dimensions, openings, furniture, wallStyles, selectedFurnitureId, onSelectFurniture, modelMap }: Props) {
   const { width: W, length: L, height: H } = dimensions;
 
   const getWallColor = (wall: string) =>
@@ -202,6 +237,7 @@ function RoomContent({ dimensions, openings, furniture, wallStyles, selectedFurn
             placed={placed}
             isSelected={selectedFurnitureId === placed.id}
             onSelect={() => onSelectFurniture(placed.id)}
+            modelMap={modelMap}
           />
         );
       })}

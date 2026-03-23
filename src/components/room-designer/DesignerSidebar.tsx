@@ -12,6 +12,7 @@ import Icon from "@/components/ui/icon";
 import type { RoomDimensions, WallOpening, PlacedFurniture, WallStyle, WallName } from "./types";
 import { WALL_LABELS, MATERIALS, DEFAULT_WALL_STYLES } from "./types";
 import { FURNITURE_CATALOG, FURNITURE_CATEGORIES } from "./furnitureCatalog";
+import ModelManager from "./ModelManager";
 
 interface Props {
   dimensions: RoomDimensions;
@@ -26,6 +27,8 @@ interface Props {
   selectedFurnitureId: string | null;
   wallStyles: WallStyle[];
   onUpdateWallStyle: (wall: string, patch: Partial<WallStyle>) => void;
+  modelMap: Record<string, string>;
+  onModelAttached: (catalogId: string, modelUrl: string | null) => void;
 }
 
 export default function DesignerSidebar({
@@ -34,6 +37,7 @@ export default function DesignerSidebar({
   furniture, onAddFurniture, onRemoveFurniture, onUpdateFurniture,
   selectedFurnitureId,
   wallStyles, onUpdateWallStyle,
+  modelMap, onModelAttached,
 }: Props) {
   const [furnitureFilter, setFurnitureFilter] = useState("all");
 
@@ -64,11 +68,12 @@ export default function DesignerSidebar({
   return (
     <div className="w-80 bg-white border-l overflow-y-auto flex flex-col">
       <Tabs defaultValue="room" className="flex-1 flex flex-col">
-        <TabsList className="grid grid-cols-4 m-2 h-8">
+        <TabsList className="grid grid-cols-5 m-2 h-8">
           <TabsTrigger value="room" className="text-[11px] px-1">Комната</TabsTrigger>
           <TabsTrigger value="openings" className="text-[11px] px-1">Проёмы</TabsTrigger>
           <TabsTrigger value="furniture" className="text-[11px] px-1">Мебель</TabsTrigger>
           <TabsTrigger value="style" className="text-[11px] px-1">Стиль</TabsTrigger>
+          <TabsTrigger value="models" className="text-[11px] px-1">3D</TabsTrigger>
         </TabsList>
 
         <div className="flex-1 overflow-y-auto px-3 pb-3">
@@ -202,8 +207,11 @@ export default function DesignerSidebar({
                   {filteredFurniture.map(item => (
                     <button key={item.id}
                       onClick={() => onAddFurniture(item.id)}
-                      className="flex flex-col items-center gap-1 p-2 rounded-lg border border-gray-100 hover:border-blue-300 hover:bg-blue-50 transition-all text-center"
+                      className="relative flex flex-col items-center gap-1 p-2 rounded-lg border border-gray-100 hover:border-blue-300 hover:bg-blue-50 transition-all text-center"
                     >
+                      {(item.modelUrl || modelMap[item.id]) && (
+                        <Badge variant="secondary" className="absolute top-1 right-1 px-1 py-0 text-[8px] leading-tight bg-violet-100 text-violet-600 border-violet-200">3D</Badge>
+                      )}
                       <Icon name={item.icon as "Sofa"} size={18} className="text-gray-500" />
                       <span className="text-[10px] text-gray-700 leading-tight">{item.name}</span>
                       <span className="text-[9px] text-gray-400">{item.width}×{item.depth} м</span>
@@ -261,6 +269,14 @@ export default function DesignerSidebar({
                 </Card>
               );
             })}
+          </TabsContent>
+
+          <TabsContent value="models" className="mt-0">
+            <ModelManager
+              selectedCatalogId={selectedPlaced?.catalogId}
+              onModelAttached={onModelAttached}
+              modelMap={modelMap}
+            />
           </TabsContent>
         </div>
       </Tabs>

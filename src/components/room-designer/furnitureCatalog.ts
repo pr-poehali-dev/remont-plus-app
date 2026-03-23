@@ -8,6 +8,8 @@ export interface FurnitureItem {
   height: number;
   defaultColor: string;
   shape: "box" | "cylinder" | "lshape";
+  modelUrl?: string;
+  modelScale?: number;
 }
 
 export const FURNITURE_CATEGORIES = [
