@@ -54,6 +54,7 @@ export default function ModelManager({
   const [uploadName, setUploadName] = useState("");
   const [uploadCategory, setUploadCategory] = useState("living");
   const [uploading, setUploading] = useState(false);
+  const [loadingDemo, setLoadingDemo] = useState(false);
   const [error, setError] = useState("");
 
   const fetchModels = useCallback(async () => {
@@ -129,6 +130,40 @@ export default function ModelManager({
     setUploadUrl(url);
     if (!uploadName || uploadName === extractNameFromUrl(uploadUrl)) {
       setUploadName(extractNameFromUrl(url));
+    }
+  };
+
+  const handleLoadDemo = async () => {
+    setLoadingDemo(true);
+    setError("");
+    try {
+      const res = await fetch(`${API_URL}?action=demo`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        for (const item of data.results) {
+          setModels(prev => {
+            const exists = prev.some(m => m.key === item.key);
+            if (exists) return prev;
+            return [...prev, {
+              key: item.key,
+              name: item.name,
+              category: item.category,
+              url: item.url,
+              size: item.size,
+            }];
+          });
+          if (item.catalogId) {
+            onModelAttached(item.catalogId, item.url);
+          }
+        }
+      }
+      if (data.errors && data.errors.length > 0) {
+        setError(`Не удалось загрузить: ${data.errors.map((e: { name: string }) => e.name).join(", ")}`);
+      }
+    } catch {
+      setError("Ошибка загрузки демо-моделей");
+    } finally {
+      setLoadingDemo(false);
     }
   };
 
@@ -299,9 +334,19 @@ export default function ModelManager({
           <p className="text-[10px] font-medium text-gray-500">
             Загруженные модели ({models.length})
           </p>
-          <button onClick={fetchModels} className="text-gray-400 hover:text-gray-600" disabled={loading}>
-            <Icon name={loading ? "Loader2" : "RefreshCw"} size={11} className={loading ? "animate-spin" : ""} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleLoadDemo}
+              className="text-gray-400 hover:text-emerald-500 disabled:opacity-50"
+              disabled={loadingDemo}
+              title="Загрузить демо-модели"
+            >
+              <Icon name={loadingDemo ? "Loader2" : "Sparkles"} size={11} className={loadingDemo ? "animate-spin" : ""} />
+            </button>
+            <button onClick={fetchModels} className="text-gray-400 hover:text-gray-600" disabled={loading}>
+              <Icon name={loading ? "Loader2" : "RefreshCw"} size={11} className={loading ? "animate-spin" : ""} />
+            </button>
+          </div>
         </div>
 
         {loading && models.length === 0 && (
@@ -311,10 +356,29 @@ export default function ModelManager({
         )}
 
         {!loading && models.length === 0 && (
-          <div className="text-center py-4">
+          <div className="text-center py-4 space-y-2">
             <Icon name="Package" size={20} className="text-gray-300 mx-auto mb-1.5" />
             <p className="text-[11px] text-gray-400">Нет загруженных моделей</p>
-            <p className="text-[10px] text-gray-300">Загрузите GLB-файл по URL</p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-[11px] border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+              onClick={handleLoadDemo}
+              disabled={loadingDemo}
+            >
+              {loadingDemo ? (
+                <>
+                  <Icon name="Loader2" size={12} className="mr-1 animate-spin" />
+                  Загрузка демо...
+                </>
+              ) : (
+                <>
+                  <Icon name="Sparkles" size={12} className="mr-1" />
+                  Загрузить демо-модели
+                </>
+              )}
+            </Button>
+            <p className="text-[10px] text-gray-300">или загрузите свою GLB по URL</p>
           </div>
         )}
 

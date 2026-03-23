@@ -6,11 +6,12 @@ interface GLBModelInnerProps {
   url: string;
   scale: number;
   color: string;
+  preserveMaterials?: boolean;
   onClick?: (e: unknown) => void;
   onError: () => void;
 }
 
-function GLBModelInner({ url, scale, color, onClick, onError }: GLBModelInnerProps) {
+function GLBModelInner({ url, scale, color, preserveMaterials, onClick, onError }: GLBModelInnerProps) {
   const gltf = useGLTF(url);
 
   const clonedScene = useMemo(() => {
@@ -20,7 +21,7 @@ function GLBModelInner({ url, scale, color, onClick, onError }: GLBModelInnerPro
         const mesh = child as THREE.Mesh;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        if (mesh.material) {
+        if (!preserveMaterials && mesh.material) {
           const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
           mesh.material = materials.map((mat) => {
             const cloned = mat.clone();
@@ -36,7 +37,7 @@ function GLBModelInner({ url, scale, color, onClick, onError }: GLBModelInnerPro
       }
     });
     return clone;
-  }, [gltf.scene, color]);
+  }, [gltf.scene, color, preserveMaterials]);
 
   useEffect(() => {
     if (!gltf.scene) {
@@ -74,6 +75,7 @@ interface GLBModelProps {
   width: number;
   height: number;
   depth: number;
+  preserveMaterials?: boolean;
   onClick?: (e: unknown) => void;
   onLoadError?: () => void;
 }
@@ -128,7 +130,7 @@ class ErrorCatcher extends React.Component<
 }
 
 export default function GLBModel({
-  url, scale, color, width, height, depth, onClick, onLoadError,
+  url, scale, color, width, height, depth, preserveMaterials, onClick, onLoadError,
 }: GLBModelProps) {
   const [failed, setFailed] = useState(false);
 
@@ -158,6 +160,7 @@ export default function GLBModel({
           url={url}
           scale={scale}
           color={color}
+          preserveMaterials={preserveMaterials}
           onClick={onClick}
           onError={() => {
             setFailed(true);

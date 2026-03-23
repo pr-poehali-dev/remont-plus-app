@@ -18,6 +18,12 @@
       "method": "DELETE",
       "path": "/",
       "expectedStatus": 400
+    },
+    {
+      "name": "Demo download action",
+      "method": "GET",
+      "path": "/?action=demo",
+      "expectedStatus": 200
     }
   ]
 }

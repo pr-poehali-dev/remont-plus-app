@@ -4,7 +4,24 @@ import urllib.request
 import boto3
 
 
+DEMO_MODELS = [
+    {
+        "url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/SheenChair/glTF-Binary/SheenChair.glb",
+        "name": "sheen-chair",
+        "category": "living",
+        "catalogId": "armchair"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/ShadowmappableMesh.glb",
+        "name": "shadow-table",
+        "category": "kitchen",
+        "catalogId": "dining-table"
+    },
+]
+
+
 def handler(event, context):
+    """Управление 3D-моделями мебели: загрузка, хранение, получение списка"""
     if event.get('httpMethod') == 'OPTIONS':
         return {
             'statusCode': 200,
@@ -32,6 +49,62 @@ def handler(event, context):
     method = event.get('httpMethod', 'GET')
 
     if method == 'GET':
+        params = event.get('queryStringParameters', {}) or {}
+
+        if params.get('action') == 'demo':
+            results = []
+            errors = []
+            for demo in DEMO_MODELS:
+                s3_key = f"3d-models/{demo['category']}/{demo['name']}.glb"
+
+                existing = None
+                try:
+                    existing = s3.head_object(Bucket='files', Key=s3_key)
+                except Exception:
+                    pass
+
+                if existing:
+                    results.append({
+                        'key': s3_key,
+                        'name': demo['name'],
+                        'category': demo['category'],
+                        'catalogId': demo.get('catalogId', ''),
+                        'url': f"{cdn_base}/{s3_key}",
+                        'size': existing.get('ContentLength', 0),
+                        'skipped': True
+                    })
+                    continue
+
+                try:
+                    req = urllib.request.Request(demo['url'], headers={'User-Agent': 'Mozilla/5.0'})
+                    response = urllib.request.urlopen(req, timeout=25)
+                    data = response.read()
+
+                    s3.put_object(
+                        Bucket='files',
+                        Key=s3_key,
+                        Body=data,
+                        ContentType='model/gltf-binary'
+                    )
+
+                    results.append({
+                        'key': s3_key,
+                        'name': demo['name'],
+                        'category': demo['category'],
+                        'catalogId': demo.get('catalogId', ''),
+                        'url': f"{cdn_base}/{s3_key}",
+                        'size': len(data),
+                        'skipped': False
+                    })
+                except Exception as e:
+                    errors.append({'name': demo['name'], 'error': str(e)})
+
+            return {
+                'statusCode': 200,
+                'headers': cors,
+                'body': json.dumps({'results': results, 'errors': errors})
+            }
+
         result = s3.list_objects_v2(Bucket='files', Prefix='3d-models/')
         models = []
         for obj in result.get('Contents', []):
