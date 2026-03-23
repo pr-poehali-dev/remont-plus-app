@@ -137,7 +137,8 @@ function FurniturePiece({
   modelMap?: Record<string, string>;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const modelUrl = modelMap?.[placed.catalogId] || item.modelUrl;
+  const customModelUrl = modelMap?.[placed.catalogId];
+  const modelUrl = customModelUrl || item.modelUrl;
 
   return (
     <group
@@ -152,6 +153,7 @@ function FurniturePiece({
           width={item.width}
           height={item.height}
           depth={item.depth}
+          preserveMaterials={!!customModelUrl}
           onClick={e => { (e as { stopPropagation: () => void }).stopPropagation(); onSelect(); }}
         />
       ) : (
