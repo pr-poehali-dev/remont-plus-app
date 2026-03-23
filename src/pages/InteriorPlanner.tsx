@@ -8,6 +8,7 @@ import {
   initialState,
 } from "@/components/planner/plannerTypes";
 import type {
+  PlannerTool,
   Point,
   Wall,
   PlacedFurniture,
@@ -19,6 +20,7 @@ import { FURNITURE_CATALOG } from "@/components/planner/furnitureCatalog";
 import PlannerToolbar from "@/components/planner/PlannerToolbar";
 import PlannerFurniturePanel from "@/components/planner/PlannerFurniturePanel";
 import PlannerProperties from "@/components/planner/PlannerProperties";
+import { exportPlannerPdf } from "@/components/planner/plannerPdfExport";
 
 const STORAGE_KEY = "planner_project";
 const SAVE_DELAY = 1000;
@@ -953,6 +955,15 @@ function InteriorPlanner() {
           >
             <Icon name="SlidersHorizontal" size={14} />
             Свойства
+          </button>
+          <div className="mx-1 h-5 w-px bg-gray-700" />
+          <button
+            onClick={() => exportPlannerPdf(state)}
+            className="flex h-7 items-center gap-1 rounded bg-orange-600 px-3 text-xs text-white hover:bg-orange-500 transition-colors"
+            title="Экспорт планировки в PDF со сметой материалов"
+          >
+            <Icon name="FileDown" size={14} />
+            PDF со сметой
           </button>
         </div>
       </div>
