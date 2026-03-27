@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 
 interface User {
@@ -37,7 +38,34 @@ export default function HomeCTA({ user }: Props) {
         </div>
       </section>
 
-      <footer className="bg-[#fafaf8] py-6 text-center text-xs text-gray-400 border-t border-gray-100">
+      <footer className="bg-[#fafaf8] py-8 text-center text-xs text-gray-400 border-t border-gray-100">
+        {/* Contact row */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
+          <a
+            href="tel:+79277486868"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+          >
+            <Icon name="Phone" className="h-4 w-4" />
+            8 (927) 748-68-68
+          </a>
+          <a
+            href="https://wa.me/79277486868?text=Здравствуйте!%20Хочу%20рассчитать%20стоимость%20ремонта"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 transition-colors font-medium"
+          >
+            <Icon name="MessageCircle" className="h-4 w-4" />
+            WhatsApp
+          </a>
+          <a
+            href="mailto:info@avangard-ai.ru"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+          >
+            <Icon name="Mail" className="h-4 w-4" />
+            info@avangard-ai.ru
+          </a>
+        </div>
+
         <div>АВАНГАРД &copy; {new Date().getFullYear()}</div>
         <div className="mt-1">ООО «МАТ-Лабс» &nbsp;|&nbsp; ИНН/КПП 6312223437/631201001 &nbsp;|&nbsp; ОГРН 1266300004288</div>
         <div className="flex justify-center gap-4 mt-2">

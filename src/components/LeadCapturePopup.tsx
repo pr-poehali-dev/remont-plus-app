@@ -4,15 +4,28 @@ import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import reachGoal from "@/lib/metrika";
 
-const VISITOR_LEADS_URL = "https://functions.poehali.dev/69fd9787-d0eb-4342-b94b-9d14bb3f36e7";
+const VISITOR_LEADS_URL = "https://functions.poehali.dev/536b1902-f1a6-497f-811d-d2fbad49442a";
 const STORAGE_KEY = "lead_popup_dismissed";
-const SHOW_DELAY_MS = 30000;
+const SHOW_DELAY_MS = 15000;
+
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
+  let d = digits;
+  if (d.startsWith("8") && d.length > 1) d = "7" + d.slice(1);
+  if (!d.startsWith("7")) d = "7" + d;
+  let r = "+7";
+  if (d.length > 1) r += " (" + d.slice(1, 4);
+  if (d.length >= 4) r += ") " + d.slice(4, 7);
+  if (d.length >= 7) r += "-" + d.slice(7, 9);
+  if (d.length >= 9) r += "-" + d.slice(9, 11);
+  return r;
+}
 
 export default function LeadCapturePopup() {
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -32,8 +45,9 @@ export default function LeadCapturePopup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone && !email) {
-      setError("Укажите телефон или email");
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < 11) {
+      setError("Введите корректный номер телефона");
       return;
     }
     setError("");
@@ -45,7 +59,7 @@ export default function LeadCapturePopup() {
         body: JSON.stringify({
           name: name.trim(),
           phone: phone.trim(),
-          email: email.trim().toLowerCase(),
+          email: "",
           source: "popup",
           page_url: window.location.pathname,
           consent: true,
@@ -68,12 +82,11 @@ export default function LeadCapturePopup() {
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-4 pointer-events-none">
       <div
         className="pointer-events-auto w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-4 duration-300"
-        style={{ animation: "slideUp 0.3s ease-out" }}
       >
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-5 py-4 flex items-start justify-between">
           <div>
-            <p className="text-white font-bold text-base leading-tight">Скидка до 15% на ремонт</p>
-            <p className="text-orange-100 text-sm mt-0.5">Оставьте контакт — пришлём выгодные предложения</p>
+            <p className="text-white font-bold text-base leading-tight">Бесплатный расчёт сметы за 2 часа</p>
+            <p className="text-orange-100 text-sm mt-0.5">Оставьте телефон — наш специалист рассчитает стоимость и перезвонит</p>
           </div>
           <button onClick={handleDismiss} className="text-orange-200 hover:text-white ml-3 mt-0.5 flex-shrink-0">
             <Icon name="X" size={18} />
@@ -82,34 +95,28 @@ export default function LeadCapturePopup() {
 
         <div className="px-5 py-4">
           {done ? (
-            <div className="flex flex-col items-center py-4 gap-2 text-center">
+            <div className="flex flex-col items-center py-3 gap-2 text-center">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                 <Icon name="CheckCircle" size={24} className="text-green-600" />
               </div>
-              <p className="font-semibold text-gray-900">Отлично! Мы запомнили вас</p>
-              <p className="text-sm text-gray-500">Пришлём лучшие предложения на ваши контакты</p>
+              <p className="font-semibold text-gray-900">Отлично! Перезвоним в течение 2 часов</p>
+              <p className="text-sm text-gray-500">Подготовим расчёт и свяжемся с вами</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-3">
               <Input
-                placeholder="Ваше имя"
+                placeholder="Ваше имя (необязательно)"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 className="rounded-xl"
               />
               <Input
-                placeholder="Телефон *"
                 type="tel"
+                placeholder="+7 (___) ___-__-__"
                 value={phone}
-                onChange={e => setPhone(e.target.value)}
-                className="rounded-xl"
-              />
-              <Input
-                placeholder="Email (необязательно)"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="rounded-xl"
+                onChange={e => setPhone(formatPhone(e.target.value))}
+                className="rounded-xl text-base h-12"
+                required
               />
               {error && (
                 <p className="text-red-500 text-xs flex items-center gap-1">
@@ -120,13 +127,13 @@ export default function LeadCapturePopup() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-xl"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-12 text-base font-semibold"
               >
                 {loading ? <Icon name="Loader2" size={16} className="animate-spin mr-2" /> : null}
-                Получить предложение
+                Получить расчёт бесплатно
               </Button>
               <p className="text-[10px] text-gray-400 text-center leading-tight">
-                Нажимая кнопку, вы соглашаетесь на обработку персональных данных и получение рассылки
+                Нажимая кнопку, вы соглашаетесь на обработку персональных данных
               </p>
             </form>
           )}

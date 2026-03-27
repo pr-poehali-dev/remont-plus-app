@@ -65,6 +65,7 @@ import CookieBanner from "./components/CookieBanner";
 import ChatWidget from "./components/ChatWidget";
 import InstallPWABanner from "./components/pwa/InstallPWABanner";
 import LeadCapturePopup from "./components/LeadCapturePopup";
+import FloatingContacts from "./components/FloatingContacts";
 
 const queryClient = new QueryClient();
 
@@ -139,6 +140,7 @@ const App = () => {
           <ChatWidget />
           <InstallPWABanner />
           <LeadCapturePopup />
+          <FloatingContacts />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

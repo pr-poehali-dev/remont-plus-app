@@ -1,22 +1,40 @@
 import json
 import os
 import psycopg2
+import urllib.request
+
+
+def send_telegram(message: str) -> None:
+    """Отправляет уведомление в Telegram"""
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID", "")
+    if not token or not chat_id:
+        return
+    data = json.dumps({"chat_id": chat_id, "text": message, "parse_mode": "HTML"}).encode("utf-8")
+    req = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=data,
+        headers={"Content-Type": "application/json"},
+    )
+    try:
+        urllib.request.urlopen(req, timeout=10)
+    except Exception:
+        pass
 
 
 def handler(event: dict, context) -> dict:
-    """Сохраняет контакты посетителей (имя, телефон, email) для рассылки акций и скидок"""
+    """Сохраняет контакты посетителей (имя, телефон, email) и отправляет уведомление в Telegram"""
 
     headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token',
     }
 
     if event.get('httpMethod') == 'OPTIONS':
         return {'statusCode': 200, 'headers': headers, 'body': ''}
 
-    # GET — список лидов для админки
     if event.get('httpMethod') == 'GET':
         params = event.get('queryStringParameters') or {}
         admin_token = (event.get('headers') or {}).get('X-Admin-Token', '')
@@ -47,7 +65,6 @@ def handler(event: dict, context) -> dict:
         ]
         return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'leads': leads, 'total': total}, ensure_ascii=False)}
 
-    # POST — сохранить контакт
     if event.get('httpMethod') == 'POST':
         body = json.loads(event.get('body') or '{}')
         name = (body.get('name') or '').strip()
@@ -72,6 +89,17 @@ def handler(event: dict, context) -> dict:
         conn.commit()
         cursor.close()
         conn.close()
+
+        tg_message = (
+            "📞 Новая заявка (обратный звонок)\n\n"
+            f"Имя: {name or '—'}\n"
+            f"Телефон: {phone or '—'}\n"
+            f"Email: {email or '—'}\n"
+            f"Источник: {source}\n"
+            f"Страница: {page_url or '—'}\n"
+            f"ID: #{lead_id}"
+        )
+        send_telegram(tg_message)
 
         return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'success': True, 'id': lead_id}, ensure_ascii=False)}
 

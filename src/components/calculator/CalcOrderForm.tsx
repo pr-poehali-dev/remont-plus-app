@@ -11,23 +11,38 @@ interface Props {
 
 type Status = "idle" | "sending" | "success" | "error";
 
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
+  let d = digits;
+  if (d.startsWith("8") && d.length > 1) d = "7" + d.slice(1);
+  if (!d.startsWith("7")) d = "7" + d;
+  let r = "+7";
+  if (d.length > 1) r += " (" + d.slice(1, 4);
+  if (d.length >= 4) r += ") " + d.slice(4, 7);
+  if (d.length >= 7) r += "-" + d.slice(7, 9);
+  if (d.length >= 9) r += "-" + d.slice(9, 11);
+  return r;
+}
+
 export default function CalcOrderForm({ calcType, total, onClose }: Props) {
   useEffect(() => { trackCalcEvent(calcType, 'form_open'); }, [calcType]);
 
-  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [comment, setComment] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+
+  const digits = phone.replace(/\D/g, "");
+  const isValid = digits.length >= 11;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone.trim()) return;
+    if (!isValid) return;
     setStatus("sending");
     try {
       const res = await fetch("https://functions.poehali.dev/e155a53f-72bf-4c18-8aec-b9bd60565215", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, comment, calc_type: calcType, total }),
+        body: JSON.stringify({ phone: digits, calc_type: calcType, total }),
       });
       await res.json();
       if (res.ok) {
@@ -43,12 +58,12 @@ export default function CalcOrderForm({ calcType, total, onClose }: Props) {
 
   if (status === "success") {
     return (
-      <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
-        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-          <Icon name="CheckCircle2" size={24} className="text-green-600" />
+      <div className="rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 p-6 text-center">
+        <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <Icon name="CheckCircle2" size={28} className="text-green-600" />
         </div>
-        <p className="font-semibold text-gray-900 mb-1">Заявка отправлена!</p>
-        <p className="text-sm text-gray-500">Мы свяжемся с вами в ближайшее время</p>
+        <p className="font-bold text-lg text-gray-900 mb-1">Заявка принята!</p>
+        <p className="text-sm text-gray-500">Перезвоним в течение 15 минут для уточнения деталей</p>
         {onClose && (
           <Button variant="outline" size="sm" className="mt-4" onClick={onClose}>
             Закрыть
@@ -59,68 +74,52 @@ export default function CalcOrderForm({ calcType, total, onClose }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-orange-200 bg-orange-50/60 p-5 space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
-          <Icon name="Send" size={17} className="text-orange-500" />
+    <div className="rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 p-5 text-white shadow-lg">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+          <Icon name="PhoneCall" size={20} />
         </div>
         <div>
-          <p className="font-semibold text-gray-900 text-sm">Оставить заявку на выполнение работ</p>
+          <p className="font-bold text-base leading-tight">Получите точную смету бесплатно</p>
           {total && (
-            <p className="text-xs text-gray-500">Стоимость по расчёту: <span className="font-medium text-orange-600">{total}</span></p>
+            <p className="text-orange-100 text-sm">Предварительно: {total}</p>
           )}
         </div>
       </div>
 
+      <p className="text-orange-100 text-sm mb-4">
+        Менеджер перезвонит, уточнит детали и пришлёт смету на WhatsApp
+      </p>
+
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
-          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
-          placeholder="Ваше имя"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          required
           type="tel"
-          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
-          placeholder="Телефон *"
+          className="w-full border-2 border-white/30 rounded-xl px-4 py-3 text-base bg-white/10 text-white placeholder-white/60 focus:outline-none focus:border-white focus:bg-white/20 transition-colors"
+          placeholder="+7 (___) ___-__-__"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-        <textarea
-          rows={2}
-          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
-          placeholder="Комментарий (необязательно)"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
+          onChange={(e) => setPhone(formatPhone(e.target.value))}
         />
 
         {status === "error" && (
-          <p className="text-sm text-red-500 flex items-center gap-1.5">
+          <p className="text-sm text-red-200 flex items-center gap-1.5">
             <Icon name="AlertCircle" size={14} />
-            Ошибка отправки. Попробуйте ещё раз.
+            Ошибка. Попробуйте ещё раз.
           </p>
         )}
 
         <Button
           type="submit"
-          disabled={status === "sending" || !phone.trim()}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+          disabled={status === "sending" || !isValid}
+          className="w-full bg-white text-orange-600 hover:bg-orange-50 font-bold h-12 text-base rounded-xl disabled:opacity-50"
         >
           {status === "sending" ? (
-            <>
-              <Icon name="Loader2" size={15} className="mr-2 animate-spin" />
-              Отправляю...
-            </>
+            <><Icon name="Loader2" size={16} className="mr-2 animate-spin" />Отправляю...</>
           ) : (
-            <>
-              <Icon name="Send" size={15} className="mr-2" />
-              Отправить заявку
-            </>
+            <><Icon name="PhoneCall" size={16} className="mr-2" />Жду звонка</>
           )}
         </Button>
 
-        <p className="text-xs text-center text-gray-400">
+        <p className="text-[10px] text-orange-200 text-center">
           Нажимая кнопку, вы соглашаетесь на обработку персональных данных
         </p>
       </form>
