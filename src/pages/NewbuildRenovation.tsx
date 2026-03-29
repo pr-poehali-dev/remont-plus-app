@@ -24,6 +24,7 @@ import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import EstimateActions from "@/components/calculator/EstimateActions";
 import ScreenProtection from "@/components/print/ScreenProtection";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 
 const MARKUP_KEY = "newbuild_markup_pct";
@@ -443,6 +444,7 @@ export default function NewbuildRenovation() {
                   }}
                 />
               </div>
+              <CalcInlineLeadForm calcType="Новостройка" totalSum={totalSum} />
             </Card>
             </ScreenProtection>
           </div>

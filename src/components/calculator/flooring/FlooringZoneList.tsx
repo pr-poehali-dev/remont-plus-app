@@ -5,6 +5,7 @@ import { FLOORING_PRODUCTS, FLOORING_CATEGORIES } from "@/components/calculator/
 import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTypes";
 import { fmt } from "@/components/calculator/flooring/flooringUtils";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
 import EstimateActions from "@/components/calculator/EstimateActions";
 
 const ROOM_PRESETS = ["Гостиная", "Спальня", "Кухня", "Детская", "Коридор", "Прихожая", "Кабинет", "Ванная"];
@@ -195,6 +196,7 @@ export default function FlooringZoneList({
             }}
           />
         </div>
+        <CalcInlineLeadForm calcType="Полы" totalSum={totalSum} />
       </Card>
 
       <CalcOrderForm

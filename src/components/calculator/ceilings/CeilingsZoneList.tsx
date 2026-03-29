@@ -5,6 +5,7 @@ import { CEILING_TYPES } from "./CeilingTypes";
 import type { CeilingConfig } from "./CeilingTypes";
 import { calcPrice, fmt } from "./ceilingUtils";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
 import EstimateActions from "@/components/calculator/EstimateActions";
 
 const ROOM_PRESETS = ["Гостиная", "Спальня", "Кухня", "Детская", "Коридор", "Ванная", "Кабинет"];
@@ -203,6 +204,7 @@ export default function CeilingsZoneList({
             }}
           />
         </div>
+        <CalcInlineLeadForm calcType="Потолки" totalSum={totalSum} />
       </Card>
 
       <CalcOrderForm

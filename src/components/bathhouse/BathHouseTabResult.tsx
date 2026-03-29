@@ -88,9 +88,9 @@ export default function BathHouseTabResult({
           />
         </Card>
 
-        <MaterialsTable items={matItems} accentColor="amber" />
-
         <CalcOrderForm calcType="Баня" total={`от ${fmt(bd.total)} ₽`} />
+
+        <MaterialsTable items={matItems} accentColor="amber" />
 
         <Card className="p-5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200">
           <h3 className="font-bold text-amber-900 mb-2">Получить предложения от строителей</h3>

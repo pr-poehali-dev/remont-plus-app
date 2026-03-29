@@ -5,6 +5,7 @@ import { BATHROOM_TYPES } from "@/components/calculator/bathroom/BathroomTypes";
 import type { BathroomConfig } from "@/components/calculator/bathroom/BathroomTypes";
 import { fmt } from "@/components/calculator/bathroom/bathroomUtils";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
 import EstimateActions from "@/components/calculator/EstimateActions";
 
 const ROOM_PRESETS = ["Ванная", "Туалет", "Совмещённый", "Гостевой санузел", "Душевая", "Постирочная"];
@@ -207,6 +208,7 @@ export default function BathroomZoneList({
             }}
           />
         </div>
+        <CalcInlineLeadForm calcType="Санузел" totalSum={totalSum} />
       </Card>
 
       <CalcOrderForm

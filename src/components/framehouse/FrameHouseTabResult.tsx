@@ -89,9 +89,9 @@ export default function FrameHouseTabResult({
           />
         </Card>
 
-        <MaterialsTable items={matItems} accentColor="green" />
-
         <CalcOrderForm calcType="Каркасный дом" total={`от ${fmt(bd.total)} ₽`} />
+
+        <MaterialsTable items={matItems} accentColor="green" />
 
         <Card className="p-4 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
           <h3 className="font-bold text-green-900 text-sm mb-1">Найти строителей каркасных домов</h3>

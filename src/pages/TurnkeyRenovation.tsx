@@ -23,6 +23,7 @@ import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import EstimateActions from "@/components/calculator/EstimateActions";
+import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import ScreenProtection from "@/components/print/ScreenProtection";
@@ -303,6 +304,7 @@ export default function TurnkeyRenovation() {
                     }}
                   />
                 </div>
+              <CalcInlineLeadForm calcType="Под ключ" totalSum={cfg.totalPrice} />
               </Card>
 
               {/* Краткая сводка */}

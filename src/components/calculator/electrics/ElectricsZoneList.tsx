@@ -5,6 +5,7 @@ import { ROOM_TYPES } from "@/components/calculator/electrics/ElectricsTypes";
 import type { ElectricsConfig } from "@/components/calculator/electrics/ElectricsTypes";
 import { fmt } from "@/components/calculator/electrics/electricsUtils";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
 import EstimateActions from "@/components/calculator/EstimateActions";
 
 const ROOM_PRESETS = ["Спальня", "Гостиная", "Кухня", "Ванная", "Прихожая", "Кабинет", "Детская", "Балкон"];
@@ -197,6 +198,7 @@ export default function ElectricsZoneList({
             }}
           />
         </div>
+        <CalcInlineLeadForm calcType="Электрика" totalSum={totalSum} />
       </Card>
 
       <CalcOrderForm
