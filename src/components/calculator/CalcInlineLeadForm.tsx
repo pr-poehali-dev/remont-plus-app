@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { getVariant, trackABEvent } from "@/lib/abtest";
+
+const AB_TEST_NAME = "popup_vs_inline";
 
 interface Props {
   calcType: string;
@@ -31,6 +34,11 @@ function fmt(n: number): string {
 export default function CalcInlineLeadForm({ calcType, totalSum }: Props) {
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+  const [abVariant] = useState(() => getVariant(AB_TEST_NAME));
+
+  useEffect(() => {
+    trackABEvent(AB_TEST_NAME, abVariant, "impression", { source: "inline", calc: calcType });
+  }, [abVariant, calcType]);
 
   const digits = phone.replace(/\D/g, "");
   const isValid = digits.length >= 11;
@@ -53,6 +61,7 @@ export default function CalcInlineLeadForm({ calcType, totalSum }: Props) {
       });
       if (res.ok) {
         trackCalcEvent(calcType, "lead");
+        trackABEvent(AB_TEST_NAME, abVariant, "lead", { source: "inline", calc: calcType });
         setStatus("success");
       } else {
         setStatus("error");

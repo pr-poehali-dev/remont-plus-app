@@ -34,7 +34,8 @@ def handler(event: dict, context) -> dict:
         user_id = body.get('user_id')
 
         allowed = ('open', 'calc', 'lead', 'interact', 'result_view', 'export_click', 'form_open')
-        if not calc_type or event_type not in allowed:
+        is_ab = calc_type.startswith('ab:') and ':' in event_type
+        if not calc_type or (not is_ab and event_type not in allowed):
             conn.close()
             return {
                 'statusCode': 400,
@@ -69,6 +70,8 @@ def handler(event: dict, context) -> dict:
                 'body': json.dumps({'error': 'Unauthorized'})
             }
 
+        params = event.get('queryStringParameters') or {}
+
         cursor.execute(f"""
             SELECT
                 calc_type,
@@ -80,6 +83,7 @@ def handler(event: dict, context) -> dict:
                 SUM(CASE WHEN event_type = 'calc' THEN 1 ELSE 0 END) AS calcs,
                 SUM(CASE WHEN event_type = 'lead' THEN 1 ELSE 0 END) AS leads
             FROM {schema}.calculator_events
+            WHERE calc_type NOT LIKE 'ab:%%'
             GROUP BY calc_type
             ORDER BY opens DESC
         """)
@@ -95,32 +99,75 @@ def handler(event: dict, context) -> dict:
                 SUM(CASE WHEN event_type = 'calc' THEN 1 ELSE 0 END),
                 SUM(CASE WHEN event_type = 'lead' THEN 1 ELSE 0 END)
             FROM {schema}.calculator_events
+            WHERE calc_type NOT LIKE 'ab:%%'
         """)
         totals = cursor.fetchone()
+
+        result = {
+            'by_calc': [
+                {
+                    'calc_type': r[0], 'opens': r[1], 'interacts': r[2],
+                    'result_views': r[3], 'export_clicks': r[4],
+                    'form_opens': r[5], 'calcs': r[6], 'leads': r[7]
+                }
+                for r in rows
+            ],
+            'totals': {
+                'opens': totals[0] or 0,
+                'interacts': totals[1] or 0,
+                'result_views': totals[2] or 0,
+                'export_clicks': totals[3] or 0,
+                'form_opens': totals[4] or 0,
+                'calcs': totals[5] or 0,
+                'leads': totals[6] or 0
+            }
+        }
+
+        if params.get('ab_report'):
+            cursor.execute(f"""
+                SELECT event_type, COUNT(*) as cnt
+                FROM {schema}.calculator_events
+                WHERE calc_type LIKE 'ab:%%'
+                GROUP BY event_type
+                ORDER BY event_type
+            """)
+            ab_rows = cursor.fetchall()
+            variants = {}
+            for row in ab_rows:
+                et = row[0]
+                cnt = row[1]
+                if ':' not in et:
+                    continue
+                variant, action = et.split(':', 1)
+                if variant not in variants:
+                    variants[variant] = {'variant': variant, 'impressions': 0, 'leads': 0, 'dismisses': 0}
+                if action == 'impression':
+                    variants[variant]['impressions'] = cnt
+                elif action == 'lead':
+                    variants[variant]['leads'] = cnt
+                elif action == 'dismiss':
+                    variants[variant]['dismisses'] = cnt
+
+            ab_report = []
+            for v in sorted(variants.values(), key=lambda x: x['variant']):
+                imp = v['impressions']
+                leads = v['leads']
+                rate = round(leads / imp * 100, 2) if imp > 0 else 0
+                ab_report.append({
+                    'variant': v['variant'],
+                    'impressions': imp,
+                    'leads': leads,
+                    'dismisses': v['dismisses'],
+                    'conversionRate': str(rate),
+                })
+            result['ab_report'] = ab_report
+
         conn.close()
 
         return {
             'statusCode': 200,
             'headers': headers,
-            'body': json.dumps({
-                'by_calc': [
-                    {
-                        'calc_type': r[0], 'opens': r[1], 'interacts': r[2],
-                        'result_views': r[3], 'export_clicks': r[4],
-                        'form_opens': r[5], 'calcs': r[6], 'leads': r[7]
-                    }
-                    for r in rows
-                ],
-                'totals': {
-                    'opens': totals[0] or 0,
-                    'interacts': totals[1] or 0,
-                    'result_views': totals[2] or 0,
-                    'export_clicks': totals[3] or 0,
-                    'form_opens': totals[4] or 0,
-                    'calcs': totals[5] or 0,
-                    'leads': totals[6] or 0
-                }
-            }, ensure_ascii=False)
+            'body': json.dumps(result, ensure_ascii=False)
         }
 
     conn.close()

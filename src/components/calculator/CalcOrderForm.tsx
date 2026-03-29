@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { getVariant, trackABEvent } from "@/lib/abtest";
+
+const AB_TEST_NAME = "popup_vs_inline";
 
 interface Props {
   calcType: string;
@@ -26,6 +29,7 @@ function formatPhone(value: string): string {
 }
 
 export default function CalcOrderForm({ calcType, total, onClose }: Props) {
+  const [abVariant] = useState(() => getVariant(AB_TEST_NAME));
   useEffect(() => { trackCalcEvent(calcType, 'form_open'); }, [calcType]);
 
   const [phone, setPhone] = useState("");
@@ -47,6 +51,7 @@ export default function CalcOrderForm({ calcType, total, onClose }: Props) {
       await res.json();
       if (res.ok) {
         trackCalcEvent(calcType, 'lead');
+        trackABEvent(AB_TEST_NAME, abVariant, "lead", { source: "order_form", calc: calcType });
         setStatus("success");
       } else {
         setStatus("error");

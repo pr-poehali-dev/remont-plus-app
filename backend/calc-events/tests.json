@@ -86,6 +86,30 @@
       },
       "expectedStatus": 400,
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST A/B тест событие impression",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "calc_type": "ab:popup_vs_inline",
+        "event_type": "A:impression"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST A/B тест событие lead",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "calc_type": "ab:popup_vs_inline",
+        "event_type": "B:lead"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"success": true},
+      "bodyMatcher": "partial"
     }
   ]
 }

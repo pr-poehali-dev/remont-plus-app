@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import reachGoal from "@/lib/metrika";
+import { getVariant, trackABEvent } from "@/lib/abtest";
 
 const VISITOR_LEADS_URL = "https://functions.poehali.dev/536b1902-f1a6-497f-811d-d2fbad49442a";
 const STORAGE_KEY = "lead_popup_dismissed";
 const SHOW_DELAY_MS = 15000;
+const AB_TEST_NAME = "popup_vs_inline";
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, "");
@@ -29,18 +31,24 @@ export default function LeadCapturePopup() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [abVariant] = useState(() => getVariant(AB_TEST_NAME));
 
   useEffect(() => {
     const dismissed = localStorage.getItem(STORAGE_KEY);
     if (dismissed) return;
+    if (abVariant === "B") return;
 
-    const timer = setTimeout(() => setVisible(true), SHOW_DELAY_MS);
+    const timer = setTimeout(() => {
+      setVisible(true);
+      trackABEvent(AB_TEST_NAME, "A", "impression", { source: "popup" });
+    }, SHOW_DELAY_MS);
     return () => clearTimeout(timer);
-  }, []);
+  }, [abVariant]);
 
   const handleDismiss = () => {
     setVisible(false);
     localStorage.setItem(STORAGE_KEY, "1");
+    trackABEvent(AB_TEST_NAME, "A", "dismiss", { source: "popup" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,6 +75,7 @@ export default function LeadCapturePopup() {
       });
       setDone(true);
       reachGoal("lead_popup", { source: "lead_capture" });
+      trackABEvent(AB_TEST_NAME, abVariant, "lead", { source: "popup" });
       localStorage.setItem(STORAGE_KEY, "1");
       setTimeout(() => setVisible(false), 3000);
     } catch {
