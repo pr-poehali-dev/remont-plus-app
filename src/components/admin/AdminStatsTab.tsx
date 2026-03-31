@@ -10,11 +10,6 @@ interface AdminStatsTabProps {
   products: Product[];
 }
 
-interface ABRow {
-  event_type: string;
-  cnt: number;
-}
-
 interface ABResult {
   variant: string;
   impressions: number;
@@ -30,68 +25,17 @@ export default function AdminStatsTab({ materials, products }: AdminStatsTabProp
   const outOfStockCount = products.filter(p => !p.in_stock).length;
   const categoriesCount = new Set(products.map(p => p.category)).size;
 
-  const [abData, setAbData] = useState<ABResult[]>([]);
   const [abLoading, setAbLoading] = useState(false);
   const [abError, setAbError] = useState("");
-
-  const loadABResults = async () => {
-    setAbLoading(true);
-    setAbError("");
-    try {
-      const adminPassword = localStorage.getItem("admin_password") || "admin2025";
-      const res = await fetch(CALC_EVENTS_URL, {
-        headers: { "X-Admin-Token": adminPassword },
-      });
-      if (!res.ok) throw new Error("Unauthorized");
-      const data = await res.json();
-
-      const abRows: ABRow[] = (data.by_calc || [])
-        .filter((r: { calc_type: string }) => r.calc_type.startsWith("ab:"))
-        .flatMap((r: { calc_type: string; opens?: number; interacts?: number; result_views?: number; export_clicks?: number; form_opens?: number; calcs?: number; leads?: number }) => {
-          return [];
-        });
-
-      void abRows;
-
-      const allEvents: Record<string, number> = {};
-      (data.by_calc || []).forEach((r: Record<string, unknown>) => {
-        if (typeof r.calc_type === "string" && r.calc_type.startsWith("ab:")) {
-          Object.entries(r).forEach(([key, val]) => {
-            if (key !== "calc_type" && typeof val === "number") {
-              allEvents[key] = (allEvents[key] || 0) + val;
-            }
-          });
-        }
-      });
-
-      setAbData([]);
-    } catch {
-      setAbError("Не удалось загрузить данные. Проверьте токен администратора.");
-    } finally {
-      setAbLoading(false);
-    }
-  };
-
   const [abDirect, setAbDirect] = useState<ABResult[]>([]);
 
   const loadABDirect = async () => {
     setAbLoading(true);
     setAbError("");
     try {
-      const res = await fetch(CALC_EVENTS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ calc_type: "ab:_query", event_type: "open" }),
-      });
-      void res;
-    } catch {
-      // ignore
-    }
-
-    try {
-      const adminPassword = localStorage.getItem("admin_password") || "admin2025";
+      const adminToken = localStorage.getItem("admin_token") || "";
       const res = await fetch(CALC_EVENTS_URL + "?ab_report=1", {
-        headers: { "X-Admin-Token": adminPassword },
+        headers: { "X-Auth-Token": adminToken },
       });
       if (!res.ok) throw new Error("err");
       const data = await res.json();
@@ -109,9 +53,6 @@ export default function AdminStatsTab({ materials, products }: AdminStatsTabProp
   useEffect(() => {
     loadABDirect();
   }, []);
-
-  void loadABResults;
-  void abData;
 
   return (
     <div className="space-y-8">

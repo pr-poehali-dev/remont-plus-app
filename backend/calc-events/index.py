@@ -59,10 +59,24 @@ def handler(event: dict, context) -> dict:
     if method == 'GET':
         req_headers = event.get('headers', {}) or {}
         req_headers_lower = {k.lower(): v for k, v in req_headers.items()}
-        admin_token = req_headers_lower.get('x-admin-token', '')
+        session_token = req_headers_lower.get('x-auth-token', '').strip()
+        admin_password_header = req_headers_lower.get('x-admin-token', '').strip()
         admin_password = os.environ.get('ADMIN_PASSWORD', '')
 
-        if not admin_password or admin_token != admin_password:
+        is_authorized = False
+        if admin_password and admin_password_header == admin_password:
+            is_authorized = True
+
+        if not is_authorized and session_token:
+            cursor.execute(
+                f"SELECT user_id FROM {schema}.refresh_tokens WHERE token_hash = %s AND expires_at > NOW() LIMIT 1",
+                (session_token,)
+            )
+            token_row = cursor.fetchone()
+            if token_row and token_row[0] == 0:
+                is_authorized = True
+
+        if not is_authorized:
             conn.close()
             return {
                 'statusCode': 401,
