@@ -36,7 +36,11 @@ export default function LeadCapturePopup() {
   useEffect(() => {
     const dismissed = localStorage.getItem(STORAGE_KEY);
     if (dismissed) return;
-    if (abVariant === "B") return;
+
+    if (abVariant === "B") {
+      trackABEvent(AB_TEST_NAME, "B", "impression", { source: "control" });
+      return;
+    }
 
     const timer = setTimeout(() => {
       setVisible(true);

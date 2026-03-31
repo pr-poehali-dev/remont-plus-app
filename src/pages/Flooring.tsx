@@ -6,6 +6,8 @@ import { DEFAULT_CONFIG, calcFlooringPrice } from "@/components/calculator/floor
 import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTypes";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
@@ -218,6 +220,21 @@ export default function Flooring() {
             onCancel={() => setShowExport(false)}
           />
         )}
+        <div className="container mx-auto px-4 py-6 space-y-4">
+          <CalcResultCTA
+            totalSum={totalSum}
+            onAction={() => {
+              const el = document.getElementById("calc-order-form");
+              el?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }}
+          />
+          <div id="calc-order-form">
+            <CalcOrderForm
+              calcType="Напольные покрытия"
+              total={`от ${totalSum.toLocaleString("ru-RU")} ₽`}
+            />
+          </div>
+        </div>
         <SalesWidget calcContext={{ calcName: "Калькулятор напольных покрытий", totalPrice: totalSum }} />
         <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="flooring" />
         <SimilarProjects totalSum={totalSum} calcType="flooring" />

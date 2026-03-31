@@ -7,6 +7,8 @@ import type { ElectricsConfig } from "@/components/calculator/electrics/Electric
 import { calcElectricsPrice } from "@/components/calculator/electrics/electricsUtils";
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
@@ -218,6 +220,21 @@ export default function Electrics() {
             onCancel={() => setShowExport(false)}
           />
         )}
+        <div className="container mx-auto px-4 py-6 space-y-4">
+          <CalcResultCTA
+            totalSum={totalSum}
+            onAction={() => {
+              const el = document.getElementById("calc-order-form");
+              el?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }}
+          />
+          <div id="calc-order-form">
+            <CalcOrderForm
+              calcType="Электрика"
+              total={`от ${totalSum.toLocaleString("ru-RU")} ₽`}
+            />
+          </div>
+        </div>
         <SalesWidget calcContext={{ calcName: "Калькулятор электрики", totalPrice: totalSum }} />
         <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="electrics" />
         <SimilarProjects totalSum={totalSum} calcType="electrics" />

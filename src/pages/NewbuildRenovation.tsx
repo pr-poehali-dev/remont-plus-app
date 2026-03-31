@@ -25,6 +25,7 @@ import EstimateActions from "@/components/calculator/EstimateActions";
 import ScreenProtection from "@/components/print/ScreenProtection";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
+import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 
 const MARKUP_KEY = "newbuild_markup_pct";
@@ -78,6 +79,7 @@ export default function NewbuildRenovation() {
   const [supplierIncluded, setSupplierIncluded] = useState(false);
   const [supplierPct, setSupplierPct] = useState(5);
   const [renamingId, setRenamingId] = useState<string | null>(null);
+  const orderFormRef = { current: null as HTMLDivElement | null };
 
   const activeZone = zones.find(z => z.id === activeId) ?? zones[0];
 
@@ -617,10 +619,17 @@ export default function NewbuildRenovation() {
                 accentColor="indigo"
               />
 
-              <CalcOrderForm
-                calcType="Новостройка"
-                total={`от ${fmt(totalSum)} ₽`}
+              <CalcResultCTA
+                totalSum={totalSum}
+                onAction={() => orderFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })}
               />
+
+              <div ref={el => { orderFormRef.current = el; }}>
+                <CalcOrderForm
+                  calcType="Новостройка"
+                  total={`от ${fmt(totalSum)} ₽`}
+                />
+              </div>
 
               <SimilarProjects totalSum={totalSum} calcType="newbuild" />
 

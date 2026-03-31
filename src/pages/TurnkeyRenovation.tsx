@@ -19,6 +19,7 @@ import TurnkeyConfigForm from "@/components/calculator/turnkey/TurnkeyConfigForm
 import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
@@ -371,10 +372,19 @@ export default function TurnkeyRenovation() {
                 </div>
               </Card>
 
-              <CalcOrderForm
-                calcType="Ремонт под ключ"
-                total={`от ${fmt(breakdown.total)} ₽`}
+              <CalcResultCTA
+                totalSum={cfg.totalPrice}
+                onAction={() => {
+                  const el = document.getElementById("calc-order-form");
+                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }}
               />
+              <div id="calc-order-form">
+                <CalcOrderForm
+                  calcType="Ремонт под ключ"
+                  total={`от ${fmt(breakdown.total)} ₽`}
+                />
+              </div>
 
               <SimilarProjects totalSum={cfg.totalPrice} calcType="turnkey" />
 

@@ -10,6 +10,8 @@ import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import BathroomHeader from "@/components/bathroom/BathroomHeader";
 import BathroomZoneList from "@/components/bathroom/BathroomZoneList";
 import BathroomZoneEditor from "@/components/bathroom/BathroomZoneEditor";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
@@ -220,6 +222,21 @@ export default function Bathroom() {
           onCancel={() => setShowExport(false)}
         />
       )}
+      <div className="container mx-auto px-4 py-6 space-y-4">
+        <CalcResultCTA
+          totalSum={totalSum}
+          onAction={() => {
+            const el = document.getElementById("calc-order-form");
+            el?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+        />
+        <div id="calc-order-form">
+          <CalcOrderForm
+            calcType="Ремонт санузла"
+            total={`от ${totalSum.toLocaleString("ru-RU")} ₽`}
+          />
+        </div>
+      </div>
       <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="bathroom" />
       <SimilarProjects totalSum={totalSum} calcType="bathroom" />
     </div>

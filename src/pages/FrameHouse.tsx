@@ -9,6 +9,8 @@ import FrameHouseHeader from "@/components/framehouse/FrameHouseHeader";
 import type { ViewTab } from "@/components/framehouse/FrameHouseHeader";
 import FrameHouseTabConfig from "@/components/framehouse/FrameHouseTabConfig";
 import FrameHouseTabResult from "@/components/framehouse/FrameHouseTabResult";
+import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
@@ -185,6 +187,21 @@ export default function FrameHouse() {
             onFindMasters={() => navigate("/masters")}
           />
         )}
+      </div>
+      <div className="container mx-auto px-4 py-6 space-y-4">
+        <CalcResultCTA
+          totalSum={bd.total}
+          onAction={() => {
+            const el = document.getElementById("calc-order-form");
+            el?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+        />
+        <div id="calc-order-form">
+          <CalcOrderForm
+            calcType="Каркасный дом"
+            total={`от ${bd.total.toLocaleString("ru-RU")} ₽`}
+          />
+        </div>
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор каркасного дома", totalPrice: bd.total }} />
       <CalcStickyBar totalSum={bd.total} calcType="framehouse" />

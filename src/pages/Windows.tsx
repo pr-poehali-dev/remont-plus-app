@@ -21,6 +21,7 @@ import ExportDialog from "@/components/calculator/ExportDialog";
 import type { ExportConfirmData } from "@/components/calculator/ExportDialog";
 import DocsTab from "@/components/calculator/DocsTab";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
+import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
@@ -412,10 +413,21 @@ export default function Windows() {
                   )}
 
                   {configs.length > 0 && (
-                    <CalcOrderForm
-                      calcType="Окна"
-                      total={`от ${fmt(totalSum)} ₽`}
+                    <>
+                    <CalcResultCTA
+                      totalSum={totalSum}
+                      onAction={() => {
+                        const el = document.getElementById("calc-order-form");
+                        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      }}
                     />
+                    <div id="calc-order-form">
+                      <CalcOrderForm
+                        calcType="Окна"
+                        total={`от ${fmt(totalSum)} ₽`}
+                      />
+                    </div>
+                    </>
                   )}
                   <SimilarProjects totalSum={totalSum} calcType="windows" />
                 </div>

@@ -73,28 +73,33 @@ export default function CalcInlineLeadForm({ calcType, totalSum }: Props) {
 
   if (status === "success") {
     return (
-      <div className="mt-3 pt-3 border-t border-white/20 flex items-center gap-2 text-white">
-        <div className="w-8 h-8 bg-green-400/30 rounded-full flex items-center justify-center shrink-0">
-          <Icon name="CheckCircle2" size={16} className="text-green-300" />
+      <div className="mt-4 rounded-xl bg-green-500/20 border border-green-400/30 p-4 flex items-center gap-3 text-white">
+        <div className="w-10 h-10 bg-green-400/30 rounded-full flex items-center justify-center shrink-0">
+          <Icon name="CheckCircle2" size={20} className="text-green-300" />
         </div>
         <div>
-          <p className="text-sm font-semibold">Заявка принята!</p>
-          <p className="text-xs opacity-70">Перезвоним за 15 минут</p>
+          <p className="text-sm font-bold">Заявка принята!</p>
+          <p className="text-xs opacity-80">Перезвоним в течение 15 минут и пришлём смету</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mt-3 pt-3 border-t border-white/20">
-      <p className="text-xs text-white/80 font-semibold mb-2 flex items-center gap-1.5">
-        <Icon name="PhoneCall" size={12} />
-        Получить точную смету бесплатно
-      </p>
+    <div className="mt-4 rounded-xl bg-white/15 backdrop-blur-sm border border-white/25 p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-8 h-8 bg-green-400/30 rounded-full flex items-center justify-center shrink-0 animate-pulse">
+          <Icon name="PhoneCall" size={15} className="text-green-300" />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-white leading-tight">Получить точную смету бесплатно</p>
+          <p className="text-xs text-white/60">Перезвоним за 15 минут</p>
+        </div>
+      </div>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="tel"
-          className="flex-1 min-w-0 border border-white/30 rounded-lg px-3 py-2 text-sm bg-white/10 text-white placeholder-white/50 focus:outline-none focus:border-white/60 focus:bg-white/15 transition-colors"
+          className="flex-1 min-w-0 border-2 border-white/30 rounded-xl px-4 py-2.5 text-sm bg-white/10 text-white placeholder-white/50 focus:outline-none focus:border-white/60 focus:bg-white/20 transition-colors"
           placeholder="+7 (___) ___-__-__"
           value={phone}
           onChange={(e) => setPhone(formatPhone(e.target.value))}
@@ -103,23 +108,26 @@ export default function CalcInlineLeadForm({ calcType, totalSum }: Props) {
           type="submit"
           size="sm"
           disabled={!isValid || status === "sending"}
-          className="bg-white text-orange-700 hover:bg-orange-50 font-bold rounded-lg px-3 shrink-0 disabled:opacity-40"
+          className="bg-white text-orange-700 hover:bg-orange-50 font-bold rounded-xl px-4 h-[42px] shrink-0 disabled:opacity-40 shadow-lg"
         >
           {status === "sending" ? (
-            <Icon name="Loader2" size={14} className="animate-spin" />
+            <Icon name="Loader2" size={16} className="animate-spin" />
           ) : (
-            <Icon name="Send" size={14} />
+            <>
+              <Icon name="Send" size={14} className="mr-1.5" />
+              <span className="hidden sm:inline">Отправить</span>
+            </>
           )}
         </Button>
       </form>
       {status === "error" && (
-        <p className="text-xs text-red-200 mt-1.5 flex items-center gap-1">
+        <p className="text-xs text-red-200 mt-2 flex items-center gap-1">
           <Icon name="AlertCircle" size={11} />
           Ошибка, попробуйте ещё раз
         </p>
       )}
-      <p className="text-[9px] text-white/40 mt-1.5">
-        Менеджер перезвонит и пришлёт смету на WhatsApp
+      <p className="text-[10px] text-white/40 mt-2">
+        Менеджер перезвонит и пришлёт детальную смету на WhatsApp
       </p>
     </div>
   );

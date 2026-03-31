@@ -79,55 +79,71 @@ export default function CalcOrderForm({ calcType, total, onClose }: Props) {
   }
 
   return (
-    <div className="rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 p-5 text-white shadow-lg">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
-          <Icon name="PhoneCall" size={20} />
+    <div className="rounded-2xl bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 p-6 text-white shadow-xl relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-16 translate-x-16" />
+
+      <div className="relative">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+            <Icon name="PhoneCall" size={22} />
+          </div>
+          <div>
+            <p className="font-bold text-lg leading-tight">Получите точную смету</p>
+            {total && (
+              <p className="text-orange-100 text-sm mt-0.5">Предварительно: {total}</p>
+            )}
+          </div>
         </div>
-        <div>
-          <p className="font-bold text-base leading-tight">Получите точную смету бесплатно</p>
-          {total && (
-            <p className="text-orange-100 text-sm">Предварительно: {total}</p>
+
+        <div className="flex items-center gap-3 mb-4 py-3 px-4 bg-white/10 rounded-xl">
+          <Icon name="CheckCircle2" size={16} className="text-green-300 shrink-0" />
+          <p className="text-sm text-orange-50">Бесплатный расчёт + гарантия цены 30 дней</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            type="tel"
+            className="w-full border-2 border-white/30 rounded-xl px-4 py-3.5 text-base bg-white/10 text-white placeholder-white/60 focus:outline-none focus:border-white focus:bg-white/20 transition-colors"
+            placeholder="+7 (___) ___-__-__"
+            value={phone}
+            onChange={(e) => setPhone(formatPhone(e.target.value))}
+          />
+
+          {status === "error" && (
+            <p className="text-sm text-red-200 flex items-center gap-1.5">
+              <Icon name="AlertCircle" size={14} />
+              Ошибка. Попробуйте ещё раз.
+            </p>
           )}
-        </div>
-      </div>
 
-      <p className="text-orange-100 text-sm mb-4">
-        Менеджер перезвонит, уточнит детали и пришлёт смету на WhatsApp
-      </p>
+          <Button
+            type="submit"
+            disabled={status === "sending" || !isValid}
+            className="w-full bg-white text-orange-600 hover:bg-orange-50 font-bold h-13 text-base rounded-xl disabled:opacity-50 shadow-lg"
+          >
+            {status === "sending" ? (
+              <><Icon name="Loader2" size={16} className="mr-2 animate-spin" />Отправляю...</>
+            ) : (
+              <><Icon name="PhoneCall" size={16} className="mr-2" />Перезвоните мне</>
+            )}
+          </Button>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <input
-          type="tel"
-          className="w-full border-2 border-white/30 rounded-xl px-4 py-3 text-base bg-white/10 text-white placeholder-white/60 focus:outline-none focus:border-white focus:bg-white/20 transition-colors"
-          placeholder="+7 (___) ___-__-__"
-          value={phone}
-          onChange={(e) => setPhone(formatPhone(e.target.value))}
-        />
+          <div className="flex items-center justify-center gap-4 pt-1">
+            <div className="flex items-center gap-1.5 text-orange-200 text-xs">
+              <Icon name="Clock" size={12} />
+              <span>15 минут</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-orange-200 text-xs">
+              <Icon name="MessageCircle" size={12} />
+              <span>Смета на WhatsApp</span>
+            </div>
+          </div>
 
-        {status === "error" && (
-          <p className="text-sm text-red-200 flex items-center gap-1.5">
-            <Icon name="AlertCircle" size={14} />
-            Ошибка. Попробуйте ещё раз.
+          <p className="text-[10px] text-orange-200/60 text-center">
+            Нажимая кнопку, вы соглашаетесь на обработку персональных данных
           </p>
-        )}
-
-        <Button
-          type="submit"
-          disabled={status === "sending" || !isValid}
-          className="w-full bg-white text-orange-600 hover:bg-orange-50 font-bold h-12 text-base rounded-xl disabled:opacity-50"
-        >
-          {status === "sending" ? (
-            <><Icon name="Loader2" size={16} className="mr-2 animate-spin" />Отправляю...</>
-          ) : (
-            <><Icon name="PhoneCall" size={16} className="mr-2" />Жду звонка</>
-          )}
-        </Button>
-
-        <p className="text-[10px] text-orange-200 text-center">
-          Нажимая кнопку, вы соглашаетесь на обработку персональных данных
-        </p>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
