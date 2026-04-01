@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import { type PlanInfo, B2C_PLANS, B2B_PLANS, Check } from "./pricingTypes";
 import PaymentModal from "./PaymentModal";
 import B2BPaymentChoice from "./InvoiceModal";
+import reachGoal from "@/lib/metrika";
 
 export default function PricingPlans() {
   const [payPlan, setPayPlan] = useState<PlanInfo | null>(null);
@@ -12,6 +13,14 @@ export default function PricingPlans() {
   const handleB2CPay = (plan: PlanInfo) => {
     localStorage.setItem("avangard_tariff", JSON.stringify({ plan_id: plan.id, paid: false, ts: Date.now() }));
     setPayPlan(plan);
+  };
+
+  const saveTariffChoice = (plan: PlanInfo) => {
+    localStorage.setItem("avangard_tariff", JSON.stringify({ plan_id: plan.id, paid: false, ts: Date.now() }));
+  };
+
+  const fireActivate = (planId: string) => {
+    reachGoal("b2b_plan_activate", { plan: planId });
   };
 
   return (
