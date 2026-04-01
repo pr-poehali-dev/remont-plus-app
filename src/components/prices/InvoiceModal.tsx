@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
-import { type PlanInfo, fmt, COMPANY_REQUISITES } from "./pricingTypes";
+import { type PlanInfo, fmt, COMPANY_REQUISITES, YOOKASSA_API } from "./pricingTypes";
 import reachGoal from "@/lib/metrika";
 import PaymentModalYookassa from "./PaymentModal";
 
@@ -182,7 +182,6 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
     setLoading(true);
     setError("");
     try {
-      const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
       const description = `Тариф «${plan.name}» — ${companyName.trim()}${comment.trim() ? `, ${comment.trim()}` : ""}`;
       const res = await fetch(YOOKASSA_API, {
         method: "POST",

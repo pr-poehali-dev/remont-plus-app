@@ -3,10 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
-import { type PlanInfo, fmt } from "./pricingTypes";
+import { type PlanInfo, fmt, YOOKASSA_API } from "./pricingTypes";
 import reachGoal from "@/lib/metrika";
-
-const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
 
 export default function PaymentModal({ plan, onClose }: { plan: PlanInfo; onClose: () => void }) {
   const [name, setName] = useState("");
