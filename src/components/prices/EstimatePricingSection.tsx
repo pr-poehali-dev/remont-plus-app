@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 
+const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
-const PAYMENTS_ENABLED = true;
 
 const PLAN = {
   id: "estimate_print",
@@ -56,36 +56,42 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
     setLoading(true);
     setError("");
     try {
-      const orderRes = await fetch(ESTIMATE_PAYMENT_URL, {
+      const description = `${PLAN.title}${comment.trim() ? ` — ${comment.trim()}` : ""}`;
+      const res = await fetch(YOOKASSA_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "create_order",
-          plan_type: PLAN.id,
           amount: PLAN.price,
-          client_name: name.trim(),
-          client_email: email.trim(),
-          client_phone: phone.trim(),
-          client_comment: comment.trim(),
-          user_id: (() => { try { return JSON.parse(localStorage.getItem("avangard_user") || "null")?.id || null; } catch { return null; } })(),
+          user_name: name.trim(),
+          user_email: email.trim(),
+          user_phone: phone.trim(),
+          description,
           return_url: window.location.href,
+          cart_items: [{
+            id: PLAN.id,
+            name: PLAN.title,
+            price: PLAN.price,
+            quantity: 1,
+          }],
         }),
       });
-      const orderRaw = await orderRes.json();
-      const orderData = typeof orderRaw.body === "string" ? JSON.parse(orderRaw.body) : orderRaw;
+      const data = await res.json();
 
-      if (orderData.error) {
-        setError(orderData.error);
+      if (!res.ok || data.error) {
+        setError(data.error || "Ошибка создания платежа");
         setLoading(false);
         return;
       }
 
-      const oNum = orderData.order_number;
-      const paymentUrl = orderData.payment_url;
-      setOrderNumber(oNum);
+      setOrderNumber(data.order_number);
 
-      if (paymentUrl) {
-        window.open(paymentUrl, "_blank");
+      if (data.payment_url) {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+          window.open(data.payment_url, "_blank");
+        } else {
+          window.location.href = data.payment_url;
+        }
       }
       setStep("success");
     } catch (e) {
@@ -163,27 +169,13 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
                 </div>
               )}
 
-              {PAYMENTS_ENABLED ? (
-                <>
-                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12" onClick={handlePay} disabled={loading}>
-                    {loading
-                      ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
-                      : <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить 399 ₽</>
-                    }
-                  </Button>
-                  <p className="text-center text-xs text-gray-400">Безопасная оплата · Чек на email</p>
-                </>
-              ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                  <Icon name="Clock" size={24} className="text-yellow-500 mx-auto mb-2" />
-                  <p className="text-sm font-medium text-gray-800 mb-1">Онлайн-оплата временно недоступна</p>
-                  <p className="text-xs text-gray-500 mb-3">Для оформления заказа свяжитесь с нами:</p>
-                  <a href="tel:+79991234567" className="inline-flex items-center gap-1.5 text-orange-600 font-semibold text-sm hover:underline">
-                    <Icon name="Phone" size={14} />
-                    Позвонить
-                  </a>
-                </div>
-              )}
+              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12" onClick={handlePay} disabled={loading}>
+                {loading
+                  ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
+                  : <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить 399 ₽</>
+                }
+              </Button>
+              <p className="text-center text-xs text-gray-400">Безопасная оплата · Чек на email</p>
             </div>
           )}
         </div>

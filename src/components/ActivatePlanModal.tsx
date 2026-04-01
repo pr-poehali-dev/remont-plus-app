@@ -3,9 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Icon from "@/components/ui/icon";
 
-const PAYMENTS_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
-const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
-const PAYMENTS_ENABLED = true;
+const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
 
 const PLANS = [
   {
@@ -96,7 +94,7 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
 
     try {
       const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
-      const res = await fetch(PAYMENTS_URL, {
+      const res = await fetch(YOOKASSA_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -105,19 +103,28 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
           user_name: storedUser?.name || "",
           description: `Тариф ${plan.name}`,
           return_url: window.location.href,
-          metadata: { user_id: userId, plan_code: plan.code },
+          cart_items: [{
+            id: plan.code,
+            name: `Тариф ${plan.name}`,
+            price: plan.price,
+            quantity: 1,
+          }],
         }),
       });
-      const raw = await res.json();
-      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+      const data = await res.json();
 
-      if (data.error) {
-        setError(data.error);
+      if (!res.ok || data.error) {
+        setError(data.error || "Ошибка создания платежа");
         return;
       }
 
       if (data.payment_url) {
-        window.open(data.payment_url, "_blank");
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+          window.open(data.payment_url, "_blank");
+        } else {
+          window.location.href = data.payment_url;
+        }
       }
       setStep("paying");
     } catch {
@@ -190,52 +197,35 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
                       ))}
                     </ul>
 
-                    {PAYMENTS_ENABLED ? (
-                      <Button
-                        size="sm"
-                        className="w-full h-8 text-xs"
-                        disabled={isCurrent || loading}
-                        variant={isCurrent ? "outline" : "default"}
-                        onClick={() => startPayment(plan)}
-                      >
-                        {isLoading ? (
-                          <>
-                            <Icon name="Loader2" size={13} className="mr-1.5 animate-spin" />
-                            Создаём платёж...
-                          </>
-                        ) : isCurrent ? (
-                          "Текущий тариф"
-                        ) : (
-                          <>
-                            <Icon name="CreditCard" size={13} className="mr-1.5" />
-                            Оплатить {plan.label}
-                          </>
-                        )}
-                      </Button>
-                    ) : (
-                      <Button size="sm" className="w-full h-8 text-xs" variant="outline" disabled>
-                        Скоро
-                      </Button>
-                    )}
+                    <Button
+                      size="sm"
+                      className="w-full h-8 text-xs"
+                      disabled={isCurrent || loading}
+                      variant={isCurrent ? "outline" : "default"}
+                      onClick={() => startPayment(plan)}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Icon name="Loader2" size={13} className="mr-1.5 animate-spin" />
+                          Создаём платёж...
+                        </>
+                      ) : isCurrent ? (
+                        "Текущий тариф"
+                      ) : (
+                        <>
+                          <Icon name="CreditCard" size={13} className="mr-1.5" />
+                          Оплатить {plan.label}
+                        </>
+                      )}
+                    </Button>
                   </div>
                 );
               })}
             </div>
 
-            {PAYMENTS_ENABLED ? (
-              <p className="text-xs text-gray-400 text-center mt-1">
-                Оплата картой или через СБП. Безопасно и мгновенно.
-              </p>
-            ) : (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-center mt-2">
-                <p className="text-sm font-medium text-gray-800 mb-1">Онлайн-оплата временно недоступна</p>
-                <p className="text-xs text-gray-500">Для подключения тарифа свяжитесь с нами:</p>
-                <a href="tel:+79991234567" className="inline-flex items-center gap-1.5 text-orange-600 font-semibold text-sm hover:underline mt-1">
-                  <Icon name="Phone" size={14} />
-                  Позвонить
-                </a>
-              </div>
-            )}
+            <p className="text-xs text-gray-400 text-center mt-1">
+              Оплата картой или через СБП. Безопасно и мгновенно.
+            </p>
           </>
         )}
 

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 
+const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 const PAID_KEY = "avangard_estimate_paid";
 
@@ -90,28 +91,36 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
     setError(null);
     setPaying(code);
     try {
-      const res = await fetch(ESTIMATE_PAYMENT_URL, {
+      const res = await fetch(YOOKASSA_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "create_order",
-          plan_type: code,
           amount: price,
-          client_name: storedUser?.name || "",
-          client_email: storedUser?.email || "",
-          user_id: userId,
+          user_name: storedUser?.name || "",
+          user_email: storedUser?.email || "client@avangard.ru",
+          description: planName,
           return_url: window.location.href,
+          cart_items: [{
+            id: code,
+            name: planName,
+            price: price,
+            quantity: 1,
+          }],
         }),
       });
-      const raw = await res.json();
-      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
-      if (data.error) {
-        setError(data.error);
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setError(data.error || "Ошибка создания платежа");
         setPaying(null);
         return;
       }
       if (data.payment_url) {
-        window.open(data.payment_url, "_blank");
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+          window.open(data.payment_url, "_blank");
+        } else {
+          window.location.href = data.payment_url;
+        }
       }
     } catch {
       setError("Ошибка соединения. Попробуйте ещё раз.");

@@ -1,52 +1,17 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import { type PlanInfo, B2C_PLANS, B2B_PLANS, Check, TOCHKA_CHECKOUT_URLS } from "./pricingTypes";
+import { type PlanInfo, B2C_PLANS, B2B_PLANS, Check } from "./pricingTypes";
 import PaymentModal from "./PaymentModal";
 import B2BPaymentChoice from "./InvoiceModal";
-
-const TARIFF_API = "https://functions.poehali.dev/aae7e353-917d-4759-9f27-a78f28be0084";
-
-function getStoredUser(): { id?: number; email?: string } | null {
-  try {
-    return JSON.parse(localStorage.getItem("avangard_user") || "null");
-  } catch {
-    return null;
-  }
-}
-
-function fireActivate(planId: string) {
-  const user = getStoredUser();
-  if (!user?.id && !user?.email) return;
-  fetch(TARIFF_API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      action: "activate",
-      plan_id: planId,
-      user_id: user.id,
-      email: user.email,
-    }),
-  }).catch(() => {});
-}
 
 export default function PricingPlans() {
   const [payPlan, setPayPlan] = useState<PlanInfo | null>(null);
   const [b2bPlan, setB2bPlan] = useState<PlanInfo | null>(null);
 
-  const saveTariffChoice = (plan: PlanInfo) => {
-    localStorage.setItem("avangard_tariff", JSON.stringify({ plan_id: plan.id, paid: false, ts: Date.now() }));
-  };
-
   const handleB2CPay = (plan: PlanInfo) => {
-    saveTariffChoice(plan);
-    const checkoutUrl = TOCHKA_CHECKOUT_URLS[plan.id];
-    if (checkoutUrl) {
-      window.open(checkoutUrl, "_blank");
-      fireActivate(plan.id);
-    } else {
-      setPayPlan(plan);
-    }
+    localStorage.setItem("avangard_tariff", JSON.stringify({ plan_id: plan.id, paid: false, ts: Date.now() }));
+    setPayPlan(plan);
   };
 
   return (

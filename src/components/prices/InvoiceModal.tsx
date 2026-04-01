@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
-import { type PlanInfo, PAYMENT_URL, fmt, TOCHKA_CHECKOUT_URLS, COMPANY_REQUISITES } from "./pricingTypes";
+import { type PlanInfo, fmt, COMPANY_REQUISITES } from "./pricingTypes";
 import reachGoal from "@/lib/metrika";
+import PaymentModalYookassa from "./PaymentModal";
 
 function copyToClipboard(text: string): Promise<void> {
   if (navigator.clipboard && window.isSecureContext) {
@@ -181,27 +182,41 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(PAYMENT_URL, {
+      const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
+      const description = `Тариф «${plan.name}» — ${companyName.trim()}${comment.trim() ? `, ${comment.trim()}` : ""}`;
+      const res = await fetch(YOOKASSA_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "create_invoice",
-          plan_type: plan.id,
-          company_name: companyName.trim(),
-          inn: inn.trim(),
-          contact_name: contactName.trim(),
-          client_email: email.trim(),
-          client_phone: phone.trim(),
-          client_comment: comment.trim(),
+          amount: plan.price,
+          user_name: contactName.trim() || companyName.trim(),
+          user_email: email.trim(),
+          user_phone: phone.trim(),
+          description,
+          return_url: window.location.href,
+          cart_items: [{
+            id: plan.id,
+            name: `Тариф «${plan.name}» (1 мес)`,
+            price: plan.price,
+            quantity: 1,
+          }],
         }),
       });
-      const raw = await res.json();
-      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+      const data = await res.json();
 
-      if (data.error) { setError(data.error); setLoading(false); return; }
+      if (!res.ok || data.error) { setError(data.error || "Ошибка создания платежа"); setLoading(false); return; }
 
       setOrderNumber(data.order_number);
       reachGoal("invoice_request", { plan: plan.id, price: plan.price });
+
+      if (data.payment_url) {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+          window.open(data.payment_url, "_blank");
+        } else {
+          window.location.href = data.payment_url;
+        }
+      }
       setStep("success");
     } catch {
       setError("Не удалось отправить запрос. Попробуйте позже.");
@@ -370,8 +385,11 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
 }
 
 export default function B2BPaymentChoice({ plan, onClose }: { plan: PlanInfo; onClose: () => void }) {
-  const [mode, setMode] = useState<"choose" | "invoice">("choose");
+  const [mode, setMode] = useState<"choose" | "online" | "invoice">("choose");
 
+  if (mode === "online") {
+    return <PaymentModalYookassa plan={plan} onClose={onClose} />;
+  }
   if (mode === "invoice") return <InvoiceForm plan={plan} onClose={onClose} />;
 
   return (
@@ -396,11 +414,7 @@ export default function B2BPaymentChoice({ plan, onClose }: { plan: PlanInfo; on
 
           <button
             className="w-full border border-gray-200 rounded-xl p-4 flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/50 transition-colors text-left"
-            onClick={() => {
-              const url = TOCHKA_CHECKOUT_URLS[plan.id];
-              if (url) window.open(url, "_blank");
-              onClose();
-            }}
+            onClick={() => setMode("online")}
           >
             <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
               <Icon name="CreditCard" size={20} className="text-orange-500" />

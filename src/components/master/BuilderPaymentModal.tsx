@@ -4,9 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
 
-const PAYMENT_URL = "https://functions.poehali.dev/c7439956-7054-42de-9721-f9502da4d4b9";
+const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
 const RETURN_URL = `${window.location.origin}/masters`;
-const PAYMENTS_ENABLED = true;
 
 interface BuilderPlan {
   code: string;
@@ -55,7 +54,7 @@ export default function BuilderPaymentModal({
     setError("");
 
     try {
-      const res = await fetch(PAYMENT_URL, {
+      const res = await fetch(YOOKASSA_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -64,19 +63,28 @@ export default function BuilderPaymentModal({
           user_name: contractorName,
           description: `Тариф ${plan.name} для ${contractorName}`,
           return_url: RETURN_URL,
-          metadata: { user_id: contractorId, plan_code: plan.code },
+          cart_items: [{
+            id: plan.code,
+            name: `Тариф ${plan.name}`,
+            price: plan.price,
+            quantity: 1,
+          }],
         }),
       });
-      const raw = await res.json();
-      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+      const data = await res.json();
 
-      if (data.error) {
-        setError(data.error);
+      if (!res.ok || data.error) {
+        setError(data.error || "Ошибка создания платежа");
         return;
       }
 
       if (data.payment_url) {
-        window.open(data.payment_url, "_blank");
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+          window.open(data.payment_url, "_blank");
+        } else {
+          window.location.href = data.payment_url;
+        }
       }
       onSuccess();
     } catch (e) {
@@ -162,32 +170,18 @@ export default function BuilderPaymentModal({
             </div>
           )}
 
-          {PAYMENTS_ENABLED ? (
-            <>
-              <Button
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 text-base"
-                onClick={handlePay}
-                disabled={loading}
-              >
-                {loading ? (
-                  <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
-                ) : (
-                  <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить {fmt(plan.price)} ₽</>
-                )}
-              </Button>
-              <p className="text-center text-xs text-gray-400">Безопасная оплата · Чек на email после оплаты</p>
-            </>
-          ) : (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-              <Icon name="Clock" size={24} className="text-yellow-500 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-800 mb-1">Онлайн-оплата временно недоступна</p>
-              <p className="text-xs text-gray-500 mb-3">Для оформления заказа свяжитесь с нами:</p>
-              <a href="tel:+79991234567" className="inline-flex items-center gap-1.5 text-orange-600 font-semibold text-sm hover:underline">
-                <Icon name="Phone" size={14} />
-                Позвонить
-              </a>
-            </div>
-          )}
+          <Button
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 text-base"
+            onClick={handlePay}
+            disabled={loading}
+          >
+            {loading ? (
+              <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
+            ) : (
+              <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить {fmt(plan.price)} ₽</>
+            )}
+          </Button>
+          <p className="text-center text-xs text-gray-400">Безопасная оплата · Чек на email после оплаты</p>
         </div>
       </div>
     </div>

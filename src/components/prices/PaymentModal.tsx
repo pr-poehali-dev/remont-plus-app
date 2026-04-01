@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
-import { type PlanInfo, PAYMENT_URL, fmt } from "./pricingTypes";
+import { type PlanInfo, fmt } from "./pricingTypes";
 import reachGoal from "@/lib/metrika";
+
+const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
 
 export default function PaymentModal({ plan, onClose }: { plan: PlanInfo; onClose: () => void }) {
   const [name, setName] = useState("");
@@ -30,27 +32,40 @@ export default function PaymentModal({ plan, onClose }: { plan: PlanInfo; onClos
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(PAYMENT_URL, {
+      const description = `Тариф «${plan.name}»${comment.trim() ? ` — ${comment.trim()}` : ""}`;
+      const res = await fetch(YOOKASSA_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "create_order",
-          plan_type: plan.id,
-          client_name: name.trim(),
-          client_email: email.trim(),
-          client_phone: phone.trim(),
-          client_comment: comment.trim(),
+          amount: plan.price,
+          user_name: name.trim(),
+          user_email: email.trim(),
+          user_phone: phone.trim(),
+          description,
           return_url: window.location.href,
+          cart_items: [{
+            id: plan.id,
+            name: `Тариф «${plan.name}»`,
+            price: plan.price,
+            quantity: 1,
+          }],
         }),
       });
-      const raw = await res.json();
-      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+      const data = await res.json();
 
-      if (data.error) { setError(data.error); setLoading(false); return; }
+      if (!res.ok || data.error) { setError(data.error || "Ошибка создания платежа"); setLoading(false); return; }
 
       setOrderNumber(data.order_number);
       reachGoal("payment_started", { plan: plan.id, price: plan.price });
-      if (data.payment_url) window.open(data.payment_url, "_blank");
+
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (data.payment_url) {
+        if (isMobile) {
+          window.open(data.payment_url, "_blank");
+        } else {
+          window.location.href = data.payment_url;
+        }
+      }
       setStep("success");
     } catch {
       setError("Не удалось создать платёж. Попробуйте позже.");
