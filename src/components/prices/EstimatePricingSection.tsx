@@ -171,8 +171,14 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
                 </div>
               )}
 
-              {isPromoActive() ? (
-                <div className="w-full bg-green-500 text-white font-bold h-12 rounded-md flex items-center justify-center gap-2"><Icon name="Gift" size={18} />Бесплатно до 15 апреля!</div>
+              {isFreePeriod() ? (
+                <div className="w-full bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                  <p className="text-green-700 font-bold flex items-center justify-center gap-2">
+                    <Icon name="Gift" size={18} />
+                    Бесплатно до 15 апреля
+                  </p>
+                  <p className="text-green-600 text-xs mt-1">Все сервисы доступны без оплаты</p>
+                </div>
               ) : (
                 <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12" onClick={handlePay} disabled={loading}>
                   {loading
