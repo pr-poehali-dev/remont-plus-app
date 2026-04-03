@@ -21,6 +21,7 @@ import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const MARKUP_KEY = "ceilings_markup_pct";
 const REGION_KEY = "ceilings_region";
@@ -201,6 +202,7 @@ export default function Ceilings() {
       ]}
     />
     <div className="min-h-screen bg-gray-50">
+      <HomePromoBanner />
       <CeilingsHeader
         zoneCount={zones.length}
         totalArea={totalArea}

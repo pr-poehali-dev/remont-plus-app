@@ -6,6 +6,7 @@ import Icon from "@/components/ui/icon";
 import { type PlanInfo, fmt, COMPANY_REQUISITES, YOOKASSA_API } from "./pricingTypes";
 import reachGoal from "@/lib/metrika";
 import PaymentModalYookassa from "./PaymentModal";
+import { isFreePeriod } from "@/lib/promo";
 
 function copyToClipboard(text: string): Promise<void> {
   if (navigator.clipboard && window.isSecureContext) {
@@ -178,6 +179,7 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
   };
 
   const handleSubmit = async () => {
+    if (isFreePeriod()) { onClose(); return; }
     if (!validate()) return;
     setLoading(true);
     setError("");
@@ -368,12 +370,16 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
                 </div>
               )}
 
-              <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold h-12" onClick={handleSubmit} disabled={loading}>
-                {loading
-                  ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Отправляем...</>
-                  : <><Icon name="FileText" size={18} className="mr-2" />Запросить счёт</>
-                }
-              </Button>
+              {isFreePeriod() ? (
+                <div className="w-full bg-green-500 text-white font-bold h-12 rounded-md flex items-center justify-center gap-2"><Icon name="Gift" size={18} />Бесплатно до 15 апреля!</div>
+              ) : (
+                <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold h-12" onClick={handleSubmit} disabled={loading}>
+                  {loading
+                    ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Отправляем...</>
+                    : <><Icon name="FileText" size={18} className="mr-2" />Запросить счёт</>
+                  }
+                </Button>
+              )}
               <p className="text-center text-xs text-gray-400">Счёт будет отправлен на указанный email</p>
             </div>
           )}
@@ -411,31 +417,39 @@ export default function B2BPaymentChoice({ plan, onClose }: { plan: PlanInfo; on
         <div className="p-6 space-y-3">
           <p className="text-sm text-gray-500 mb-4">Выберите способ оплаты:</p>
 
-          <button
-            className="w-full border border-gray-200 rounded-xl p-4 flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/50 transition-colors text-left"
-            onClick={() => setMode("online")}
-          >
-            <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
-              <Icon name="CreditCard" size={20} className="text-orange-500" />
+          {isFreePeriod() ? (
+            <div className="w-full bg-green-500 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2">
+              <Icon name="Gift" size={18} />Бесплатно до 15 апреля!
             </div>
-            <div>
-              <p className="font-semibold text-sm text-gray-900">Оплатить онлайн</p>
-              <p className="text-xs text-gray-400">Банковская карта или СБП</p>
-            </div>
-          </button>
+          ) : (
+            <>
+              <button
+                className="w-full border border-gray-200 rounded-xl p-4 flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/50 transition-colors text-left"
+                onClick={() => setMode("online")}
+              >
+                <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+                  <Icon name="CreditCard" size={20} className="text-orange-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-gray-900">Оплатить онлайн</p>
+                  <p className="text-xs text-gray-400">Банковская карта или СБП</p>
+                </div>
+              </button>
 
-          <button
-            className="w-full border border-gray-200 rounded-xl p-4 flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/50 transition-colors text-left"
-            onClick={() => setMode("invoice")}
-          >
-            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
-              <Icon name="FileText" size={20} className="text-blue-500" />
-            </div>
-            <div>
-              <p className="font-semibold text-sm text-gray-900">Оплата по счёту</p>
-              <p className="text-xs text-gray-400">Для юрлиц и ИП — выставим счёт</p>
-            </div>
-          </button>
+              <button
+                className="w-full border border-gray-200 rounded-xl p-4 flex items-center gap-4 hover:border-blue-300 hover:bg-blue-50/50 transition-colors text-left"
+                onClick={() => setMode("invoice")}
+              >
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                  <Icon name="FileText" size={20} className="text-blue-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-gray-900">Оплата по счёту</p>
+                  <p className="text-xs text-gray-400">Для юрлиц и ИП — выставим счёт</p>
+                </div>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const MARKUP_KEY = "bathroom_markup_pct";
 const REGION_KEY = "bathroom_region";
@@ -174,6 +175,7 @@ export default function Bathroom() {
       ]}
     />
     <div className="min-h-screen bg-gray-50">
+      <HomePromoBanner />
       <BathroomHeader
         zonesCount={zones.length}
         totalArea={totalArea}

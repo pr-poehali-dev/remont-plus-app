@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import HomeFurnitureCalculator from "@/components/home/HomeFurnitureCalculator";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 export default function Furniture() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-[#fafaf8]">
+      <HomePromoBanner />
       <header className="bg-[#0f0f13] px-4 py-4">
         <div className="max-w-6xl mx-auto flex items-center gap-4">
           <button

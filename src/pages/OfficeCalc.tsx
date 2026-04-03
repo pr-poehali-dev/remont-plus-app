@@ -12,6 +12,7 @@ import { calcPrice, makeZone, fmtPrice, REGIONS, ZoneConfig } from "./office/off
 import OfficeZoneEditor from "./office/OfficeZoneEditor";
 import OfficeSidebar from "./office/OfficeSidebar";
 import SalesWidget from "@/components/calculator/SalesWidget";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const MARKUP_KEY = "office_calc_markup";
 const REGION_KEY = "office_calc_region";
@@ -90,6 +91,7 @@ export default function OfficeCalc() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <HomePromoBanner />
       <SEOMeta
         title="Калькулятор ремонта офиса онлайн 2026"
         description="Рассчитайте стоимость ремонта офиса онлайн. Отделка, электрика, сети, мебель — точная смета по площади и классу отделки."

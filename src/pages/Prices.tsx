@@ -7,6 +7,7 @@ import SEOMeta from "@/components/SEOMeta";
 import { type Region, type Category, type PriceCategory } from "@/components/prices/PricesTypes";
 import PriceListTable from "@/components/prices/PriceListTable";
 import PageTour from "@/components/ui/PageTour";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const PRICES_TOUR = [
   {
@@ -102,6 +103,7 @@ export default function Prices() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <HomePromoBanner />
       <SEOMeta
         title="Цены на ремонт квартир и домов 2026 — прайс-лист"
         description="Актуальный прайс-лист на ремонт квартир, домов и офисов. Цены на отделочные работы, электрику, сантехнику и монтаж потолков в 2026 году."

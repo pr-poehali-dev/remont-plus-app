@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { type PlanInfo, fmt, YOOKASSA_API } from "./pricingTypes";
 import reachGoal from "@/lib/metrika";
+import { isFreePeriod } from "@/lib/promo";
 
 export default function PaymentModal({ plan, onClose }: { plan: PlanInfo; onClose: () => void }) {
   const [name, setName] = useState("");
@@ -26,6 +27,7 @@ export default function PaymentModal({ plan, onClose }: { plan: PlanInfo; onClos
   };
 
   const handlePay = async () => {
+    if (isFreePeriod()) { onClose(); return; }
     if (!validate()) return;
     setLoading(true);
     setError("");
@@ -140,12 +142,16 @@ export default function PaymentModal({ plan, onClose }: { plan: PlanInfo; onClos
                 </div>
               )}
 
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12" onClick={handlePay} disabled={loading}>
-                {loading
-                  ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
-                  : <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить {fmt(plan.price)} ₽</>
-                }
-              </Button>
+              {isFreePeriod() ? (
+                <div className="w-full bg-green-500 text-white font-bold h-12 rounded-md flex items-center justify-center gap-2"><Icon name="Gift" size={18} />Бесплатно до 15 апреля!</div>
+              ) : (
+                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12" onClick={handlePay} disabled={loading}>
+                  {loading
+                    ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
+                    : <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить {fmt(plan.price)} ₽</>
+                  }
+                </Button>
+              )}
               <p className="text-center text-xs text-gray-400">Безопасная оплата · Чек на email</p>
             </div>
           )}

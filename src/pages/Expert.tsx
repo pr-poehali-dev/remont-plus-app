@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const API_URL = "https://functions.poehali.dev/5a1ec782-2df4-4948-89e4-7eaa77f6f7a2";
 const NOTIFY_URL = "https://functions.poehali.dev/a8b87e78-89d1-48d8-ba76-8da2e0df32a3";
@@ -154,6 +155,7 @@ export default function Expert() {
 
   return (
     <div className="min-h-screen bg-[#fafaf8]">
+      <HomePromoBanner />
       {/* Шапка */}
       <div className="bg-gradient-to-r from-[#0f0f13] to-[#1a1a24] border-b border-white/5">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">

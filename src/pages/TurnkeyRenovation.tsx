@@ -142,7 +142,6 @@ export default function TurnkeyRenovation() {
 
   return (
     <CalcAuthGate calcName="Ремонт под ключ" calcPath="/turnkey">
-    <HomePromoBanner />
     <SEOMeta
       title="Калькулятор ремонта под ключ онлайн 2026"
       description="Рассчитайте стоимость ремонта квартиры под ключ онлайн. Черновые и чистовые работы, материалы, сантехника, электрика — полная смета онлайн."
@@ -154,6 +153,7 @@ export default function TurnkeyRenovation() {
       ]}
     />
     <div className="min-h-screen bg-gray-50">
+      <HomePromoBanner />
       {/* Шапка */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">

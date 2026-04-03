@@ -53,6 +53,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
   };
 
   const handlePay = async () => {
+    if (isPromoActive()) { onClose(); return; }
     if (!validate()) return;
     setLoading(true);
     setError("");
@@ -170,12 +171,16 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
                 </div>
               )}
 
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12" onClick={handlePay} disabled={loading}>
-                {loading
-                  ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
-                  : <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить 399 ₽</>
-                }
-              </Button>
+              {isPromoActive() ? (
+                <div className="w-full bg-green-500 text-white font-bold h-12 rounded-md flex items-center justify-center gap-2"><Icon name="Gift" size={18} />Бесплатно до 15 апреля!</div>
+              ) : (
+                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12" onClick={handlePay} disabled={loading}>
+                  {loading
+                    ? <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
+                    : <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить 399 ₽</>
+                  }
+                </Button>
+              )}
               <p className="text-center text-xs text-gray-400">Безопасная оплата · Чек на email</p>
             </div>
           )}

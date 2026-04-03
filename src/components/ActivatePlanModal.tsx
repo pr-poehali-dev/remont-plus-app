@@ -89,6 +89,7 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
   }, []);
 
   const startPayment = async (plan: (typeof PLANS)[0]) => {
+    if (isPromoActive()) return;
     setLoading(true);
     setError(null);
     setSelectedPlan(plan);

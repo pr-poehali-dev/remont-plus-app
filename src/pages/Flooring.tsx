@@ -17,6 +17,7 @@ import { usePageGoal } from "@/lib/metrika";
 import FlooringHeader from "@/components/calculator/flooring/FlooringHeader";
 import FlooringZoneList from "@/components/calculator/flooring/FlooringZoneList";
 import FlooringZoneEditor from "@/components/calculator/flooring/FlooringZoneEditor";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const MARKUP_KEY = "flooring_markup_pct";
 const REGION_KEY = "flooring_region";
@@ -171,6 +172,7 @@ export default function Flooring() {
         ]}
       />
       <div className="min-h-screen bg-gray-50">
+        <HomePromoBanner />
         <FlooringHeader
           totalArea={totalArea}
           zoneCount={zones.length}

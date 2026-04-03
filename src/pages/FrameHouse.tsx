@@ -17,6 +17,7 @@ import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const REGION_KEY = "framehouse_region";
 const MARKUP_KEY = "framehouse_markup";
@@ -153,6 +154,7 @@ export default function FrameHouse() {
       ]}
     />
     <div className="min-h-screen bg-[#f7faf7]">
+      <HomePromoBanner />
       <FrameHouseHeader
         config={config}
         bd={bd}

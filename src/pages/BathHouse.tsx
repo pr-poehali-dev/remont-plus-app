@@ -17,6 +17,7 @@ import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const REGION_KEY = "bathhouse_region";
 const MARKUP_KEY = "bathhouse_markup";
@@ -155,6 +156,7 @@ export default function BathHouse() {
       ]}
     />
     <div className="min-h-screen bg-[#fafaf8]">
+      <HomePromoBanner />
       <BathHouseHeader
         config={config}
         bd={bd}

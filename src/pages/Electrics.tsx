@@ -18,6 +18,7 @@ import { usePageGoal } from "@/lib/metrika";
 import ElectricsHeader from "@/components/calculator/electrics/ElectricsHeader";
 import ElectricsZoneList from "@/components/calculator/electrics/ElectricsZoneList";
 import ElectricsZoneEditor from "@/components/calculator/electrics/ElectricsZoneEditor";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const MARKUP_KEY = "electrics_markup_pct";
 const REGION_KEY = "electrics_region";
@@ -172,6 +173,7 @@ export default function Electrics() {
         ]}
       />
       <div className="min-h-screen bg-gray-50">
+        <HomePromoBanner />
         <ElectricsHeader
           totalArea={totalArea}
           zoneCount={zones.length}

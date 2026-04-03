@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
+import { isFreePeriod } from "@/lib/promo";
 
 const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
 const RETURN_URL = `${window.location.origin}/masters`;
@@ -49,6 +50,7 @@ export default function BuilderPaymentModal({
   };
 
   const handlePay = async () => {
+    if (isFreePeriod()) { onSuccess(); return; }
     if (!validate()) return;
     setLoading(true);
     setError("");
@@ -173,9 +175,11 @@ export default function BuilderPaymentModal({
           <Button
             className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 text-base"
             onClick={handlePay}
-            disabled={loading}
+            disabled={loading || isFreePeriod()}
           >
-            {loading ? (
+            {isFreePeriod() ? (
+              <><Icon name="Gift" size={18} className="mr-2" />Бесплатно до 15 апреля!</>
+            ) : loading ? (
               <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
             ) : (
               <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить {fmt(plan.price)} ₽</>
