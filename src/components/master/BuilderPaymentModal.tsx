@@ -172,19 +172,27 @@ export default function BuilderPaymentModal({
             </div>
           )}
 
-          <Button
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 text-base"
-            onClick={handlePay}
-            disabled={loading || isFreePeriod()}
-          >
-            {isFreePeriod() ? (
-              <><Icon name="Gift" size={18} className="mr-2" />Бесплатно до 15 апреля!</>
-            ) : loading ? (
-              <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
-            ) : (
-              <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить {fmt(plan.price)} ₽</>
-            )}
-          </Button>
+          {isFreePeriod() ? (
+            <div className="w-full bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+              <p className="text-green-700 font-bold flex items-center justify-center gap-2">
+                <Icon name="Gift" size={18} />
+                Бесплатно до 15 апреля
+              </p>
+              <p className="text-green-600 text-xs mt-1">Все сервисы доступны без оплаты</p>
+            </div>
+          ) : (
+            <Button
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 text-base"
+              onClick={handlePay}
+              disabled={loading}
+            >
+              {loading ? (
+                <><Icon name="Loader2" size={18} className="animate-spin mr-2" />Создаём платёж...</>
+              ) : (
+                <><Icon name="CreditCard" size={18} className="mr-2" />Оплатить {fmt(plan.price)} ₽</>
+              )}
+            </Button>
+          )}
           <p className="text-center text-xs text-gray-400">Безопасная оплата · Чек на email после оплаты</p>
         </div>
       </div>
