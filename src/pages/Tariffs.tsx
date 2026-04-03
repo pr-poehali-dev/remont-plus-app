@@ -7,6 +7,7 @@ import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
 import reachGoal from "@/lib/metrika";
 import PricingPlans from "@/components/prices/PricingPlans";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 import PageTour from "@/components/ui/PageTour";
 
@@ -80,6 +81,7 @@ export default function Tariffs() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <HomePromoBanner />
       <header className="bg-white border-b shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">

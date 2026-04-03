@@ -27,6 +27,7 @@ import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
 import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const MARKUP_KEY = "newbuild_markup_pct";
 const REGION_KEY = "newbuild_region";
@@ -186,6 +187,7 @@ export default function NewbuildRenovation() {
 
   return (
     <CalcAuthGate calcName="Новостройка" calcPath="/newbuild">
+    <HomePromoBanner />
     <SEOMeta
       title="Калькулятор ремонта новостройки онлайн 2026"
       description="Рассчитайте стоимость ремонта квартиры в новостройке онлайн. Черновой и чистовой ремонт, отделка под ключ. Смета по всем комнатам."

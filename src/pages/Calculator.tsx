@@ -10,6 +10,7 @@ import CalculatorBody from "@/components/calculator/CalculatorBody";
 import CalculatorCities from "@/components/calculator/CalculatorCities";
 import CalculatorModals from "@/components/calculator/CalculatorModals";
 import ScreenProtection from "@/components/print/ScreenProtection";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 export type { EstimateItem, PriceCategory, PriceItem, Region } from "@/hooks/useCalculatorState";
 
@@ -94,6 +95,7 @@ export default function Calculator() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <HomePromoBanner />
       <SEOMeta
         title="Калькуляторы ремонта онлайн — все виды работ"
         description="Все калькуляторы ремонта в одном месте: ванная, потолки, полы, электрика, окна, новостройка, баня, каркасный дом. Точный расчёт онлайн."

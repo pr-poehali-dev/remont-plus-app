@@ -5,6 +5,7 @@ import { type PlanInfo, B2C_PLANS, B2B_PLANS, Check } from "./pricingTypes";
 import PaymentModal from "./PaymentModal";
 import B2BPaymentChoice from "./InvoiceModal";
 import reachGoal from "@/lib/metrika";
+import { isPromoActive } from "@/lib/promo";
 
 export default function PricingPlans() {
   const [payPlan, setPayPlan] = useState<PlanInfo | null>(null);
@@ -55,8 +56,12 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Итоговая стоимость работ и материалов</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Выгрузка сметы в PDF</li>
             </ul>
-            <Button variant="outline" className="w-full" onClick={() => handleB2CPay(B2C_PLANS[0])}>
-              <Icon name="CreditCard" size={16} className="mr-2" />Оплатить 1 490 ₽
+            <Button variant="outline" className="w-full" onClick={() => handleB2CPay(B2C_PLANS[0])} disabled={isPromoActive()}>
+              {isPromoActive() ? (
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 апреля</>
+              ) : (
+                <><Icon name="CreditCard" size={16} className="mr-2" />Оплатить 1 490 ₽</>
+              )}
             </Button>
           </div>
 
@@ -83,8 +88,12 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Акт выполненных работ</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Проверка корректности расчётов</li>
             </ul>
-            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => handleB2CPay(B2C_PLANS[1])}>
-              <Icon name="CreditCard" size={16} className="mr-2" />Оплатить 2 990 ₽
+            <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => handleB2CPay(B2C_PLANS[1])} disabled={isPromoActive()}>
+              {isPromoActive() ? (
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 апреля</>
+              ) : (
+                <><Icon name="CreditCard" size={16} className="mr-2" />Оплатить 2 990 ₽</>
+              )}
             </Button>
           </div>
 
@@ -105,8 +114,12 @@ export default function PricingPlans() {
               <li className="flex items-start gap-2 text-gray-700"><Check />Подбор альтернативных решений</li>
               <li className="flex items-start gap-2 text-gray-700"><Check />Приоритетная поддержка</li>
             </ul>
-            <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => handleB2CPay(B2C_PLANS[2])}>
-              <Icon name="CreditCard" size={16} className="mr-2" />Оплатить 4 990 ₽
+            <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => handleB2CPay(B2C_PLANS[2])} disabled={isPromoActive()}>
+              {isPromoActive() ? (
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 апреля</>
+              ) : (
+                <><Icon name="CreditCard" size={16} className="mr-2" />Оплатить 4 990 ₽</>
+              )}
             </Button>
           </div>
         </div>
@@ -142,8 +155,12 @@ export default function PricingPlans() {
               saveTariffChoice(B2B_PLANS[0]);
               setB2bPlan(B2B_PLANS[0]);
               fireActivate(B2B_PLANS[0].id);
-            }}>
-              Подключить
+            }} disabled={isPromoActive()}>
+              {isPromoActive() ? (
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 апреля</>
+              ) : (
+                "Подключить"
+              )}
             </Button>
           </div>
 
@@ -172,8 +189,12 @@ export default function PricingPlans() {
               saveTariffChoice(B2B_PLANS[1]);
               setB2bPlan(B2B_PLANS[1]);
               fireActivate(B2B_PLANS[1].id);
-            }}>
-              Подключить
+            }} disabled={isPromoActive()}>
+              {isPromoActive() ? (
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 апреля</>
+              ) : (
+                "Подключить"
+              )}
             </Button>
           </div>
 
@@ -198,8 +219,12 @@ export default function PricingPlans() {
               saveTariffChoice(B2B_PLANS[2]);
               setB2bPlan(B2B_PLANS[2]);
               fireActivate(B2B_PLANS[2].id);
-            }}>
-              Подключить
+            }} disabled={isPromoActive()}>
+              {isPromoActive() ? (
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 апреля</>
+              ) : (
+                "Подключить"
+              )}
             </Button>
           </div>
         </div>

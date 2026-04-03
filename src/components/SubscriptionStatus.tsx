@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { type Subscription } from "@/hooks/useSubscription";
 import ActivatePlanModal from "@/components/ActivatePlanModal";
+import { isPromoActive } from "@/lib/promo";
 
 interface Props {
   subscription: Subscription | null;
@@ -62,12 +63,16 @@ export default function SubscriptionStatus({ subscription, loading, userId, onAc
               <Icon name="Zap" size={18} className="text-blue-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 text-sm mb-0.5">Нет активной подписки</p>
-              <p className="text-xs text-gray-500 mb-3">Выберите тариф для создания дизайн-проектов</p>
+              <p className="font-semibold text-gray-900 text-sm mb-0.5">
+                {isPromoActive() ? "Все сервисы бесплатны до 15 апреля" : "Нет активной подписки"}
+              </p>
+              <p className="text-xs text-gray-500 mb-3">
+                {isPromoActive() ? "Пользуйтесь всеми инструментами без ограничений" : "Выберите тариф для создания дизайн-проектов"}
+              </p>
               <div className="flex gap-2">
                 <Button size="sm" className="h-8 text-xs" onClick={() => setModalOpen(true)}>
-                  <Icon name="Zap" size={13} className="mr-1.5" />
-                  Активировать тариф
+                  <Icon name={isPromoActive() ? "Gift" : "Zap"} size={13} className="mr-1.5" />
+                  {isPromoActive() ? "Бесплатно до 15 апреля" : "Активировать тариф"}
                 </Button>
                 <Button size="sm" variant="ghost" className="h-8 text-xs text-gray-500" onClick={() => navigate("/tariffs")}>
                   Подробнее о тарифах

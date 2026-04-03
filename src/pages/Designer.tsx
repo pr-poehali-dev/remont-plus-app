@@ -8,6 +8,7 @@ import DesignerSidebar from "@/components/designer/DesignerSidebar";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useMeta } from "@/hooks/useMeta";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const API_URL = "https://functions.poehali.dev/638dfd86-50f0-4ec4-a850-6feb9fa7797e";
 
@@ -221,6 +222,7 @@ export default function Designer() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <HomePromoBanner />
       <Breadcrumbs items={[{ label: "Главная", path: "/" }, { label: "Конструктор", path: "/designer" }]} />
 
       <header className="bg-white border-b shadow-sm sticky top-0 z-50">

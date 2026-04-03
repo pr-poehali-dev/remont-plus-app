@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Icon from "@/components/ui/icon";
+import { isPromoActive } from "@/lib/promo";
 
 const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
 
@@ -200,7 +201,7 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
                     <Button
                       size="sm"
                       className="w-full h-8 text-xs"
-                      disabled={isCurrent || loading}
+                      disabled={isCurrent || loading || isPromoActive()}
                       variant={isCurrent ? "outline" : "default"}
                       onClick={() => startPayment(plan)}
                     >
@@ -211,6 +212,11 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
                         </>
                       ) : isCurrent ? (
                         "Текущий тариф"
+                      ) : isPromoActive() ? (
+                        <>
+                          <Icon name="Gift" size={13} className="mr-1.5" />
+                          Бесплатно до 15 апреля
+                        </>
                       ) : (
                         <>
                           <Icon name="CreditCard" size={13} className="mr-1.5" />

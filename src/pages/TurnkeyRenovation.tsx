@@ -28,6 +28,7 @@ import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import ScreenProtection from "@/components/print/ScreenProtection";
+import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const MARKUP_KEY = "turnkey_markup_pct";
 const REGION_KEY = "turnkey_region";
@@ -141,6 +142,7 @@ export default function TurnkeyRenovation() {
 
   return (
     <CalcAuthGate calcName="Ремонт под ключ" calcPath="/turnkey">
+    <HomePromoBanner />
     <SEOMeta
       title="Калькулятор ремонта под ключ онлайн 2026"
       description="Рассчитайте стоимость ремонта квартиры под ключ онлайн. Черновые и чистовые работы, материалы, сантехника, электрика — полная смета онлайн."

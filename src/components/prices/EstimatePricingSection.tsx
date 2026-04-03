@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { YOOKASSA_API } from "./pricingTypes";
+import { isPromoActive } from "@/lib/promo";
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 
@@ -373,9 +374,13 @@ export default function EstimatePricingSection() {
             <Button
               onClick={() => setShowModal(true)}
               className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 px-8 text-base"
+              disabled={isPromoActive()}
             >
-              <Icon name="CreditCard" size={18} className="mr-2" />
-              Заказать смету за 399 ₽
+              {isPromoActive() ? (
+                <><Icon name="Gift" size={18} className="mr-2" />Бесплатно до 15 апреля</>
+              ) : (
+                <><Icon name="CreditCard" size={18} className="mr-2" />Заказать смету за 399 ₽</>
+              )}
             </Button>
             <Button
               variant="outline"
