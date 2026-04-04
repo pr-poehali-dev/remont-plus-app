@@ -20,6 +20,8 @@ import ElectricsZoneList from "@/components/calculator/electrics/ElectricsZoneLi
 import ElectricsZoneEditor from "@/components/calculator/electrics/ElectricsZoneEditor";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
+import CalcFindMaster from "@/components/calculator/CalcFindMaster";
+import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 
 const MARKUP_KEY = "electrics_markup_pct";
 const REGION_KEY = "electrics_region";
@@ -251,6 +253,8 @@ export default function Electrics() {
               ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
             }}
           />
+          <CalcFindMaster calcType="Электрика" totalSum={totalSum} />
+          <CalcCreateProject calcType="Электрика" totalSum={totalSum} />
         </div>
         <SalesWidget calcContext={{ calcName: "Калькулятор электрики", totalPrice: totalSum }} />
         <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="electrics" />

@@ -10,6 +10,7 @@ import HomePartner from "@/components/home/HomePartner";
 import HomeVideoBanner from "@/components/home/HomeVideoBanner";
 import HomeReadyProjects from "@/components/home/HomeReadyProjects";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import HomeQuiz from "@/components/home/HomeQuiz";
 
 
 const POSTS_URL = "https://functions.poehali.dev/60baa083-841b-461e-9edb-8460b28e7076";
@@ -110,6 +111,10 @@ export default function Home() {
       <HomePromoBanner />
       <HomeHero user={user} regionLabel={region.label} onLogout={handleLogout} />
       <HomeHowItWorks />
+
+      <div className="bg-[#fafaf8]">
+        <HomeQuiz />
+      </div>
 
       <div className="bg-[#fafaf8] flex-1 px-4 py-16">
         <div className="w-full max-w-6xl mx-auto">

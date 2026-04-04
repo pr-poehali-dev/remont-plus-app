@@ -31,6 +31,8 @@ import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
+import CalcFindMaster from "@/components/calculator/CalcFindMaster";
+import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 
 const MARKUP_KEY = "windows_markup_pct";
 
@@ -445,6 +447,8 @@ export default function Windows() {
                       ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
                     }}
                   />
+                  <CalcFindMaster calcType="Окна" totalSum={totalSum} />
+                  <CalcCreateProject calcType="Окна" totalSum={totalSum} />
                 </div>
               </div>
             </div>

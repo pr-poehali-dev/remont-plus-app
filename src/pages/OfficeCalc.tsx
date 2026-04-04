@@ -14,6 +14,8 @@ import OfficeSidebar from "./office/OfficeSidebar";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
+import CalcFindMaster from "@/components/calculator/CalcFindMaster";
+import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 
 const MARKUP_KEY = "office_calc_markup";
 const REGION_KEY = "office_calc_region";
@@ -234,6 +236,8 @@ export default function OfficeCalc() {
             ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
           }}
         />
+        <CalcFindMaster calcType="Офис" totalSum={totalAll} />
+        <CalcCreateProject calcType="Офис" totalSum={totalAll} />
       </div>
 
       <SalesWidget

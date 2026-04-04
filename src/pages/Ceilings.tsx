@@ -23,6 +23,8 @@ import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
+import CalcFindMaster from "@/components/calculator/CalcFindMaster";
+import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 
 const MARKUP_KEY = "ceilings_markup_pct";
 const REGION_KEY = "ceilings_region";
@@ -301,6 +303,8 @@ export default function Ceilings() {
             ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
           }}
         />
+        <CalcFindMaster calcType="Потолки" totalSum={totalSum} />
+        <CalcCreateProject calcType="Потолки" totalSum={totalSum} />
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор потолков", totalPrice: totalSum }} />
       <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="ceilings" />

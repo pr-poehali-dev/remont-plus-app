@@ -19,6 +19,8 @@ import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
+import CalcFindMaster from "@/components/calculator/CalcFindMaster";
+import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 
 const REGION_KEY = "framehouse_region";
 const MARKUP_KEY = "framehouse_markup";
@@ -233,6 +235,8 @@ export default function FrameHouse() {
             ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
           }}
         />
+        <CalcFindMaster calcType="Каркасный дом" totalSum={bd.total} />
+        <CalcCreateProject calcType="Каркасный дом" totalSum={bd.total} />
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор каркасного дома", totalPrice: bd.total }} />
       <CalcStickyBar totalSum={bd.total} calcType="framehouse" />

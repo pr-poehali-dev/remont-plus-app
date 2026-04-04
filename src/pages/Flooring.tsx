@@ -19,6 +19,8 @@ import FlooringZoneList from "@/components/calculator/flooring/FlooringZoneList"
 import FlooringZoneEditor from "@/components/calculator/flooring/FlooringZoneEditor";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
+import CalcFindMaster from "@/components/calculator/CalcFindMaster";
+import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 
 const MARKUP_KEY = "flooring_markup_pct";
 const REGION_KEY = "flooring_region";
@@ -251,6 +253,8 @@ export default function Flooring() {
               ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
             }}
           />
+          <CalcFindMaster calcType="Полы" totalSum={totalSum} />
+          <CalcCreateProject calcType="Полы" totalSum={totalSum} />
         </div>
         <SalesWidget calcContext={{ calcName: "Калькулятор напольных покрытий", totalPrice: totalSum }} />
         <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="flooring" />

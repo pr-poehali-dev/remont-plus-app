@@ -19,6 +19,8 @@ import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
+import CalcFindMaster from "@/components/calculator/CalcFindMaster";
+import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 
 const MARKUP_KEY = "bathroom_markup_pct";
 const REGION_KEY = "bathroom_region";
@@ -253,6 +255,8 @@ export default function Bathroom() {
             ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
           }}
         />
+        <CalcFindMaster calcType="Ванная" totalSum={totalSum} />
+        <CalcCreateProject calcType="Ванная" totalSum={totalSum} />
       </div>
       <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="bathroom" />
       <SimilarProjects totalSum={totalSum} calcType="bathroom" />

@@ -28,6 +28,8 @@ import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
+import CalcFindMaster from "@/components/calculator/CalcFindMaster";
+import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const MARKUP_KEY = "newbuild_markup_pct";
@@ -468,6 +470,8 @@ export default function NewbuildRenovation() {
                 ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
               }}
             />
+            <CalcFindMaster calcType="Ремонт в новостройке" totalSum={totalSum} />
+            <CalcCreateProject calcType="Ремонт в новостройке" totalSum={totalSum} />
           </div>
 
           {/* Правая панель — редактор */}

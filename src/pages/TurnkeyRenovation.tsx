@@ -30,6 +30,8 @@ import { usePageGoal } from "@/lib/metrika";
 import ScreenProtection from "@/components/print/ScreenProtection";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
+import CalcFindMaster from "@/components/calculator/CalcFindMaster";
+import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 
 const MARKUP_KEY = "turnkey_markup_pct";
 const REGION_KEY = "turnkey_region";
@@ -410,6 +412,8 @@ export default function TurnkeyRenovation() {
                 ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
               }}
             />
+            <CalcFindMaster calcType="Под ключ" totalSum={cfg.totalPrice} />
+            <CalcCreateProject calcType="Под ключ" totalSum={cfg.totalPrice} />
           </div>
         </div>
       </div>

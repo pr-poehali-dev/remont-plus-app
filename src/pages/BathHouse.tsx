@@ -19,6 +19,8 @@ import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
+import CalcFindMaster from "@/components/calculator/CalcFindMaster";
+import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 
 const REGION_KEY = "bathhouse_region";
 const MARKUP_KEY = "bathhouse_markup";
@@ -241,6 +243,8 @@ export default function BathHouse() {
             ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
           }}
         />
+        <CalcFindMaster calcType="Баня" totalSum={bd.total} />
+        <CalcCreateProject calcType="Баня" totalSum={bd.total} />
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор бани", totalPrice: bd.total }} />
       <CalcStickyBar totalSum={bd.total} calcType="bathhouse" />
