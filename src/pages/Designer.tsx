@@ -8,6 +8,7 @@ import DesignerSidebar from "@/components/designer/DesignerSidebar";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useMeta } from "@/hooks/useMeta";
+import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const API_URL = "https://functions.poehali.dev/638dfd86-50f0-4ec4-a850-6feb9fa7797e";
@@ -45,6 +46,7 @@ export default function Designer() {
     keywords: "дизайн-проект интерьера онлайн, ИИ дизайнер, планировка квартиры, визуализация интерьера",
     canonical: "/designer",
   });
+  usePageGoal("view_designer");
 
   const navigate = useNavigate();
   const [projectId, setProjectId] = useState<number | null>(() => {

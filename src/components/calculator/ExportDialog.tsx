@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 export type DocType = "smeta" | "kp" | "ks2" | "ks3" | "act" | "contract";
 
@@ -103,9 +104,7 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
 
   const handleConfirm = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ contractor, phone, email, inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount, contractNum }));
-    if (typeof window !== "undefined" && (window as unknown as { ym?: (id: number, action: string, goal: string) => void }).ym) {
-      (window as unknown as { ym: (id: number, action: string, goal: string) => void }).ym(107009331, "reachGoal", "turnkey_document_confirm");
-    }
+    reachGoal("calc_export_confirm", { doc_type: docType });
     onConfirm({ customer, contractor, address, phone, email, validDays, docType, inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount, startDate, endDate, contractNum, contractDate, advancePct, warrantyMonths });
   };
 

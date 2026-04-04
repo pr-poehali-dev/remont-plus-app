@@ -21,6 +21,7 @@ import AdminMediaTab from "@/components/admin/AdminMediaTab";
 import AdminVideosTab from "@/components/admin/AdminVideosTab";
 import AdminCompanyParserTab from "@/components/admin/AdminCompanyParserTab";
 import AdminVisitorLeadsTab from "@/components/admin/AdminVisitorLeadsTab";
+import AdminConversionTab from "@/components/admin/AdminConversionTab";
 
 const SUPPLIERS_URL = 'https://functions.poehali.dev/735f02a5-eb3f-4e4b-b378-7564c92b8e00';
 const MATERIALS_URL = 'https://functions.poehali.dev/dd454a25-9f55-4cfb-9e59-736a4a1256fd';
@@ -207,6 +208,10 @@ export default function Admin() {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="conversions" className="gap-1.5">
+              <Icon name="TrendingUp" className="h-4 w-4" />
+              Конверсии
+            </TabsTrigger>
             <TabsTrigger value="stats" className="gap-1.5">
               <Icon name="BarChart3" className="h-4 w-4" />
               Статистика
@@ -275,6 +280,10 @@ export default function Admin() {
 
           <TabsContent value="partner-leads">
             <AdminPartnerLeadsTab leads={partnerLeads} onReload={loadPartnerLeads} />
+          </TabsContent>
+
+          <TabsContent value="conversions">
+            <AdminConversionTab />
           </TabsContent>
 
           <TabsContent value="stats">

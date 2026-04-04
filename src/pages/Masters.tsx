@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { useMeta } from "@/hooks/useMeta";
+import { usePageGoal } from "@/lib/metrika";
 import SEOMeta from "@/components/SEOMeta";
 import { AUTH_URL, DEMO_MASTERS, Master, User } from "@/components/master/masterTypes";
 import MasterCard from "@/components/master/MasterCard";
@@ -18,6 +19,7 @@ const BUILDER_PLANS = [
 
 export default function Masters() {
   const navigate = useNavigate();
+  usePageGoal("view_masters");
 
   useMeta({
     title: "Мастера по ремонту — найти специалиста",

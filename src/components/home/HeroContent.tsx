@@ -1,5 +1,6 @@
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
+import reachGoal from "@/lib/metrika";
 
 interface User {
   id: number;
@@ -31,6 +32,7 @@ export default function HeroContent({ user, regionLabel, sections }: HeroContent
   const navigate = useNavigate();
 
   const handleNavigate = (section: Section) => {
+    reachGoal("home_hero_click", { section: section.id, path: section.path });
     if (section.path.startsWith("/#")) {
       const id = section.path.slice(2);
       const el = document.getElementById(id);

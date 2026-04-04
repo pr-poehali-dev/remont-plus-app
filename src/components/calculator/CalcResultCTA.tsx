@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 interface Props {
   totalSum: number;
@@ -21,7 +22,7 @@ export default function CalcResultCTA({ totalSum, onAction }: Props) {
   if (totalSum <= 0 || !visible) return null;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 p-5 shadow-xl cursor-pointer group" onClick={onAction}>
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 p-5 shadow-xl cursor-pointer group" onClick={() => { reachGoal("calc_lock_price_cta", { total_sum: totalSum }); onAction(); }}>
       <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-10 translate-x-10" />
       <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-8 -translate-x-8" />
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 const STEPS = [
   {
@@ -132,7 +133,7 @@ export default function HomeHowItWorks() {
                         <Button
                           size="sm"
                           className={`bg-gradient-to-r ${s.color} text-white border-0 rounded-xl`}
-                          onClick={(e) => { e.stopPropagation(); navigate(s.ctaPath); }}
+                          onClick={(e) => { e.stopPropagation(); reachGoal("home_step_click", { step: s.number, path: s.ctaPath }); navigate(s.ctaPath); }}
                         >
                           {s.cta}
                           <Icon name="ArrowRight" size={14} className="ml-1" />
@@ -199,7 +200,7 @@ export default function HomeHowItWorks() {
                 <Button
                   size="sm"
                   className={`bg-gradient-to-r ${s.color} text-white border-0 rounded-xl`}
-                  onClick={() => navigate(s.ctaPath)}
+                  onClick={() => { reachGoal("home_step_click", { step: s.number, path: s.ctaPath }); navigate(s.ctaPath); }}
                 >
                   {s.cta}
                   <Icon name="ArrowRight" size={14} className="ml-1" />

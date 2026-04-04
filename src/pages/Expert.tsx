@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
+import reachGoal, { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const API_URL = "https://functions.poehali.dev/5a1ec782-2df4-4948-89e4-7eaa77f6f7a2";
@@ -70,6 +71,8 @@ export default function Expert() {
     canonical: "/expert",
   });
 
+  usePageGoal("view_expert");
+
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -111,6 +114,7 @@ export default function Expert() {
           brief: briefModal?.text ?? "",
         }),
       });
+      reachGoal("expert_brief_send");
       setBriefSent(true);
     } finally {
       setBriefSending(false);
@@ -125,6 +129,7 @@ export default function Expert() {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
+    if (!started) reachGoal("expert_first_message");
     setStarted(true);
 
     const userMsg: Message = { role: "user", text };

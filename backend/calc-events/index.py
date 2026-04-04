@@ -4,7 +4,7 @@ import psycopg2  # noqa
 
 
 def handler(event: dict, context) -> dict:
-    """Трекинг событий калькуляторов: открытие, расчёт, заявка"""
+    """Трекинг событий калькуляторов: открытие, расчёт, заявка, воронки конверсий"""
 
     if event.get('httpMethod') == 'OPTIONS':
         return {
@@ -26,7 +26,6 @@ def handler(event: dict, context) -> dict:
     conn = psycopg2.connect(dsn)
     cursor = conn.cursor()
 
-    # POST — записать событие
     if method == 'POST':
         body = json.loads(event.get('body') or '{}')
         calc_type = body.get('calc_type', '').strip()
@@ -55,7 +54,6 @@ def handler(event: dict, context) -> dict:
             'body': json.dumps({'success': True})
         }
 
-    # GET — статистика для админа
     if method == 'GET':
         req_headers = event.get('headers', {}) or {}
         req_headers_lower = {k.lower(): v for k, v in req_headers.items()}
@@ -85,6 +83,103 @@ def handler(event: dict, context) -> dict:
             }
 
         params = event.get('queryStringParameters') or {}
+        report_type = params.get('report', '')
+
+        if report_type == 'daily':
+            days = int(params.get('days', '14'))
+            if days > 90:
+                days = 90
+            cursor.execute(f"""
+                SELECT
+                    created_at::date AS day,
+                    SUM(CASE WHEN event_type = 'open' THEN 1 ELSE 0 END) AS opens,
+                    SUM(CASE WHEN event_type = 'interact' THEN 1 ELSE 0 END) AS interacts,
+                    SUM(CASE WHEN event_type = 'result_view' THEN 1 ELSE 0 END) AS result_views,
+                    SUM(CASE WHEN event_type = 'lead' THEN 1 ELSE 0 END) AS leads,
+                    SUM(CASE WHEN event_type = 'form_open' THEN 1 ELSE 0 END) AS form_opens,
+                    SUM(CASE WHEN event_type = 'export_click' THEN 1 ELSE 0 END) AS export_clicks
+                FROM {schema}.calculator_events
+                WHERE calc_type NOT LIKE 'ab:%%'
+                  AND created_at >= NOW() - INTERVAL '{days} days'
+                GROUP BY created_at::date
+                ORDER BY day
+            """)
+            rows = cursor.fetchall()
+            conn.close()
+            return {
+                'statusCode': 200,
+                'headers': headers,
+                'body': json.dumps({
+                    'daily': [
+                        {
+                            'day': str(r[0]),
+                            'opens': r[1], 'interacts': r[2],
+                            'result_views': r[3], 'leads': r[4],
+                            'form_opens': r[5], 'export_clicks': r[6]
+                        }
+                        for r in rows
+                    ]
+                }, ensure_ascii=False)
+            }
+
+        if report_type == 'funnel':
+            days = int(params.get('days', '30'))
+            if days > 90:
+                days = 90
+            cursor.execute(f"""
+                SELECT
+                    calc_type,
+                    SUM(CASE WHEN event_type = 'open' THEN 1 ELSE 0 END) AS opens,
+                    SUM(CASE WHEN event_type = 'interact' THEN 1 ELSE 0 END) AS interacts,
+                    SUM(CASE WHEN event_type = 'result_view' THEN 1 ELSE 0 END) AS result_views,
+                    SUM(CASE WHEN event_type = 'form_open' THEN 1 ELSE 0 END) AS form_opens,
+                    SUM(CASE WHEN event_type = 'export_click' THEN 1 ELSE 0 END) AS export_clicks,
+                    SUM(CASE WHEN event_type = 'lead' THEN 1 ELSE 0 END) AS leads
+                FROM {schema}.calculator_events
+                WHERE calc_type NOT LIKE 'ab:%%'
+                  AND created_at >= NOW() - INTERVAL '{days} days'
+                GROUP BY calc_type
+                ORDER BY opens DESC
+            """)
+            rows = cursor.fetchall()
+
+            cursor.execute(f"""
+                SELECT
+                    SUM(CASE WHEN event_type = 'open' THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN event_type = 'interact' THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN event_type = 'result_view' THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN event_type = 'form_open' THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN event_type = 'export_click' THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN event_type = 'lead' THEN 1 ELSE 0 END)
+                FROM {schema}.calculator_events
+                WHERE calc_type NOT LIKE 'ab:%%'
+                  AND created_at >= NOW() - INTERVAL '{days} days'
+            """)
+            totals = cursor.fetchone()
+            conn.close()
+
+            return {
+                'statusCode': 200,
+                'headers': headers,
+                'body': json.dumps({
+                    'funnel': [
+                        {
+                            'calc_type': r[0], 'opens': r[1], 'interacts': r[2],
+                            'result_views': r[3], 'form_opens': r[4],
+                            'export_clicks': r[5], 'leads': r[6]
+                        }
+                        for r in rows
+                    ],
+                    'totals': {
+                        'opens': totals[0] or 0,
+                        'interacts': totals[1] or 0,
+                        'result_views': totals[2] or 0,
+                        'form_opens': totals[3] or 0,
+                        'export_clicks': totals[4] or 0,
+                        'leads': totals[5] or 0
+                    }
+                }, ensure_ascii=False)
+            }
 
         cursor.execute(f"""
             SELECT
