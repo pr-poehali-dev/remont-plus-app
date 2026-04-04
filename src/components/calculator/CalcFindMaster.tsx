@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 interface Props {
   calcType: string;
@@ -18,7 +19,7 @@ export default function CalcFindMaster({ calcType, totalSum }: Props) {
   return (
     <div
       className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-5 shadow-xl cursor-pointer group mt-4"
-      onClick={() => navigate(`/masters?work=${encodeURIComponent(calcType)}&budget=${totalSum}`)}
+      onClick={() => { reachGoal("calc_find_master", { calc_type: calcType, total_sum: totalSum }); navigate(`/masters?work=${encodeURIComponent(calcType)}&budget=${totalSum}`); }}
     >
       <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-16 translate-x-16" />
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-10 -translate-x-10" />

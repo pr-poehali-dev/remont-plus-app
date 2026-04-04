@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 interface Props {
   calcType: string;
@@ -16,6 +17,7 @@ export default function CalcCreateProject({ calcType, totalSum }: Props) {
   if (totalSum <= 0) return null;
 
   const handleClick = () => {
+    reachGoal("calc_create_project", { calc_type: calcType, total_sum: totalSum });
     sessionStorage.setItem(
       "organizer_init",
       JSON.stringify({ calcType, totalSum, createdAt: new Date().toISOString() })

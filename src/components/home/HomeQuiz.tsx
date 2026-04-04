@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 interface QuizOption {
   id: string;
@@ -67,30 +68,28 @@ export default function HomeQuiz() {
   const [type, setType] = useState("");
   const [subType, setSubType] = useState("");
 
+  const goTo = (path: string, quizPath: string) => {
+    reachGoal("quiz_complete", { path, quiz_path: quizPath });
+    navigate(path);
+  };
+
   const handleSelect = (id: string) => {
     if (step === 0) {
-      if (id === "design") {
-        navigate("/designer");
-        return;
-      }
-      if (id === "office") {
-        navigate("/office");
-        return;
-      }
-      if (id === "bathroom") {
-        navigate("/bathroom");
-        return;
-      }
+      reachGoal("quiz_step", { step: 0, choice: id });
+      if (id === "design") { goTo("/designer", id); return; }
+      if (id === "office") { goTo("/office", id); return; }
+      if (id === "bathroom") { goTo("/bathroom", id); return; }
       setType(id);
       setStep(1);
       return;
     }
 
     if (step === 1) {
+      reachGoal("quiz_step", { step: 1, choice: id, type });
       setSubType(id);
       const target = id as keyof typeof ROUTE_MAP;
       if (["framehouse", "bathhouse"].includes(id)) {
-        navigate(ROUTE_MAP[target] || "/calculator");
+        goTo(ROUTE_MAP[target] || "/calculator", `${type}>${id}`);
         return;
       }
       setStep(2);
@@ -99,7 +98,7 @@ export default function HomeQuiz() {
 
     if (step === 2) {
       const route = ROUTE_MAP[subType || type] || "/calculator";
-      navigate(route);
+      goTo(route, `${type}>${subType}>${id}`);
     }
   };
 

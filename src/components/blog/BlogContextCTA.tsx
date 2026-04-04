@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import reachGoal from "@/lib/metrika";
 
 interface CalcLink {
   path: string;
@@ -70,13 +71,24 @@ interface Props {
   category: string;
   title: string;
   content: string;
+  slug?: string;
 }
 
-export default function BlogContextCTA({ category, title, content }: Props) {
+export default function BlogContextCTA({ category, title, content, slug }: Props) {
   const navigate = useNavigate();
   const calcs = detectCalcs(category, title, content);
 
   if (calcs.length === 0) return null;
+
+  const handleClick = (calc: CalcLink) => {
+    reachGoal("blog_cta_click", {
+      slug: slug || "",
+      category,
+      calc_path: calc.path,
+      calc_title: calc.title,
+    });
+    navigate(calc.path);
+  };
 
   return (
     <div className="my-10 space-y-4">
@@ -93,7 +105,7 @@ export default function BlogContextCTA({ category, title, content }: Props) {
         <div
           key={calc.path}
           className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-6 cursor-pointer group"
-          onClick={() => navigate(calc.path)}
+          onClick={() => handleClick(calc)}
         >
           <div className={`absolute top-0 right-0 w-48 h-48 bg-gradient-to-br ${calc.gradient} opacity-20 rounded-full -translate-y-20 translate-x-20 group-hover:opacity-30 transition-opacity`} />
 

@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import { useMeta } from "@/hooks/useMeta";
+import reachGoal from "@/lib/metrika";
 import BlogContextCTA from "@/components/blog/BlogContextCTA";
 
 const POSTS_URL = "https://functions.poehali.dev/60baa083-841b-461e-9edb-8460b28e7076";
@@ -180,6 +181,7 @@ export default function BlogPost() {
               category={post.category}
               title={post.title}
               content={post.content || post.excerpt}
+              slug={post.slug}
             />
 
             <div className="mt-10 pt-6 border-t grid md:grid-cols-3 gap-4">
@@ -189,7 +191,7 @@ export default function BlogPost() {
                 </div>
                 <h3 className="font-semibold text-sm mb-1">Спросите ИИ-эксперта</h3>
                 <p className="text-xs text-gray-600 mb-3">Бесплатная консультация онлайн</p>
-                <Button className="w-full bg-orange-500 hover:bg-orange-600" size="sm" onClick={() => navigate("/expert")}>Задать вопрос</Button>
+                <Button className="w-full bg-orange-500 hover:bg-orange-600" size="sm" onClick={() => { reachGoal("blog_footer_cta", { slug: post.slug, target: "expert" }); navigate("/expert"); }}>Задать вопрос</Button>
               </Card>
               <Card className="p-5 bg-gradient-to-br from-purple-50 to-purple-100">
                 <div className="w-9 h-9 bg-purple-600 rounded-lg flex items-center justify-center mb-3">
@@ -197,7 +199,7 @@ export default function BlogPost() {
                 </div>
                 <h3 className="font-semibold text-sm mb-1">Рассчитать смету</h3>
                 <p className="text-xs text-gray-600 mb-3">Детальный расчёт стоимости</p>
-                <Button className="w-full" size="sm" onClick={() => navigate("/calculator")}>Калькулятор</Button>
+                <Button className="w-full" size="sm" onClick={() => { reachGoal("blog_footer_cta", { slug: post.slug, target: "calculator" }); navigate("/calculator"); }}>Калькулятор</Button>
               </Card>
               <Card className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50">
                 <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center mb-3">
@@ -205,7 +207,7 @@ export default function BlogPost() {
                 </div>
                 <h3 className="font-semibold text-sm mb-1">Найти мастера</h3>
                 <p className="text-xs text-gray-600 mb-3">Проверенные подрядчики</p>
-                <Button className="w-full" size="sm" onClick={() => navigate("/masters")}>Подобрать</Button>
+                <Button className="w-full" size="sm" onClick={() => { reachGoal("blog_footer_cta", { slug: post.slug, target: "masters" }); navigate("/masters"); }}>Подобрать</Button>
               </Card>
             </div>
 
