@@ -212,7 +212,35 @@ export default function BathHouse() {
             total={`от ${bd.total.toLocaleString("ru-RU")} ₽`}
           />
         </div>
-        <CalcEmailCapture calcType="Баня" totalSum={bd.total} />
+        <CalcEmailCapture
+          calcType="Баня"
+          totalSum={bd.total}
+          items={[
+            { name: "Фундамент", price: bd.foundation },
+            { name: "Стены (коробка)", price: bd.walls },
+            { name: "Кровельная конструкция", price: bd.roofStructure },
+            { name: "Кровельный материал", price: bd.roofing },
+            { name: "Утепление", price: bd.insulation },
+            { name: "Отделка парной", price: bd.wallFinishSteam },
+            { name: "Отделка мойки", price: bd.wallFinishWash },
+            { name: "Отделка комнаты отдыха", price: bd.wallFinishRest },
+            { name: "Полы", price: bd.floor },
+            { name: "Печь", price: bd.stove },
+            { name: "Вентиляция", price: bd.ventilation },
+            { name: "Полок", price: bd.shelves },
+            { name: "Окна", price: bd.windows },
+            { name: "Дымоход", price: bd.chimney },
+            { name: "Бак для воды", price: bd.tank },
+            { name: "Терраса", price: bd.terrace },
+            { name: "Электрика", price: bd.electrical },
+            { name: "Монтаж и работа", price: bd.assembly },
+          ].filter(r => r.price > 0)}
+          params={{
+            "Площадь": `${config.totalArea} м²`,
+            "Регион": regionId,
+            ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+          }}
+        />
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор бани", totalPrice: bd.total }} />
       <CalcStickyBar totalSum={bd.total} calcType="bathhouse" />

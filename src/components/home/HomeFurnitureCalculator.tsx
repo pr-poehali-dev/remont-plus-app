@@ -285,7 +285,20 @@ export default function HomeFurnitureCalculator() {
                 цены ориентировочные · менеджер уточнит детали
               </p>
             </Card>
-            <CalcEmailCapture calcType="Мебель" totalSum={totalPrice} />
+            <CalcEmailCapture
+              calcType="Мебель"
+              totalSum={totalPrice}
+              items={selectedItems.map(item => ({
+                name: item.name,
+                price: getItemPrice(item),
+              }))}
+              params={{
+                "Стиль": style.title,
+                "Квартира": apartment.title,
+                "Предметов": `${selectedItems.length}`,
+                "Уровень": budgetPercent < 0.33 ? BUDGET_LABELS[0] : budgetPercent < 0.66 ? BUDGET_LABELS[1] : BUDGET_LABELS[2],
+              }}
+            />
           </div>
         </div>
       </div>

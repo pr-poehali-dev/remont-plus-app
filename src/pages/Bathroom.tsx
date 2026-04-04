@@ -239,7 +239,20 @@ export default function Bathroom() {
             total={`от ${totalSum.toLocaleString("ru-RU")} ₽`}
           />
         </div>
-        <CalcEmailCapture calcType="Ванная" totalSum={totalSum} />
+        <CalcEmailCapture
+          calcType="Ванная"
+          totalSum={totalSum}
+          items={zones.map(z => ({
+            name: z.roomName || "Санузел",
+            price: z.totalPrice,
+          }))}
+          params={{
+            "Площадь": `${totalArea} м²`,
+            "Зон": `${zones.length}`,
+            "Регион": regionId,
+            ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+          }}
+        />
       </div>
       <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="bathroom" />
       <SimilarProjects totalSum={totalSum} calcType="bathroom" />

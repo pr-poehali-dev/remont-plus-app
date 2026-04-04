@@ -4,10 +4,18 @@ import Icon from "@/components/ui/icon";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
 
 const VISITOR_LEADS_API = "https://functions.poehali.dev/536b1902-f1a6-497f-811d-d2fbad49442a";
+const NOTIFY_EMAIL_API = "https://functions.poehali.dev/a8b87e78-89d1-48d8-ba76-8da2e0df32a3";
+
+export interface EstimateItem {
+  name: string;
+  price: number;
+}
 
 interface Props {
   calcType: string;
   totalSum: number;
+  items?: EstimateItem[];
+  params?: Record<string, string>;
 }
 
 type Status = "idle" | "sending" | "success" | "error";
@@ -16,7 +24,7 @@ function fmt(n: number): string {
   return n.toLocaleString("ru-RU");
 }
 
-export default function CalcEmailCapture({ calcType, totalSum }: Props) {
+export default function CalcEmailCapture({ calcType, totalSum, items, params }: Props) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
 
@@ -29,17 +37,41 @@ export default function CalcEmailCapture({ calcType, totalSum }: Props) {
     if (!isValid) return;
     setStatus("sending");
     try {
-      const res = await fetch(VISITOR_LEADS_API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim(),
-          source: "calc_email_capture",
-          page_url: window.location.pathname,
-          consent: true,
+      const now = new Date();
+      const docDate = now.toLocaleDateString("ru-RU");
+
+      const [leadRes] = await Promise.all([
+        fetch(VISITOR_LEADS_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            source: "calc_email_capture",
+            page_url: window.location.pathname,
+            consent: true,
+          }),
         }),
-      });
-      if (res.ok) {
+        fetch(NOTIFY_EMAIL_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "send_estimate",
+            to_email: email.trim(),
+            subject: `Смета: ${calcType} — ${fmt(totalSum)} ₽`,
+            calc_name: calcType,
+            total_sum: totalSum,
+            items: items || [{ name: calcType, price: totalSum }],
+            params: params || {},
+            customer: "",
+            contractor: "",
+            address: "",
+            phone: "",
+            doc_date: docDate,
+          }),
+        }),
+      ]);
+
+      if (leadRes.ok) {
         trackCalcEvent(calcType, "email_lead");
         setStatus("success");
       } else {
@@ -59,7 +91,7 @@ export default function CalcEmailCapture({ calcType, totalSum }: Props) {
           </div>
           <div>
             <p className="font-bold text-green-800 text-sm">Смета отправлена!</p>
-            <p className="text-xs text-green-600 mt-0.5">Проверьте почту — детальный расчёт уже там</p>
+            <p className="text-xs text-green-600 mt-0.5">Проверьте <strong>{email}</strong> — детальный расчёт уже там</p>
           </div>
         </div>
       </div>
@@ -124,7 +156,7 @@ export default function CalcEmailCapture({ calcType, totalSum }: Props) {
         </div>
         <div className="flex items-center gap-1 text-gray-400 text-[11px]">
           <Icon name="FileText" size={11} />
-          <span>PDF-смета</span>
+          <span>Смета на email</span>
         </div>
       </div>
     </div>

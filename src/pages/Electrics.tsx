@@ -237,7 +237,20 @@ export default function Electrics() {
               total={`от ${totalSum.toLocaleString("ru-RU")} ₽`}
             />
           </div>
-          <CalcEmailCapture calcType="Электрика" totalSum={totalSum} />
+          <CalcEmailCapture
+            calcType="Электрика"
+            totalSum={totalSum}
+            items={zones.map(z => ({
+              name: z.roomName || "Зона",
+              price: z.totalPrice,
+            }))}
+            params={{
+              "Площадь": `${totalArea} м²`,
+              "Зон": `${zones.length}`,
+              "Регион": regionId,
+              ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+            }}
+          />
         </div>
         <SalesWidget calcContext={{ calcName: "Калькулятор электрики", totalPrice: totalSum }} />
         <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="electrics" />

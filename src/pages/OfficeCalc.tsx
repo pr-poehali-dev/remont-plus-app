@@ -221,7 +221,19 @@ export default function OfficeCalc() {
             onSelectZone={setActiveId}
           />
         </div>
-        <CalcEmailCapture calcType="Офис" totalSum={totalAll} />
+        <CalcEmailCapture
+          calcType="Офис"
+          totalSum={totalAll}
+          items={zones.map(z => ({
+            name: z.name,
+            price: z.totalPrice,
+          }))}
+          params={{
+            "Зон": `${zones.length}`,
+            "Регион": REGIONS.find(r => r.id === regionId)?.label ?? regionId,
+            ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+          }}
+        />
       </div>
 
       <SalesWidget

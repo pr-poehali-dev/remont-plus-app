@@ -398,7 +398,18 @@ export default function TurnkeyRenovation() {
               />
             </div>
             </ScreenProtection>
-            <CalcEmailCapture calcType="Под ключ" totalSum={cfg.totalPrice} />
+            <CalcEmailCapture
+              calcType="Под ключ"
+              totalSum={cfg.totalPrice}
+              items={breakdownRows.map(r => ({ name: r.label, price: r.value }))}
+              params={{
+                "Тип квартиры": aptType?.label ?? "",
+                "Площадь": `${cfg.totalAreaM2} м²`,
+                "Уровень": level?.label ?? "",
+                "Регион": REGIONS.find(r => r.id === regionId)?.label ?? "",
+                ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+              }}
+            />
           </div>
         </div>
       </div>

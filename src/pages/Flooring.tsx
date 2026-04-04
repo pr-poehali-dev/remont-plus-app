@@ -237,7 +237,20 @@ export default function Flooring() {
               total={`от ${totalSum.toLocaleString("ru-RU")} ₽`}
             />
           </div>
-          <CalcEmailCapture calcType="Полы" totalSum={totalSum} />
+          <CalcEmailCapture
+            calcType="Полы"
+            totalSum={totalSum}
+            items={zones.map(z => ({
+              name: z.roomName || "Зона",
+              price: z.totalPrice,
+            }))}
+            params={{
+              "Площадь": `${totalArea} м²`,
+              "Зон": `${zones.length}`,
+              "Регион": regionId,
+              ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+            }}
+          />
         </div>
         <SalesWidget calcContext={{ calcName: "Калькулятор напольных покрытий", totalPrice: totalSum }} />
         <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="flooring" />

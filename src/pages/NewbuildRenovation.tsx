@@ -453,7 +453,21 @@ export default function NewbuildRenovation() {
             </Card>
             </ScreenProtection>
 
-            <CalcEmailCapture calcType="Новостройка" totalSum={totalSum} />
+            <CalcEmailCapture
+              calcType="Ремонт в новостройке"
+              totalSum={totalSum}
+              items={[
+                ...zones.map(z => ({ name: z.roomName || "Помещение", price: z.totalPrice })),
+                ...(foremanIncluded ? [{ name: `Прораб ${foremanPct}%`, price: projectTotals.foremanCost }] : []),
+                ...(supplierIncluded ? [{ name: `Снабженец ${supplierPct}%`, price: projectTotals.supplierCost }] : []),
+              ]}
+              params={{
+                "Помещений": `${zones.length}`,
+                "Общая площадь": `${fmt(Math.round(totalArea * 10) / 10)} м²`,
+                "Регион": REGIONS.find(r => r.id === regionId)?.label ?? "",
+                ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+              }}
+            />
           </div>
 
           {/* Правая панель — редактор */}

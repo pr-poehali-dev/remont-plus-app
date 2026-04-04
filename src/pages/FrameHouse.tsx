@@ -205,7 +205,34 @@ export default function FrameHouse() {
             total={`от ${bd.total.toLocaleString("ru-RU")} ₽`}
           />
         </div>
-        <CalcEmailCapture calcType="Каркасный дом" totalSum={bd.total} />
+        <CalcEmailCapture
+          calcType="Каркасный дом"
+          totalSum={bd.total}
+          items={[
+            { name: "Фундамент", price: bd.foundation },
+            { name: "Каркас стен", price: bd.frame },
+            { name: "Утепление", price: bd.insulation },
+            { name: "Кровельная конструкция", price: bd.roofStructure },
+            { name: "Кровельный материал", price: bd.roofing },
+            { name: "Фасад", price: bd.facade },
+            { name: "Окна", price: bd.windows },
+            { name: "Полы", price: bd.floor },
+            { name: "Отопление", price: bd.heating },
+            { name: "Электрика", price: bd.electrical },
+            { name: "Водоснабжение", price: bd.plumbing },
+            { name: "Канализация", price: bd.sewage },
+            { name: "Внутренняя отделка", price: bd.interiorFinish },
+            { name: "Терраса", price: bd.terrace },
+            { name: "Гараж", price: bd.garage },
+            { name: "Монтажные работы", price: bd.assembly },
+          ].filter(r => r.price > 0)}
+          params={{
+            "Площадь": `${config.totalArea} м²`,
+            "Этажей": `${config.floors}`,
+            "Регион": regionId,
+            ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+          }}
+        />
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор каркасного дома", totalPrice: bd.total }} />
       <CalcStickyBar totalSum={bd.total} calcType="framehouse" />

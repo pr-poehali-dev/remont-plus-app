@@ -433,7 +433,18 @@ export default function Windows() {
                     </>
                   )}
                   <SimilarProjects totalSum={totalSum} calcType="windows" />
-                  <CalcEmailCapture calcType="Окна" totalSum={totalSum} />
+                  <CalcEmailCapture
+                    calcType="Окна"
+                    totalSum={totalSum}
+                    items={configs.map(c => {
+                      const ct = CONSTRUCTION_TYPES.find(x => x.value === c.constructionType);
+                      return { name: `${ct?.label ?? "Окно"} ${c.width}x${c.height} x${c.quantity}`, price: c.totalPrice };
+                    })}
+                    params={{
+                      "Позиций": `${configs.length}`,
+                      ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+                    }}
+                  />
                 </div>
               </div>
             </div>
