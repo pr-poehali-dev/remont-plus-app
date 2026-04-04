@@ -13,6 +13,7 @@ import OfficeZoneEditor from "./office/OfficeZoneEditor";
 import OfficeSidebar from "./office/OfficeSidebar";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 
 const MARKUP_KEY = "office_calc_markup";
 const REGION_KEY = "office_calc_region";
@@ -220,6 +221,7 @@ export default function OfficeCalc() {
             onSelectZone={setActiveId}
           />
         </div>
+        <CalcEmailCapture calcType="Офис" totalSum={totalAll} />
       </div>
 
       <SalesWidget

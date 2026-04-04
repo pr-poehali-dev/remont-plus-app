@@ -30,6 +30,7 @@ import EstimateActions from "@/components/calculator/EstimateActions";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 
 const MARKUP_KEY = "windows_markup_pct";
 
@@ -432,6 +433,7 @@ export default function Windows() {
                     </>
                   )}
                   <SimilarProjects totalSum={totalSum} calcType="windows" />
+                  <CalcEmailCapture calcType="Окна" totalSum={totalSum} />
                 </div>
               </div>
             </div>

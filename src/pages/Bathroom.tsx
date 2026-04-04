@@ -18,6 +18,7 @@ import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 
 const MARKUP_KEY = "bathroom_markup_pct";
 const REGION_KEY = "bathroom_region";
@@ -238,6 +239,7 @@ export default function Bathroom() {
             total={`от ${totalSum.toLocaleString("ru-RU")} ₽`}
           />
         </div>
+        <CalcEmailCapture calcType="Ванная" totalSum={totalSum} />
       </div>
       <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="bathroom" />
       <SimilarProjects totalSum={totalSum} calcType="bathroom" />

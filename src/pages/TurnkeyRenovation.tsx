@@ -29,6 +29,7 @@ import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import ScreenProtection from "@/components/print/ScreenProtection";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 
 const MARKUP_KEY = "turnkey_markup_pct";
 const REGION_KEY = "turnkey_region";
@@ -397,6 +398,7 @@ export default function TurnkeyRenovation() {
               />
             </div>
             </ScreenProtection>
+            <CalcEmailCapture calcType="Под ключ" totalSum={cfg.totalPrice} />
           </div>
         </div>
       </div>

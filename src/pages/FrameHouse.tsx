@@ -18,6 +18,7 @@ import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 
 const REGION_KEY = "framehouse_region";
 const MARKUP_KEY = "framehouse_markup";
@@ -204,6 +205,7 @@ export default function FrameHouse() {
             total={`от ${bd.total.toLocaleString("ru-RU")} ₽`}
           />
         </div>
+        <CalcEmailCapture calcType="Каркасный дом" totalSum={bd.total} />
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор каркасного дома", totalPrice: bd.total }} />
       <CalcStickyBar totalSum={bd.total} calcType="framehouse" />

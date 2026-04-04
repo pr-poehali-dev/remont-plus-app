@@ -25,6 +25,7 @@ import EstimateActions from "@/components/calculator/EstimateActions";
 import ScreenProtection from "@/components/print/ScreenProtection";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
 import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
+import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
@@ -451,6 +452,8 @@ export default function NewbuildRenovation() {
               <CalcInlineLeadForm calcType="Новостройка" totalSum={totalSum} />
             </Card>
             </ScreenProtection>
+
+            <CalcEmailCapture calcType="Новостройка" totalSum={totalSum} />
           </div>
 
           {/* Правая панель — редактор */}

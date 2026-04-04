@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import FurnitureStylePicker from "./FurnitureStylePicker";
 import FurnitureLeadModal from "./FurnitureLeadModal";
+import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import {
   STYLES,
   APARTMENTS,
@@ -284,6 +285,7 @@ export default function HomeFurnitureCalculator() {
                 цены ориентировочные · менеджер уточнит детали
               </p>
             </Card>
+            <CalcEmailCapture calcType="Мебель" totalSum={totalPrice} />
           </div>
         </div>
       </div>

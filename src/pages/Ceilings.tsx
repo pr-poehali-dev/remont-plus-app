@@ -22,6 +22,7 @@ import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 
 const MARKUP_KEY = "ceilings_markup_pct";
 const REGION_KEY = "ceilings_region";
@@ -286,6 +287,7 @@ export default function Ceilings() {
             total={`от ${fmt(totalSum)} ₽`}
           />
         </div>
+        <CalcEmailCapture calcType="Потолки" totalSum={totalSum} />
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор потолков", totalPrice: totalSum }} />
       <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="ceilings" />

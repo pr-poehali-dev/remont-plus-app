@@ -19,6 +19,7 @@ import ElectricsHeader from "@/components/calculator/electrics/ElectricsHeader";
 import ElectricsZoneList from "@/components/calculator/electrics/ElectricsZoneList";
 import ElectricsZoneEditor from "@/components/calculator/electrics/ElectricsZoneEditor";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 
 const MARKUP_KEY = "electrics_markup_pct";
 const REGION_KEY = "electrics_region";
@@ -236,6 +237,7 @@ export default function Electrics() {
               total={`от ${totalSum.toLocaleString("ru-RU")} ₽`}
             />
           </div>
+          <CalcEmailCapture calcType="Электрика" totalSum={totalSum} />
         </div>
         <SalesWidget calcContext={{ calcName: "Калькулятор электрики", totalPrice: totalSum }} />
         <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="electrics" />

@@ -18,6 +18,7 @@ import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 
 const REGION_KEY = "bathhouse_region";
 const MARKUP_KEY = "bathhouse_markup";
@@ -211,6 +212,7 @@ export default function BathHouse() {
             total={`от ${bd.total.toLocaleString("ru-RU")} ₽`}
           />
         </div>
+        <CalcEmailCapture calcType="Баня" totalSum={bd.total} />
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор бани", totalPrice: bd.total }} />
       <CalcStickyBar totalSum={bd.total} calcType="bathhouse" />
