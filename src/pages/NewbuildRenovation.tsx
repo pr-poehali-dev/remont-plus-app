@@ -31,6 +31,7 @@ import SimilarProjects from "@/components/calculator/SimilarProjects";
 import CalcFindMaster from "@/components/calculator/CalcFindMaster";
 import CalcCreateProject from "@/components/calculator/CalcCreateProject";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import NewbuildLevelCompare from "@/components/calculator/newbuild/NewbuildLevelCompare";
 
 const MARKUP_KEY = "newbuild_markup_pct";
 const REGION_KEY = "newbuild_region";
@@ -490,6 +491,15 @@ export default function NewbuildRenovation() {
               <Card className="p-5">
                 <NewbuildConfigForm cfg={activeZone} onUpdate={updateZone} regionId={regionId} markupPct={markupPct} />
               </Card>
+
+              <div className="mt-4">
+                <NewbuildLevelCompare
+                  currentLevel={activeZone.renovationLevel}
+                  area={activeZone.area}
+                  regionId={regionId}
+                  onSelect={(levelId) => updateZone({ renovationLevel: levelId })}
+                />
+              </div>
 
               {/* Детализация */}
               <Card className="p-4 border-orange-200 bg-orange-50">

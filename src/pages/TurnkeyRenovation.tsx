@@ -32,6 +32,7 @@ import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcFindMaster from "@/components/calculator/CalcFindMaster";
 import CalcCreateProject from "@/components/calculator/CalcCreateProject";
+import TurnkeyLevelCompare from "@/components/calculator/turnkey/TurnkeyLevelCompare";
 
 const MARKUP_KEY = "turnkey_markup_pct";
 const REGION_KEY = "turnkey_region";
@@ -240,6 +241,15 @@ export default function TurnkeyRenovation() {
             <Card className="p-5">
               <TurnkeyConfigForm cfg={cfg} regionId={regionId} onUpdate={updateCfg} />
             </Card>
+
+            <div className="mt-4">
+              <TurnkeyLevelCompare
+                currentLevel={cfg.renovationLevel}
+                area={cfg.totalAreaM2}
+                regionId={regionId}
+                onSelect={(levelId) => updateCfg({ renovationLevel: levelId })}
+              />
+            </div>
           </div>
 
           {/* Правая панель — итог и breakdown */}
