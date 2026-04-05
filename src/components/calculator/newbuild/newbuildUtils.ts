@@ -67,103 +67,92 @@ export function calcNewbuildPrice(
   const wallArea = Math.round(area * wallCoeff * ceilH / 2.8 * 10) / 10;
 
   // ── Стяжка: цена из типа × уровень (работа + материал) ──────────────────
+  const K = 1.3;
+
   const screedPriceM2 = screedType?.priceM2 ?? 1100;
   const screedCost = cfg.screedIncluded
-    ? Math.round(area * screedPriceM2 * lc * tc * rc)
+    ? Math.round(area * screedPriceM2 * K * lc * tc * rc)
     : 0;
 
-  // ── Штукатурка стен: цена из типа × уровень ──────────────────────────────
   const plasterPriceM2 = plasterType?.priceM2 ?? 720;
   const plasterCost = cfg.plasterIncluded
-    ? Math.round(wallArea * plasterPriceM2 * lc * tc * rc)
+    ? Math.round(wallArea * plasterPriceM2 * K * lc * tc * rc)
     : 0;
 
-  // ── Потолок: цена из типа × уровень ──────────────────────────────────────
   const ceilPriceM2 = ceilingType?.priceM2 ?? 850;
   const ceilingCost = cfg.ceilingLevelIncluded
-    ? Math.round(area * ceilPriceM2 * lc * tc * rc)
+    ? Math.round(area * ceilPriceM2 * K * lc * tc * rc)
     : 0;
 
-  // ── Покраска: 200 ₽/м²/слой (работа), уровень влияет на качество краски
   let paintArea = 0;
   if (cfg.paintingWalls) paintArea += wallArea;
   if (cfg.paintingCeiling) paintArea += area;
   const paintCost = paintArea > 0
-    ? Math.round(paintArea * 220 * (cfg.paintLayersCount || 2) * lc * rc)
+    ? Math.round(paintArea * 286 * (cfg.paintLayersCount || 2) * lc * rc)
     : 0;
 
-  // ── Напольное покрытие: работа 700 ₽/м² + материал × уровень ─────────────
   const floorMaterialM2 = flooringType?.priceM2 ?? 1100;
-  const flooringCost = Math.round(area * (770 + floorMaterialM2 * lc) * tc * rc);
+  const flooringCost = Math.round(area * (1001 + floorMaterialM2 * K * lc) * tc * rc);
 
-  // ── Электрика: 900 ₽/м² разводка + 800 ₽/точка ───────────────────────────
   const electricsCost = cfg.electricsIncluded
-    ? Math.round((area * 990 + (cfg.outletsCount + cfg.switchesCount) * 880) * lc * tc * rc)
+    ? Math.round((area * 1287 + (cfg.outletsCount + cfg.switchesCount) * 1144) * lc * tc * rc)
     : 0;
 
-  // ── Двери: pricePerDoor × количество × уровень (материал + монтаж) ───────
   const doorPrice = doorType?.pricePerDoor ?? 20000;
   const doorsCost = cfg.doorsCount > 0
-    ? Math.round(cfg.doorsCount * doorPrice * lc * rc)
+    ? Math.round(cfg.doorsCount * doorPrice * K * lc * rc)
     : 0;
 
-  // ── Откосы: 4 000 ₽/проём (ПВХ-панель + монтаж) ─────────────────────────
   const windowSlopesCost = cfg.windowSlopesCount > 0
-    ? Math.round(cfg.windowSlopesCount * 4400 * rc)
+    ? Math.round(cfg.windowSlopesCount * 5720 * rc)
     : 0;
 
-  // ── Тёплый пол: цена из типа × площадь ────────────────────────────────
   const heatedFloorType = HEATED_FLOOR_TYPES.find(h => h.id === cfg.heatedFloorType);
   const hfArea = cfg.heatedFloorArea > 0 ? cfg.heatedFloorArea : area * 0.7;
   const heatedFloorCost = cfg.heatedFloorIncluded
-    ? Math.round(hfArea * (heatedFloorType?.priceM2 ?? 2750) * lc * rc)
+    ? Math.round(hfArea * (heatedFloorType?.priceM2 ?? 2750) * K * lc * rc)
     : 0;
 
-  // ── Кухонный фартук: цена из типа × площадь ──────────────────────────
   const backsplashType = BACKSPLASH_TYPES.find(b => b.id === cfg.backsplashType);
   const backsplashCost = cfg.backsplashIncluded
-    ? Math.round((cfg.backsplashArea || 3) * (backsplashType?.priceM2 ?? 3850) * lc * rc)
+    ? Math.round((cfg.backsplashArea || 3) * (backsplashType?.priceM2 ?? 3850) * K * lc * rc)
     : 0;
 
-  // ── Столешница: цена из типа × длина ──────────────────────────────────
   const countertopType = COUNTERTOP_TYPES.find(c => c.id === cfg.countertopType);
   const countertopCost = cfg.countertopIncluded
-    ? Math.round((cfg.countertopLength || 3) * (countertopType?.pricePerMeter ?? 4400) * lc * rc)
+    ? Math.round((cfg.countertopLength || 3) * (countertopType?.pricePerMeter ?? 4400) * K * lc * rc)
     : 0;
 
-  // ── Кондиционирование: цена за точку × количество ─────────────────────
   const conditionerType = CONDITIONER_TYPES.find(c => c.id === cfg.conditionerType);
   const conditionerCost = cfg.conditionerIncluded
-    ? Math.round((cfg.conditionerCount || 1) * (conditionerType?.pricePerUnit ?? 38500) * rc)
+    ? Math.round((cfg.conditionerCount || 1) * (conditionerType?.pricePerUnit ?? 38500) * K * rc)
     : 0;
 
-  // ── Шумоизоляция: цена из типа × площадь ──────────────────────────────
   const soundproofType = SOUNDPROOF_TYPES.find(s => s.id === cfg.soundproofType);
   const soundproofCost = cfg.soundproofIncluded
-    ? Math.round(area * (soundproofType?.priceM2 ?? 1650) * lc * rc)
+    ? Math.round(area * (soundproofType?.priceM2 ?? 1650) * K * lc * rc)
     : 0;
 
-  // ── Сантехника: разводка труб + приборы ────────────────────────────────
   let plumbingCost = 0;
   if (cfg.plumbingIncluded) {
     const pipesType = PLUMBING_PIPES_TYPES.find(p => p.id === cfg.plumbingPipesType);
-    plumbingCost += Math.round((cfg.plumbingPointsCount || 4) * (pipesType?.pricePerPoint ?? 4400) * rc);
+    plumbingCost += Math.round((cfg.plumbingPointsCount || 4) * (pipesType?.pricePerPoint ?? 4400) * K * rc);
 
     if (cfg.bathtubIncluded) {
       const bt = BATHTUB_TYPES.find(b => b.id === cfg.bathtubType);
-      plumbingCost += Math.round((bt?.pricePerUnit ?? 18700) * lc * rc);
+      plumbingCost += Math.round((bt?.pricePerUnit ?? 18700) * K * lc * rc);
     }
     if (cfg.showerIncluded) {
       const sh = SHOWER_TYPES.find(s => s.id === cfg.showerType);
-      plumbingCost += Math.round((sh?.pricePerUnit ?? 22000) * lc * rc);
+      plumbingCost += Math.round((sh?.pricePerUnit ?? 22000) * K * lc * rc);
     }
     if (cfg.toiletIncluded) {
       const tl = TOILET_TYPES.find(t => t.id === cfg.toiletType);
-      plumbingCost += Math.round((cfg.toiletCount || 1) * (tl?.pricePerUnit ?? 16500) * lc * rc);
+      plumbingCost += Math.round((cfg.toiletCount || 1) * (tl?.pricePerUnit ?? 16500) * K * lc * rc);
     }
     if (cfg.sinkIncluded) {
       const sk = SINK_TYPES.find(s => s.id === cfg.sinkType);
-      plumbingCost += Math.round((cfg.sinkCount || 1) * (sk?.pricePerUnit ?? 15400) * lc * rc);
+      plumbingCost += Math.round((cfg.sinkCount || 1) * (sk?.pricePerUnit ?? 15400) * K * lc * rc);
     }
   }
 

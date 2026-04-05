@@ -57,75 +57,63 @@ export function calcTurnkeyPrice(
   // ── Черновые работы ──────────────────────────────────────────────────────
   // Демонтаж: 400 ₽/м² пола + 350 ₽/м² стен (снятие покрытий + вывоз мусора)
   const demolitionCost = cfg.demolitionIncluded
-    ? Math.round((area * 440 + wallArea * 385) * rc)
+    ? Math.round((area * 572 + wallArea * 501) * rc)
     : 0;
 
-  // Демонтаж / возведение сантехкабины — по периметру санузла
-  const cabinPerimPerBath = 12; // пог. м на одну кабину (ср. санузел ~3×3 м)
+  const cabinPerimPerBath = 12;
   const bathroomCabinDemolitionCost = cfg.bathroomCabinDemolition
-    ? Math.round(cabinPerimPerBath * baths * 13200 * rc)
+    ? Math.round(cabinPerimPerBath * baths * 17160 * rc)
     : 0;
   const bathroomCabinConstructionCost = cfg.bathroomCabinConstruction
-    ? Math.round(cabinPerimPerBath * baths * 2.5 * 5280 * rc)
+    ? Math.round(cabinPerimPerBath * baths * 2.5 * 6864 * rc)
     : 0;
 
-  // Электрика: 1 500 ₽/м² × уровень (работа + материалы кабель/гофра)
   const electricsCost = cfg.electricsIncluded
-    ? Math.round(area * 1650 * lc * rc)
+    ? Math.round(area * 2145 * lc * rc)
     : 0;
 
-  // Сантехника (разводка ХВС/ГВС/канализация): 25 000 ₽/санузел × уровень
   const plumbingCost = cfg.plumbingIncluded
-    ? Math.round(baths * 27500 * lc * rc)
+    ? Math.round(baths * 35750 * lc * rc)
     : 0;
 
-  // Штукатурка + стяжка: 1 100 ₽/м² стен + 1 150 ₽/м² пола
   const plasterCost = cfg.plastersIncluded
-    ? Math.round((wallArea * 1210 + area * 1265) * rc)
+    ? Math.round((wallArea * 1573 + area * 1645) * rc)
     : 0;
 
-  // Напольное покрытие: работа 700 ₽/м² + материал priceM2 × уровень
   const floorMaterial = floorType?.priceM2 ?? 1200;
   const floorsCost = cfg.floorsIncluded
-    ? Math.round(area * (770 + floorMaterial * lc) * rc)
+    ? Math.round(area * (1001 + floorMaterial * 1.3 * lc) * rc)
     : 0;
 
-  // Потолки: работа 500 ₽/м² + материал priceM2 × уровень
   const ceilMaterial = ceilingType?.priceM2 ?? 850;
   const ceilingsCost = cfg.ceilingsIncluded
-    ? Math.round(area * (550 + ceilMaterial * lc) * rc)
+    ? Math.round(area * (715 + ceilMaterial * 1.3 * lc) * rc)
     : 0;
 
-  // Санузлы под ключ: pricePerUnit × кол-во × регион (материалы + все работы)
   const bathUnitPrice = bathroomLevel?.pricePerUnit ?? 185000;
   const bathroomsCost = cfg.bathroomIncluded
-    ? Math.round(bathUnitPrice * baths * rc)
+    ? Math.round(bathUnitPrice * 1.3 * baths * rc)
     : 0;
 
-  // Монтаж кухни: 55 000 ₽ фикс × уровень (сборка, встройка техники, подвеска)
   const kitchenCost = cfg.kitchenIncluded
-    ? Math.round(60500 * lc * rc)
+    ? Math.round(78650 * lc * rc)
     : 0;
 
-  // Двери: 14 000 ₽/дверь × уровень (материал + коробка + фурнитура + монтаж)
   const doorsCost = cfg.doorsIncluded && cfg.doorsCount > 0
-    ? Math.round(cfg.doorsCount * 15400 * lc * rc)
+    ? Math.round(cfg.doorsCount * 20020 * lc * rc)
     : 0;
 
-  // Откосы: 4 000 ₽/проём (материал ПВХ + монтаж)
   const windowSlopesCost = cfg.windowslopeIncluded
-    ? Math.round(windowCount * 4400 * rc)
+    ? Math.round(windowCount * 5720 * rc)
     : 0;
 
-  // Сборка мебели: 9 000 ₽/комната
   const roomCount = Math.max(1, Math.round(area / 20));
   const furnitureCost = cfg.furnitureAssembly
-    ? Math.round(roomCount * 9900 * rc)
+    ? Math.round(roomCount * 12870 * rc)
     : 0;
 
-  // Финальная уборка: 180 ₽/м² (строительная уборка после ремонта)
   const cleaningCost = cfg.cleaningIncluded
-    ? Math.round(area * 198 * rc)
+    ? Math.round(area * 257 * rc)
     : 0;
 
   const worksSubtotal = demolitionCost + bathroomCabinDemolitionCost + bathroomCabinConstructionCost +
