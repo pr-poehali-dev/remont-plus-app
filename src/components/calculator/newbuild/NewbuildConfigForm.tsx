@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,6 +12,7 @@ import {
   HEATED_FLOOR_TYPES, BACKSPLASH_TYPES, COUNTERTOP_TYPES,
   CONDITIONER_TYPES, SOUNDPROOF_TYPES,
   BATHTUB_TYPES, SHOWER_TYPES, TOILET_TYPES, SINK_TYPES, PLUMBING_PIPES_TYPES,
+  DEFAULT_NEWBUILD_CONFIG,
 } from "./NewbuildTypes";
 import type { NewbuildConfig } from "./NewbuildTypes";
 import { fmt, calcNewbuildPrice } from "./newbuildUtils";
@@ -99,6 +100,17 @@ function calcDelta(cfg: NewbuildConfig, field: string, regionId: string, markupP
 
 export default function NewbuildConfigForm({ cfg, onUpdate, regionId = "moscow", markupPct = 0 }: Props) {
   const [step, setStep] = useState(1);
+
+  const realPricesM2 = useMemo(() => {
+    const result: Record<string, number> = {};
+    const area = DEFAULT_NEWBUILD_CONFIG.area || 18;
+    for (const lv of RENOVATION_LEVELS) {
+      const testCfg = { ...DEFAULT_NEWBUILD_CONFIG, renovationLevel: lv.id };
+      const bd = calcNewbuildPrice(testCfg, "other", 0);
+      result[lv.id] = Math.round(bd.total / area);
+    }
+    return result;
+  }, []);
 
   const deltas = {
     screed: calcDelta(cfg, "screedIncluded", regionId, markupPct),
@@ -256,7 +268,7 @@ export default function NewbuildConfigForm({ cfg, onUpdate, regionId = "moscow",
                     <span className="text-sm font-bold text-gray-900">{lv.label}</span>
                   </div>
                   <span className={`text-sm font-bold ${cfg.renovationLevel === lv.id ? "text-orange-700" : "text-gray-600"}`}>
-                    от {fmt(lv.basePriceM2)} ₽/м²
+                    от {fmt(realPricesM2[lv.id] || lv.basePriceM2)} ₽/м²
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 mb-2">{lv.description}</p>

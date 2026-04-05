@@ -199,9 +199,6 @@ export default function TurnkeyRenovation() {
                 onClick={() => {
                   trackExportClick();
                   setShowExport(true);
-                  if (typeof window !== "undefined" && (window as unknown as { ym?: (id: number, action: string, goal: string) => void }).ym) {
-                    (window as unknown as { ym: (id: number, action: string, goal: string) => void }).ym(107009331, "reachGoal", "turnkey_document_open");
-                  }
                 }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
@@ -241,7 +238,7 @@ export default function TurnkeyRenovation() {
             </div>
 
             <Card className="p-5">
-              <TurnkeyConfigForm cfg={cfg} onUpdate={updateCfg} />
+              <TurnkeyConfigForm cfg={cfg} regionId={regionId} onUpdate={updateCfg} />
             </Card>
           </div>
 

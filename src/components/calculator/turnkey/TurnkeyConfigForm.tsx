@@ -7,6 +7,7 @@ import TurnkeyStepWorks from "./TurnkeyStepWorks";
 
 interface Props {
   cfg: TurnkeyConfig;
+  regionId?: string;
   onUpdate: (patch: Partial<Omit<TurnkeyConfig, "id">>) => void;
 }
 
@@ -17,12 +18,11 @@ const STEPS = [
   { id: 4, label: "Чистовые",  icon: "Sparkles" },
 ];
 
-export default function TurnkeyConfigForm({ cfg, onUpdate }: Props) {
+export default function TurnkeyConfigForm({ cfg, regionId, onUpdate }: Props) {
   const [step, setStep] = useState(1);
 
   return (
     <div className="space-y-5">
-      {/* Степпер */}
       <div className="flex items-center gap-0">
         {STEPS.map((s, i) => (
           <div key={s.id} className="flex items-center flex-1 last:flex-none">
@@ -53,7 +53,7 @@ export default function TurnkeyConfigForm({ cfg, onUpdate }: Props) {
         <TurnkeyStepApartment cfg={cfg} onUpdate={onUpdate} onNext={() => setStep(2)} />
       )}
       {step === 2 && (
-        <TurnkeyStepRenovation cfg={cfg} onUpdate={onUpdate} onBack={() => setStep(1)} onNext={() => setStep(3)} />
+        <TurnkeyStepRenovation cfg={cfg} regionId={regionId} onUpdate={onUpdate} onBack={() => setStep(1)} onNext={() => setStep(3)} />
       )}
       {step === 3 && (
         <TurnkeyStepWorks cfg={cfg} onUpdate={onUpdate} step={3} onBack={() => setStep(2)} onNext={() => setStep(4)} />

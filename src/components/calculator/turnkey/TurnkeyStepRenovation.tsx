@@ -1,15 +1,28 @@
-import { RENOVATION_LEVELS } from "./TurnkeyTypes";
+import { useMemo } from "react";
+import { RENOVATION_LEVELS, DEFAULT_TURNKEY_CONFIG } from "./TurnkeyTypes";
 import type { TurnkeyConfig } from "./TurnkeyTypes";
-import { fmt } from "./turnkeyUtils";
+import { fmt, calcTurnkeyPrice } from "./turnkeyUtils";
 
 interface Props {
   cfg: TurnkeyConfig;
+  regionId?: string;
   onUpdate: (patch: Partial<Omit<TurnkeyConfig, "id">>) => void;
   onBack: () => void;
   onNext: () => void;
 }
 
-export default function TurnkeyStepRenovation({ cfg, onUpdate, onBack, onNext }: Props) {
+export default function TurnkeyStepRenovation({ cfg, regionId, onUpdate, onBack, onNext }: Props) {
+  const realPricesM2 = useMemo(() => {
+    const result: Record<string, number> = {};
+    const area = DEFAULT_TURNKEY_CONFIG.totalAreaM2 || 62;
+    for (const lv of RENOVATION_LEVELS) {
+      const testCfg = { ...DEFAULT_TURNKEY_CONFIG, renovationLevel: lv.id };
+      const bd = calcTurnkeyPrice(testCfg, regionId || "other", 0);
+      result[lv.id] = Math.round(bd.total / area);
+    }
+    return result;
+  }, [regionId]);
+
   return (
     <div className="space-y-3">
       {RENOVATION_LEVELS.map(lv => (
@@ -33,7 +46,7 @@ export default function TurnkeyStepRenovation({ cfg, onUpdate, onBack, onNext }:
               <span className="text-sm font-bold text-gray-900">{lv.label}</span>
             </div>
             <span className={`text-sm font-bold ${cfg.renovationLevel === lv.id ? "text-emerald-700" : "text-gray-600"}`}>
-              от {fmt(lv.basePriceM2)} ₽/м²
+              от {fmt(realPricesM2[lv.id] || lv.basePriceM2)} ₽/м²
             </span>
           </div>
           <p className="text-xs text-gray-500 mb-2">{lv.description}</p>
