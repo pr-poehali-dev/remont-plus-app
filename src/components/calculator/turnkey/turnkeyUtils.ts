@@ -57,63 +57,63 @@ export function calcTurnkeyPrice(
   // ── Черновые работы ──────────────────────────────────────────────────────
   // Демонтаж: 400 ₽/м² пола + 350 ₽/м² стен (снятие покрытий + вывоз мусора)
   const demolitionCost = cfg.demolitionIncluded
-    ? Math.round((area * 572 + wallArea * 501) * rc)
+    ? Math.round((area * 686 + wallArea * 601) * rc)
     : 0;
 
   const cabinPerimPerBath = 12;
   const bathroomCabinDemolitionCost = cfg.bathroomCabinDemolition
-    ? Math.round(cabinPerimPerBath * baths * 17160 * rc)
+    ? Math.round(cabinPerimPerBath * baths * 20592 * rc)
     : 0;
   const bathroomCabinConstructionCost = cfg.bathroomCabinConstruction
-    ? Math.round(cabinPerimPerBath * baths * 2.5 * 6864 * rc)
+    ? Math.round(cabinPerimPerBath * baths * 2.5 * 8237 * rc)
     : 0;
 
   const electricsCost = cfg.electricsIncluded
-    ? Math.round(area * 2145 * lc * rc)
+    ? Math.round(area * 2574 * lc * rc)
     : 0;
 
   const plumbingCost = cfg.plumbingIncluded
-    ? Math.round(baths * 35750 * lc * rc)
+    ? Math.round(baths * 42900 * lc * rc)
     : 0;
 
   const plasterCost = cfg.plastersIncluded
-    ? Math.round((wallArea * 1573 + area * 1645) * rc)
+    ? Math.round((wallArea * 1888 + area * 1974) * rc)
     : 0;
 
   const floorMaterial = floorType?.priceM2 ?? 1200;
   const floorsCost = cfg.floorsIncluded
-    ? Math.round(area * (1001 + floorMaterial * 1.3 * lc) * rc)
+    ? Math.round(area * (1201 + floorMaterial * 1.56 * lc) * rc)
     : 0;
 
   const ceilMaterial = ceilingType?.priceM2 ?? 850;
   const ceilingsCost = cfg.ceilingsIncluded
-    ? Math.round(area * (715 + ceilMaterial * 1.3 * lc) * rc)
+    ? Math.round(area * (858 + ceilMaterial * 1.56 * lc) * rc)
     : 0;
 
   const bathUnitPrice = bathroomLevel?.pricePerUnit ?? 185000;
   const bathroomsCost = cfg.bathroomIncluded
-    ? Math.round(bathUnitPrice * 1.3 * baths * rc)
+    ? Math.round(bathUnitPrice * 1.56 * baths * rc)
     : 0;
 
   const kitchenCost = cfg.kitchenIncluded
-    ? Math.round(78650 * lc * rc)
+    ? Math.round(94380 * lc * rc)
     : 0;
 
   const doorsCost = cfg.doorsIncluded && cfg.doorsCount > 0
-    ? Math.round(cfg.doorsCount * 20020 * lc * rc)
+    ? Math.round(cfg.doorsCount * 24024 * lc * rc)
     : 0;
 
   const windowSlopesCost = cfg.windowslopeIncluded
-    ? Math.round(windowCount * 5720 * rc)
+    ? Math.round(windowCount * 6864 * rc)
     : 0;
 
   const roomCount = Math.max(1, Math.round(area / 20));
   const furnitureCost = cfg.furnitureAssembly
-    ? Math.round(roomCount * 12870 * rc)
+    ? Math.round(roomCount * 15444 * rc)
     : 0;
 
   const cleaningCost = cfg.cleaningIncluded
-    ? Math.round(area * 257 * rc)
+    ? Math.round(area * 309 * rc)
     : 0;
 
   const worksSubtotal = demolitionCost + bathroomCabinDemolitionCost + bathroomCabinConstructionCost +

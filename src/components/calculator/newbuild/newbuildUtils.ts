@@ -67,7 +67,7 @@ export function calcNewbuildPrice(
   const wallArea = Math.round(area * wallCoeff * ceilH / 2.8 * 10) / 10;
 
   // ── Стяжка: цена из типа × уровень (работа + материал) ──────────────────
-  const K = 1.3;
+  const K = 1.56;
 
   const screedPriceM2 = screedType?.priceM2 ?? 1100;
   const screedCost = cfg.screedIncluded
@@ -88,14 +88,14 @@ export function calcNewbuildPrice(
   if (cfg.paintingWalls) paintArea += wallArea;
   if (cfg.paintingCeiling) paintArea += area;
   const paintCost = paintArea > 0
-    ? Math.round(paintArea * 286 * (cfg.paintLayersCount || 2) * lc * rc)
+    ? Math.round(paintArea * 343 * (cfg.paintLayersCount || 2) * lc * rc)
     : 0;
 
   const floorMaterialM2 = flooringType?.priceM2 ?? 1100;
-  const flooringCost = Math.round(area * (1001 + floorMaterialM2 * K * lc) * tc * rc);
+  const flooringCost = Math.round(area * (1201 + floorMaterialM2 * K * lc) * tc * rc);
 
   const electricsCost = cfg.electricsIncluded
-    ? Math.round((area * 1287 + (cfg.outletsCount + cfg.switchesCount) * 1144) * lc * tc * rc)
+    ? Math.round((area * 1544 + (cfg.outletsCount + cfg.switchesCount) * 1373) * lc * tc * rc)
     : 0;
 
   const doorPrice = doorType?.pricePerDoor ?? 20000;
@@ -104,7 +104,7 @@ export function calcNewbuildPrice(
     : 0;
 
   const windowSlopesCost = cfg.windowSlopesCount > 0
-    ? Math.round(cfg.windowSlopesCount * 5720 * rc)
+    ? Math.round(cfg.windowSlopesCount * 6864 * rc)
     : 0;
 
   const heatedFloorType = HEATED_FLOOR_TYPES.find(h => h.id === cfg.heatedFloorType);
