@@ -3,9 +3,12 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { FLOOR_TYPES, CEILING_TYPES, BATHROOM_LEVELS } from "./TurnkeyTypes";
+import {
+  FLOOR_TYPES, CEILING_TYPES, BATHROOM_LEVELS,
+  DEMOLITION_SCOPES, DEBRIS_TRUCK_PRICE,
+} from "./TurnkeyTypes";
 import type { TurnkeyConfig } from "./TurnkeyTypes";
-import { fmt } from "./turnkeyUtils";
+import { fmt, calcDemoTrucks } from "./turnkeyUtils";
 import { Counter, ToggleRow } from "./TurnkeyFormControls";
 
 interface Props {
@@ -20,32 +23,77 @@ export default function TurnkeyStepWorks({ cfg, onUpdate, step, onBack, onNext }
   if (step === 3) {
     return (
       <div className="space-y-3">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Черновые работы</p>
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Демонтаж</p>
         <ToggleRow
-          label="Демонтаж"
-          description="Снятие старой отделки, вывоз мусора — 1 600 ₽/м²"
+          label="Демонтажные работы"
+          description="Снятие старой отделки, разборка покрытий, вывоз строительного мусора"
           checked={cfg.demolitionIncluded}
           onChange={v => onUpdate({ demolitionIncluded: v })}
         />
-        <div className="ml-4 space-y-2">
-          <ToggleRow
-            label="Демонтаж сантехнической кабины"
-            description="Снос стен ванной и туалета — работа + вывоз мусора"
-            checked={cfg.bathroomCabinDemolition}
-            onChange={v => onUpdate({
-              bathroomCabinDemolition: v,
-              bathroomCabinConstruction: v ? cfg.bathroomCabinConstruction : false,
-            })}
-          />
-          {cfg.bathroomCabinDemolition && (
+        {cfg.demolitionIncluded && (
+          <div className="ml-4 space-y-3">
+            <div>
+              <Label className="text-xs text-gray-500 mb-1 block">Объём демонтажа</Label>
+              <Select value={cfg.demolitionScope} onValueChange={v => onUpdate({ demolitionScope: v as TurnkeyConfig["demolitionScope"] })}>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DEMOLITION_SCOPES.map(ds => (
+                    <SelectItem key={ds.id} value={ds.id}>
+                      {ds.label} — {ds.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <ToggleRow
-              label="Возведение сантехнической кабины"
-              description="Кладка перегородок: пеноблоки / ПГБ, клей, армирование"
-              checked={cfg.bathroomCabinConstruction}
-              onChange={v => onUpdate({ bathroomCabinConstruction: v })}
+              label="Демонтаж полов"
+              description={`Снятие напольных покрытий и стяжки — ${fmt(DEMOLITION_SCOPES.find(s => s.id === cfg.demolitionScope)?.floorPriceM2 ?? 0)} ₽/м²`}
+              checked={cfg.demolitionFloors}
+              onChange={v => onUpdate({ demolitionFloors: v })}
             />
-          )}
-        </div>
+            <ToggleRow
+              label="Демонтаж стен"
+              description={`Снятие отделки стен, штукатурки — ${fmt(DEMOLITION_SCOPES.find(s => s.id === cfg.demolitionScope)?.wallPriceM2 ?? 0)} ₽/м²`}
+              checked={cfg.demolitionWalls}
+              onChange={v => onUpdate({ demolitionWalls: v })}
+            />
+            <div className="rounded-xl border border-gray-200 overflow-hidden">
+              <div className="px-4 py-1">
+                <Counter
+                  label={`Машин для вывоза мусора (${fmt(DEBRIS_TRUCK_PRICE)} ₽/маш.)`}
+                  value={cfg.debrisTruckCount > 0 ? cfg.debrisTruckCount : calcDemoTrucks(cfg)}
+                  onChange={v => onUpdate({ debrisTruckCount: v })}
+                  min={0}
+                  max={30}
+                />
+              </div>
+              <p className="px-4 pb-2 text-[11px] text-gray-400">
+                Авторасчёт по объёму мусора. Можно скорректировать вручную
+              </p>
+            </div>
+            <ToggleRow
+              label="Демонтаж сантехнической кабины"
+              description="Снос стен ванной и туалета — работа + вывоз мусора"
+              checked={cfg.bathroomCabinDemolition}
+              onChange={v => onUpdate({
+                bathroomCabinDemolition: v,
+                bathroomCabinConstruction: v ? cfg.bathroomCabinConstruction : false,
+              })}
+            />
+            {cfg.bathroomCabinDemolition && (
+              <ToggleRow
+                label="Возведение сантехнической кабины"
+                description="Кладка перегородок: пеноблоки / ПГБ, клей, армирование"
+                checked={cfg.bathroomCabinConstruction}
+                onChange={v => onUpdate({ bathroomCabinConstruction: v })}
+              />
+            )}
+          </div>
+        )}
+
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Черновые работы</p>
         <ToggleRow
           label="Электромонтаж"
           description="Разводка кабелей, щиток, розетки, выключатели — 1 300 ₽/м²"

@@ -123,6 +123,49 @@ export const BATHROOM_LEVELS: BathroomLevelOption[] = [
   { id: "premium",  label: "Премиум",  description: "Дизайнерская плитка, инсталляция, премиум санфаянс", pricePerUnit: 462000 },
 ];
 
+// ─── Типы демонтажа ─────────────────────────────────────────────────────────
+
+export type DemolitionScope = "cosmetic" | "standard" | "full";
+
+export interface DemolitionScopeOption {
+  id: DemolitionScope;
+  label: string;
+  description: string;
+  floorPriceM2: number;
+  wallPriceM2: number;
+  debrisM3perM2: number;
+}
+
+export const DEMOLITION_SCOPES: DemolitionScopeOption[] = [
+  {
+    id: "cosmetic",
+    label: "Косметический",
+    description: "Снятие обоев, линолеума, побелки",
+    floorPriceM2: 390,
+    wallPriceM2: 310,
+    debrisM3perM2: 0.03,
+  },
+  {
+    id: "standard",
+    label: "Стандартный",
+    description: "Снятие покрытий + стяжка до основания",
+    floorPriceM2: 686,
+    wallPriceM2: 601,
+    debrisM3perM2: 0.06,
+  },
+  {
+    id: "full",
+    label: "Полный",
+    description: "До бетона: полы, стены, потолки, перегородки",
+    floorPriceM2: 1090,
+    wallPriceM2: 950,
+    debrisM3perM2: 0.12,
+  },
+];
+
+export const DEBRIS_TRUCK_VOLUME_M3 = 8;
+export const DEBRIS_TRUCK_PRICE = 18000;
+
 // ─── Регионы ─────────────────────────────────────────────────────────────────
 
 export { CALC_REGIONS as REGIONS, DEFAULT_REGION_ID } from "@/components/calculator/shared/regions";
@@ -139,6 +182,10 @@ export interface TurnkeyConfig {
   ceilingHeightM: number;
   renovationLevel: string;
   demolitionIncluded: boolean;
+  demolitionScope: DemolitionScope;
+  demolitionFloors: boolean;
+  demolitionWalls: boolean;
+  debrisTruckCount: number;
   bathroomCabinDemolition: boolean;
   bathroomCabinConstruction: boolean;
   electricsIncluded: boolean;
@@ -177,6 +224,10 @@ export const DEFAULT_TURNKEY_CONFIG: Omit<TurnkeyConfig, "id" | "totalPrice"> = 
   ceilingHeightM: 2.8,
   renovationLevel: "standard",
   demolitionIncluded: true,
+  demolitionScope: "standard",
+  demolitionFloors: true,
+  demolitionWalls: true,
+  debrisTruckCount: 0,
   bathroomCabinDemolition: false,
   bathroomCabinConstruction: false,
   electricsIncluded: true,

@@ -1,5 +1,6 @@
 import {
   REGIONS, RENOVATION_LEVELS, FLOOR_TYPES, CEILING_TYPES, BATHROOM_LEVELS,
+  DEMOLITION_SCOPES, DEBRIS_TRUCK_VOLUME_M3, DEBRIS_TRUCK_PRICE,
 } from "./TurnkeyTypes";
 import type { TurnkeyConfig } from "./TurnkeyTypes";
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
@@ -8,8 +9,19 @@ export function fmt(n: number): string {
   return n.toLocaleString("ru-RU");
 }
 
+export function calcDemoTrucks(cfg: Omit<TurnkeyConfig, "id" | "totalPrice">): number {
+  const area = cfg.totalAreaM2 || 0;
+  const ceilH = cfg.ceilingHeightM || 2.8;
+  const wallArea = Math.round(Math.sqrt(area) * 3.5 * ceilH * 10) / 10;
+  const scope = DEMOLITION_SCOPES.find(s => s.id === cfg.demolitionScope) ?? DEMOLITION_SCOPES[1];
+  const vol = ((cfg.demolitionFloors ? area : 0) + (cfg.demolitionWalls ? wallArea : 0)) * scope.debrisM3perM2;
+  return vol > 0 ? Math.ceil(vol / DEBRIS_TRUCK_VOLUME_M3) : 0;
+}
+
 export interface TurnkeyPriceBreakdown {
   demolitionCost: number;
+  debrisRemovalCost: number;
+  debrisTruckCount: number;
   bathroomCabinDemolitionCost: number;
   bathroomCabinConstructionCost: number;
   electricsCost: number;
@@ -33,6 +45,15 @@ export interface TurnkeyPriceBreakdown {
   total: number;
 }
 
+export function calcDemoTrucks(cfg: Omit<TurnkeyConfig, "id" | "totalPrice">): number {
+  const area = cfg.totalAreaM2 || 0;
+  const ceilH = cfg.ceilingHeightM || 2.8;
+  const wallArea = Math.round(Math.sqrt(area) * 3.5 * ceilH * 10) / 10;
+  const scope = DEMOLITION_SCOPES.find(s => s.id === cfg.demolitionScope) ?? DEMOLITION_SCOPES[1];
+  const volume = ((cfg.demolitionFloors ? area : 0) + (cfg.demolitionWalls ? wallArea : 0)) * scope.debrisM3perM2;
+  return volume > 0 ? Math.ceil(volume / DEBRIS_TRUCK_VOLUME_M3) : 0;
+}
+
 export function calcTurnkeyPrice(
   cfg: Omit<TurnkeyConfig, "id" | "totalPrice">,
   regionId = "moscow",
@@ -54,10 +75,21 @@ export function calcTurnkeyPrice(
   // количество окон (оценка)
   const windowCount = (cfg.balconyCount || 0) + Math.max(1, Math.ceil(area / 18));
 
-  // ── Черновые работы ──────────────────────────────────────────────────────
-  // Демонтаж: 400 ₽/м² пола + 350 ₽/м² стен (снятие покрытий + вывоз мусора)
-  const demolitionCost = cfg.demolitionIncluded
-    ? Math.round((area * 686 + wallArea * 601) * rc)
+  // ── Демонтаж ────────────────────────────────────────────────────────────
+  const demoScope = DEMOLITION_SCOPES.find(s => s.id === cfg.demolitionScope) ?? DEMOLITION_SCOPES[1];
+  const demoFloorCost = cfg.demolitionIncluded && cfg.demolitionFloors
+    ? Math.round(area * demoScope.floorPriceM2 * rc) : 0;
+  const demoWallCost = cfg.demolitionIncluded && cfg.demolitionWalls
+    ? Math.round(wallArea * demoScope.wallPriceM2 * rc) : 0;
+  const demolitionCost = demoFloorCost + demoWallCost;
+
+  const debrisVolume = cfg.demolitionIncluded
+    ? ((cfg.demolitionFloors ? area : 0) + (cfg.demolitionWalls ? wallArea : 0)) * demoScope.debrisM3perM2
+    : 0;
+  const autoTrucks = debrisVolume > 0 ? Math.ceil(debrisVolume / DEBRIS_TRUCK_VOLUME_M3) : 0;
+  const debrisTruckCount = cfg.debrisTruckCount > 0 ? cfg.debrisTruckCount : autoTrucks;
+  const debrisRemovalCost = cfg.demolitionIncluded
+    ? Math.round(debrisTruckCount * DEBRIS_TRUCK_PRICE * rc)
     : 0;
 
   const cabinPerimPerBath = 12;
@@ -116,7 +148,8 @@ export function calcTurnkeyPrice(
     ? Math.round(area * 309 * rc)
     : 0;
 
-  const worksSubtotal = demolitionCost + bathroomCabinDemolitionCost + bathroomCabinConstructionCost +
+  const worksSubtotal = demolitionCost + debrisRemovalCost +
+    bathroomCabinDemolitionCost + bathroomCabinConstructionCost +
     electricsCost + plumbingCost + plasterCost +
     floorsCost + ceilingsCost + bathroomsCost + kitchenCost + doorsCost +
     windowSlopesCost + furnitureCost + cleaningCost;
@@ -124,6 +157,7 @@ export function calcTurnkeyPrice(
   // Материальная составляющая (для расчёта снабженца)
   const materialsCost = Math.round(
     demolitionCost                * 0.00 +
+    debrisRemovalCost             * 0.00 +
     bathroomCabinDemolitionCost   * 0.00 +
     bathroomCabinConstructionCost * 0.65 +
     electricsCost    * 0.50 +
@@ -153,6 +187,8 @@ export function calcTurnkeyPrice(
 
   return {
     demolitionCost,
+    debrisRemovalCost,
+    debrisTruckCount,
     bathroomCabinDemolitionCost,
     bathroomCabinConstructionCost,
     electricsCost,

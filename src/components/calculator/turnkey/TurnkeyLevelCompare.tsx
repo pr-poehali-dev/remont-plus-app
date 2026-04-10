@@ -29,6 +29,7 @@ interface LevelBreakdown {
 
 const COMPARE_ROWS: { key: keyof TurnkeyPriceBreakdown; label: string; icon: string }[] = [
   { key: "demolitionCost", label: "Демонтаж", icon: "Hammer" },
+  { key: "debrisRemovalCost", label: "Вывоз мусора", icon: "Truck" },
   { key: "electricsCost", label: "Электрика", icon: "Zap" },
   { key: "plumbingCost", label: "Сантехника", icon: "Droplets" },
   { key: "plasterCost", label: "Штукатурка + стяжка", icon: "Layers" },
