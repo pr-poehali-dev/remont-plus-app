@@ -71,8 +71,12 @@ export default function TurnkeyPrint() {
 
   const rows: { label: string; qty: number | string; unit: string; price: string; total: number }[] = [
     cfg.demolitionIncluded && bd.demolitionCost > 0 && {
-      label: "Демонтаж старой отделки (пол + стены, вывоз мусора)",
-      qty: cfg.totalAreaM2, unit: "м²", price: "350–630 ₽/м²", total: bd.demolitionCost,
+      label: "Демонтажные работы (полы, стены — снятие покрытий)",
+      qty: cfg.totalAreaM2, unit: "м²", price: `${fmt(Math.round(bd.demolitionCost / (cfg.totalAreaM2 || 1)))} ₽/м²`, total: bd.demolitionCost,
+    },
+    cfg.demolitionIncluded && bd.debrisRemovalCost > 0 && {
+      label: `Вывоз строительного мусора (${bd.debrisTruckCount} маш.)`,
+      qty: bd.debrisTruckCount, unit: "маш.", price: "18 000 ₽/маш.", total: bd.debrisRemovalCost,
     },
     cfg.bathroomCabinDemolition && bd.bathroomCabinDemolitionCost > 0 && {
       label: "Демонтаж сантехнической кабины (ванная, туалет)",

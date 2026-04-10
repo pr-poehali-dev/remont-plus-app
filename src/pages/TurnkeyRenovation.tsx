@@ -126,7 +126,8 @@ export default function TurnkeyRenovation() {
   const bathroomLevel = BATHROOM_LEVELS.find(b => b.id === cfg.bathroomLevel);
 
   const breakdownRows: { label: string; value: number }[] = [
-    { label: "Демонтаж", value: breakdown.demolitionCost },
+    { label: "Демонтаж (работы)", value: breakdown.demolitionCost },
+    { label: `Вывоз мусора ×${breakdown.debrisTruckCount} маш.`, value: breakdown.debrisRemovalCost },
     { label: `Демонтаж сантехкабины ×${cfg.bathroomCount}`, value: breakdown.bathroomCabinDemolitionCost },
     { label: `Возведение сантехкабины ×${cfg.bathroomCount}`, value: breakdown.bathroomCabinConstructionCost },
     { label: "Электромонтаж", value: breakdown.electricsCost },
