@@ -371,7 +371,7 @@ function InvoiceForm({ plan, onClose }: { plan: PlanInfo; onClose: () => void })
               )}
 
               {isFreePeriod() ? (
-                <div className="w-full bg-green-500 text-white font-bold h-12 rounded-md flex items-center justify-center gap-2"><Icon name="Gift" size={18} />Бесплатно до 15 апреля!</div>
+                <div className="w-full bg-green-500 text-white font-bold h-12 rounded-md flex items-center justify-center gap-2"><Icon name="Gift" size={18} />Бесплатно до 15 мая!</div>
               ) : (
                 <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold h-12" onClick={handleSubmit} disabled={loading}>
                   {loading
@@ -419,7 +419,7 @@ export default function B2BPaymentChoice({ plan, onClose }: { plan: PlanInfo; on
 
           {isFreePeriod() ? (
             <div className="w-full bg-green-500 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2">
-              <Icon name="Gift" size={18} />Бесплатно до 15 апреля!
+              <Icon name="Gift" size={18} />Бесплатно до 15 мая!
             </div>
           ) : (
             <>

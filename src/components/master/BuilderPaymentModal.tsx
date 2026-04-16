@@ -176,7 +176,7 @@ export default function BuilderPaymentModal({
             <div className="w-full bg-green-50 border border-green-200 rounded-xl p-4 text-center">
               <p className="text-green-700 font-bold flex items-center justify-center gap-2">
                 <Icon name="Gift" size={18} />
-                Бесплатно до 15 апреля
+                Бесплатно до 15 мая
               </p>
               <p className="text-green-600 text-xs mt-1">Все сервисы доступны без оплаты</p>
             </div>
