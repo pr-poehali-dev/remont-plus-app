@@ -45,15 +45,6 @@ export interface TurnkeyPriceBreakdown {
   total: number;
 }
 
-export function calcDemoTrucks(cfg: Omit<TurnkeyConfig, "id" | "totalPrice">): number {
-  const area = cfg.totalAreaM2 || 0;
-  const ceilH = cfg.ceilingHeightM || 2.8;
-  const wallArea = Math.round(Math.sqrt(area) * 3.5 * ceilH * 10) / 10;
-  const scope = DEMOLITION_SCOPES.find(s => s.id === cfg.demolitionScope) ?? DEMOLITION_SCOPES[1];
-  const volume = ((cfg.demolitionFloors ? area : 0) + (cfg.demolitionWalls ? wallArea : 0)) * scope.debrisM3perM2;
-  return volume > 0 ? Math.ceil(volume / DEBRIS_TRUCK_VOLUME_M3) : 0;
-}
-
 export function calcTurnkeyPrice(
   cfg: Omit<TurnkeyConfig, "id" | "totalPrice">,
   regionId = "moscow",
