@@ -4,8 +4,48 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useMeta } from "@/hooks/useMeta";
-import SEOMeta from "@/components/SEOMeta";
+import SEOMeta, { calcJsonLd, faqJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+
+const HOMESTAGING_FAQ = [
+  {
+    q: "Что такое хоумстейджинг простыми словами?",
+    a: "Хоумстейджинг — это предпродажная подготовка квартиры: уборка, обезличивание, правильное освещение, расстановка мебели и мелкий косметический ремонт, которые увеличивают привлекательность объекта для покупателя и позволяют продать жильё на 5–15% дороже и в 2–3 раза быстрее.",
+  },
+  {
+    q: "Сколько стоит подготовить квартиру к продаже?",
+    a: "70% рекомендаций из отчёта можно выполнить самостоятельно без затрат (перестановка, уборка, обезличивание). Остальное обычно укладывается в 10 000–30 000 ₽: освещение, текстиль, декор, мелкий косметический ремонт. ИИ показывает ориентировочную стоимость по каждому пункту.",
+  },
+  {
+    q: "Как работает ИИ-анализ фото квартиры?",
+    a: "Вы загружаете фото помещения на страницу сервиса. Искусственный интеллект оценивает комнату по 7 критериям: порядок, освещение, цветовая гамма, мебель, декор, дефекты, визуальное восприятие. Затем формирует отчёт с оценкой 1–10, сильными сторонами и 5–10 персональными рекомендациями с приоритетом и стоимостью.",
+  },
+  {
+    q: "Это бесплатно?",
+    a: "Да, сервис анализа фото для хоумстейджинга бесплатный. Авторизованные пользователи получают сохранение истории отчётов в личном кабинете.",
+  },
+  {
+    q: "Подходит ли сервис для сдачи в аренду?",
+    a: "Да. Рекомендации одинаково полезны как для продажи квартиры, так и для сдачи в долгосрочную или краткосрочную аренду. Подготовленная квартира сдаётся быстрее и по более высокой ставке.",
+  },
+  {
+    q: "Что делать после получения рекомендаций?",
+    a: "Вы можете выполнить пункты самостоятельно или воспользоваться разделом «Мастера» — найти проверенных исполнителей в своём городе для уборки, мелкого ремонта, монтажа освещения и декора.",
+  },
+];
+
+const HOMESTAGING_JSON_LD = [
+  calcJsonLd(
+    "ИИ-анализ фото квартиры для хоумстейджинга",
+    "Бесплатный онлайн-сервис предпродажной подготовки квартиры: загрузите фото комнаты и получите персональные рекомендации ИИ по уборке, освещению, декору и мелкому ремонту, чтобы продать жильё дороже.",
+    "/homestaging",
+  ),
+  faqJsonLd(HOMESTAGING_FAQ),
+  breadcrumbJsonLd([
+    { name: "Главная", url: "/" },
+    { name: "Хоумстейджинг", url: "/homestaging" },
+  ]),
+];
 
 const ANALYZE_URL = "https://functions.poehali.dev/aba07e30-7771-4d10-a210-665a7bc44ed6";
 const REPORTS_URL = "https://functions.poehali.dev/9507a027-3e05-4ee7-a432-b90d2dea0603";
@@ -62,9 +102,9 @@ function fileToBase64(file: File): Promise<string> {
 
 export default function Homestaging() {
   useMeta({
-    title: "Хоумстейджинг с ИИ — предпродажная подготовка квартиры",
-    description: "Загрузите фото квартиры и получите персональные рекомендации ИИ для увеличения стоимости при продаже или сдаче в аренду.",
-    keywords: "хоумстейджинг, предпродажная подготовка квартиры, как продать квартиру дороже, стейджинг",
+    title: "Хоумстейджинг онлайн — ИИ-анализ фото квартиры перед продажей",
+    description: "Бесплатный сервис предпродажной подготовки квартиры: загрузите фото комнаты и получите 5–10 персональных рекомендаций ИИ по уборке, освещению и декору. Продайте жильё на 5–15% дороже и в 2–3 раза быстрее.",
+    keywords: "хоумстейджинг, home staging, предпродажная подготовка квартиры, как продать квартиру дороже, как быстро продать квартиру, стейджинг квартиры, подготовка квартиры к продаже, подготовка квартиры к сдаче в аренду, фото квартиры для объявления, оценка квартиры по фото, анализ интерьера ИИ",
     canonical: "/homestaging",
   });
 
@@ -209,9 +249,11 @@ export default function Homestaging() {
   return (
     <div className="min-h-screen bg-[#fafaf8]">
       <SEOMeta
-        title="Хоумстейджинг с ИИ — подготовка квартиры к продаже"
-        description="ИИ-анализ фото квартиры с рекомендациями, как повысить стоимость при продаже или аренде. Бесплатно."
+        title="Хоумстейджинг онлайн — ИИ-анализ фото квартиры перед продажей"
+        description="Бесплатный сервис предпродажной подготовки квартиры: загрузите фото комнаты и получите 5–10 персональных рекомендаций ИИ. Продайте квартиру на 5–15% дороже и быстрее."
+        keywords="хоумстейджинг, home staging, предпродажная подготовка квартиры, как продать квартиру дороже, стейджинг квартиры, анализ интерьера ИИ, фото квартиры для объявления"
         path="/homestaging"
+        jsonLd={HOMESTAGING_JSON_LD}
       />
       <HomePromoBanner />
 
@@ -222,7 +264,7 @@ export default function Homestaging() {
             <Icon name="ArrowLeft" size={20} />
           </button>
           <div className="flex-1">
-            <h1 className="font-bold text-gray-900 text-base sm:text-lg">Хоумстейджинг с ИИ</h1>
+            <p className="font-bold text-gray-900 text-base sm:text-lg">Хоумстейджинг с ИИ</p>
             <p className="text-xs text-gray-500 hidden sm:block">Предпродажная подготовка квартиры</p>
           </div>
           <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full">
@@ -239,14 +281,15 @@ export default function Homestaging() {
             <div className="flex-1">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur rounded-full text-xs font-semibold mb-4">
                 <Icon name="Home" size={14} />
-                НОВОЕ НАПРАВЛЕНИЕ
+                ХОУМСТЕЙДЖИНГ С ИИ
               </div>
-              <h2 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-4">
-                Продай квартиру<br />дороже и быстрее
-              </h2>
+              <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-4">
+                Хоумстейджинг&nbsp;—<br />продай квартиру дороже
+              </h1>
               <p className="text-white/90 text-base sm:text-lg max-w-xl">
-                Загрузи фото комнаты — ИИ проанализирует помещение и даст конкретные рекомендации,
-                что улучшить перед показом или съёмкой для объявления.
+                Загрузите фото комнаты — искусственный интеллект проанализирует помещение
+                по 7 критериям и даст 5–10 конкретных рекомендаций перед съёмкой объявления
+                или показом покупателю.
               </p>
             </div>
             <div className="w-40 h-40 sm:w-56 sm:h-56 bg-white/10 backdrop-blur rounded-3xl flex items-center justify-center flex-shrink-0">
@@ -566,6 +609,79 @@ export default function Homestaging() {
             </div>
           </section>
         )}
+
+        {/* FAQ — важно для SEO и Schema.org FAQPage */}
+        <section className="mt-12">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 text-center">
+            Частые вопросы о хоумстейджинге
+          </h2>
+          <div className="max-w-3xl mx-auto space-y-3">
+            {HOMESTAGING_FAQ.map((item, i) => (
+              <details
+                key={i}
+                className="group bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 open:shadow-md transition-shadow"
+              >
+                <summary className="cursor-pointer list-none flex items-start justify-between gap-4">
+                  <h3 className="font-bold text-gray-900 text-base sm:text-lg flex-1">{item.q}</h3>
+                  <Icon
+                    name="ChevronDown"
+                    size={20}
+                    className="text-rose-500 flex-shrink-0 mt-0.5 group-open:rotate-180 transition-transform"
+                  />
+                </summary>
+                <p className="mt-3 text-gray-600 leading-relaxed text-sm sm:text-base">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* SEO-описание направления */}
+        <section className="mt-12 bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 prose prose-sm sm:prose-base max-w-none">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-4">
+            Что такое хоумстейджинг и почему он работает
+          </h2>
+          <p className="text-gray-700 leading-relaxed mb-4">
+            <strong>Хоумстейджинг</strong> (от англ. <em>home staging</em> — «подготовка дома») —
+            это профессиональная предпродажная подготовка жилья, которая делает квартиру
+            привлекательной для максимально широкого круга покупателей. По данным американской
+            Национальной ассоциации риэлторов, квартиры после хоумстейджинга продаются
+            в среднем на 5–15% дороже и в 2–3 раза быстрее, чем аналогичные без подготовки.
+          </p>
+          <h3 className="text-lg font-bold text-gray-900 mt-5 mb-2">Ключевые принципы</h3>
+          <ul className="list-disc pl-6 text-gray-700 space-y-1.5">
+            <li><strong>Обезличивание</strong> — уберите семейные фото, магниты, личные вещи, чтобы покупатель представил там свою жизнь.</li>
+            <li><strong>Свет и чистота</strong> — максимальная яркость, чистые окна, свежий воздух.</li>
+            <li><strong>Нейтральная палитра</strong> — бежевые, серые, белые тона расширяют аудиторию покупателей.</li>
+            <li><strong>Визуальный простор</strong> — уберите лишнюю мебель, откройте проходы, освободите поверхности.</li>
+            <li><strong>Акценты</strong> — живые растения, свежий текстиль, новые шторы за небольшие деньги преображают кадр.</li>
+            <li><strong>Мелкий ремонт</strong> — отремонтируйте мелкие дефекты: плинтусы, сколы краски, подтёки.</li>
+          </ul>
+          <h3 className="text-lg font-bold text-gray-900 mt-5 mb-2">Чем полезен ИИ-анализ</h3>
+          <p className="text-gray-700 leading-relaxed mb-4">
+            Хоумстейджер в Москве берёт 15–40 тыс. ₽ за выезд и подготовку технического задания.
+            Наш онлайн-сервис выполняет ту же задачу бесплатно: искусственный интеллект на базе
+            GPT-4 с компьютерным зрением оценивает вашу комнату за 10–20 секунд и выдаёт
+            персональный список улучшений с приоритетом «важно / средне / опция» и ориентировочной
+            стоимостью по каждому пункту. Вы получаете те же рекомендации, что и у профессионала,
+            но без расходов и ожидания.
+          </p>
+          <h3 className="text-lg font-bold text-gray-900 mt-5 mb-2">Когда это особенно актуально</h3>
+          <ul className="list-disc pl-6 text-gray-700 space-y-1.5">
+            <li>Продажа квартиры на вторичном рынке — выделиться среди похожих объявлений.</li>
+            <li>Сдача квартиры в долгосрочную или посуточную аренду — повысить ставку.</li>
+            <li>Подготовка к фотосъёмке объявления на Авито, Циан, ДомКлик.</li>
+            <li>Организация виртуальных туров и видеообзоров.</li>
+          </ul>
+          <h3 className="text-lg font-bold text-gray-900 mt-5 mb-2">Полезные сервисы АВАНГАРД</h3>
+          <p className="text-gray-700 leading-relaxed">
+            После получения рекомендаций вы можете:
+            найти исполнителей в разделе <a href="/masters" className="text-rose-600 hover:underline font-medium">«Мастера»</a>,
+            рассчитать бюджет косметического ремонта
+            через <a href="/turnkey" className="text-rose-600 hover:underline font-medium">калькулятор ремонта под ключ</a>,
+            подобрать <a href="/furniture" className="text-rose-600 hover:underline font-medium">мебель и декор</a> или
+            создать полноценный <a href="/designer" className="text-rose-600 hover:underline font-medium">дизайн-проект интерьера</a>.
+          </p>
+        </section>
       </main>
     </div>
   );

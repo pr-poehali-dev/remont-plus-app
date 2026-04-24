@@ -121,6 +121,34 @@ export default function HomeProjects({ region }: Props) {
         </a>
       </section>
 
+      {/* Хоумстейджинг — промо на главной */}
+      <section className="mt-6">
+        <a href="/homestaging" className="block group">
+          <div className="bg-gradient-to-br from-rose-50 via-pink-50 to-fuchsia-50 rounded-2xl p-8 sm:p-10 border border-rose-100 hover:border-rose-300 hover:shadow-lg transition-all duration-300">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-fuchsia-500 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                <Icon name="Home" size={32} className="text-white" />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Хоумстейджинг с ИИ</h3>
+                  <span className="text-xs font-bold text-white bg-gradient-to-r from-rose-500 to-fuchsia-500 px-2 py-0.5 rounded-full">NEW</span>
+                </div>
+                <p className="text-gray-600 text-sm sm:text-base max-w-xl">
+                  Продаёте или сдаёте квартиру? Загрузите фото комнаты — ИИ подскажет, как продать дороже на 5–15% и быстрее.
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <span className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-rose-500 to-fuchsia-500 text-white rounded-xl font-medium text-sm group-hover:shadow-lg transition-all">
+                  Попробовать
+                  <Icon name="ArrowRight" size={16} />
+                </span>
+              </div>
+            </div>
+          </div>
+        </a>
+      </section>
+
       {/* Отзывы */}
       <section className="mt-20">
         <div className="text-center mb-10">
