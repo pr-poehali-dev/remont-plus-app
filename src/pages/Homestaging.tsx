@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,17 @@ import SEOMeta from "@/components/SEOMeta";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 
 const ANALYZE_URL = "https://functions.poehali.dev/aba07e30-7771-4d10-a210-665a7bc44ed6";
+const REPORTS_URL = "https://functions.poehali.dev/9507a027-3e05-4ee7-a432-b90d2dea0603";
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
+
+interface ReportListItem {
+  id: number;
+  room_type: string;
+  overall_score: number;
+  short_summary: string;
+  image_url: string | null;
+  created_at: string;
+}
 
 type Priority = "high" | "medium" | "low";
 
@@ -61,12 +71,75 @@ export default function Homestaging() {
   const navigate = useNavigate();
   const fileInput = useRef<HTMLInputElement>(null);
 
+  const [userId, setUserId] = useState<number | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [imageBase64, setImageBase64] = useState<string>("");
   const [note, setNote] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [history, setHistory] = useState<ReportListItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("avangard_user");
+    if (saved) {
+      try {
+        const u = JSON.parse(saved);
+        if (u?.id) setUserId(u.id);
+      } catch { /* ignore */ }
+    }
+  }, []);
+
+  const loadHistory = async (uid: number) => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch(`${REPORTS_URL}?userId=${uid}`, {
+        headers: { "X-User-Id": String(uid) },
+      });
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.reports)) setHistory(data.reports);
+    } catch { /* ignore */ }
+    finally { setHistoryLoading(false); }
+  };
+
+  useEffect(() => {
+    if (userId) loadHistory(userId);
+  }, [userId]);
+
+  const openReport = async (id: number) => {
+    if (!userId) return;
+    try {
+      const res = await fetch(`${REPORTS_URL}?id=${id}&userId=${userId}`, {
+        headers: { "X-User-Id": String(userId) },
+      });
+      const data = await res.json();
+      if (res.ok && data.report) {
+        setResult({
+          roomType: data.report.room_type,
+          overallScore: data.report.overall_score,
+          shortSummary: data.report.short_summary,
+          recommendations: data.report.recommendations || [],
+          strengths: data.report.strengths || [],
+        });
+        setPreviewUrl(data.report.image_url || "");
+        setImageBase64("");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    } catch { /* ignore */ }
+  };
+
+  const deleteReport = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!userId || !confirm("Удалить этот отчёт?")) return;
+    try {
+      const res = await fetch(`${REPORTS_URL}?id=${id}&userId=${userId}`, {
+        method: "DELETE",
+        headers: { "X-User-Id": String(userId) },
+      });
+      if (res.ok) setHistory((prev) => prev.filter((r) => r.id !== id));
+    } catch { /* ignore */ }
+  };
 
   const handleFile = async (file: File) => {
     setError("");
@@ -103,10 +176,12 @@ export default function Homestaging() {
     setError("");
     setResult(null);
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (userId) headers["X-User-Id"] = String(userId);
       const res = await fetch(ANALYZE_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64, note: note.trim() }),
+        headers,
+        body: JSON.stringify({ imageBase64, note: note.trim(), userId }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -114,6 +189,7 @@ export default function Homestaging() {
         return;
       }
       setResult(data.result);
+      if (userId) loadHistory(userId);
     } catch {
       setError("Проблемы с соединением. Попробуйте ещё раз");
     } finally {
@@ -261,6 +337,16 @@ export default function Homestaging() {
             </div>
           )}
 
+          {!userId && imageBase64 && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700 flex items-start gap-2">
+              <Icon name="Info" size={16} className="flex-shrink-0 mt-0.5" />
+              <span>
+                <button onClick={() => navigate("/login")} className="font-bold underline">Войдите</button>
+                {" "}— и отчёт сохранится в вашем личном кабинете.
+              </span>
+            </div>
+          )}
+
           <Button
             onClick={analyze}
             disabled={loading || !imageBase64}
@@ -385,6 +471,61 @@ export default function Homestaging() {
               Анализировать другое фото
             </Button>
           </div>
+        )}
+
+        {/* История отчётов — показываем если юзер авторизован и есть отчёты */}
+        {userId && history.length > 0 && (
+          <section className="mt-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Icon name="History" size={22} className="text-rose-500" />
+                <h3 className="text-xl font-bold text-gray-900">Мои отчёты</h3>
+                <span className="text-sm text-gray-400">({history.length})</span>
+              </div>
+              {historyLoading && <Icon name="Loader2" size={16} className="animate-spin text-gray-400" />}
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {history.map((r) => (
+                <div
+                  key={r.id}
+                  onClick={() => openReport(r.id)}
+                  className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-rose-300 cursor-pointer overflow-hidden transition-all"
+                >
+                  {r.image_url ? (
+                    <div className="aspect-video bg-gray-100 overflow-hidden">
+                      <img src={r.image_url} alt={r.room_type} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    </div>
+                  ) : (
+                    <div className="aspect-video bg-gradient-to-br from-rose-100 to-fuchsia-100 flex items-center justify-center">
+                      <Icon name="Home" size={40} className="text-rose-400" />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <h4 className="font-bold text-gray-900 capitalize truncate">{r.room_type || "Помещение"}</h4>
+                      <span className="inline-flex items-center gap-0.5 text-xs font-bold text-amber-600 flex-shrink-0">
+                        <Icon name="Star" size={12} className="fill-amber-500 text-amber-500" />
+                        {r.overall_score}/10
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-2 mb-2">{r.short_summary}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">
+                        {new Date(r.created_at).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" })}
+                      </span>
+                      <button
+                        onClick={(e) => deleteReport(r.id, e)}
+                        className="p-1 text-gray-300 hover:text-red-500 transition-colors"
+                        aria-label="Удалить"
+                      >
+                        <Icon name="Trash2" size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* Benefits — показываем до первого результата */}

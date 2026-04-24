@@ -7,6 +7,7 @@ import Icon from "@/components/ui/icon";
 import useTariffAccess from "@/hooks/useTariffAccess";
 
 const TARIFF_API = "https://functions.poehali.dev/aae7e353-917d-4759-9f27-a78f28be0084";
+const HOMESTAGING_REPORTS_URL = "https://functions.poehali.dev/9507a027-3e05-4ee7-a432-b90d2dea0603";
 
 interface User {
   id: number;
@@ -23,10 +24,19 @@ interface Payment {
   status: string;
 }
 
+interface HomestagingReportItem {
+  id: number;
+  room_type: string;
+  overall_score: number;
+  short_summary: string;
+  image_url: string | null;
+  created_at: string;
+}
+
 const quickActions = [
   { label: "Калькулятор смет", icon: "Calculator", path: "/calculator", external: false },
   { label: "Дизайнер", icon: "Palette", path: "/designer", external: false },
-  { label: "Мои документы", icon: "FileText", path: "/prices", external: false },
+  { label: "Хоумстейджинг", icon: "Home", path: "/homestaging", external: false },
   { label: "Тарифы", icon: "BadgePercent", path: "https://avangard-ai.ru/tariffs", external: true },
 ];
 
@@ -35,6 +45,8 @@ export default function Account() {
   const [user, setUser] = useState<User | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(true);
+  const [hsReports, setHsReports] = useState<HomestagingReportItem[]>([]);
+  const [hsLoading, setHsLoading] = useState(true);
 
   const { planName, daysRemaining, daysTotal, loading: tariffLoading } = useTariffAccess();
 
@@ -70,6 +82,22 @@ export default function Account() {
       .catch(() => {})
       .finally(() => setPaymentsLoading(false));
   }, [user?.id, user?.email]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setHsLoading(false);
+      return;
+    }
+    fetch(`${HOMESTAGING_REPORTS_URL}?userId=${user.id}`, {
+      headers: { "X-User-Id": String(user.id) },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.reports)) setHsReports(data.reports);
+      })
+      .catch(() => {})
+      .finally(() => setHsLoading(false));
+  }, [user?.id]);
 
   const daysPassed = daysTotal - daysRemaining;
   const progressValue = daysTotal > 0 ? (daysPassed / daysTotal) * 100 : 0;
@@ -212,6 +240,80 @@ export default function Account() {
             ))}
           </div>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2">
+                <Icon name="Home" size={20} />
+                Мои отчёты хоумстейджинга
+                {hsReports.length > 0 && (
+                  <span className="text-sm font-normal text-muted-foreground">({hsReports.length})</span>
+                )}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate("/homestaging")}
+                className="gap-1.5"
+              >
+                <Icon name="Plus" size={14} />
+                Новый анализ
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {hsLoading ? (
+              <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
+                <Icon name="Loader2" size={18} className="animate-spin" />
+                <span className="text-sm">Загрузка отчётов...</span>
+              </div>
+            ) : hsReports.length > 0 ? (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {hsReports.slice(0, 6).map((r) => (
+                  <div
+                    key={r.id}
+                    onClick={() => navigate(`/homestaging`)}
+                    className="group rounded-xl border border-gray-200 hover:border-rose-300 cursor-pointer overflow-hidden transition-all hover:shadow-md"
+                  >
+                    {r.image_url ? (
+                      <div className="aspect-video bg-gray-100 overflow-hidden">
+                        <img src={r.image_url} alt={r.room_type} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      </div>
+                    ) : (
+                      <div className="aspect-video bg-gradient-to-br from-rose-100 to-fuchsia-100 flex items-center justify-center">
+                        <Icon name="Home" size={36} className="text-rose-400" />
+                      </div>
+                    )}
+                    <div className="p-3">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h4 className="font-semibold text-sm capitalize truncate">{r.room_type || "Помещение"}</h4>
+                        <span className="inline-flex items-center gap-0.5 text-xs font-bold text-amber-600 flex-shrink-0">
+                          <Icon name="Star" size={11} className="fill-amber-500 text-amber-500" />
+                          {r.overall_score}/10
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(r.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 space-y-3">
+                <div className="w-12 h-12 mx-auto rounded-full bg-muted flex items-center justify-center">
+                  <Icon name="Sparkles" size={24} className="text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">Пока нет отчётов</p>
+                <Button size="sm" onClick={() => navigate("/homestaging")} className="gap-1.5">
+                  <Icon name="Upload" size={14} />
+                  Загрузить фото
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
