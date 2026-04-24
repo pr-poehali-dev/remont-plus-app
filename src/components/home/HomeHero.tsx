@@ -221,6 +221,17 @@ const sections = [
     requireAuth: false,
   },
   {
+    id: "homestaging",
+    title: "ХОУМСТЕЙДЖИНГ",
+    description: "ИИ-анализ фото квартиры перед продажей или арендой — конкретные рекомендации, как повысить стоимость",
+    emoji: "🏡",
+    icon: "Home",
+    gradient: "from-rose-400 via-pink-400 to-fuchsia-400",
+    glow: "group-hover:shadow-pink-300/50",
+    path: "/homestaging",
+    requireAuth: false,
+  },
+  {
     id: "expert",
     title: "ЭКСПЕРТ",
     description: "ИИ-консультант по дизайну, интерьеру и ремонту — задайте любой вопрос онлайн",
