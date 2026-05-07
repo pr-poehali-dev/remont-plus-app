@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useMeta } from "@/hooks/useMeta";
 import SEOMeta, { calcJsonLd, faqJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import RoomScanCrossLink from "@/components/RoomScanCrossLink";
 
 const HOMESTAGING_FAQ = [
   {
@@ -610,6 +611,11 @@ export default function Homestaging() {
           </section>
         )}
 
+        {/* RoomScan AI — экосистема Авангард */}
+        <section className="mt-12">
+          <RoomScanCrossLink />
+        </section>
+
         {/* FAQ — важно для SEO и Schema.org FAQPage */}
         <section className="mt-12">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 text-center">
@@ -678,8 +684,10 @@ export default function Homestaging() {
             найти исполнителей в разделе <a href="/masters" className="text-rose-600 hover:underline font-medium">«Мастера»</a>,
             рассчитать бюджет косметического ремонта
             через <a href="/turnkey" className="text-rose-600 hover:underline font-medium">калькулятор ремонта под ключ</a>,
-            подобрать <a href="/furniture" className="text-rose-600 hover:underline font-medium">мебель и декор</a> или
-            создать полноценный <a href="/designer" className="text-rose-600 hover:underline font-medium">дизайн-проект интерьера</a>.
+            подобрать <a href="/furniture" className="text-rose-600 hover:underline font-medium">мебель и декор</a>,
+            создать полноценный <a href="/designer" className="text-rose-600 hover:underline font-medium">дизайн-проект интерьера</a>
+            или отсканировать комнату и получить точный план помещения
+            на <a href="https://roomscan-ai.ru/" target="_blank" rel="noopener" className="text-sky-600 hover:underline font-medium">RoomScan AI</a>.
           </p>
         </section>
       </main>

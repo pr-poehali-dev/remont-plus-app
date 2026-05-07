@@ -1,5 +1,6 @@
 import Icon from "@/components/ui/icon";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+import RoomScanCrossLink from "@/components/RoomScanCrossLink";
 
 interface RegionData {
   label: string;
@@ -119,6 +120,11 @@ export default function HomeProjects({ region }: Props) {
             </div>
           </div>
         </a>
+      </section>
+
+      {/* RoomScan AI — экосистема Авангард */}
+      <section className="mt-6">
+        <RoomScanCrossLink />
       </section>
 
       {/* Хоумстейджинг — промо на главной */}
