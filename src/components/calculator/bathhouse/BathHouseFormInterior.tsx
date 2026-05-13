@@ -96,7 +96,7 @@ export default function BathHouseFormInterior({ config, onChange }: Props) {
 
       {/* Полы */}
       <SectionTitle icon="Grid3x3">Полы</SectionTitle>
-      <RadioGroup<FloorMaterial>
+      <RadioGroup
         options={(Object.entries(FLOOR_MATERIALS) as [FloorMaterial, typeof FLOOR_MATERIALS[FloorMaterial]][]).map(([k, v]) => ({
           value: k, label: v.label, desc: `${v.pricePerM2.toLocaleString("ru-RU")} ₽/м²`,
         }))}
