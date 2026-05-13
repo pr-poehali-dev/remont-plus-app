@@ -90,6 +90,18 @@ const sections = [
     logo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/bucket/982c23cb-822f-4681-8a37-34514320885b.jpg",
   },
   {
+    id: "roomscan",
+    title: "ROOMSCAN AI",
+    description: "Отсканируйте комнату на телефон — ИИ построит план помещения и замерит размеры",
+    emoji: "📐",
+    icon: "ScanLine",
+    gradient: "from-sky-400 via-cyan-400 to-blue-400",
+    glow: "group-hover:shadow-sky-300/50",
+    path: "https://roomscan-ai.ru/",
+    requireAuth: false,
+    external: true,
+  },
+  {
     id: "windows",
     title: "ОКНА",
     description: "Расчёт стоимости окон ПВХ и алюминиевых конструкций, смета и КП с чертежом",
