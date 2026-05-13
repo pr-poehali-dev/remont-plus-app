@@ -109,10 +109,18 @@ export default function HomeHowItWorks() {
           {/* Шаги */}
           <div className="space-y-3">
             {STEPS.map((s, i) => (
-              <button
+              <div
                 key={i}
+                role="button"
+                tabIndex={0}
                 onClick={() => setActive(i)}
-                className={`w-full text-left rounded-2xl p-5 transition-all duration-300 border-2 ${
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setActive(i);
+                  }
+                }}
+                className={`w-full text-left rounded-2xl p-5 transition-all duration-300 border-2 cursor-pointer ${
                   active === i
                     ? `${s.lightColor} ${s.borderColor} shadow-md`
                     : "bg-gray-50 border-transparent hover:bg-gray-100"
@@ -142,7 +150,7 @@ export default function HomeHowItWorks() {
                     )}
                   </div>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
 
