@@ -100,6 +100,12 @@ export default function HeroContent({ user, regionLabel, sections }: HeroContent
               className={`absolute inset-0 bg-gradient-to-br ${section.gradient} rounded-2xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500`}
             />
             <div className="relative bg-white/8 backdrop-blur-sm rounded-2xl p-4 border border-white/10 transition-all duration-300 group-hover:border-white/20 group-hover:bg-white/12 group-hover:-translate-y-1 text-center flex flex-col items-center gap-3">
+              {section.external && (
+                <span className="absolute top-2 right-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white/15 backdrop-blur text-[9px] font-bold text-white/90 leading-none border border-white/20">
+                  <Icon name="ExternalLink" size={8} />
+                  Партнёр
+                </span>
+              )}
               <div
                 className={`w-11 h-11 rounded-xl ${section.logo ? "bg-white p-1" : `bg-gradient-to-br ${section.gradient}`} flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110 overflow-hidden`}
               >
