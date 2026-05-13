@@ -87,6 +87,7 @@ const sections = [
     glow: "group-hover:shadow-green-300/50",
     path: "/lemanapro",
     requireAuth: false,
+    logo: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/bucket/982c23cb-822f-4681-8a37-34514320885b.jpg",
   },
   {
     id: "windows",

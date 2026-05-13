@@ -20,6 +20,8 @@ interface Section {
   glow: string;
   path: string;
   requireAuth: boolean;
+  logo?: string;
+  external?: boolean;
 }
 
 interface HeroContentProps {
@@ -33,6 +35,10 @@ export default function HeroContent({ user, regionLabel, sections }: HeroContent
 
   const handleNavigate = (section: Section) => {
     reachGoal("home_hero_click", { section: section.id, path: section.path });
+    if (section.external) {
+      window.open(section.path, "_blank", "noopener");
+      return;
+    }
     if (section.path.startsWith("/#")) {
       const id = section.path.slice(2);
       const el = document.getElementById(id);
@@ -95,9 +101,18 @@ export default function HeroContent({ user, regionLabel, sections }: HeroContent
             />
             <div className="relative bg-white/8 backdrop-blur-sm rounded-2xl p-4 border border-white/10 transition-all duration-300 group-hover:border-white/20 group-hover:bg-white/12 group-hover:-translate-y-1 text-center flex flex-col items-center gap-3">
               <div
-                className={`w-11 h-11 rounded-xl bg-gradient-to-br ${section.gradient} flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110`}
+                className={`w-11 h-11 rounded-xl ${section.logo ? "bg-white p-1" : `bg-gradient-to-br ${section.gradient}`} flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110 overflow-hidden`}
               >
-                <span className="text-xl">{section.emoji}</span>
+                {section.logo ? (
+                  <img
+                    src={section.logo}
+                    alt={section.title}
+                    className="w-full h-full object-contain"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className="text-xl">{section.emoji}</span>
+                )}
               </div>
               <div>
                 <h2 className="text-xs font-bold tracking-wide text-white/90 leading-tight mb-1">

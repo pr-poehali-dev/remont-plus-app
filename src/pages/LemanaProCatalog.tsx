@@ -41,6 +41,12 @@ export default function LemanaProCatalog() {
               <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
                 <Icon name="ArrowLeft" className="h-5 w-5" />
               </Button>
+              <img
+                src="https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/bucket/982c23cb-822f-4681-8a37-34514320885b.jpg"
+                alt="Лемана Про"
+                className="h-10 w-10 sm:h-12 sm:w-12 object-contain rounded-lg bg-white border border-gray-100"
+                loading="lazy"
+              />
               <div>
                 <h1 className="text-xl font-bold">Каталог ЛеманаПро</h1>
                 <p className="text-sm text-gray-500">Самара · Товары для ремонта и обустройства</p>
