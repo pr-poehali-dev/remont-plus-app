@@ -133,7 +133,7 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
 
       {/* Планировка */}
       <SectionTitle icon="LayoutDashboard">Планировка</SectionTitle>
-      <RadioGroup<HouseLayout>
+      <RadioGroup
         options={(Object.entries(HOUSE_LAYOUTS) as [HouseLayout, typeof HOUSE_LAYOUTS[HouseLayout]][]).map(([k, v]) => ({
           value: k, label: v.label, desc: v.desc,
         }))}
@@ -217,7 +217,7 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
 
       {/* Утепление */}
       <SectionTitle icon="Wind">Утепление</SectionTitle>
-      <RadioGroup<FrameInsulation>
+      <RadioGroup
         options={(Object.entries(FRAME_INSULATIONS) as [FrameInsulation, typeof FRAME_INSULATIONS[FrameInsulation]][]).map(([k, v]) => ({
           value: k,
           label: v.label,
@@ -229,7 +229,7 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
 
       {/* Фундамент */}
       <SectionTitle icon="Building2">Фундамент</SectionTitle>
-      <RadioGroup<FoundationType>
+      <RadioGroup
         options={(Object.entries(FOUNDATION_TYPES) as [FoundationType, typeof FOUNDATION_TYPES[FoundationType]][]).map(([k, v]) => ({
           value: k, label: v.label, desc: v.desc,
         }))}
@@ -239,7 +239,7 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
 
       {/* Тип крыши */}
       <SectionTitle icon="Home">Тип крыши</SectionTitle>
-      <RadioGroup<RoofType>
+      <RadioGroup
         options={(Object.entries(ROOF_TYPES) as [RoofType, typeof ROOF_TYPES[RoofType]][]).map(([k, v]) => ({
           value: k, label: v.label, desc: v.desc,
         }))}
@@ -250,7 +250,7 @@ export default function FrameHouseFormStructure({ config, onChange }: Props) {
 
       {/* Кровельный материал */}
       <SectionTitle icon="CloudRain">Кровельный материал</SectionTitle>
-      <RadioGroup<RoofingMaterial>
+      <RadioGroup
         options={(Object.entries(ROOFING_MATERIALS) as [RoofingMaterial, typeof ROOFING_MATERIALS[RoofingMaterial]][]).map(([k, v]) => ({
           value: k, label: v.label, desc: `${v.pricePerM2.toLocaleString("ru-RU")} ₽/м²`,
         }))}

@@ -16,7 +16,7 @@ export default function FrameHouseFormInterior({ config, onChange }: Props) {
     <>
       {/* Полы */}
       <SectionTitle icon="Square">Напольное покрытие</SectionTitle>
-      <RadioGroup<FloorType>
+      <RadioGroup
         options={(Object.entries(FLOOR_TYPES) as [FloorType, typeof FLOOR_TYPES[FloorType]][]).map(([k, v]) => ({
           value: k, label: v.label, desc: `${v.pricePerM2.toLocaleString("ru-RU")} ₽/м²`,
         }))}
@@ -40,7 +40,7 @@ export default function FrameHouseFormInterior({ config, onChange }: Props) {
 
       {/* Окна */}
       <SectionTitle icon="AppWindow">Окна</SectionTitle>
-      <RadioGroup<WindowType>
+      <RadioGroup
         options={(Object.entries(WINDOW_TYPES) as [WindowType, typeof WINDOW_TYPES[WindowType]][]).map(([k, v]) => ({
           value: k, label: v.label, desc: `${v.pricePerUnit.toLocaleString("ru-RU")} ₽/шт.`,
         }))}
