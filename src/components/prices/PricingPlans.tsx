@@ -58,7 +58,7 @@ export default function PricingPlans() {
             </ul>
             <Button variant="outline" className="w-full" onClick={() => handleB2CPay(B2C_PLANS[0])} disabled={isPromoActive()}>
               {isPromoActive() ? (
-                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 мая</>
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 июня</>
               ) : (
                 <><Icon name="CreditCard" size={16} className="mr-2" />Оплатить 1 490 ₽</>
               )}
@@ -90,7 +90,7 @@ export default function PricingPlans() {
             </ul>
             <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white" onClick={() => handleB2CPay(B2C_PLANS[1])} disabled={isPromoActive()}>
               {isPromoActive() ? (
-                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 мая</>
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 июня</>
               ) : (
                 <><Icon name="CreditCard" size={16} className="mr-2" />Оплатить 2 990 ₽</>
               )}
@@ -116,7 +116,7 @@ export default function PricingPlans() {
             </ul>
             <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50" onClick={() => handleB2CPay(B2C_PLANS[2])} disabled={isPromoActive()}>
               {isPromoActive() ? (
-                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 мая</>
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 июня</>
               ) : (
                 <><Icon name="CreditCard" size={16} className="mr-2" />Оплатить 4 990 ₽</>
               )}
@@ -157,7 +157,7 @@ export default function PricingPlans() {
               fireActivate(B2B_PLANS[0].id);
             }} disabled={isPromoActive()}>
               {isPromoActive() ? (
-                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 мая</>
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 июня</>
               ) : (
                 "Подключить"
               )}
@@ -191,7 +191,7 @@ export default function PricingPlans() {
               fireActivate(B2B_PLANS[1].id);
             }} disabled={isPromoActive()}>
               {isPromoActive() ? (
-                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 мая</>
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 июня</>
               ) : (
                 "Подключить"
               )}
@@ -221,7 +221,7 @@ export default function PricingPlans() {
               fireActivate(B2B_PLANS[2].id);
             }} disabled={isPromoActive()}>
               {isPromoActive() ? (
-                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 мая</>
+                <><Icon name="Gift" size={16} className="mr-2" />Бесплатно до 15 июня</>
               ) : (
                 "Подключить"
               )}

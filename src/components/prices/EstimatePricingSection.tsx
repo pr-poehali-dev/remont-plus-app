@@ -175,7 +175,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
                 <div className="w-full bg-green-50 border border-green-200 rounded-xl p-4 text-center">
                   <p className="text-green-700 font-bold flex items-center justify-center gap-2">
                     <Icon name="Gift" size={18} />
-                    Бесплатно до 15 мая
+                    Бесплатно до 15 июня
                   </p>
                   <p className="text-green-600 text-xs mt-1">Все сервисы доступны без оплаты</p>
                 </div>
@@ -388,7 +388,7 @@ export default function EstimatePricingSection() {
               disabled={isPromoActive()}
             >
               {isPromoActive() ? (
-                <><Icon name="Gift" size={18} className="mr-2" />Бесплатно до 15 мая</>
+                <><Icon name="Gift" size={18} className="mr-2" />Бесплатно до 15 июня</>
               ) : (
                 <><Icon name="CreditCard" size={18} className="mr-2" />Заказать смету за 399 ₽</>
               )}

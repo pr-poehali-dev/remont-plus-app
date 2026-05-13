@@ -216,7 +216,7 @@ export default function ActivatePlanModal({ open, onClose, userId, currentPlanCo
                       ) : isPromoActive() ? (
                         <>
                           <Icon name="Gift" size={13} className="mr-1.5" />
-                          Бесплатно до 15 мая
+                          Бесплатно до 15 июня
                         </>
                       ) : (
                         <>

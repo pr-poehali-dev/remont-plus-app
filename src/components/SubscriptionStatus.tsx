@@ -64,7 +64,7 @@ export default function SubscriptionStatus({ subscription, loading, userId, onAc
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-gray-900 text-sm mb-0.5">
-                {isPromoActive() ? "Все сервисы бесплатны до 15 мая" : "Нет активной подписки"}
+                {isPromoActive() ? "Все сервисы бесплатны до 15 июня" : "Нет активной подписки"}
               </p>
               <p className="text-xs text-gray-500 mb-3">
                 {isPromoActive() ? "Пользуйтесь всеми инструментами без ограничений" : "Выберите тариф для создания дизайн-проектов"}
@@ -72,7 +72,7 @@ export default function SubscriptionStatus({ subscription, loading, userId, onAc
               <div className="flex gap-2">
                 <Button size="sm" className="h-8 text-xs" onClick={() => setModalOpen(true)}>
                   <Icon name={isPromoActive() ? "Gift" : "Zap"} size={13} className="mr-1.5" />
-                  {isPromoActive() ? "Бесплатно до 15 мая" : "Активировать тариф"}
+                  {isPromoActive() ? "Бесплатно до 15 июня" : "Активировать тариф"}
                 </Button>
                 <Button size="sm" variant="ghost" className="h-8 text-xs text-gray-500" onClick={() => navigate("/tariffs")}>
                   Подробнее о тарифах

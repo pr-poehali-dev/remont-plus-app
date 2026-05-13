@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
+import { FREE_PERIOD_END } from "@/lib/promo";
 
 export default function HomePromoBanner() {
   const [visible, setVisible] = useState(true);
   const navigate = useNavigate();
 
-  const deadline = new Date("2026-05-15T23:59:59");
+  const deadline = FREE_PERIOD_END;
   const now = new Date();
   if (now > deadline || !visible) return null;
 
@@ -21,7 +22,7 @@ export default function HomePromoBanner() {
       >
         <Icon name="Gift" size={20} className="shrink-0" />
         <p className="text-sm sm:text-base font-semibold text-center">
-          Все сервисы <span className="uppercase">бесплатно</span> до 15 мая!
+          Все сервисы <span className="uppercase">бесплатно</span> до 15 июня!
           <span className="hidden sm:inline"> Калькуляторы, сметы, дизайн-проект — без ограничений.</span>
           <span className="ml-2 opacity-75 font-medium">
             {days > 0 ? `Осталось ${days} дн.` : "Последний день!"}
