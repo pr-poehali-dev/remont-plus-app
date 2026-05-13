@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import Icon from "@/components/ui/icon";
 import useTariffAccess from "@/hooks/useTariffAccess";
+import RecentActivityFeed from "@/components/account/RecentActivityFeed";
 
 const TARIFF_API = "https://functions.poehali.dev/aae7e353-917d-4759-9f27-a78f28be0084";
 const HOMESTAGING_REPORTS_URL = "https://functions.poehali.dev/9507a027-3e05-4ee7-a432-b90d2dea0603";
@@ -240,6 +241,8 @@ export default function Account() {
             ))}
           </div>
         </div>
+
+        <RecentActivityFeed homestagingReports={hsReports} />
 
         <Card>
           <CardHeader>
