@@ -20,6 +20,7 @@ import {
 import Icon from "@/components/ui/icon";
 import type { EstimateItem, PriceCategory, PriceItem } from "@/pages/Calculator";
 import MaterialSuggest from "@/components/calculator/MaterialSuggest";
+import RoomScanHint from "@/components/calculator/RoomScanHint";
 
 interface EstimateTabProps {
   items: EstimateItem[];
@@ -91,6 +92,8 @@ export default function EstimateTab({
           Добавить из прайса
         </Button>
       </div>
+
+      <RoomScanHint className="mb-4" />
 
       {items.length === 0 ? (
         <Card className="p-12 text-center border-dashed">

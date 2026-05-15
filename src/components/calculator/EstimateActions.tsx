@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import reachGoal from "@/lib/metrika";
+import RoomScanHint from "@/components/calculator/RoomScanHint";
 
 const NOTIFY_EMAIL_URL =
   "https://functions.poehali.dev/a8b87e78-89d1-48d8-ba76-8da2e0df32a3";
@@ -82,6 +83,8 @@ export default function EstimateActions({
 
   return (
     <div className="space-y-3">
+      <RoomScanHint variant="compact" />
+
       {/* Action buttons row */}
       <div className="flex gap-2 flex-wrap">
         <Button

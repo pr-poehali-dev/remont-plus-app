@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
 import reachGoal from "@/lib/metrika";
+import RoomScanHint from "@/components/calculator/RoomScanHint";
 
 export type DocType = "smeta" | "kp" | "ks2" | "ks3" | "act" | "contract";
 
@@ -145,6 +146,7 @@ export default function ExportDialog({ onConfirm, onCancel }: ExportDialogProps)
           <Field id="customer" label="Заказчик" hint="(ФИО или организация)" placeholder="Иванов Иван Иванович" value={customer} onChange={setCustomer} autoFocus />
           <Field id="contractor" label="Подрядчик / Исполнитель" placeholder="ООО «Ремонт Плюс» / ИП Петров П.П." value={contractor} onChange={setContractor} />
           <Field id="address" label="Адрес объекта" placeholder="г. Самара, ул. Ленина, д. 1" value={address} onChange={setAddress} />
+          <RoomScanHint variant="inline" />
 
           {/* КП — срок действия */}
           {docType === "kp" && (
