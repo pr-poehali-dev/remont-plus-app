@@ -37,7 +37,7 @@ export function exportContractPDF(c: Contract) {
     typelabel(c.contract_type),
   ].filter(Boolean).join("  ·  ");
 
-  const infoItems: [string, string][] = [
+  const infoItems = ([
     c.amount !== null ? ["Сумма договора", formatAmount(c.amount, c.currency)] : null,
     ["Статус", STATUS_LABEL[c.status] ?? c.status],
     c.signed_at ? ["Дата подписания", formatDate(c.signed_at)] : null,
@@ -45,7 +45,7 @@ export function exportContractPDF(c: Contract) {
     c.valid_until ? ["Окончание действия", formatDate(c.valid_until)] : null,
     c.auto_renewal ? ["Автопролонгация", "Да"] : null,
     c.responsible_person ? ["Ответственный", c.responsible_person] : null,
-  ].filter(Boolean) as [string, string][];
+  ] as ([string, string] | null)[]).filter(Boolean) as [string, string][];
 
   const infoHtml = infoItems
     .map(([l, v]) => `<div class="info-item"><div class="info-label">${escapeHtml(l)}</div><div class="info-value">${escapeHtml(v)}</div></div>`)

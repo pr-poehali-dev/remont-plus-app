@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 
@@ -42,14 +41,6 @@ interface QuickPrompt {
   icon: string;
   text: string;
 }
-
-const CATEGORIES = [
-  { id: "all", label: "Все", icon: "Sparkles" },
-  { id: "content", label: "Контент", icon: "PenLine" },
-  { id: "ads", label: "Реклама", icon: "Megaphone" },
-  { id: "strategy", label: "Стратегия", icon: "Target" },
-  { id: "analytics", label: "Аналитика", icon: "BarChart2" },
-];
 
 function formatTime(ts: number) {
   return new Date(ts).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
@@ -285,22 +276,19 @@ export default function AdminMarketingTab() {
                         </button>
                         <button
                           onClick={() => {
-                            const wb = XLSX.utils.book_new();
                             const table = parseTableFromText(m.content);
+                            const stamp = Date.now();
                             if (table) {
-                              const ws = XLSX.utils.aoa_to_sheet(table);
-                              XLSX.utils.book_append_sheet(wb, ws, "Таблица");
+                              downloadFile(rowsToCSV(table), `marina-${stamp}.csv`, "text/csv");
+                            } else {
+                              const cleanText = m.content.split("\n").map(l => l.replace(/[#*_`]/g, "").trim()).join("\n");
+                              downloadFile(cleanText, `marina-${stamp}.txt`, "text/plain");
                             }
-                            const textLines = m.content.split("\n").map(l => [l.replace(/[#*_`]/g, "").trim()]);
-                            const wsText = XLSX.utils.aoa_to_sheet([["Отчёт Марины"], [""], ...textLines]);
-                            wsText["!cols"] = [{ wch: 120 }];
-                            XLSX.utils.book_append_sheet(wb, wsText, "Отчёт");
-                            XLSX.writeFile(wb, `marina-${Date.now()}.xlsx`);
                           }}
                           className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-gray-400 hover:text-green-600 flex items-center gap-1"
                         >
                           <Icon name="FileSpreadsheet" size={11} />
-                          Excel
+                          CSV
                         </button>
                       </>
                     )}
