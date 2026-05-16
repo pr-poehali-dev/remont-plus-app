@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import {
   REGIONS, BATH_STYLES, BATH_LAYOUTS,
   WALL_MATERIALS, FOUNDATION_TYPES, ROOF_TYPES, ROOFING_MATERIALS,
@@ -12,6 +10,8 @@ import { fmt, calcBathHouseMaterials } from "@/components/calculator/bathhouse/b
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
+import { usePrintState } from "@/hooks/usePrintState";
+import PrintEmptyState from "@/components/print/PrintEmptyState";
 
 interface PrintState {
   config: BathHouseConfig;
@@ -60,26 +60,18 @@ const BREAKDOWN_ROWS: { key: keyof BathHouseBreakdown; label: string; unit: stri
 ];
 
 export default function BathHousePrint() {
-  const location = useLocation();
-  const state: PrintState | null = location.state ?? (() => {
-    try { return JSON.parse(sessionStorage.getItem("bathhouse_print_state") || "null"); } catch { return null; }
-  })();
-
-  useEffect(() => {
-    if (state) {
-      const isKp = state.docType === "kp";
-      document.title = isKp
-        ? `КП-${state.docNum} (Баня) от ${state.date}`
-        : `Смета на строительство бани № Б-${state.docNum} от ${state.date}`;
-    }
-  }, [state]);
+  const state = usePrintState<PrintState>({
+    storageKey: "bathhouse_print_state",
+    buildTitle: (s) => {
+      const ps = s as unknown as PrintState;
+      return ps.docType === "kp"
+        ? `КП-${ps.docNum} (Баня) от ${ps.date}`
+        : `Смета на строительство бани № Б-${ps.docNum} от ${ps.date}`;
+    },
+  });
 
   if (!state) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-gray-400">
-        <p>Данные не переданы. Вернитесь в <a href="/bathhouse" className="text-amber-600 underline">калькулятор бани</a>.</p>
-      </div>
-    );
+    return <PrintEmptyState backHref="/bathhouse" calculatorName="калькулятор бани" accentClass="text-amber-600" />;
   }
 
   const { config, regionId, markupPct, bd, docNum, date, docType, customer, contractor, address, phone, email, inn, validDays,

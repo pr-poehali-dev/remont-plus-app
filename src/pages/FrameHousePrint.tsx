@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import {
   REGIONS, HOUSE_STYLES, HOUSE_LAYOUTS, FRAME_WALL_TECHS, FRAME_INSULATIONS,
   FOUNDATION_TYPES, ROOF_TYPES, ROOFING_MATERIALS, FACADE_TYPES,
@@ -11,6 +9,8 @@ import { fmt, calcFrameHouseMaterials } from "@/components/calculator/framehouse
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
+import { usePrintState } from "@/hooks/usePrintState";
+import PrintEmptyState from "@/components/print/PrintEmptyState";
 
 interface PrintState {
   config: FrameHouseConfig;
@@ -58,26 +58,18 @@ const BREAKDOWN_ROWS: { key: keyof FrameHouseBreakdown; label: string; unit: str
 ];
 
 export default function FrameHousePrint() {
-  const location = useLocation();
-  const state: PrintState | null = location.state ?? (() => {
-    try { return JSON.parse(sessionStorage.getItem("framehouse_print_state") || "null"); } catch { return null; }
-  })();
-
-  useEffect(() => {
-    if (state) {
-      const isKp = state.docType === "kp";
-      document.title = isKp
-        ? `КП-${state.docNum} (Каркасный дом) от ${state.date}`
-        : `Смета на строительство каркасного дома № КД-${state.docNum} от ${state.date}`;
-    }
-  }, [state]);
+  const state = usePrintState<PrintState>({
+    storageKey: "framehouse_print_state",
+    buildTitle: (s) => {
+      const ps = s as unknown as PrintState;
+      return ps.docType === "kp"
+        ? `КП-${ps.docNum} (Каркасный дом) от ${ps.date}`
+        : `Смета на строительство каркасного дома № КД-${ps.docNum} от ${ps.date}`;
+    },
+  });
 
   if (!state) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-gray-400">
-        <p>Данные не переданы. Вернитесь в <a href="/framehouse" className="text-green-600 underline">калькулятор каркасного дома</a>.</p>
-      </div>
-    );
+    return <PrintEmptyState backHref="/framehouse" calculatorName="калькулятор каркасного дома" accentClass="text-green-600" />;
   }
 
   const { config, regionId, markupPct, bd, docNum, date, docType, customer, contractor, address, phone, email, inn, validDays,

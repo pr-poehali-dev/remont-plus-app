@@ -1,25 +1,25 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { CONSTRUCTION_TYPES, PROFILE_SYSTEMS, GLASS_UNITS } from "@/components/calculator/windows/WindowTypes";
 import { fmt, WINDOW_PRINT_STYLES } from "@/components/print/WindowPrintTypes";
 import type { WindowPrintState } from "@/components/print/WindowPrintTypes";
 import WindowCard from "@/components/print/WindowCard";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
+import { usePrintState } from "@/hooks/usePrintState";
+import PrintEmptyState from "@/components/print/PrintEmptyState";
 
 export default function WindowPrint() {
-  const location = useLocation();
-  const state: WindowPrintState | null = location.state ?? (() => {
-    try { return JSON.parse(sessionStorage.getItem("windows_print_state") || "null"); } catch { return null; }
-  })();
+  const state = usePrintState<WindowPrintState>({
+    storageKey: "windows_print_state",
+    buildTitle: (s) => {
+      const ps = s as unknown as WindowPrintState;
+      return ps.docType === "kp"
+        ? `КП-${ps.docNum} (Окна) от ${ps.date}`
+        : `Смета на окна № С-${ps.docNum} от ${ps.date}`;
+    },
+  });
 
   useEffect(() => {
-    if (state) {
-      const isKp = state.docType === "kp";
-      document.title = isKp
-        ? `КП-${state.docNum} (Окна) от ${state.date}`
-        : `Смета на окна № С-${state.docNum} от ${state.date}`;
-    }
     const blockKey = (e: KeyboardEvent) => {
       if (e.key === "PrintScreen" || (e.ctrlKey && e.key === "p")) {
         e.preventDefault();
@@ -27,14 +27,10 @@ export default function WindowPrint() {
     };
     document.addEventListener("keydown", blockKey);
     return () => document.removeEventListener("keydown", blockKey);
-  }, [state]);
+  }, []);
 
   if (!state) {
-    return (
-      <div className="p-8 text-center text-gray-500">
-        Нет данных для печати. Вернитесь в раздел «Окна» и нажмите «Создать документ».
-      </div>
-    );
+    return <PrintEmptyState backHref="/windows" calculatorName="«Окна»" />;
   }
 
   const { configs, markupPct, totalSum, docNum, date, docType,

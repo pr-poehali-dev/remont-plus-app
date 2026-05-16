@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { REGIONS, BATHROOM_TYPES, FLOOR_TILES, WALL_TILES, WATERPROOFING_TYPES } from "@/components/calculator/bathroom/BathroomTypes";
 import type { BathroomConfig } from "@/components/calculator/bathroom/BathroomTypes";
 import { calcBathroomPrice, fmt } from "@/components/calculator/bathroom/bathroomUtils";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
+import { usePrintState } from "@/hooks/usePrintState";
+import PrintEmptyState from "@/components/print/PrintEmptyState";
 
 interface PrintState {
   zones: BathroomConfig[];
@@ -25,26 +25,18 @@ interface PrintState {
 }
 
 export default function BathroomPrint() {
-  const location = useLocation();
-  const state: PrintState | null = location.state ?? (() => {
-    try { return JSON.parse(sessionStorage.getItem("bathroom_print_state") || "null"); } catch { return null; }
-  })();
-
-  useEffect(() => {
-    if (state) {
-      const isKp = state.docType === "kp";
-      document.title = isKp
-        ? `КП-${state.docNum} (Санузел) от ${state.date}`
-        : `Смета на санузел № С-${state.docNum} от ${state.date}`;
-    }
-  }, [state]);
+  const state = usePrintState<PrintState>({
+    storageKey: "bathroom_print_state",
+    buildTitle: (s) => {
+      const ps = s as unknown as PrintState;
+      return ps.docType === "kp"
+        ? `КП-${ps.docNum} (Санузел) от ${ps.date}`
+        : `Смета на санузел № С-${ps.docNum} от ${ps.date}`;
+    },
+  });
 
   if (!state) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-gray-400">
-        <p>Данные не переданы. Вернитесь в <a href="/bathroom" className="text-teal-600 underline">калькулятор</a>.</p>
-      </div>
-    );
+    return <PrintEmptyState backHref="/bathroom" calculatorName="калькулятор" />;
   }
 
   const { zones, markupPct, regionId, docNum, date, docType, customer, contractor, address, phone, email, validDays, inn, kpp } = state;

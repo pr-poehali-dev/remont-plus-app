@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import {
   REGIONS, ROOM_TYPES, RENOVATION_LEVELS, SCREED_TYPES, PLASTER_TYPES,
   CEILING_FINISH_TYPES, FLOORING_TYPES, DOOR_TYPES,
@@ -11,6 +9,8 @@ import type { NewbuildConfig } from "@/components/calculator/newbuild/NewbuildTy
 import { calcNewbuildPrice, calcNewbuildProjectTotals, calcNewbuildMaterials, fmt } from "@/components/calculator/newbuild/newbuildUtils";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
+import { usePrintState } from "@/hooks/usePrintState";
+import PrintEmptyState from "@/components/print/PrintEmptyState";
 
 interface PrintState {
   zones: NewbuildConfig[];
@@ -35,28 +35,18 @@ interface PrintState {
 }
 
 export default function NewbuildPrint() {
-  const location = useLocation();
-  const state: PrintState | null = location.state ?? (() => {
-    try { return JSON.parse(sessionStorage.getItem("newbuild_print_state") || "null"); } catch { return null; }
-  })();
-
-  useEffect(() => {
-    if (state) {
-      const isKp = state.docType === "kp";
-      document.title = isKp
-        ? `КП-${state.docNum} (Новостройка) от ${state.date}`
-        : `Смета на ремонт № С-${state.docNum} от ${state.date}`;
-    }
-  }, [state]);
+  const state = usePrintState<PrintState>({
+    storageKey: "newbuild_print_state",
+    buildTitle: (s) => {
+      const ps = s as unknown as PrintState;
+      return ps.docType === "kp"
+        ? `КП-${ps.docNum} (Новостройка) от ${ps.date}`
+        : `Смета на ремонт № С-${ps.docNum} от ${ps.date}`;
+    },
+  });
 
   if (!state) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-gray-400">
-        <p>Данные не переданы. Вернитесь в{" "}
-          <a href="/newbuild" className="text-orange-600 underline">калькулятор</a>.
-        </p>
-      </div>
-    );
+    return <PrintEmptyState backHref="/newbuild" calculatorName="калькулятор" accentClass="text-orange-600" />;
   }
 
   const {

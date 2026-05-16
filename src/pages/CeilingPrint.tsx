@@ -1,24 +1,24 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS, CEILING_COLORS, LIGHTING_OPTIONS, PROFILE_OPTIONS } from "@/components/calculator/ceilings/CeilingTypes";
 import { fmt, CEILING_PRINT_STYLES } from "@/components/print/CeilingPrintTypes";
 import type { CeilingPrintState } from "@/components/print/CeilingPrintTypes";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
+import { usePrintState } from "@/hooks/usePrintState";
+import PrintEmptyState from "@/components/print/PrintEmptyState";
 
 export default function CeilingPrint() {
-  const location = useLocation();
-  const state: CeilingPrintState | null = location.state ?? (() => {
-    try { return JSON.parse(sessionStorage.getItem("ceilings_print_state") || "null"); } catch { return null; }
-  })();
+  const state = usePrintState<CeilingPrintState>({
+    storageKey: "ceilings_print_state",
+    buildTitle: (s) => {
+      const ps = s as unknown as CeilingPrintState;
+      return ps.docType === "kp"
+        ? `КП-${ps.docNum} (Потолки) от ${ps.date}`
+        : `Смета на потолки № С-${ps.docNum} от ${ps.date}`;
+    },
+  });
 
   useEffect(() => {
-    if (state) {
-      const isKp = state.docType === "kp";
-      document.title = isKp
-        ? `КП-${state.docNum} (Потолки) от ${state.date}`
-        : `Смета на потолки № С-${state.docNum} от ${state.date}`;
-    }
     const blockKey = (e: KeyboardEvent) => {
       if (e.key === "PrintScreen" || (e.ctrlKey && e.key === "p")) {
         e.preventDefault();
@@ -26,14 +26,10 @@ export default function CeilingPrint() {
     };
     document.addEventListener("keydown", blockKey);
     return () => document.removeEventListener("keydown", blockKey);
-  }, [state]);
+  }, []);
 
   if (!state) {
-    return (
-      <div className="p-8 text-center text-gray-500">
-        Нет данных для печати. Вернитесь в раздел «Натяжные потолки» и нажмите «Создать документ».
-      </div>
-    );
+    return <PrintEmptyState backHref="/ceilings" calculatorName="«Натяжные потолки»" />;
   }
 
   const { configs, markupPct, totalSum, docNum, date, docType,

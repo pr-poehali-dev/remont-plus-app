@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { FLOORING_PRODUCTS, FLOORING_CATEGORIES, SUBSTRATE_OPTIONS, INSTALL_PATTERNS, SKIRTING_OPTIONS, REGIONS } from "@/components/calculator/flooring/FlooringTypes";
 import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTypes";
 import { calcFlooringPrice, fmt } from "@/components/calculator/flooring/flooringUtils";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
+import { usePrintState } from "@/hooks/usePrintState";
+import PrintEmptyState from "@/components/print/PrintEmptyState";
 
 interface PrintState {
   zones: FlooringConfig[];
@@ -30,26 +30,18 @@ interface PrintState {
 }
 
 export default function FlooringPrint() {
-  const location = useLocation();
-  const state: PrintState | null = location.state ?? (() => {
-    try { return JSON.parse(sessionStorage.getItem("flooring_print_state") || "null"); } catch { return null; }
-  })();
-
-  useEffect(() => {
-    if (state) {
-      const isKp = state.docType === "kp";
-      document.title = isKp
-        ? `КП-${state.docNum} (Полы) от ${state.date}`
-        : `Смета на полы № С-${state.docNum} от ${state.date}`;
-    }
-  }, [state]);
+  const state = usePrintState<PrintState>({
+    storageKey: "flooring_print_state",
+    buildTitle: (s) => {
+      const ps = s as unknown as PrintState;
+      return ps.docType === "kp"
+        ? `КП-${ps.docNum} (Полы) от ${ps.date}`
+        : `Смета на полы № С-${ps.docNum} от ${ps.date}`;
+    },
+  });
 
   if (!state) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-gray-400">
-        <p>Данные не переданы. Вернитесь в <a href="/flooring" className="text-amber-600 underline">калькулятор</a>.</p>
-      </div>
-    );
+    return <PrintEmptyState backHref="/flooring" calculatorName="калькулятор" accentClass="text-amber-600" />;
   }
 
   const { zones, markupPct, regionId, docNum, date, docType, customer, contractor, address, phone, email, validDays, inn, kpp, ogrn, legalAddress, bank, bik, checkingAccount } = state;

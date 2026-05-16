@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { REGIONS, ROOM_TYPES, CABLING_TYPES } from "@/components/calculator/electrics/ElectricsTypes";
 import type { ElectricsConfig } from "@/components/calculator/electrics/ElectricsTypes";
 import { calcElectricsPrice, fmt } from "@/components/calculator/electrics/electricsUtils";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
+import { usePrintState } from "@/hooks/usePrintState";
+import PrintEmptyState from "@/components/print/PrintEmptyState";
 
 interface PrintState {
   zones: ElectricsConfig[];
@@ -25,26 +25,18 @@ interface PrintState {
 }
 
 export default function ElectricsPrint() {
-  const location = useLocation();
-  const state: PrintState | null = location.state ?? (() => {
-    try { return JSON.parse(sessionStorage.getItem("electrics_print_state") || "null"); } catch { return null; }
-  })();
-
-  useEffect(() => {
-    if (state) {
-      const isKp = state.docType === "kp";
-      document.title = isKp
-        ? `КП-${state.docNum} (Электрика) от ${state.date}`
-        : `Смета на электрику № С-${state.docNum} от ${state.date}`;
-    }
-  }, [state]);
+  const state = usePrintState<PrintState>({
+    storageKey: "electrics_print_state",
+    buildTitle: (s) => {
+      const ps = s as unknown as PrintState;
+      return ps.docType === "kp"
+        ? `КП-${ps.docNum} (Электрика) от ${ps.date}`
+        : `Смета на электрику № С-${ps.docNum} от ${ps.date}`;
+    },
+  });
 
   if (!state) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-gray-400">
-        <p>Данные не переданы. Вернитесь в <a href="/electrics" className="text-blue-600 underline">калькулятор</a>.</p>
-      </div>
-    );
+    return <PrintEmptyState backHref="/electrics" calculatorName="калькулятор" accentClass="text-blue-600" />;
   }
 
   const { zones, markupPct, regionId, docNum, date, docType, customer, contractor, address, phone, email, validDays, inn, kpp } = state;

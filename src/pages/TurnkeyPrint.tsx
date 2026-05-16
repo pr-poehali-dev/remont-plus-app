@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import {
   REGIONS, APARTMENT_TYPES, RENOVATION_LEVELS,
   FLOOR_TYPES, CEILING_TYPES, BATHROOM_LEVELS,
@@ -8,6 +6,8 @@ import type { TurnkeyConfig } from "@/components/calculator/turnkey/TurnkeyTypes
 import { calcTurnkeyPrice, calcTurnkeyMaterials, fmt } from "@/components/calculator/turnkey/turnkeyUtils";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
+import { usePrintState } from "@/hooks/usePrintState";
+import PrintEmptyState from "@/components/print/PrintEmptyState";
 
 interface PrintState {
   cfg: TurnkeyConfig;
@@ -28,28 +28,18 @@ interface PrintState {
 }
 
 export default function TurnkeyPrint() {
-  const location = useLocation();
-  const state: PrintState | null = location.state ?? (() => {
-    try { return JSON.parse(sessionStorage.getItem("turnkey_print_state") || "null"); } catch { return null; }
-  })();
-
-  useEffect(() => {
-    if (state) {
-      const isKp = state.docType === "kp";
-      document.title = isKp
-        ? `КП-${state.docNum} (Под ключ) от ${state.date}`
-        : `Смета под ключ № С-${state.docNum} от ${state.date}`;
-    }
-  }, [state]);
+  const state = usePrintState<PrintState>({
+    storageKey: "turnkey_print_state",
+    buildTitle: (s) => {
+      const ps = s as unknown as PrintState;
+      return ps.docType === "kp"
+        ? `КП-${ps.docNum} (Под ключ) от ${ps.date}`
+        : `Смета под ключ № С-${ps.docNum} от ${ps.date}`;
+    },
+  });
 
   if (!state) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-gray-400">
-        <p>Данные не переданы. Вернитесь в{" "}
-          <a href="/turnkey" className="text-emerald-600 underline">калькулятор</a>.
-        </p>
-      </div>
-    );
+    return <PrintEmptyState backHref="/turnkey" calculatorName="калькулятор" accentClass="text-emerald-600" />;
   }
 
   const {
