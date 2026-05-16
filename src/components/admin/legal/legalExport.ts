@@ -1,4 +1,3 @@
-import { jsPDF } from "jspdf";
 import { typelabel, formatDate, formatAmount } from "./LegalTypes";
 import type { Contract } from "./LegalTypes";
 
@@ -26,7 +25,8 @@ function wrapText(text: string, maxLen: number): string[] {
 
 // ─── PDF ─────────────────────────────────────────────────────────────────────
 
-export function exportContractPDF(c: Contract) {
+export async function exportContractPDF(c: Contract) {
+  const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "mm", format: "a4" });
 
   const W = 210;
