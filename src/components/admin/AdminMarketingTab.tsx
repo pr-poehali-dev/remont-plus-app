@@ -1,28 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 
-function escapeCSV(v: string): string {
-  const s = String(v ?? "");
-  if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
-}
-
-function rowsToCSV(rows: string[][]): string {
-  return rows.map(r => r.map(escapeCSV).join(";")).join("\n");
-}
-
-function downloadFile(content: string, filename: string, mime: string) {
-  const blob = new Blob(["\uFEFF" + content], { type: mime + ";charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+const XLSX_PKG = "xlsx";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function loadXLSX(): Promise<any> {
+  return await import(/* @vite-ignore */ XLSX_PKG);
 }
 
 const API_URL = "https://functions.poehali.dev/5566c153-084c-456d-bf40-8ca10d1a8509";
@@ -41,6 +26,14 @@ interface QuickPrompt {
   icon: string;
   text: string;
 }
+
+const CATEGORIES = [
+  { id: "all", label: "Все", icon: "Sparkles" },
+  { id: "content", label: "Контент", icon: "PenLine" },
+  { id: "ads", label: "Реклама", icon: "Megaphone" },
+  { id: "strategy", label: "Стратегия", icon: "Target" },
+  { id: "analytics", label: "Аналитика", icon: "BarChart2" },
+];
 
 function formatTime(ts: number) {
   return new Date(ts).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
@@ -141,30 +134,52 @@ export default function AdminMarketingTab() {
     return rows.length >= 2 ? rows : null;
   }
 
-  function exportLastAssistantMessage() {
+  async function exportLastAssistantMessage() {
     const assistantMessages = messages.filter(m => m.role === "assistant");
     if (!assistantMessages.length) return;
     const lastMsg = assistantMessages[assistantMessages.length - 1];
     const text = lastMsg.content;
-    const date = new Date().toISOString().slice(0, 10);
 
+    const XLSX = await loadXLSX();
     const table = parseTableFromText(text);
+    const wb = XLSX.utils.book_new();
+
     if (table) {
-      downloadFile(rowsToCSV(table), `marina-report-${date}.csv`, "text/csv");
-      return;
+      const ws = XLSX.utils.aoa_to_sheet(table);
+      XLSX.utils.book_append_sheet(wb, ws, "Таблица");
     }
 
-    const cleanText = text.split("\n").map(l => l.replace(/[#*_`]/g, "").trim()).join("\n");
-    downloadFile(cleanText, `marina-report-${date}.txt`, "text/plain");
+    const textLines = text.split("\n").map(l => [l.replace(/[#*_`]/g, "").trim()]);
+    const wsText = XLSX.utils.aoa_to_sheet([["Аналитический отчёт Марины"], [""], ...textLines]);
+    wsText["!cols"] = [{ wch: 120 }];
+    XLSX.utils.book_append_sheet(wb, wsText, "Отчёт");
+
+    const date = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `marina-report-${date}.xlsx`);
   }
 
-  function exportFullChat() {
+  async function exportFullChat() {
+    const XLSX = await loadXLSX();
+    const wb = XLSX.utils.book_new();
     const rows: string[][] = [["Время", "Роль", "Сообщение"]];
     messages.forEach(m => {
       rows.push([formatTime(m.ts), m.role === "user" ? "Вы" : "Марина", m.content]);
     });
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"] = [{ wch: 10 }, { wch: 10 }, { wch: 120 }];
+    XLSX.utils.book_append_sheet(wb, ws, "Переписка");
+
+    const assistantMessages = messages.filter(m => m.role === "assistant");
+    assistantMessages.forEach((m, i) => {
+      const table = parseTableFromText(m.content);
+      if (table) {
+        const ws2 = XLSX.utils.aoa_to_sheet(table);
+        XLSX.utils.book_append_sheet(wb, ws2, `Таблица ${i + 1}`);
+      }
+    });
+
     const date = new Date().toISOString().slice(0, 10);
-    downloadFile(rowsToCSV(rows), `marina-full-${date}.csv`, "text/csv");
+    XLSX.writeFile(wb, `marina-full-${date}.xlsx`);
   }
 
   const isEmpty = messages.length === 0;
@@ -276,19 +291,22 @@ export default function AdminMarketingTab() {
                         </button>
                         <button
                           onClick={() => {
+                            const wb = XLSX.utils.book_new();
                             const table = parseTableFromText(m.content);
-                            const stamp = Date.now();
                             if (table) {
-                              downloadFile(rowsToCSV(table), `marina-${stamp}.csv`, "text/csv");
-                            } else {
-                              const cleanText = m.content.split("\n").map(l => l.replace(/[#*_`]/g, "").trim()).join("\n");
-                              downloadFile(cleanText, `marina-${stamp}.txt`, "text/plain");
+                              const ws = XLSX.utils.aoa_to_sheet(table);
+                              XLSX.utils.book_append_sheet(wb, ws, "Таблица");
                             }
+                            const textLines = m.content.split("\n").map(l => [l.replace(/[#*_`]/g, "").trim()]);
+                            const wsText = XLSX.utils.aoa_to_sheet([["Отчёт Марины"], [""], ...textLines]);
+                            wsText["!cols"] = [{ wch: 120 }];
+                            XLSX.utils.book_append_sheet(wb, wsText, "Отчёт");
+                            XLSX.writeFile(wb, `marina-${Date.now()}.xlsx`);
                           }}
                           className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-gray-400 hover:text-green-600 flex items-center gap-1"
                         >
                           <Icon name="FileSpreadsheet" size={11} />
-                          CSV
+                          Excel
                         </button>
                       </>
                     )}

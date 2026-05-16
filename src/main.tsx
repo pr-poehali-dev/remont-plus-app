@@ -1,14 +1,19 @@
-import { createRoot } from 'react-dom/client';
-import App from './App';
-import './index.css';
+import * as React from 'react';
+import { createRoot } from 'react-dom/client'
+import App from './App'
+import './index.css'
 
-const rootEl = document.getElementById('root');
-if (rootEl) {
-  createRoot(rootEl).render(<App />);
-}
-
-if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js').then(
+      (registration) => {
+        console.log('ServiceWorker registered:', registration.scope);
+      },
+      (error) => {
+        console.log('ServiceWorker registration failed:', error);
+      }
+    );
   });
 }
+
+createRoot(document.getElementById("root")!).render(<App />);

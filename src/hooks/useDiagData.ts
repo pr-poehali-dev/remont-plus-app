@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DiagData } from '@/types/conclusionDiagData';
+import { DiagData } from '@/types/DiagData';
 
 export function useDiagData(serialNumber: string | undefined) {
   const [diagData, setDiagData] = useState<DiagData | null>(null);
