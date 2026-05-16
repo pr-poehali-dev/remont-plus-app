@@ -1,4 +1,3 @@
-import { jsPDF } from "jspdf";
 import { typelabel, formatDate, formatAmount } from "./LegalTypes";
 import type { Contract } from "./LegalTypes";
 
@@ -8,161 +7,39 @@ function today() {
   return new Date().toLocaleDateString("ru-RU");
 }
 
-function wrapText(text: string, maxLen: number): string[] {
-  const words = text.split(" ");
-  const lines: string[] = [];
-  let line = "";
-  for (const word of words) {
-    if ((line + " " + word).trim().length > maxLen) {
-      if (line) lines.push(line.trim());
-      line = word;
-    } else {
-      line = (line + " " + word).trim();
-    }
-  }
-  if (line) lines.push(line.trim());
-  return lines;
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
-// ─── PDF ─────────────────────────────────────────────────────────────────────
+const STATUS_LABEL: Record<string, string> = {
+  draft: "Черновик",
+  review: "На согласовании",
+  active: "Действующий",
+  signed: "Подписан",
+  expired: "Истёк",
+  terminated: "Расторгнут",
+};
+
+// ─── PDF (через окно печати браузера) ────────────────────────────────────────
 
 export function exportContractPDF(c: Contract) {
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
-
-  const W = 210;
-  const marginL = 20;
-  const marginR = 20;
-  const contentW = W - marginL - marginR;
-  let y = 20;
-
-  const addText = (
-    text: string,
-    x: number,
-    fontSize = 10,
-    style: "normal" | "bold" = "normal",
-    align: "left" | "center" | "right" = "left",
-    maxWidth?: number
-  ) => {
-    doc.setFontSize(fontSize);
-    doc.setFont("helvetica", style);
-    if (maxWidth) {
-      const lines = doc.splitTextToSize(text, maxWidth);
-      doc.text(lines, x, y, { align });
-      y += lines.length * (fontSize * 0.4) + 1;
-    } else {
-      doc.text(text, x, y, { align });
-      y += fontSize * 0.4 + 1;
-    }
-  };
-
-  const addLine = () => {
-    doc.setDrawColor(200, 200, 200);
-    doc.line(marginL, y, W - marginR, y);
-    y += 5;
-  };
-
-  const addSection = (label: string, value: string, mono = false) => {
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(120, 120, 120);
-    doc.text(label.toUpperCase(), marginL, y);
-    y += 4;
-    doc.setFontSize(10);
-    doc.setFont("helvetica", mono ? "normal" : "normal");
-    doc.setTextColor(30, 30, 30);
-    const lines = doc.splitTextToSize(value, contentW);
-    doc.text(lines, marginL, y);
-    y += lines.length * 4.5 + 3;
-  };
-
-  const checkPage = (needed = 20) => {
-    if (y + needed > 280) {
-      doc.addPage();
-      y = 20;
-    }
-  };
-
-  // ── Header ──────────────────────────────────────────────────────────────────
-  doc.setFillColor(79, 70, 229); // indigo-600
-  doc.rect(0, 0, W, 18, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
-  doc.text("ДОГОВОР", marginL, 11);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text(`Сформирован: ${today()}`, W - marginR, 11, { align: "right" });
-
-  y = 28;
-  doc.setTextColor(30, 30, 30);
-
-  // ── Название ────────────────────────────────────────────────────────────────
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  const titleLines = doc.splitTextToSize(c.title, contentW);
-  doc.text(titleLines, marginL, y);
-  y += titleLines.length * 6 + 2;
-
-  // ── Номер + тип
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 100, 100);
-  const meta = [
-    c.contract_number ? `№ ${c.contract_number}` : null,
-    typelabel(c.contract_type),
-  ].filter(Boolean).join("  ·  ");
-  doc.text(meta, marginL, y);
-  y += 7;
-
-  addLine();
-
-  // ── Стороны ─────────────────────────────────────────────────────────────────
-  doc.setTextColor(30, 30, 30);
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.text("Стороны договора", marginL, y);
-  y += 6;
-
   const counterpartyType = c.counterparty_type === "company"
     ? "Юридическое лицо"
     : c.counterparty_type === "individual" ? "ИП" : "Физическое лицо";
 
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(50, 50, 50);
+  const meta = [
+    c.contract_number ? `№ ${c.contract_number}` : null,
+    typelabel(c.contract_type),
+  ].filter(Boolean).join("  ·  ");
 
-  const col1x = marginL;
-  const col2x = W / 2 + 5;
-  const rowY = y;
-
-  // Исполнитель
-  doc.setFont("helvetica", "bold");
-  doc.text("ИСПОЛНИТЕЛЬ", col1x, rowY);
-  doc.setFont("helvetica", "normal");
-  doc.text("Авангард Строй", col1x, rowY + 5);
-  doc.setTextColor(120, 120, 120);
-  doc.text("ООО / Компания", col1x, rowY + 9);
-
-  // Контрагент
-  doc.setTextColor(50, 50, 50);
-  doc.setFont("helvetica", "bold");
-  doc.text("КОНТРАГЕНТ", col2x, rowY);
-  doc.setFont("helvetica", "normal");
-  const nameLines = doc.splitTextToSize(c.counterparty_name, contentW / 2 - 5);
-  doc.text(nameLines, col2x, rowY + 5);
-  doc.setTextColor(120, 120, 120);
-  const innText = [counterpartyType, c.counterparty_inn ? `ИНН: ${c.counterparty_inn}` : null].filter(Boolean).join("  ·  ");
-  doc.text(innText, col2x, rowY + 5 + nameLines.length * 4.5);
-
-  y = rowY + 22;
-  addLine();
-
-  // ── Финансы + даты ───────────────────────────────────────────────────────────
-  checkPage(30);
-
-  const infoItems = [
+  const infoItems: [string, string][] = [
     c.amount !== null ? ["Сумма договора", formatAmount(c.amount, c.currency)] : null,
-    ["Статус", { draft: "Черновик", review: "На согласовании", active: "Действующий", signed: "Подписан", expired: "Истёк", terminated: "Расторгнут" }[c.status] ?? c.status],
+    ["Статус", STATUS_LABEL[c.status] ?? c.status],
     c.signed_at ? ["Дата подписания", formatDate(c.signed_at)] : null,
     c.valid_from ? ["Начало действия", formatDate(c.valid_from)] : null,
     c.valid_until ? ["Окончание действия", formatDate(c.valid_until)] : null,
@@ -170,103 +47,106 @@ export function exportContractPDF(c: Contract) {
     c.responsible_person ? ["Ответственный", c.responsible_person] : null,
   ].filter(Boolean) as [string, string][];
 
-  if (infoItems.length > 0) {
-    const cols = 2;
-    const cellW = contentW / cols;
-    infoItems.forEach(([label, value], i) => {
-      const col = i % cols;
-      const xPos = marginL + col * cellW;
-      if (col === 0 && i > 0) y += 0;
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(120, 120, 120);
-      doc.text(label.toUpperCase(), xPos, y);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(30, 30, 30);
-      doc.text(value, xPos, y + 4);
-      if (col === cols - 1 || i === infoItems.length - 1) y += 12;
-    });
-    y += 2;
-    addLine();
+  const infoHtml = infoItems
+    .map(([l, v]) => `<div class="info-item"><div class="info-label">${escapeHtml(l)}</div><div class="info-value">${escapeHtml(v)}</div></div>`)
+    .join("");
+
+  const tagsHtml = (c.tags || []).length > 0
+    ? `<div class="section"><div class="section-label">Теги</div><div class="tags">${(c.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div></div>`
+    : "";
+
+  const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
+<title>Договор ${escapeHtml(c.contract_number || "")}</title>
+<style>
+  @page { size: A4; margin: 15mm; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Arial, sans-serif; color: #1e1e1e; font-size: 11pt; line-height: 1.45; margin: 0; padding: 20px; }
+  .header { background: #4f46e5; color: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; margin: -20px -20px 18px; }
+  .header h1 { margin: 0; font-size: 14pt; font-weight: 700; letter-spacing: 0.5px; }
+  .header .date { font-size: 9pt; opacity: 0.9; }
+  .title { font-size: 16pt; font-weight: 700; margin: 0 0 4px; }
+  .meta { color: #6b7280; font-size: 10pt; margin-bottom: 12px; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 14px 0; }
+  .section-label { font-size: 8pt; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .party-title { font-weight: 700; font-size: 9pt; color: #1f2937; margin-bottom: 4px; }
+  .party-name { font-size: 11pt; }
+  .party-sub { color: #6b7280; font-size: 9pt; margin-top: 2px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+  .info-item { break-inside: avoid; }
+  .info-label { font-size: 8pt; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.5px; }
+  .info-value { font-size: 11pt; margin-top: 2px; }
+  .section { margin: 14px 0; }
+  .section-body { white-space: pre-wrap; font-size: 11pt; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .tag { background: #eef2ff; color: #4f46e5; padding: 2px 8px; border-radius: 999px; font-size: 9pt; }
+  .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 40px; break-inside: avoid; }
+  .sign-block { }
+  .sign-label { font-size: 8pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+  .sign-line { border-bottom: 1px solid #6b7280; height: 30px; margin-top: 10px; }
+  .sign-hint { font-size: 8pt; color: #9ca3af; margin-top: 4px; }
+  .footer { text-align: center; font-size: 8pt; color: #9ca3af; margin-top: 30px; }
+  @media print {
+    body { padding: 0; }
+    .no-print { display: none; }
   }
+  .actions { position: fixed; top: 10px; right: 10px; background: #fff; padding: 8px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .actions button { background: #4f46e5; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .actions button:hover { background: #4338ca; }
+</style></head>
+<body>
+  <div class="actions no-print">
+    <button onclick="window.print()">Сохранить как PDF / Печать</button>
+  </div>
+  <div class="header">
+    <h1>ДОГОВОР</h1>
+    <div class="date">Сформирован: ${escapeHtml(today())}</div>
+  </div>
+  <h2 class="title">${escapeHtml(c.title)}</h2>
+  ${meta ? `<div class="meta">${escapeHtml(meta)}</div>` : ""}
+  <hr/>
+  <div class="section-label">Стороны договора</div>
+  <div class="parties">
+    <div>
+      <div class="party-title">ИСПОЛНИТЕЛЬ</div>
+      <div class="party-name">Авангард Строй</div>
+      <div class="party-sub">ООО / Компания</div>
+    </div>
+    <div>
+      <div class="party-title">КОНТРАГЕНТ</div>
+      <div class="party-name">${escapeHtml(c.counterparty_name)}</div>
+      <div class="party-sub">${escapeHtml([counterpartyType, c.counterparty_inn ? `ИНН: ${c.counterparty_inn}` : null].filter(Boolean).join("  ·  "))}</div>
+    </div>
+  </div>
+  ${infoItems.length > 0 ? `<hr/><div class="info-grid">${infoHtml}</div>` : ""}
+  ${c.subject ? `<hr/><div class="section"><div class="section-label">Предмет договора</div><div class="section-body">${escapeHtml(c.subject)}</div></div>` : ""}
+  ${c.notes ? `<div class="section"><div class="section-label">Примечания и условия</div><div class="section-body">${escapeHtml(c.notes)}</div></div>` : ""}
+  ${tagsHtml}
+  <hr/>
+  <div class="section-label">Подписи сторон</div>
+  <div class="signatures">
+    <div class="sign-block">
+      <div class="sign-label">ИСПОЛНИТЕЛЬ  /  Авангард Строй</div>
+      <div class="sign-line"></div>
+      <div class="sign-hint">подпись / печать &nbsp;·&nbsp; Дата: ___________</div>
+    </div>
+    <div class="sign-block">
+      <div class="sign-label">КОНТРАГЕНТ  /  ${escapeHtml(c.counterparty_name)}</div>
+      <div class="sign-line"></div>
+      <div class="sign-hint">подпись / печать &nbsp;·&nbsp; Дата: ___________</div>
+    </div>
+  </div>
+  <div class="footer">Сформировано: ${escapeHtml(today())}  ·  Авангард Строй</div>
+</body></html>`;
 
-  // ── Предмет договора ─────────────────────────────────────────────────────────
-  checkPage(20);
-  if (c.subject) {
-    addSection("Предмет договора", c.subject);
-    checkPage(5);
-    addLine();
-  }
-
-  // ── Примечания ───────────────────────────────────────────────────────────────
-  checkPage(20);
-  if (c.notes) {
-    addSection("Примечания и условия", c.notes);
-    addLine();
-  }
-
-  // ── Теги ─────────────────────────────────────────────────────────────────────
-  if ((c.tags || []).length > 0) {
-    checkPage(10);
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(120, 120, 120);
-    doc.text("ТЕГИ", marginL, y);
-    y += 4;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(79, 70, 229);
-    doc.text((c.tags || []).join("  ·  "), marginL, y);
-    y += 8;
-  }
-
-  // ── Подписи ──────────────────────────────────────────────────────────────────
-  const signY = Math.max(y + 10, 240);
-  if (signY < 270) {
-    if (signY > y) y = signY;
-    addLine();
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(50, 50, 50);
-    doc.text("ПОДПИСИ СТОРОН", marginL, y);
-    y += 8;
-
-    const signColW = contentW / 2;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 80, 80);
-
-    ["ИСПОЛНИТЕЛЬ  /  Авангард Строй", `КОНТРАГЕНТ  /  ${c.counterparty_name}`].forEach((label, i) => {
-      const xPos = marginL + i * signColW;
-      doc.setFontSize(8);
-      doc.setTextColor(120, 120, 120);
-      const lbl = doc.splitTextToSize(label, signColW - 5);
-      doc.text(lbl, xPos, y);
-      doc.setDrawColor(100, 100, 100);
-      doc.line(xPos, y + 14, xPos + signColW - 10, y + 14);
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.text("подпись / печать", xPos, y + 19);
-      doc.text(`Дата: ___________`, xPos, y + 24);
-    });
-  }
-
-  // ── Footer ───────────────────────────────────────────────────────────────────
-  const pageCount = doc.getNumberOfPages();
-  for (let p = 1; p <= pageCount; p++) {
-    doc.setPage(p);
-    doc.setFontSize(8);
-    doc.setTextColor(180, 180, 180);
-    doc.text(`Стр. ${p} из ${pageCount}  ·  Авангард Строй  ·  ${today()}`, W / 2, 292, { align: "center" });
-  }
-
-  const filename = [
-    "Договор",
-    c.contract_number ? `_${c.contract_number}` : "",
-    `_${c.counterparty_name.replace(/[^а-яёА-ЯЁa-zA-Z0-9]/g, "_").substring(0, 20)}`,
-    ".pdf",
-  ].join("");
-
-  doc.save(filename);
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => {
+    try { win.focus(); win.print(); } catch { /* noop */ }
+  }, 300);
 }
 
 // ─── Word (RTF) ──────────────────────────────────────────────────────────────
@@ -290,7 +170,7 @@ export function exportContractWord(c: Contract) {
     ? "Юридическое лицо" : c.counterparty_type === "individual" ? "ИП" : "Физическое лицо";
 
   const infoLines = [
-    c.amount !== null ? row2("Сумма договора", formatAmount(c.amount, c.currency), "Статус", { draft: "Черновик", review: "На согласовании", active: "Действующий", signed: "Подписан", expired: "Истёк", terminated: "Расторгнут" }[c.status] ?? c.status) : "",
+    c.amount !== null ? row2("Сумма договора", formatAmount(c.amount, c.currency), "Статус", STATUS_LABEL[c.status] ?? c.status) : "",
     (c.signed_at || c.valid_from) ? row2("Дата подписания", formatDate(c.signed_at), "Начало действия", formatDate(c.valid_from)) : "",
     c.valid_until ? row2("Окончание действия", formatDate(c.valid_until), "Автопролонгация", c.auto_renewal ? "Да" : "Нет") : "",
     c.responsible_person ? section("Ответственный", c.responsible_person) : "",
