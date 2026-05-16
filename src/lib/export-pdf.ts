@@ -1,7 +1,20 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { type EstimateSavedItem, roundUpToPackaging } from "./lemanapro-data";
 import type { EstimateItem } from "@/pages/Calculator";
+
+const JSPDF_PKG = "jspdf";
+const JSPDF_AT_PKG = "jspdf-autotable";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function loadJsPdf(): Promise<{ jsPDF: any; autoTable: any }> {
+  const [jspdfMod, autoTableMod] = await Promise.all([
+    import(/* @vite-ignore */ JSPDF_PKG),
+    import(/* @vite-ignore */ JSPDF_AT_PKG),
+  ]);
+  return {
+    jsPDF: jspdfMod.default || jspdfMod.jsPDF,
+    autoTable: autoTableMod.default || autoTableMod.autoTable,
+  };
+}
 
 const fmt = (n: number) => n.toLocaleString("ru-RU") + " руб.";
 const today = () => new Date().toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -13,12 +26,13 @@ export interface EstimateParties {
   address?: string;
 }
 
-export function exportEstimatePdf(
+export async function exportEstimatePdf(
   items: EstimateItem[],
   lemanaItems: EstimateSavedItem[],
   materialSurcharge = 0,
   parties: EstimateParties = {}
 ) {
+  const { jsPDF, autoTable } = await loadJsPdf();
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const W = 210;
   const L = 14;
@@ -300,6 +314,6 @@ export function exportEstimatePdf(
   doc.save(`smeta-remont-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
-export function exportLemanaProPdf(lemanaItems: EstimateSavedItem[]) {
-  exportEstimatePdf([], lemanaItems);
+export async function exportLemanaProPdf(lemanaItems: EstimateSavedItem[]) {
+  await exportEstimatePdf([], lemanaItems);
 }

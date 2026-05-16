@@ -1,9 +1,22 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import type { PlannerState } from "./plannerTypes";
 import { FURNITURE_CATALOG } from "./furnitureCatalog";
 import { buildEstimate } from "./estimateService";
 import type { FullEstimate } from "./estimateService";
+
+const JSPDF_PKG = "jspdf";
+const JSPDF_AT_PKG = "jspdf-autotable";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function loadJsPdf(): Promise<{ jsPDF: any; autoTable: any }> {
+  const [jspdfMod, autoTableMod] = await Promise.all([
+    import(/* @vite-ignore */ JSPDF_PKG),
+    import(/* @vite-ignore */ JSPDF_AT_PKG),
+  ]);
+  return {
+    jsPDF: jspdfMod.default || jspdfMod.jsPDF,
+    autoTable: autoTableMod.default || autoTableMod.autoTable,
+  };
+}
 
 const catalogMap = new Map(FURNITURE_CATALOG.map((i) => [i.id, i]));
 
@@ -237,7 +250,8 @@ function extractPolygon(
   return pts;
 }
 
-export function exportPlannerPdf(state: PlannerState): void {
+export async function exportPlannerPdf(state: PlannerState): Promise<void> {
+  const { jsPDF, autoTable } = await loadJsPdf();
   const estimate = buildEstimate(
     state.walls,
     state.furniture,
@@ -522,8 +536,18 @@ export function exportPlannerPdf(state: PlannerState): void {
   );
 }
 
+type AnyDoc = {
+  setDrawColor: (r: number, g: number, b: number) => void;
+  setFillColor: (r: number, g: number, b: number) => void;
+  rect: (x: number, y: number, w: number, h: number, style?: string) => void;
+  setFont: (font: string, style: string) => void;
+  setFontSize: (size: number) => void;
+  setTextColor: (r: number, g: number, b: number) => void;
+  text: (txt: string, x: number, y: number, opts?: { align?: string }) => void;
+};
+
 function drawMetricsBox(
-  doc: jsPDF,
+  doc: AnyDoc,
   estimate: FullEstimate,
   left: number,
   y: number,
