@@ -1,16 +1,18 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ErrorBoundary from "./components/ErrorBoundary";
+import RouteLoader from "./components/RouteLoader";
 import PopupOrchestrator from "./components/PopupOrchestrator";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import AIChat from "./pages/AIChat";
-import Designer from "./pages/Designer";
-import DesignerStage from "./pages/DesignerStage";
+const AIChat = lazy(() => import("./pages/AIChat"));
+const Designer = lazy(() => import("./pages/Designer"));
+const DesignerStage = lazy(() => import("./pages/DesignerStage"));
 import Calculator from "./pages/Calculator";
 import Catalog from "./pages/Catalog";
 import Dashboard from "./pages/Dashboard";
@@ -59,9 +61,9 @@ import ReadyProjects from "./pages/ReadyProjects";
 import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import PriceMonitor from "./pages/PriceMonitor";
-import Planoplan from "./pages/Planoplan";
-import InteriorPlanner from "./pages/InteriorPlanner";
-import Homestaging from "./pages/Homestaging";
+const Planoplan = lazy(() => import("./pages/Planoplan"));
+const InteriorPlanner = lazy(() => import("./pages/InteriorPlanner"));
+const Homestaging = lazy(() => import("./pages/Homestaging"));
 
 const queryClient = new QueryClient();
 
@@ -73,6 +75,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <ErrorBoundary>
+            <Suspense fallback={<RouteLoader />}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/furniture" element={<Furniture />} />
@@ -132,6 +135,7 @@ const App = () => {
               <Route path="/account" element={<Account />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
           </ErrorBoundary>
           <PopupOrchestrator />
         </BrowserRouter>
