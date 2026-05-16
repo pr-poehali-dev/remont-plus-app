@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { useEffect } from "react";
 
 const SITE_NAME = "АВАНГАРД";
 const BASE_URL = "https://avangard-ai.ru";
@@ -14,6 +14,42 @@ interface SEOMetaProps {
   jsonLd?: object | object[];
 }
 
+function upsertMeta(attr: "name" | "property", key: string, content: string) {
+  if (typeof document === "undefined") return;
+  let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute(attr, key);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content", content);
+}
+
+function upsertLink(rel: string, href: string) {
+  if (typeof document === "undefined") return;
+  let el = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+  if (!el) {
+    el = document.createElement("link");
+    el.setAttribute("rel", rel);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("href", href);
+}
+
+const SEO_LD_ATTR = "data-seo-jsonld";
+
+function setJsonLd(schemas: object[]) {
+  if (typeof document === "undefined") return;
+  document.head.querySelectorAll(`script[${SEO_LD_ATTR}]`).forEach((n) => n.remove());
+  schemas.forEach((schema) => {
+    const s = document.createElement("script");
+    s.type = "application/ld+json";
+    s.setAttribute(SEO_LD_ATTR, "1");
+    s.textContent = JSON.stringify(schema);
+    document.head.appendChild(s);
+  });
+}
+
 export default function SEOMeta({
   title,
   description,
@@ -26,38 +62,35 @@ export default function SEOMeta({
   const fullTitle = `${title} | ${SITE_NAME}`;
   const canonical = `${BASE_URL}${path}`;
   const ogImage = image.startsWith("http") ? image : `${BASE_URL}${image}`;
-
-  const schemas = Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [];
-
-  return (
-    <Helmet>
-      <title>{fullTitle}</title>
-      <meta name="description" content={description} />
-      {keywords && <meta name="keywords" content={keywords} />}
-      <link rel="canonical" href={canonical} />
-
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
-      <meta property="og:url" content={canonical} />
-      <meta property="og:type" content={type} />
-      <meta property="og:image" content={ogImage} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta property="og:site_name" content={SITE_NAME} />
-      <meta property="og:locale" content="ru_RU" />
-
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage} />
-
-      {schemas.map((schema, i) => (
-        <script key={i} type="application/ld+json">
-          {JSON.stringify(schema)}
-        </script>
-      ))}
-    </Helmet>
+  const schemasKey = JSON.stringify(
+    Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []
   );
+
+  useEffect(() => {
+    document.title = fullTitle;
+    upsertMeta("name", "description", description);
+    if (keywords) upsertMeta("name", "keywords", keywords);
+    upsertLink("canonical", canonical);
+
+    upsertMeta("property", "og:title", fullTitle);
+    upsertMeta("property", "og:description", description);
+    upsertMeta("property", "og:url", canonical);
+    upsertMeta("property", "og:type", type);
+    upsertMeta("property", "og:image", ogImage);
+    upsertMeta("property", "og:image:width", "1200");
+    upsertMeta("property", "og:image:height", "630");
+    upsertMeta("property", "og:site_name", SITE_NAME);
+    upsertMeta("property", "og:locale", "ru_RU");
+
+    upsertMeta("name", "twitter:card", "summary_large_image");
+    upsertMeta("name", "twitter:title", fullTitle);
+    upsertMeta("name", "twitter:description", description);
+    upsertMeta("name", "twitter:image", ogImage);
+
+    setJsonLd(JSON.parse(schemasKey));
+  }, [fullTitle, description, keywords, canonical, type, ogImage, schemasKey]);
+
+  return null;
 }
 
 export function calcJsonLd(name: string, description: string, url: string) {
