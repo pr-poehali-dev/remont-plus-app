@@ -3,12 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
-
-const XLSX_PKG = "xlsx";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function loadXLSX(): Promise<any> {
-  return await import(/* @vite-ignore */ XLSX_PKG);
-}
+import * as XLSX from "xlsx";
 
 const API_URL = "https://functions.poehali.dev/5566c153-084c-456d-bf40-8ca10d1a8509";
 const HEADERS = { "Content-Type": "application/json", "X-Admin-Token": "admin2025" };
@@ -134,13 +129,12 @@ export default function AdminMarketingTab() {
     return rows.length >= 2 ? rows : null;
   }
 
-  async function exportLastAssistantMessage() {
+  function exportLastAssistantMessage() {
     const assistantMessages = messages.filter(m => m.role === "assistant");
     if (!assistantMessages.length) return;
     const lastMsg = assistantMessages[assistantMessages.length - 1];
     const text = lastMsg.content;
 
-    const XLSX = await loadXLSX();
     const table = parseTableFromText(text);
     const wb = XLSX.utils.book_new();
 
@@ -158,8 +152,7 @@ export default function AdminMarketingTab() {
     XLSX.writeFile(wb, `marina-report-${date}.xlsx`);
   }
 
-  async function exportFullChat() {
-    const XLSX = await loadXLSX();
+  function exportFullChat() {
     const wb = XLSX.utils.book_new();
     const rows: string[][] = [["Время", "Роль", "Сообщение"]];
     messages.forEach(m => {

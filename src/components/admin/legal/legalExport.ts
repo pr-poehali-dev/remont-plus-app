@@ -1,12 +1,6 @@
+import { jsPDF } from "jspdf";
 import { typelabel, formatDate, formatAmount } from "./LegalTypes";
 import type { Contract } from "./LegalTypes";
-
-const JSPDF_PKG = "jspdf";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function loadJsPdf(): Promise<any> {
-  const mod = await import(/* @vite-ignore */ JSPDF_PKG);
-  return mod.jsPDF || mod.default;
-}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -32,8 +26,7 @@ function wrapText(text: string, maxLen: number): string[] {
 
 // ─── PDF ─────────────────────────────────────────────────────────────────────
 
-export async function exportContractPDF(c: Contract) {
-  const jsPDF = await loadJsPdf();
+export function exportContractPDF(c: Contract) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
 
   const W = 210;
