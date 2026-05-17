@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import House3D, { type ViewMode } from "./House3D";
 import type { FrameHouseSpec } from "@/lib/frameHouseGenerator";
+
+const House3DAR = lazy(() => import("./House3DAR"));
 
 interface Props {
   spec: FrameHouseSpec;
@@ -27,6 +29,7 @@ export default function House3DPanel({ spec }: Props) {
   const [grid, setGrid] = useState(false);
   const [quality, setQuality] = useState<"high" | "medium">("high");
   const [fullscreen, setFullscreen] = useState(false);
+  const [arOpen, setArOpen] = useState(false);
 
   return (
     <div
@@ -64,15 +67,29 @@ export default function House3DPanel({ spec }: Props) {
           ))}
         </div>
 
-        <Button
-          size="sm"
-          variant="secondary"
-          className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md shadow-lg pointer-events-auto"
-          onClick={() => setFullscreen(!fullscreen)}
-          title={fullscreen ? "Свернуть" : "На весь экран"}
-        >
-          <Icon name={fullscreen ? "Minimize2" : "Maximize2"} size={14} />
-        </Button>
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <Button
+            size="sm"
+            className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0 shadow-lg shadow-orange-500/30"
+            onClick={() => setArOpen(true)}
+            title="Посмотреть в дополненной реальности на телефоне"
+          >
+            <Icon name="ScanLine" size={14} className="mr-1" />
+            AR
+            <span className="ml-1.5 text-[9px] uppercase font-bold bg-white/25 px-1 py-0.5 rounded">
+              new
+            </span>
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-md shadow-lg"
+            onClick={() => setFullscreen(!fullscreen)}
+            title={fullscreen ? "Свернуть" : "На весь экран"}
+          >
+            <Icon name={fullscreen ? "Minimize2" : "Maximize2"} size={14} />
+          </Button>
+        </div>
       </div>
 
       {/* Нижняя панель: время суток + опции */}
@@ -133,6 +150,13 @@ export default function House3DPanel({ spec }: Props) {
         <div>🖱 ПКМ — двигать</div>
         <div>🖱 Колесо — приближать</div>
       </div>
+
+      {/* AR-режим */}
+      {arOpen && (
+        <Suspense fallback={null}>
+          <House3DAR spec={spec} mode={mode} onClose={() => setArOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }

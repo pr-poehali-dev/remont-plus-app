@@ -16,7 +16,7 @@ const STEPS = [
     lightColor: "bg-green-50",
     accentColor: "text-green-600",
     borderColor: "border-green-200",
-    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/d4df22fb-690d-4ce3-911f-3665b0ee8c7d.jpg",
+    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/76499ec3-f0d1-4ef3-8b9a-676f38b3c1fc.jpg",
   },
   {
     number: "02",
@@ -29,7 +29,7 @@ const STEPS = [
     lightColor: "bg-sky-50",
     accentColor: "text-sky-600",
     borderColor: "border-sky-200",
-    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/167349ac-0fe6-480a-8fe4-50ce2cfb8ab1.jpg",
+    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/523056df-3129-44b5-baa8-665902225817.jpg",
   },
   {
     number: "03",
@@ -42,7 +42,7 @@ const STEPS = [
     lightColor: "bg-violet-50",
     accentColor: "text-violet-600",
     borderColor: "border-violet-200",
-    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/8ce30a40-8e67-4b5d-a83d-2fc5350fe708.jpg",
+    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/b9d3ed98-4be6-498f-b1c3-85a8a693da4b.jpg",
   },
   {
     number: "04",
@@ -55,7 +55,7 @@ const STEPS = [
     lightColor: "bg-amber-50",
     accentColor: "text-amber-600",
     borderColor: "border-amber-200",
-    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/387a5b0f-25ee-44e8-98cb-021029b309f6.jpg",
+    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/fe86fc58-214d-4e7a-9f4a-6783936e4ac8.jpg",
   },
   {
     number: "05",
@@ -68,7 +68,7 @@ const STEPS = [
     lightColor: "bg-emerald-50",
     accentColor: "text-emerald-600",
     borderColor: "border-emerald-200",
-    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/d942a8b7-a909-47e5-bfd4-00ebbe92ff9e.jpg",
+    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/de3363fe-7459-4da6-b5c3-57a4385a074e.jpg",
   },
   {
     number: "06",
@@ -81,7 +81,7 @@ const STEPS = [
     lightColor: "bg-blue-50",
     accentColor: "text-blue-600",
     borderColor: "border-blue-200",
-    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/a2e07dbe-454e-44df-96e6-08db359b88f6.jpg",
+    image: "https://cdn.poehali.dev/projects/eb3c2b09-4839-4fa9-b212-eefee1635ef8/files/554d1b27-9588-4f62-86b3-4184ebd098eb.jpg",
   },
 ];
 
