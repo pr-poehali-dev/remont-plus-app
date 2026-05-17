@@ -111,6 +111,76 @@
       "bodyMatcher": "partial"
     },
     {
+      "name": "Forgot password - existing email",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "forgot_password",
+        "email": "test_auth_user@example.com"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Forgot password - unknown email returns 200",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "forgot_password",
+        "email": "nobody-xyz@example.com"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Forgot password - missing email",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "forgot_password"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Reset password - invalid token",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "reset_password",
+        "token": "invalid_token_xyz",
+        "password": "newPass123"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Verify reset token - invalid",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "verify_reset_token",
+        "token": "invalid_token_xyz"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "valid": false
+      },
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "Create transaction - bonus 0% for new master",
       "method": "POST",
       "path": "/",

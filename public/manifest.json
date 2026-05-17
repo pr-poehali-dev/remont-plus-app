@@ -35,6 +35,18 @@
       "short_name": "Дом",
       "url": "/framehouse",
       "description": "Калькулятор каркасного дома под ключ"
+    },
+    {
+      "name": "Найти мастера",
+      "short_name": "Мастера",
+      "url": "/masters",
+      "description": "Подобрать проверенного подрядчика"
+    },
+    {
+      "name": "Личный кабинет",
+      "short_name": "Кабинет",
+      "url": "/account",
+      "description": "Управление подпиской и проектами"
     }
   ],
   "categories": ["business", "productivity", "utilities"],

@@ -3,11 +3,19 @@ Allow: /
 Disallow: /admin
 Disallow: /dashboard
 Disallow: /profile
+Disallow: /account
 Disallow: /login
 Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /payment/
 Disallow: /yandex-callback
+Disallow: /auth/yandex/callback
 Disallow: /rbc-parser
 Disallow: /yukassa-cabinet
+Disallow: /price-monitor
+Disallow: /organizer
+Disallow: /ai-chat
 Disallow: /estimate/print
 Disallow: /docs/print
 Disallow: /windows/print
@@ -18,7 +26,12 @@ Disallow: /bathroom/print
 Disallow: /newbuild/print
 Disallow: /turnkey/print
 Disallow: /bathhouse/print
-Disallow: /frame-house/print
+Disallow: /framehouse/print
+
+# Yandex-специфичные
+User-agent: Yandex
+Allow: /
+Clean-param: utm_source&utm_medium&utm_campaign&utm_content&utm_term&yclid&gclid&fbclid
 
 Sitemap: https://avangard-ai.ru/sitemap.xml
 

@@ -261,6 +261,32 @@
     <priority>0.85</priority>
   </url>
 
+  <!-- Доп. сервисы -->
+  <url>
+    <loc>https://avangard-ai.ru/ready-projects</loc>
+    <lastmod>2026-05-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://avangard-ai.ru/furniture</loc>
+    <lastmod>2026-05-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://avangard-ai.ru/interior-planner</loc>
+    <lastmod>2026-05-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://avangard-ai.ru/planoplan</loc>
+    <lastmod>2026-05-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+
   <!-- Юридические -->
   <url>
     <loc>https://avangard-ai.ru/privacy</loc>

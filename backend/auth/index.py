@@ -174,6 +174,126 @@ def handler(event: dict, context) -> dict:
             }, ensure_ascii=False)
         }
 
+    elif action == 'forgot_password':
+        from datetime import datetime, timedelta
+        email = (body.get('email') or '').strip().lower()
+        if not email:
+            cursor.close()
+            conn.close()
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Введите email'}, ensure_ascii=False)}
+
+        cursor.execute("SELECT id, name FROM users WHERE email = %s", (email,))
+        user_row = cursor.fetchone()
+
+        if user_row:
+            user_id_pr, user_name = user_row
+            token = secrets.token_urlsafe(32)
+            token_hash = hashlib.sha256(token.encode()).hexdigest()
+            expires_at = datetime.now() + timedelta(hours=1)
+
+            cursor.execute(
+                "INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (%s, %s, %s)",
+                (user_id_pr, token_hash, expires_at)
+            )
+            conn.commit()
+
+            base_url = os.environ.get('SITE_URL', 'https://avangard-ai.ru').rstrip('/')
+            reset_link = f"{base_url}/reset-password?token={token}"
+
+            try:
+                send_telegram(
+                    f"🔑 <b>Сброс пароля</b>\n\n"
+                    f"👤 {user_name}\n"
+                    f"📧 {email}\n"
+                    f"🔗 Ссылка: {reset_link}"
+                )
+            except Exception as e:
+                print(f'TELEGRAM ERROR: {e}')
+
+            try:
+                notify_url = os.environ.get('NOTIFY_EMAIL_URL', '')
+                if notify_url:
+                    payload = json.dumps({
+                        'to': email,
+                        'subject': 'Восстановление пароля — Авангард',
+                        'html': (
+                            f"<p>Здравствуйте, {user_name}!</p>"
+                            f"<p>Вы запросили сброс пароля. Перейдите по ссылке ниже, чтобы задать новый пароль (ссылка активна 1 час):</p>"
+                            f"<p><a href=\"{reset_link}\" style=\"background:#f97316;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block\">Сбросить пароль</a></p>"
+                            f"<p>Если вы не запрашивали сброс — просто проигнорируйте это письмо.</p>"
+                        ),
+                    }).encode('utf-8')
+                    req = urllib.request.Request(
+                        notify_url,
+                        data=payload,
+                        headers={'Content-Type': 'application/json'}
+                    )
+                    urllib.request.urlopen(req, timeout=10)
+            except Exception as e:
+                print(f'EMAIL SEND ERROR: {e}')
+
+        cursor.close()
+        conn.close()
+        return {
+            'statusCode': 200,
+            'headers': headers,
+            'body': json.dumps({'success': True, 'message': 'Если email зарегистрирован, мы отправили ссылку для сброса'}, ensure_ascii=False)
+        }
+
+    elif action == 'reset_password':
+        token = (body.get('token') or '').strip()
+        new_password = body.get('password') or ''
+
+        if not token or not new_password:
+            cursor.close()
+            conn.close()
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Нужен токен и новый пароль'}, ensure_ascii=False)}
+
+        if len(new_password) < 6:
+            cursor.close()
+            conn.close()
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Пароль минимум 6 символов'}, ensure_ascii=False)}
+
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        cursor.execute(
+            "SELECT id, user_id FROM password_reset_tokens WHERE token_hash = %s AND used_at IS NULL AND expires_at > NOW() LIMIT 1",
+            (token_hash,)
+        )
+        row = cursor.fetchone()
+        if not row:
+            cursor.close()
+            conn.close()
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'error': 'Ссылка недействительна или истекла'}, ensure_ascii=False)}
+
+        token_id, user_id_pr = row
+        pw_hash = hash_password(new_password)
+        cursor.execute("UPDATE users SET password_hash = %s, updated_at = NOW() WHERE id = %s", (pw_hash, user_id_pr))
+        cursor.execute("UPDATE password_reset_tokens SET used_at = NOW() WHERE id = %s", (token_id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {
+            'statusCode': 200,
+            'headers': headers,
+            'body': json.dumps({'success': True, 'message': 'Пароль изменён'}, ensure_ascii=False)
+        }
+
+    elif action == 'verify_reset_token':
+        token = (body.get('token') or '').strip()
+        if not token:
+            cursor.close()
+            conn.close()
+            return {'statusCode': 400, 'headers': headers, 'body': json.dumps({'valid': False, 'error': 'Нет токена'}, ensure_ascii=False)}
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        cursor.execute(
+            "SELECT id FROM password_reset_tokens WHERE token_hash = %s AND used_at IS NULL AND expires_at > NOW() LIMIT 1",
+            (token_hash,)
+        )
+        valid = cursor.fetchone() is not None
+        cursor.close()
+        conn.close()
+        return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'valid': valid}, ensure_ascii=False)}
+
     elif action == 'send_code':
         import random
         from datetime import datetime, timedelta
