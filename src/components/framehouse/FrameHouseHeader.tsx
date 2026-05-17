@@ -56,14 +56,26 @@ export default function FrameHouseHeader({
                 </p>
               </div>
             </div>
-            <Button
-              size="sm"
-              className="bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs shrink-0"
-              onClick={onPrintClick}
-            >
-              <Icon name="Printer" size={14} className="mr-1" />
-              Печать
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <a href="/framehouse/builder">
+                <Button
+                  size="sm"
+                  className="bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 border-0 text-white text-xs"
+                  title="Конструктор каркасника с раскроем пиломатериалов"
+                >
+                  <Icon name="Ruler" size={14} className="mr-1" />
+                  Конструктор + раскрой
+                </Button>
+              </a>
+              <Button
+                size="sm"
+                className="bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs"
+                onClick={onPrintClick}
+              >
+                <Icon name="Printer" size={14} className="mr-1" />
+                Печать
+              </Button>
+            </div>
           </div>
 
           {/* KPI */}

@@ -24,6 +24,7 @@ const STATIC_ITEMS: StaticItem[] = [
   { title: "Окна", description: "Установка окон", path: "/windows", icon: "Square", keywords: "окна пластиковые установка пвх", group: "Калькуляторы" },
   { title: "Баня", description: "Строительство бани", path: "/bathhouse", icon: "Flame", keywords: "баня сауна сруб", group: "Калькуляторы" },
   { title: "Каркасный дом", description: "Под ключ", path: "/framehouse", icon: "Home", keywords: "каркасный дом дача коттедж", group: "Калькуляторы" },
+  { title: "Конструктор каркасника", description: "Раскрой пиломатериалов", path: "/framehouse/builder", icon: "Ruler", keywords: "конструктор раскрой пиломатериалы брус доска оптимизация спецификация", group: "Калькуляторы" },
   { title: "Офис", description: "Ремонт офисов", path: "/office", icon: "Briefcase", keywords: "офис коммерческий", group: "Калькуляторы" },
 
   { title: "ИИ-эксперт", description: "Задать вопрос по интерьеру", path: "/expert", icon: "Sparkles", keywords: "ии эксперт чат гпт совет", group: "Сервисы" },

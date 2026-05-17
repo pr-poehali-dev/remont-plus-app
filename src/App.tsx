@@ -79,6 +79,7 @@ const PaymentFailed = lazy(() => import("./pages/PaymentFailed"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Invite = lazy(() => import("./pages/Invite"));
+const FrameHouseBuilder = lazy(() => import("./pages/FrameHouseBuilder"));
 
 const queryClient = new QueryClient();
 
@@ -171,6 +172,7 @@ const App = () => {
                 <Route path="/bathhouse" element={<BathHouse />} />
                 <Route path="/bathhouse/print" element={<BathHousePrint />} />
                 <Route path="/framehouse" element={<FrameHouse />} />
+                <Route path="/framehouse/builder" element={<FrameHouseBuilder />} />
                 <Route path="/framehouse/print" element={<FrameHousePrint />} />
                 <Route path="/auth/yandex/callback" element={<YandexCallback />} />
                 <Route path="/rbc-parser" element={<RbcParser />} />
