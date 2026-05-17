@@ -11,6 +11,7 @@ import HomeVideoBanner from "@/components/home/HomeVideoBanner";
 import HomeReadyProjects from "@/components/home/HomeReadyProjects";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import HomeQuiz from "@/components/home/HomeQuiz";
+import SiteFooter from "@/components/SiteFooter";
 
 
 const POSTS_URL = "https://functions.poehali.dev/60baa083-841b-461e-9edb-8460b28e7076";
@@ -127,6 +128,7 @@ export default function Home() {
           <HomeCTA user={user} />
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }
