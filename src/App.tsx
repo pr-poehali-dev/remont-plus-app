@@ -11,6 +11,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeInit } from "./components/ThemeToggle";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import CookieConsent from "./components/CookieConsent";
+import CommandPaletteProvider from "./components/CommandPaletteProvider";
+import ReferralCapture from "./components/ReferralCapture";
 
 // Eager — критичные страницы (главная и auth)
 import Home from "./pages/Home";
@@ -76,6 +78,7 @@ const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentFailed = lazy(() => import("./pages/PaymentFailed"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Invite = lazy(() => import("./pages/Invite"));
 
 const queryClient = new QueryClient();
 
@@ -87,6 +90,8 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+         <ReferralCapture />
+         <CommandPaletteProvider>
           <ErrorBoundary>
             <Suspense fallback={<RouteLoader />}>
               <Routes>
@@ -96,6 +101,7 @@ const App = () => {
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/invite" element={<Invite />} />
                 <Route path="/ai-chat" element={<AIChat />} />
                 <Route path="/designer" element={<Designer />} />
                 <Route path="/designer/:stageId" element={<DesignerStage />} />
@@ -192,6 +198,7 @@ const App = () => {
           <PopupOrchestrator />
           <PWAInstallPrompt />
           <CookieConsent />
+         </CommandPaletteProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

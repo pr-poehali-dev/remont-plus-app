@@ -57,6 +57,28 @@ export default function Register() {
       localStorage.setItem("avangard_token", data.token);
       reachGoal("registration", { user_type: userType });
 
+      // Привязываем реферальный код, если есть
+      try {
+        const refRaw = localStorage.getItem("avangard_ref_code");
+        if (refRaw && data.user?.id) {
+          const refData = JSON.parse(refRaw);
+          if (refData?.code) {
+            fetch("https://functions.poehali.dev/4d5b1e32-287c-41a5-992c-365d1b58dd97", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "attach_referrer",
+                user_id: data.user.id,
+                code: refData.code,
+              }),
+            }).catch(() => {});
+            localStorage.removeItem("avangard_ref_code");
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+
       if (userType === "contractor") {
         navigate("/master-profile");
       } else {

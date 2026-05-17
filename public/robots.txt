@@ -8,6 +8,7 @@ Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
 Disallow: /reset-password
+Disallow: /invite
 Disallow: /payment/
 Disallow: /yandex-callback
 Disallow: /auth/yandex/callback

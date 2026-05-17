@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useCommandPalette } from "@/components/CommandPaletteProvider";
 
 interface User {
   id: number;
@@ -27,6 +28,7 @@ export default function SiteHeader() {
   const [user, setUser] = useState<User | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const palette = useCommandPalette();
 
   useEffect(() => {
     try {
@@ -99,6 +101,26 @@ export default function SiteHeader() {
 
           {/* Right actions */}
           <div className="flex items-center gap-1 md:gap-2">
+            <button
+              onClick={palette.open}
+              className="hidden md:inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              aria-label="Поиск по сайту"
+            >
+              <Icon name="Search" className="w-4 h-4" />
+              <span>Поиск…</span>
+              <kbd className="ml-2 hidden lg:inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-500">
+                Ctrl K
+              </kbd>
+            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={palette.open}
+              aria-label="Поиск"
+            >
+              <Icon name="Search" className="w-5 h-5" />
+            </Button>
             <ThemeToggle className="hidden sm:inline-flex" />
 
             {user ? (
@@ -114,6 +136,16 @@ export default function SiteHeader() {
                     Админ
                   </Button>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/invite")}
+                  className="hidden xl:inline-flex text-orange-600 hover:text-orange-700"
+                  title="Пригласи друга — получи 500 ₽"
+                >
+                  <Icon name="Gift" className="w-4 h-4 mr-1" />
+                  Пригласить
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -189,6 +221,13 @@ export default function SiteHeader() {
                 >
                   <Icon name="User" className="w-4 h-4" />
                   Личный кабинет
+                </Link>
+                <Link
+                  to="/invite"
+                  className="px-3 py-3 text-sm font-medium rounded-md text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30 flex items-center gap-2"
+                >
+                  <Icon name="Gift" className="w-4 h-4" />
+                  Пригласить друга
                 </Link>
                 {isAdmin && (
                   <Link

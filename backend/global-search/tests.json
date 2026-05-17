@@ -1,0 +1,45 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Empty query returns empty results",
+      "method": "POST",
+      "path": "/",
+      "body": {"query": ""},
+      "expectedStatus": 200,
+      "expectedBody": {"posts": [], "masters": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Short query returns empty results",
+      "method": "POST",
+      "path": "/",
+      "body": {"query": "a"},
+      "expectedStatus": 200,
+      "expectedBody": {"posts": [], "masters": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Search by GET",
+      "method": "GET",
+      "path": "/?q=ремонт",
+      "expectedStatus": 200,
+      "expectedBody": {"posts": [], "masters": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Search returns arrays",
+      "method": "POST",
+      "path": "/",
+      "body": {"query": "ремонт"},
+      "expectedStatus": 200,
+      "expectedBody": {"posts": [], "masters": []},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
