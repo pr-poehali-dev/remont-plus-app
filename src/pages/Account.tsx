@@ -6,6 +6,8 @@ import { Progress } from "@/components/ui/progress";
 import Icon from "@/components/ui/icon";
 import useTariffAccess from "@/hooks/useTariffAccess";
 import RecentActivityFeed from "@/components/account/RecentActivityFeed";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 const TARIFF_API = "https://functions.poehali.dev/aae7e353-917d-4759-9f27-a78f28be0084";
 const HOMESTAGING_REPORTS_URL = "https://functions.poehali.dev/9507a027-3e05-4ee7-a432-b90d2dea0603";
@@ -134,28 +136,8 @@ export default function Account() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafaf8]">
-      <header className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/")}
-              className="gap-1.5"
-            >
-              <Icon name="ArrowLeft" size={16} />
-              Главная
-            </Button>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-              <Icon name="User" size={14} className="text-white" />
-            </div>
-            {user?.name && <span className="font-medium text-foreground">{user.name}</span>}
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#fafaf8] dark:bg-slate-900 flex flex-col">
+      <SiteHeader />
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <h1 className="text-2xl font-bold">Личный кабинет</h1>
@@ -362,6 +344,7 @@ export default function Account() {
           </CardContent>
         </Card>
       </main>
+      <SiteFooter />
     </div>
   );
 }

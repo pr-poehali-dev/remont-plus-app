@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import SEOMeta from "@/components/SEOMeta";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 export default function PaymentSuccess() {
   const [params] = useSearchParams();
@@ -19,11 +21,13 @@ export default function PaymentSuccess() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white dark:from-slate-900 dark:to-slate-950 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white dark:from-slate-900 dark:to-slate-950 flex flex-col">
       <SEOMeta
         title="Оплата прошла успешно"
         description="Спасибо! Ваш платёж принят, можно вернуться в личный кабинет."
       />
+      <SiteHeader />
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md shadow-xl">
         <CardContent className="pt-10 pb-8 px-8 text-center">
           <div className="mx-auto w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center mb-6">
@@ -66,6 +70,8 @@ export default function PaymentSuccess() {
           </div>
         </CardContent>
       </Card>
+      </main>
+      <SiteFooter />
     </div>
   );
 }

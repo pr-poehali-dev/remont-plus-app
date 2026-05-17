@@ -115,7 +115,17 @@ export default function Login() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Пароль</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Пароль</Label>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="h-auto p-0 text-xs text-orange-600 hover:underline"
+                    onClick={() => navigate("/forgot-password")}
+                  >
+                    Забыли пароль?
+                  </Button>
+                </div>
                 <Input
                   id="password"
                   type="password"

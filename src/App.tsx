@@ -72,6 +72,7 @@ const InteriorPlanner = lazy(() => import("./pages/InteriorPlanner"));
 const Homestaging = lazy(() => import("./pages/Homestaging"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentFailed = lazy(() => import("./pages/PaymentFailed"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 
 const queryClient = new QueryClient();
 
@@ -90,6 +91,7 @@ const App = () => {
                 <Route path="/furniture" element={<Furniture />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/ai-chat" element={<AIChat />} />
                 <Route path="/designer" element={<Designer />} />
                 <Route path="/designer/:stageId" element={<DesignerStage />} />

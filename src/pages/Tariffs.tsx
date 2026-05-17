@@ -8,6 +8,8 @@ import { useMeta } from "@/hooks/useMeta";
 import reachGoal from "@/lib/metrika";
 import PricingPlans from "@/components/prices/PricingPlans";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 
 import PageTour from "@/components/ui/PageTour";
 
@@ -80,25 +82,9 @@ export default function Tariffs() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col">
       <HomePromoBanner />
-      <header className="bg-white border-b shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => navigate("/")}
-            >
-              <Icon name="Compass" className="h-7 w-7 text-primary" />
-              <span className="text-xl font-bold tracking-tight">АВАНГАРД</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Icon name="Phone" className="h-4 w-4" />
-              <span className="font-medium text-gray-700">8 (927) 748-68-68</span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="container mx-auto px-4 py-6 max-w-6xl">
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
@@ -269,10 +255,7 @@ export default function Tariffs() {
         </div>
       </main>
 
-      <footer className="py-8 text-center text-xs text-gray-400 mt-8">
-        <div>АВАНГАРД &copy; {new Date().getFullYear()}</div>
-        <div className="mt-1">ООО «МАТ-Лабс» &nbsp;|&nbsp; ИНН/КПП 6312223437/631201001 &nbsp;|&nbsp; ОГРН 1266300004288</div>
-      </footer>
+      <SiteFooter />
 
       <PageTour tourKey="tariffs_tour_done" steps={TARIFFS_TOUR} delay={1200} />
     </div>
