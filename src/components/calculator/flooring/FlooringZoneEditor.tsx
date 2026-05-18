@@ -4,6 +4,7 @@ import type { FlooringConfig } from "@/components/calculator/flooring/FlooringTy
 import { calcFlooringPrice, calcFlooringMaterials, fmt } from "@/components/calculator/flooring/flooringUtils";
 import FlooringConfigForm from "@/components/calculator/flooring/FlooringConfigForm";
 import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
+import CalcProgressBar from "@/components/calculator/CalcProgressBar";
 
 interface Props {
   activeZone: FlooringConfig;
@@ -21,6 +22,17 @@ export default function FlooringZoneEditor({ activeZone, activeIndex, regionId, 
   });
   const activeProduct = FLOORING_PRODUCTS.find(p => p.id === activeZone.productId);
 
+  const progressChecks = [
+    activeZone.length > 0,
+    activeZone.width > 0,
+    !!activeZone.productId,
+    !!activeZone.substrateId,
+    !!activeZone.patternId,
+    activeZone.skirtingIncluded || activeZone.demolitionIncluded || activeZone.levelingIncluded,
+  ];
+  const filled = progressChecks.filter(Boolean).length;
+  const total = progressChecks.length;
+
   return (
     <div className="lg:col-span-3">
       <div className="sticky top-24 space-y-4">
@@ -34,6 +46,13 @@ export default function FlooringZoneEditor({ activeZone, activeIndex, regionId, 
           </h2>
           <span className="text-sm text-gray-400 ml-1">— настройка покрытия</span>
         </div>
+
+        <CalcProgressBar
+          filled={filled}
+          total={total}
+          accentColor="amber"
+          hint="Укажите размеры и выберите покрытие"
+        />
 
         {/* Форма */}
         <Card className="p-5">

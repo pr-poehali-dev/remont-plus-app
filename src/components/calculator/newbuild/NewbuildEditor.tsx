@@ -10,6 +10,7 @@ import NewbuildLevelCompare from "@/components/calculator/newbuild/NewbuildLevel
 import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
+import CalcProgressBar from "@/components/calculator/CalcProgressBar";
 
 interface ProjectTotals {
   total: number;
@@ -63,9 +64,26 @@ export default function NewbuildEditor({
   const activeLevel = RENOVATION_LEVELS.find(l => l.id === activeZone.renovationLevel);
   const activeFlooringType = FLOORING_TYPES.find(f => f.id === activeZone.flooringType);
 
+  const progressChecks = [
+    !!activeZone.roomType,
+    activeZone.area > 0,
+    activeZone.ceilingHeightM > 0,
+    !!activeZone.renovationLevel,
+    !!activeZone.flooringType,
+    activeZone.electricsIncluded || activeZone.plasterIncluded || activeZone.screedIncluded,
+  ];
+  const filled = progressChecks.filter(Boolean).length;
+  const total = progressChecks.length;
+
   return (
     <div className="lg:col-span-3">
       <div className="sticky top-24 space-y-4">
+        <CalcProgressBar
+          filled={filled}
+          total={total}
+          accentColor="orange"
+          hint="Заполните параметры помещения для точной сметы"
+        />
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-orange-600 text-white flex items-center justify-center text-xs font-bold">
             {zones.findIndex(z => z.id === activeId) + 1}

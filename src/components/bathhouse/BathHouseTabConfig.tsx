@@ -9,6 +9,7 @@ import type { BathHouseConfig } from "@/components/calculator/bathhouse/BathHous
 import type { BathHouseBreakdown } from "@/components/calculator/bathhouse/bathHouseUtils";
 import { fmt } from "@/components/calculator/bathhouse/bathHouseUtils";
 import BathHouseConfigForm from "@/components/calculator/bathhouse/BathHouseConfigForm";
+import CalcProgressBar from "@/components/calculator/CalcProgressBar";
 
 interface Props {
   config: BathHouseConfig;
@@ -18,9 +19,27 @@ interface Props {
 }
 
 export default function BathHouseTabConfig({ config, bd, onChange, onOpenResult }: Props) {
+  const progressChecks = [
+    !!config.style,
+    config.totalArea > 0,
+    !!config.wallMaterial,
+    !!config.foundation,
+    !!config.roofType,
+    !!config.stoveType,
+    config.steamRoomArea > 0,
+  ];
+  const filled = progressChecks.filter(Boolean).length;
+  const total = progressChecks.length;
+
   return (
     <div className="lg:grid lg:grid-cols-[1fr_380px] gap-6">
       <Card className="p-4 md:p-6">
+        <CalcProgressBar
+          filled={filled}
+          total={total}
+          accentColor="amber"
+          hint="Выберите стиль, материалы и параметры бани"
+        />
         <BathHouseConfigForm config={config} onChange={onChange} />
       </Card>
 

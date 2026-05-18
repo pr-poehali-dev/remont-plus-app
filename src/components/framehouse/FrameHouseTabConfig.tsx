@@ -10,6 +10,7 @@ import type { FrameHouseBreakdown } from "@/components/calculator/framehouse/fra
 import { fmt } from "@/components/calculator/framehouse/frameHouseUtils";
 import FrameHouseConfigForm from "@/components/calculator/framehouse/FrameHouseConfigForm";
 import HouseStylePreview from "@/components/framehouse/HouseStylePreview";
+import CalcProgressBar from "@/components/calculator/CalcProgressBar";
 
 interface Props {
   config: FrameHouseConfig;
@@ -19,9 +20,28 @@ interface Props {
 }
 
 export default function FrameHouseTabConfig({ config, bd, onChange, onOpenResult }: Props) {
+  const progressChecks = [
+    !!config.style,
+    config.totalArea > 0,
+    config.floors > 0,
+    !!config.wallTech,
+    !!config.foundation,
+    !!config.roofType,
+    !!config.facade,
+    !!config.heating,
+  ];
+  const filled = progressChecks.filter(Boolean).length;
+  const total = progressChecks.length;
+
   return (
     <div className="lg:grid lg:grid-cols-[1fr_380px] gap-6">
       <Card className="p-4 md:p-6">
+        <CalcProgressBar
+          filled={filled}
+          total={total}
+          accentColor="green"
+          hint="Выберите стиль, технологию и материалы дома"
+        />
         <FrameHouseConfigForm config={config} onChange={onChange} />
       </Card>
 

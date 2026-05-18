@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import { Section, OptionGrid, NumRow, Toggle } from "./OfficeCalcUI";
+import CalcProgressBar from "@/components/calculator/CalcProgressBar";
 import {
   ZoneConfig,
   ROOM_TYPES, FINISH_LEVELS, FLOORING_OPTIONS, CEILING_OPTIONS, PARTITION_OPTIONS,
@@ -57,8 +58,26 @@ function BlockToggle({
 }
 
 export default function OfficeZoneEditor({ zone, onChange }: Props) {
+  const progressChecks = [
+    !!zone.roomType,
+    zone.area > 0,
+    zone.height > 0,
+    zone.blockFinish || zone.blockFlooring || zone.blockCeiling,
+    zone.blockHeating || zone.blockVentilation || zone.blockElectric,
+    zone.blockFire || zone.blockAlarm || zone.blockCCTV || zone.blockAccess,
+  ];
+  const filled = progressChecks.filter(Boolean).length;
+  const total = progressChecks.length;
+
   return (
     <Card className="p-5 space-y-3">
+
+      <CalcProgressBar
+        filled={filled}
+        total={total}
+        accentColor="blue"
+        hint="Выберите тип, размеры и нужные разделы офиса"
+      />
 
       {/* Тип помещения — всегда виден */}
       <div className="rounded-xl border border-gray-200 bg-white">

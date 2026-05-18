@@ -5,6 +5,7 @@ import type { ElectricsConfig } from "@/components/calculator/electrics/Electric
 import { calcElectricsPrice, calcElectricsMaterials, fmt } from "@/components/calculator/electrics/electricsUtils";
 import ElectricsConfigForm from "@/components/calculator/electrics/ElectricsConfigForm";
 import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
+import CalcProgressBar from "@/components/calculator/CalcProgressBar";
 
 interface Props {
   activeZone: ElectricsConfig;
@@ -17,6 +18,17 @@ interface Props {
 export default function ElectricsZoneEditor({ activeZone, activeIndex, regionId, markupPct, onUpdate }: Props) {
   const activeBreakdown = calcElectricsPrice(activeZone, regionId, markupPct);
   const activeRoomType = ROOM_TYPES.find(r => r.value === activeZone.roomType);
+
+  const progressChecks = [
+    !!activeZone.roomType,
+    activeZone.area > 0,
+    (activeZone.outletsCount + activeZone.doubleOutletsCount + activeZone.groundedOutletsCount) > 0,
+    (activeZone.switchesCount + activeZone.doubleSwitchesCount + activeZone.dimmersCount) > 0,
+    (activeZone.lightGroupsCount + activeZone.spotLightsCount) > 0,
+    !!activeZone.cablingType,
+  ];
+  const filled = progressChecks.filter(Boolean).length;
+  const total = progressChecks.length;
 
   return (
     <div className="lg:col-span-3">
@@ -31,6 +43,13 @@ export default function ElectricsZoneEditor({ activeZone, activeIndex, regionId,
           </h2>
           <span className="text-sm text-gray-400 ml-1">— электромонтаж</span>
         </div>
+
+        <CalcProgressBar
+          filled={filled}
+          total={total}
+          accentColor="blue"
+          hint="Укажите розетки, выключатели и освещение"
+        />
 
         {/* Форма */}
         <Card className="p-5">

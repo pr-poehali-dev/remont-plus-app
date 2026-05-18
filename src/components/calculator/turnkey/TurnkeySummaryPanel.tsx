@@ -17,6 +17,7 @@ import ScreenProtection from "@/components/print/ScreenProtection";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcFindMaster from "@/components/calculator/CalcFindMaster";
 import CalcCreateProject from "@/components/calculator/CalcCreateProject";
+import CalcProgressBar from "@/components/calculator/CalcProgressBar";
 
 interface Props {
   cfg: TurnkeyConfig;
@@ -53,10 +54,28 @@ export default function TurnkeySummaryPanel({ cfg, regionId, markupPct, onShowEx
     { label: `Снабженец ${cfg.supplierPct}% (от материалов ${fmt(breakdown.materialsCost)} ₽)`, value: breakdown.supplierCost },
   ].filter(r => r.value > 0);
 
+  const progressChecks = [
+    !!cfg.apartmentType,
+    cfg.totalAreaM2 > 0,
+    !!cfg.renovationLevel,
+    !!cfg.floorType,
+    !!cfg.ceilingType,
+    cfg.bathroomCount > 0,
+    !!cfg.bathroomLevel,
+  ];
+  const filled = progressChecks.filter(Boolean).length;
+  const total = progressChecks.length;
+
   return (
     <div className="lg:col-span-2">
       <ScreenProtection>
       <div className="sticky top-24 space-y-4">
+        <CalcProgressBar
+          filled={filled}
+          total={total}
+          accentColor="emerald"
+          hint="Заполните параметры квартиры для точной сметы"
+        />
         {/* Большой итог */}
         <Card className="p-5 bg-gradient-to-br from-emerald-600 to-emerald-800 border-0 text-white">
           <p className="text-xs font-semibold opacity-70 uppercase tracking-wide mb-1">Стоимость ремонта</p>
