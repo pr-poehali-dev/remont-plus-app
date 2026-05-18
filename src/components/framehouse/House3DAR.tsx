@@ -4,6 +4,7 @@ import Icon from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import type { FrameHouseSpec } from "@/lib/frameHouseGenerator";
 import { mm, type ViewMode } from "./House3DMaterials";
+import func2url from "../../../backend/func2url.json";
 
 interface Props {
   spec: FrameHouseSpec;
@@ -24,6 +25,8 @@ export default function House3DAR({ spec, mode, onClose }: Props) {
   const [sessionActive, setSessionActive] = useState(false);
   const [placed, setPlaced] = useState(false);
   const [scale, setScale] = useState(1);
+  const [iosLoading, setIosLoading] = useState(false);
+  const [iosError, setIosError] = useState<string | null>(null);
 
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -350,6 +353,38 @@ export default function House3DAR({ spec, mode, onClose }: Props) {
     sessionRef.current?.end?.();
   };
 
+  /* ──────── iOS AR Quick Look ──────── */
+  const launchIOSQuickLook = async () => {
+    setIosError(null);
+    setIosLoading(true);
+    try {
+      const usdzUrl = (func2url as Record<string, string>)["house-usdz"];
+      const res = await fetch(usdzUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ spec }),
+      });
+      if (!res.ok) throw new Error("Не удалось сгенерировать модель");
+      const data = (await res.json()) as { url: string };
+
+      // AR Quick Look запускается через <a rel="ar"> с href на .usdz
+      const anchor = document.createElement("a");
+      anchor.setAttribute("rel", "ar");
+      anchor.setAttribute("href", data.url);
+      // Внутри ссылки обязательно должен быть <img> для активации Quick Look на iOS
+      const img = document.createElement("img");
+      img.style.display = "none";
+      anchor.appendChild(img);
+      document.body.appendChild(anchor);
+      anchor.click();
+      setTimeout(() => anchor.remove(), 500);
+    } catch (err) {
+      setIosError(err instanceof Error ? err.message : "Ошибка генерации");
+    } finally {
+      setIosLoading(false);
+    }
+  };
+
   // Управление масштабом дома в AR
   useEffect(() => {
     if (houseGroupRef.current) {
@@ -457,17 +492,53 @@ export default function House3DAR({ spec, mode, onClose }: Props) {
         )}
 
         {support === "ios" && (
-          <div className="max-w-md text-center text-white space-y-4">
-            <div className="w-20 h-20 mx-auto rounded-full bg-sky-500/20 flex items-center justify-center">
-              <Icon name="Smartphone" size={36} className="text-sky-400" />
+          <div className="max-w-md text-center text-white space-y-5">
+            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center shadow-2xl shadow-blue-500/40">
+              <Icon name="Smartphone" size={44} className="text-white" />
             </div>
-            <h3 className="text-xl font-bold">AR для iOS</h3>
+            <h3 className="text-2xl font-bold">AR Quick Look для iPhone</h3>
             <p className="text-slate-300">
-              Safari пока не поддерживает WebXR. Для AR на iPhone/iPad используйте Android-устройство или браузер с поддержкой WebXR
-              (например, Mozilla XR Viewer).
+              Откроется нативный AR-просмотрщик Apple. Наведите камеру на пол или землю — каркасник встанет в натуральную величину.
             </p>
-            <p className="text-slate-400 text-sm">
-              Мы готовим версию с AR Quick Look (USDZ-модели) для iOS — будет доступно в ближайших обновлениях.
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left space-y-2 text-sm text-slate-200">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-sky-500 text-white text-xs flex items-center justify-center font-bold">1</span>
+                Нажмите «Открыть в AR»
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-sky-500 text-white text-xs flex items-center justify-center font-bold">2</span>
+                В Quick Look выберите вкладку «AR»
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-sky-500 text-white text-xs flex items-center justify-center font-bold">3</span>
+                Поводите камерой и поставьте дом на участок
+              </div>
+            </div>
+            {iosError && (
+              <div className="bg-red-500/20 border border-red-500/40 rounded-lg p-3 text-sm text-red-200">
+                {iosError}
+              </div>
+            )}
+            <Button
+              onClick={launchIOSQuickLook}
+              disabled={iosLoading}
+              size="lg"
+              className="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white border-0 text-base font-bold"
+            >
+              {iosLoading ? (
+                <>
+                  <Icon name="Loader2" className="mr-2 animate-spin" />
+                  Готовим модель…
+                </>
+              ) : (
+                <>
+                  <Icon name="ScanLine" className="mr-2" />
+                  Открыть в AR
+                </>
+              )}
+            </Button>
+            <p className="text-slate-500 text-xs">
+              Работает в Safari на iOS 12+ и iPadOS. Модель оптимизирована под Apple ARKit.
             </p>
           </div>
         )}

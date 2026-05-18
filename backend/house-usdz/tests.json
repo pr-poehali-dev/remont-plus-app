@@ -1,0 +1,49 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET not allowed",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 405
+    },
+    {
+      "name": "POST missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {"spec": {}},
+      "expectedStatus": 400
+    },
+    {
+      "name": "POST generates USDZ for valid spec",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "spec": {
+          "length": 8000,
+          "width": 6000,
+          "wallHeight": 2700,
+          "studPitch": 600,
+          "floors": 1,
+          "partitionsLength": 6000,
+          "windowsCount": 5,
+          "windowWidth": 1200,
+          "windowHeight": 1400,
+          "doorsCount": 2,
+          "doorWidth": 900,
+          "doorHeight": 2100,
+          "roofOverhang": 500,
+          "roofPitchDeg": 25
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"url": "string", "hash": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
