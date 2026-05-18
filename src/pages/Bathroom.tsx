@@ -22,6 +22,7 @@ import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcFindMaster from "@/components/calculator/CalcFindMaster";
 import CalcCreateProject from "@/components/calculator/CalcCreateProject";
+import SmartLeadTrigger from "@/components/calculator/SmartLeadTrigger";
 
 const MARKUP_KEY = "bathroom_markup_pct";
 const REGION_KEY = "bathroom_region";
@@ -280,6 +281,18 @@ export default function Bathroom() {
       </div>
       <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="bathroom" shareUrl={buildShareUrl()} />
       <SimilarProjects totalSum={totalSum} calcType="bathroom" />
+      <SmartLeadTrigger
+        calcType="Ванная"
+        totalSum={totalSum}
+        progressPct={Math.round(([!!activeZone.bathroomType, activeZone.area > 0, activeZone.wallArea > 0, !!activeZone.floorTileId, !!activeZone.wallTileId, !!activeZone.waterproofingType].filter(Boolean).length / 6) * 100)}
+        items={zones.map(z => ({ name: z.roomName || "Санузел", price: z.totalPrice }))}
+        params={{
+          "Площадь": `${totalArea} м²`,
+          "Зон": `${zones.length}`,
+          "Регион": regionId,
+          ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+        }}
+      />
     </div>
     </CalcAuthGate>
   );

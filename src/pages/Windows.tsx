@@ -31,6 +31,7 @@ import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcFindMaster from "@/components/calculator/CalcFindMaster";
 import CalcCreateProject from "@/components/calculator/CalcCreateProject";
+import SmartLeadTrigger from "@/components/calculator/SmartLeadTrigger";
 
 const MARKUP_KEY = "windows_markup_pct";
 
@@ -282,6 +283,13 @@ export default function Windows() {
       )}
       <SalesWidget calcContext={{ calcName: "Калькулятор окон", totalPrice: totalSum }} />
       <CalcStickyBar totalSum={totalSum} calcType="windows" shareUrl={buildShareUrl()} />
+      <SmartLeadTrigger
+        calcType="Окна"
+        totalSum={totalSum || price}
+        progressPct={Math.round(([!!cfg.constructionType, cfg.width > 0, cfg.height > 0, !!cfg.profileSystemId, !!cfg.glassUnitId, !!cfg.regionId, cfg.quantity > 0].filter(Boolean).length / 7) * 100)}
+        items={configs.map(c => ({ name: `Окно ${c.width}×${c.height} ×${c.quantity}`, price: c.totalPrice }))}
+        params={{ "Позиций": String(configs.length), ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}) }}
+      />
 
       <WindowPriceSettings
         open={showPriceSettings}

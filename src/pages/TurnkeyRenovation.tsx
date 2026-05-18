@@ -15,6 +15,7 @@ import HomePromoBanner from "@/components/home/HomePromoBanner";
 import TurnkeyHeader from "@/components/calculator/turnkey/TurnkeyHeader";
 import TurnkeyConfigPanel from "@/components/calculator/turnkey/TurnkeyConfigPanel";
 import TurnkeySummaryPanel from "@/components/calculator/turnkey/TurnkeySummaryPanel";
+import SmartLeadTrigger from "@/components/calculator/SmartLeadTrigger";
 
 const MARKUP_KEY = "turnkey_markup_pct";
 const REGION_KEY = "turnkey_region";
@@ -169,6 +170,17 @@ export default function TurnkeyRenovation() {
         />
       )}
       <CalcStickyBar totalSum={cfg.totalPrice} totalArea={cfg.totalAreaM2} calcType="turnkey" shareUrl={buildShareUrl()} />
+      <SmartLeadTrigger
+        calcType="Ремонт под ключ"
+        totalSum={cfg.totalPrice}
+        progressPct={Math.round(([!!cfg.apartmentType, cfg.totalAreaM2 > 0, !!cfg.renovationLevel, !!cfg.floorType, !!cfg.ceilingType, cfg.bathroomCount > 0, !!cfg.bathroomLevel].filter(Boolean).length / 7) * 100)}
+        items={[{ name: `Ремонт ${cfg.totalAreaM2} м²`, price: cfg.totalPrice }]}
+        params={{
+          "Площадь": `${cfg.totalAreaM2} м²`,
+          "Регион": regionId,
+          ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+        }}
+      />
     </div>
     </CalcAuthGate>
   );

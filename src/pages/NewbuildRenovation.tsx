@@ -16,6 +16,7 @@ import HomePromoBanner from "@/components/home/HomePromoBanner";
 import NewbuildHeader from "@/components/calculator/newbuild/NewbuildHeader";
 import NewbuildZonesPanel from "@/components/calculator/newbuild/NewbuildZonesPanel";
 import NewbuildEditor from "@/components/calculator/newbuild/NewbuildEditor";
+import SmartLeadTrigger from "@/components/calculator/SmartLeadTrigger";
 
 const MARKUP_KEY = "newbuild_markup_pct";
 const REGION_KEY = "newbuild_region";
@@ -277,6 +278,18 @@ export default function NewbuildRenovation() {
       )}
       <SalesWidget calcContext={{ calcName: "Калькулятор новостройки", totalPrice: totalSum }} />
       <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="newbuild" shareUrl={buildShareUrl()} />
+      <SmartLeadTrigger
+        calcType="Ремонт в новостройке"
+        totalSum={totalSum}
+        progressPct={Math.round(([!!activeZone.roomType, activeZone.area > 0, activeZone.ceilingHeightM > 0, !!activeZone.renovationLevel, !!activeZone.flooringType, activeZone.electricsIncluded || activeZone.plasterIncluded].filter(Boolean).length / 6) * 100)}
+        items={zones.map(z => ({ name: z.roomName || "Помещение", price: z.totalPrice }))}
+        params={{
+          "Помещений": `${zones.length}`,
+          "Площадь": `${Math.round(totalArea * 10) / 10} м²`,
+          "Регион": regionId,
+          ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+        }}
+      />
     </div>
     </CalcAuthGate>
   );

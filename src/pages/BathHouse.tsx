@@ -22,6 +22,7 @@ import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcFindMaster from "@/components/calculator/CalcFindMaster";
 import CalcCreateProject from "@/components/calculator/CalcCreateProject";
+import SmartLeadTrigger from "@/components/calculator/SmartLeadTrigger";
 
 const REGION_KEY = "bathhouse_region";
 const MARKUP_KEY = "bathhouse_markup";
@@ -266,6 +267,17 @@ export default function BathHouse() {
       <SalesWidget calcContext={{ calcName: "Калькулятор бани", totalPrice: bd.total }} />
       <CalcStickyBar totalSum={bd.total} calcType="bathhouse" shareUrl={buildShareUrl()} />
       <SimilarProjects totalSum={bd.total} calcType="bathhouse" />
+      <SmartLeadTrigger
+        calcType="Баня"
+        totalSum={bd.total}
+        progressPct={Math.round(([!!config.style, config.totalArea > 0, !!config.wallMaterial, !!config.foundation, !!config.roofType, !!config.stoveType, config.steamRoomArea > 0].filter(Boolean).length / 7) * 100)}
+        items={[{ name: `Баня ${config.totalArea} м²`, price: bd.total }]}
+        params={{
+          "Площадь": `${config.totalArea} м²`,
+          "Регион": regionId,
+          ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+        }}
+      />
     </div>
     </CalcAuthGate>
   );
