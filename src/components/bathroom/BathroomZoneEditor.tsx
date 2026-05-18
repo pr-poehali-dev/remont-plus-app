@@ -6,6 +6,7 @@ import type { BathroomPriceBreakdown } from "@/components/calculator/bathroom/ba
 import { fmt, calcBathroomMaterials } from "@/components/calculator/bathroom/bathroomUtils";
 import BathroomConfigForm from "@/components/calculator/bathroom/BathroomConfigForm";
 import MaterialsTable from "@/components/calculator/shared/MaterialsTable";
+import CalcProgressBar from "@/components/calculator/CalcProgressBar";
 
 interface Props {
   activeZone: BathroomConfig;
@@ -26,6 +27,18 @@ export default function BathroomZoneEditor({
 }: Props) {
   const activeBathroomType = BATHROOM_TYPES.find(b => b.id === activeZone.bathroomType);
 
+  const progressChecks = [
+    !!activeZone.bathroomType,
+    activeZone.area > 0,
+    activeZone.wallArea > 0,
+    !!activeZone.floorTileId,
+    !!activeZone.wallTileId,
+    !!activeZone.waterproofingType,
+    activeZone.toiletInstall || activeZone.sinkInstall || activeZone.bathInstall || activeZone.showerCabinInstall,
+  ];
+  const filled = progressChecks.filter(Boolean).length;
+  const total = progressChecks.length;
+
   return (
     <div className="lg:col-span-3">
       <div className="sticky top-24 space-y-4">
@@ -39,6 +52,13 @@ export default function BathroomZoneEditor({
           </h2>
           <span className="text-sm text-gray-400 ml-1">— ремонт</span>
         </div>
+
+        <CalcProgressBar
+          filled={filled}
+          total={total}
+          accentColor="emerald"
+          hint="Заполните основные параметры — получите точную смету по санузлу"
+        />
 
         {/* Форма */}
         <Card className="p-5">

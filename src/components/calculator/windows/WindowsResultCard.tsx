@@ -6,6 +6,7 @@ import {
 } from "@/components/calculator/windows/WindowTypes";
 import type { WindowConfig } from "@/components/calculator/windows/WindowTypes";
 import { fmt } from "@/components/calculator/windows/windowUtils";
+import CalcProgressBar from "@/components/calculator/CalcProgressBar";
 
 interface Props {
   cfg: Omit<WindowConfig, "id" | "totalPrice">;
@@ -24,8 +25,26 @@ export default function WindowsResultCard({
   price,
   onAdd,
 }: Props) {
+  const checks = [
+    !!cfg.constructionType,
+    cfg.width > 0,
+    cfg.height > 0,
+    !!cfg.profileSystemId,
+    !!cfg.glassUnitId,
+    !!cfg.regionId,
+    cfg.quantity > 0,
+  ];
+  const filled = checks.filter(Boolean).length;
+  const total = checks.length;
+
   return (
     <Card className="p-5 border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50">
+      <CalcProgressBar
+        filled={filled}
+        total={total}
+        accentColor="blue"
+        hint="Заполните все параметры — получите точную смету"
+      />
       <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-3">Стоимость конструкции</p>
 
       <div className="space-y-1.5 text-sm text-gray-600 mb-4">

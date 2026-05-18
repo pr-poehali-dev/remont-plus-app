@@ -11,6 +11,7 @@ import HomeVideoBanner from "@/components/home/HomeVideoBanner";
 import HomeReadyProjects from "@/components/home/HomeReadyProjects";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 import HomeQuiz from "@/components/home/HomeQuiz";
+import HomeLiveStats from "@/components/home/HomeLiveStats";
 import SiteFooter from "@/components/SiteFooter";
 
 
@@ -111,6 +112,7 @@ export default function Home() {
       />
       <HomePromoBanner />
       <HomeHero user={user} regionLabel={region.label} onLogout={handleLogout} />
+      <HomeLiveStats />
       <HomeHowItWorks />
 
       <div className="bg-[#fafaf8]">

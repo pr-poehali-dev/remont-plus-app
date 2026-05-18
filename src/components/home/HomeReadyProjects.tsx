@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
+import LazyImage from "@/components/ui/lazy-image";
 
 const PREVIEW = [
   {
@@ -83,7 +84,7 @@ export default function HomeReadyProjects() {
           >
             {/* Фото */}
             <div className="relative h-52 overflow-hidden">
-              <img
+              <LazyImage
                 src={p.image}
                 alt={p.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
