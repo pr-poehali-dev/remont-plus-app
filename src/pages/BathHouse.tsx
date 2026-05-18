@@ -14,6 +14,7 @@ import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import { useSessionShare } from "@/hooks/useSessionShare";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
@@ -111,6 +112,22 @@ export default function BathHouse() {
   const bd = useMemo(() => calcBathHousePrice(config, regionId, markupPct), [config, regionId, markupPct]);
 
   useEffect(() => { if (bd.total > 0) trackResultView(); }, [bd.total, trackResultView]);
+
+  const { buildShareUrl } = useSessionShare(
+    { config, regionId, markupPct },
+    "bathhouse_session",
+    (restored: { config?: BathHouseConfig; regionId?: string; markupPct?: number }) => {
+      if (restored.config) setConfig(restored.config);
+      if (restored.regionId) {
+        setRegionId(restored.regionId);
+        localStorage.setItem(REGION_KEY, restored.regionId);
+      }
+      if (typeof restored.markupPct === "number") {
+        setMarkupPct(restored.markupPct);
+        localStorage.setItem(MARKUP_KEY, String(restored.markupPct));
+      }
+    },
+  );
 
   const handlePrint = () => {
     const now = new Date();
@@ -247,7 +264,7 @@ export default function BathHouse() {
         <CalcCreateProject calcType="Баня" totalSum={bd.total} />
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор бани", totalPrice: bd.total }} />
-      <CalcStickyBar totalSum={bd.total} calcType="bathhouse" />
+      <CalcStickyBar totalSum={bd.total} calcType="bathhouse" shareUrl={buildShareUrl()} />
       <SimilarProjects totalSum={bd.total} calcType="bathhouse" />
     </div>
     </CalcAuthGate>

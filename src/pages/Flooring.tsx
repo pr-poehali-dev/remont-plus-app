@@ -11,6 +11,7 @@ import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import { useSessionShare } from "@/hooks/useSessionShare";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
@@ -147,6 +148,25 @@ export default function Flooring() {
 
   useEffect(() => { if (totalSum > 0) trackResultView(); }, [totalSum, trackResultView]);
 
+  const { buildShareUrl } = useSessionShare(
+    { zones, markupPct, regionId },
+    "flooring_session",
+    (restored: { zones?: FlooringConfig[]; markupPct?: number; regionId?: string }) => {
+      if (restored.regionId) {
+        setRegionId(restored.regionId);
+        localStorage.setItem(REGION_KEY, restored.regionId);
+      }
+      if (typeof restored.markupPct === "number") {
+        setMarkupPct(restored.markupPct);
+        localStorage.setItem(MARKUP_KEY, String(restored.markupPct));
+      }
+      if (Array.isArray(restored.zones) && restored.zones.length > 0) {
+        setZones(restored.zones);
+        setActiveId(restored.zones[0].id);
+      }
+    },
+  );
+
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
     const printState = {
@@ -257,7 +277,7 @@ export default function Flooring() {
           <CalcCreateProject calcType="Полы" totalSum={totalSum} />
         </div>
         <SalesWidget calcContext={{ calcName: "Калькулятор напольных покрытий", totalPrice: totalSum }} />
-        <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="flooring" />
+        <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="flooring" shareUrl={buildShareUrl()} />
         <SimilarProjects totalSum={totalSum} calcType="flooring" />
       </div>
     </CalcAuthGate>

@@ -24,6 +24,7 @@ import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import EstimateActions from "@/components/calculator/EstimateActions";
 import ScreenProtection from "@/components/print/ScreenProtection";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import { useSessionShare } from "@/hooks/useSessionShare";
 import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcResultCTA from "@/components/calculator/CalcResultCTA";
@@ -166,6 +167,37 @@ export default function NewbuildRenovation() {
   const totalArea = zones.reduce((s, z) => s + (z.area || 0), 0);
 
   useEffect(() => { if (totalSum > 0) trackResultView(); }, [totalSum, trackResultView]);
+
+  const { buildShareUrl } = useSessionShare(
+    { zones, markupPct, regionId, foremanIncluded, foremanPct, supplierIncluded, supplierPct },
+    "newbuild_session",
+    (restored: {
+      zones?: NewbuildConfig[];
+      markupPct?: number;
+      regionId?: string;
+      foremanIncluded?: boolean;
+      foremanPct?: number;
+      supplierIncluded?: boolean;
+      supplierPct?: number;
+    }) => {
+      if (restored.regionId) {
+        setRegionId(restored.regionId);
+        localStorage.setItem(REGION_KEY, restored.regionId);
+      }
+      if (typeof restored.markupPct === "number") {
+        setMarkupPct(restored.markupPct);
+        localStorage.setItem(MARKUP_KEY, String(restored.markupPct));
+      }
+      if (typeof restored.foremanIncluded === "boolean") setForemanIncluded(restored.foremanIncluded);
+      if (typeof restored.foremanPct === "number") setForemanPct(restored.foremanPct);
+      if (typeof restored.supplierIncluded === "boolean") setSupplierIncluded(restored.supplierIncluded);
+      if (typeof restored.supplierPct === "number") setSupplierPct(restored.supplierPct);
+      if (Array.isArray(restored.zones) && restored.zones.length > 0) {
+        setZones(restored.zones);
+        setActiveId(restored.zones[0].id);
+      }
+    },
+  );
 
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
@@ -735,7 +767,7 @@ export default function NewbuildRenovation() {
         />
       )}
       <SalesWidget calcContext={{ calcName: "Калькулятор новостройки", totalPrice: totalSum }} />
-      <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="newbuild" />
+      <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="newbuild" shareUrl={buildShareUrl()} />
     </div>
     </CalcAuthGate>
   );

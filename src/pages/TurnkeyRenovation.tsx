@@ -22,6 +22,7 @@ import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import { useSessionShare } from "@/hooks/useSessionShare";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import EstimateActions from "@/components/calculator/EstimateActions";
 import CalcInlineLeadForm from "@/components/calculator/CalcInlineLeadForm";
@@ -117,6 +118,27 @@ export default function TurnkeyRenovation() {
   };
 
   useEffect(() => { if (cfg.totalPrice > 0) trackResultView(); }, [cfg.totalPrice, trackResultView]);
+
+  const { buildShareUrl } = useSessionShare(
+    { cfg, regionId, markupPct },
+    "turnkey_session",
+    (restored: { cfg?: TurnkeyConfig; regionId?: string; markupPct?: number }) => {
+      if (restored.regionId) {
+        setRegionId(restored.regionId);
+        localStorage.setItem(REGION_KEY, restored.regionId);
+      }
+      if (typeof restored.markupPct === "number") {
+        setMarkupPct(restored.markupPct);
+        localStorage.setItem(MARKUP_KEY, String(restored.markupPct));
+      }
+      if (restored.cfg) {
+        const rg = restored.regionId ?? regionId;
+        const mk = typeof restored.markupPct === "number" ? restored.markupPct : markupPct;
+        const bd = calcTurnkeyPrice(restored.cfg, rg, mk);
+        setCfg({ ...restored.cfg, totalPrice: bd.total });
+      }
+    },
+  );
 
   const breakdown = calcTurnkeyPrice(cfg, regionId, markupPct);
   const aptType = APARTMENT_TYPES.find(a => a.id === cfg.apartmentType);
@@ -432,7 +454,7 @@ export default function TurnkeyRenovation() {
           onCancel={() => setShowExport(false)}
         />
       )}
-      <CalcStickyBar totalSum={cfg.totalPrice} totalArea={cfg.totalAreaM2} calcType="turnkey" />
+      <CalcStickyBar totalSum={cfg.totalPrice} totalArea={cfg.totalAreaM2} calcType="turnkey" shareUrl={buildShareUrl()} />
     </div>
     </CalcAuthGate>
   );

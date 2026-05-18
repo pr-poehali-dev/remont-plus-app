@@ -18,6 +18,7 @@ import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import { useSessionShare } from "@/hooks/useSessionShare";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
@@ -159,6 +160,25 @@ export default function Ceilings() {
   const totalArea = zones.reduce((s, z) => s + (z.area || 0), 0);
 
   useEffect(() => { if (totalSum > 0) trackResultView(); }, [totalSum, trackResultView]);
+
+  const { buildShareUrl } = useSessionShare(
+    { zones, markupPct, regionId },
+    "ceilings_session",
+    (restored: { zones?: CeilingConfig[]; markupPct?: number; regionId?: string }) => {
+      if (restored.regionId) {
+        setRegionId(restored.regionId);
+        localStorage.setItem(REGION_KEY, restored.regionId);
+      }
+      if (typeof restored.markupPct === "number") {
+        setMarkupPct(restored.markupPct);
+        localStorage.setItem(MARKUP_KEY, String(restored.markupPct));
+      }
+      if (Array.isArray(restored.zones) && restored.zones.length > 0) {
+        setZones(restored.zones);
+        setActiveId(restored.zones[0].id);
+      }
+    },
+  );
 
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
@@ -307,7 +327,7 @@ export default function Ceilings() {
         <CalcCreateProject calcType="Потолки" totalSum={totalSum} />
       </div>
       <SalesWidget calcContext={{ calcName: "Калькулятор потолков", totalPrice: totalSum }} />
-      <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="ceilings" />
+      <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="ceilings" shareUrl={buildShareUrl()} />
       <SimilarProjects totalSum={totalSum} calcType="ceilings" />
     </div>
     </CalcAuthGate>
