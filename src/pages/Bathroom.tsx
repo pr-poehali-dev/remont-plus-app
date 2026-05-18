@@ -14,6 +14,7 @@ import CalcOrderForm from "@/components/calculator/CalcOrderForm";
 import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import { useSessionShare } from "@/hooks/useSessionShare";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
 import { usePageGoal } from "@/lib/metrika";
@@ -147,6 +148,25 @@ export default function Bathroom() {
 
   useEffect(() => { if (totalSum > 0) trackResultView(); }, [totalSum, trackResultView]);
 
+  const { buildShareUrl } = useSessionShare(
+    { zones, markupPct, regionId },
+    "bathroom_session",
+    (restored: { zones?: BathroomConfig[]; markupPct?: number; regionId?: string }) => {
+      if (restored.regionId) {
+        setRegionId(restored.regionId);
+        localStorage.setItem(REGION_KEY, restored.regionId);
+      }
+      if (typeof restored.markupPct === "number") {
+        setMarkupPct(restored.markupPct);
+        localStorage.setItem(MARKUP_KEY, String(restored.markupPct));
+      }
+      if (Array.isArray(restored.zones) && restored.zones.length > 0) {
+        setZones(restored.zones);
+        setActiveId(restored.zones[0].id);
+      }
+    },
+  );
+
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
     const printState = {
@@ -258,7 +278,7 @@ export default function Bathroom() {
         <CalcFindMaster calcType="Ванная" totalSum={totalSum} />
         <CalcCreateProject calcType="Ванная" totalSum={totalSum} />
       </div>
-      <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="bathroom" />
+      <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="bathroom" shareUrl={buildShareUrl()} />
       <SimilarProjects totalSum={totalSum} calcType="bathroom" />
     </div>
     </CalcAuthGate>

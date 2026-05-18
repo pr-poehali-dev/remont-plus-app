@@ -25,6 +25,7 @@ import CalcResultCTA from "@/components/calculator/CalcResultCTA";
 import CalcAuthGate from "@/components/calculator/CalcAuthGate";
 import SalesWidget from "@/components/calculator/SalesWidget";
 import CalcStickyBar from "@/components/calculator/CalcStickyBar";
+import { useSessionShare } from "@/hooks/useSessionShare";
 import SimilarProjects from "@/components/calculator/SimilarProjects";
 import EstimateActions from "@/components/calculator/EstimateActions";
 import { useCalcFunnel } from "@/hooks/useCalcTracking";
@@ -95,6 +96,19 @@ export default function Windows() {
   const removeConfig = (id: string) => setConfigs(prev => prev.filter(c => c.id !== id));
 
   const totalSum = configs.reduce((s, c) => s + c.totalPrice, 0);
+
+  const { buildShareUrl } = useSessionShare(
+    { cfg, configs, markupPct },
+    "windows_session",
+    (restored: { cfg?: typeof cfg; configs?: WindowConfig[]; markupPct?: number }) => {
+      if (restored.cfg) setCfg(restored.cfg);
+      if (Array.isArray(restored.configs)) setConfigs(restored.configs);
+      if (typeof restored.markupPct === "number") {
+        setMarkupPct(restored.markupPct);
+        localStorage.setItem(MARKUP_KEY, String(restored.markupPct));
+      }
+    },
+  );
 
   const handleExportConfirm = (data: ExportConfirmData) => {
     const now = new Date();
@@ -477,7 +491,7 @@ export default function Windows() {
         />
       )}
       <SalesWidget calcContext={{ calcName: "Калькулятор окон", totalPrice: totalSum }} />
-      <CalcStickyBar totalSum={totalSum} calcType="windows" />
+      <CalcStickyBar totalSum={totalSum} calcType="windows" shareUrl={buildShareUrl()} />
 
       <WindowPriceSettings
         open={showPriceSettings}
