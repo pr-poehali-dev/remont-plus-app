@@ -57,6 +57,32 @@ export function useCalculatorState() {
 
   useEffect(() => {
     setLemanaItems(getEstimateItems());
+
+    // 1. Восстановление сессии из URL (?session=...)
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const sessionParam = params.get("session");
+      if (sessionParam) {
+        const decoded = decodeURIComponent(escape(atob(sessionParam)));
+        const payload = JSON.parse(decoded) as {
+          items?: EstimateItem[];
+          region?: string;
+        };
+        if (Array.isArray(payload.items) && payload.items.length > 0) {
+          setItems(payload.items);
+          if (payload.region) setSelectedRegion(payload.region);
+          // Очищаем URL, чтобы не таскать сессию дальше
+          const url = new URL(window.location.href);
+          url.searchParams.delete("session");
+          window.history.replaceState({}, "", url.toString());
+          return;
+        }
+      }
+    } catch {
+      /* битая ссылка — игнорируем */
+    }
+
+    // 2. Восстановление из localStorage
     const saved = localStorage.getItem("avangard_calc_items");
     if (saved) {
       try { setItems(JSON.parse(saved)); } catch { /* ignore */ }

@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
+import OpenOnPhoneButton from "@/components/calculator/OpenOnPhoneButton";
+import type { EstimateItem } from "@/hooks/useCalculatorState";
 
 interface CalculatorHeaderProps {
   currentRegionName: string | undefined;
@@ -10,6 +12,8 @@ interface CalculatorHeaderProps {
   loading: boolean;
   onShowTemplates: () => void;
   onExport: () => void;
+  items?: EstimateItem[];
+  selectedRegion?: string;
 }
 
 export default function CalculatorHeader({
@@ -20,6 +24,8 @@ export default function CalculatorHeader({
   loading,
   onShowTemplates,
   onExport,
+  items = [],
+  selectedRegion = "moscow",
 }: CalculatorHeaderProps) {
   const navigate = useNavigate();
 
@@ -49,11 +55,12 @@ export default function CalculatorHeader({
               <Icon name="ClipboardList" className="mr-2 h-4 w-4" />
               Прайс-лист
             </Button>
+            <OpenOnPhoneButton items={items} selectedRegion={selectedRegion} />
             <Button variant="outline" size="sm" onClick={onShowTemplates} disabled={loading}>
               <Icon name={loading ? "Loader2" : "LayoutTemplate"} className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               Шаблоны
             </Button>
-            <Button onClick={onExport}>
+            <Button onClick={onExport} className="hidden sm:flex">
               <Icon name="Download" className="mr-2 h-4 w-4" />
               Скачать PDF
             </Button>

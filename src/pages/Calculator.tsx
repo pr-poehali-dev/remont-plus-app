@@ -9,6 +9,7 @@ import CalculatorHeader from "@/components/calculator/CalculatorHeader";
 import CalculatorBody from "@/components/calculator/CalculatorBody";
 import CalculatorCities from "@/components/calculator/CalculatorCities";
 import CalculatorModals from "@/components/calculator/CalculatorModals";
+import CalculatorStickyTotal from "@/components/calculator/CalculatorStickyTotal";
 import ScreenProtection from "@/components/print/ScreenProtection";
 import HomePromoBanner from "@/components/home/HomePromoBanner";
 
@@ -111,6 +112,8 @@ export default function Calculator() {
         loading={state.loading}
         onShowTemplates={() => state.setShowTemplates(true)}
         onExport={() => { trackExportClick(); state.setShowExportDialog(true); }}
+        items={state.items}
+        selectedRegion={state.selectedRegion}
       />
 
       <ScreenProtection>
@@ -146,6 +149,12 @@ export default function Calculator() {
       </ScreenProtection>
 
       <CalculatorCities />
+
+      <CalculatorStickyTotal
+        total={state.totalWithDelivery}
+        itemsCount={state.items.length}
+        onExport={() => { trackExportClick(); state.setShowExportDialog(true); }}
+      />
 
       <CalculatorModals
         items={state.items}
