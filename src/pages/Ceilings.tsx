@@ -26,6 +26,7 @@ import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcFindMaster from "@/components/calculator/CalcFindMaster";
 import CalcCreateProject from "@/components/calculator/CalcCreateProject";
+import SmartLeadTrigger from "@/components/calculator/SmartLeadTrigger";
 
 const MARKUP_KEY = "ceilings_markup_pct";
 const REGION_KEY = "ceilings_region";
@@ -329,6 +330,17 @@ export default function Ceilings() {
       <SalesWidget calcContext={{ calcName: "Калькулятор потолков", totalPrice: totalSum }} />
       <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="ceilings" shareUrl={buildShareUrl()} />
       <SimilarProjects totalSum={totalSum} calcType="ceilings" />
+      <SmartLeadTrigger
+        calcType="Потолки"
+        totalSum={totalSum}
+        progressPct={Math.round(([!!activeZone.ceilingType, !!activeZone.level, !!activeZone.brandId, activeZone.area > 0, !!activeZone.lightingId, !!activeZone.colorId].filter(Boolean).length / 6) * 100)}
+        items={zones.map(z => ({ name: z.roomName || "Помещение", price: z.totalPrice }))}
+        params={{
+          "Площадь": `${totalArea} м²`,
+          "Зон": `${zones.length}`,
+          ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+        }}
+      />
     </div>
     </CalcAuthGate>
   );

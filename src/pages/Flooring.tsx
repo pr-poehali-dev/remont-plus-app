@@ -22,6 +22,7 @@ import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcFindMaster from "@/components/calculator/CalcFindMaster";
 import CalcCreateProject from "@/components/calculator/CalcCreateProject";
+import SmartLeadTrigger from "@/components/calculator/SmartLeadTrigger";
 
 const MARKUP_KEY = "flooring_markup_pct";
 const REGION_KEY = "flooring_region";
@@ -279,6 +280,18 @@ export default function Flooring() {
         <SalesWidget calcContext={{ calcName: "Калькулятор напольных покрытий", totalPrice: totalSum }} />
         <CalcStickyBar totalSum={totalSum} totalArea={totalArea} calcType="flooring" shareUrl={buildShareUrl()} />
         <SimilarProjects totalSum={totalSum} calcType="flooring" />
+        <SmartLeadTrigger
+          calcType="Напольные покрытия"
+          totalSum={totalSum}
+          progressPct={Math.round(([activeZone.length > 0, activeZone.width > 0, !!activeZone.productId, !!activeZone.substrateId, !!activeZone.patternId, activeZone.skirtingIncluded || activeZone.demolitionIncluded || activeZone.levelingIncluded].filter(Boolean).length / 6) * 100)}
+          items={zones.map(z => ({ name: z.roomName || "Помещение", price: z.totalPrice }))}
+          params={{
+            "Площадь": `${totalArea} м²`,
+            "Зон": `${zones.length}`,
+            "Регион": regionId,
+            ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+          }}
+        />
       </div>
     </CalcAuthGate>
   );

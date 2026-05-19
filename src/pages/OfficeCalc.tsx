@@ -16,6 +16,7 @@ import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcFindMaster from "@/components/calculator/CalcFindMaster";
 import CalcCreateProject from "@/components/calculator/CalcCreateProject";
+import SmartLeadTrigger from "@/components/calculator/SmartLeadTrigger";
 
 const MARKUP_KEY = "office_calc_markup";
 const REGION_KEY = "office_calc_region";
@@ -247,6 +248,18 @@ export default function OfficeCalc() {
           region: REGIONS.find(r => r.id === regionId)?.label,
           items: zones.map(z => ({ name: z.name, total: z.totalPrice })),
           summary: `${zones.length} зон: ${zones.map(z => `${z.name} ${z.area}м²`).join(", ")}`,
+        }}
+      />
+      <SmartLeadTrigger
+        calcType="Офис / Коммерческое помещение"
+        totalSum={totalAll}
+        progressPct={Math.round(([!!activeZone.roomType, activeZone.area > 0, activeZone.height > 0, activeZone.blockFinish || activeZone.blockFlooring || activeZone.blockCeiling, activeZone.blockHeating || activeZone.blockVentilation || activeZone.blockElectric, activeZone.blockFire || activeZone.blockAlarm || activeZone.blockCCTV || activeZone.blockAccess].filter(Boolean).length / 6) * 100)}
+        items={zones.map(z => ({ name: z.name, price: z.totalPrice }))}
+        params={{
+          "Зон": `${zones.length}`,
+          "Площадь": `${zones.reduce((s, z) => s + z.area, 0)} м²`,
+          "Регион": REGIONS.find(r => r.id === regionId)?.label || regionId,
+          ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
         }}
       />
     </div>

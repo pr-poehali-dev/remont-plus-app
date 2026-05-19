@@ -22,6 +22,7 @@ import HomePromoBanner from "@/components/home/HomePromoBanner";
 import CalcEmailCapture from "@/components/calculator/CalcEmailCapture";
 import CalcFindMaster from "@/components/calculator/CalcFindMaster";
 import CalcCreateProject from "@/components/calculator/CalcCreateProject";
+import SmartLeadTrigger from "@/components/calculator/SmartLeadTrigger";
 
 const REGION_KEY = "framehouse_region";
 const MARKUP_KEY = "framehouse_markup";
@@ -258,6 +259,18 @@ export default function FrameHouse() {
       <SalesWidget calcContext={{ calcName: "Калькулятор каркасного дома", totalPrice: bd.total }} />
       <CalcStickyBar totalSum={bd.total} calcType="framehouse" shareUrl={buildShareUrl()} />
       <SimilarProjects totalSum={bd.total} calcType="framehouse" />
+      <SmartLeadTrigger
+        calcType="Каркасный дом"
+        totalSum={bd.total}
+        progressPct={Math.round(([!!config.style, config.totalArea > 0, config.floors > 0, !!config.wallTech, !!config.foundation, !!config.roofType, !!config.facade, !!config.heating].filter(Boolean).length / 8) * 100)}
+        items={[{ name: `Каркасный дом ${config.totalArea} м²`, price: bd.total }]}
+        params={{
+          "Площадь": `${config.totalArea} м²`,
+          "Этажей": `${config.floors}`,
+          "Регион": regionId,
+          ...(markupPct > 0 ? { "Наценка": `${markupPct}%` } : {}),
+        }}
+      />
     </div>
     </CalcAuthGate>
   );
