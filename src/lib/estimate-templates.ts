@@ -5,13 +5,13 @@ export interface EstimateTemplate {
   name: string;
   description: string;
   icon: string;
-  category: "bathroom" | "kitchen" | "room" | "full" | "custom";
+  category: "bathroom" | "kitchen" | "room" | "full" | "industrial" | "custom";
   baseArea?: number;
   items: Omit<EstimateItem, "id" | "total">[];
 }
 
 // Единицы измерения, которые масштабируются пропорционально площади
-const SCALABLE_UNITS = new Set(["м²", "пм", "т.ч"]);
+const SCALABLE_UNITS = new Set(["м²", "пм", "п.м", "м³", "т.ч"]);
 
 export function scaleTemplateItems(
   items: Omit<EstimateItem, "id" | "total">[],
@@ -231,6 +231,80 @@ export const PRESET_TEMPLATES: EstimateTemplate[] = [
       { category: "Работы", name: "Мытьё окон (двустворчатое)", unit: "шт.", quantity: 4, price: 550 },
       { category: "Работы", name: "Уборка ванной комнаты", unit: "шт.", quantity: 1, price: 2500 },
       { category: "Работы", name: "Уборка кухни", unit: "шт.", quantity: 1, price: 2800 },
+    ],
+  },
+  {
+    id: "industrial-floor-topping",
+    name: "Бетонный пол в цеху (с топпингом)",
+    description: "Демонтаж покрытия, основание, ж/б плита, шлифовка, упрочнение топпингом и швы. База — 100 м²",
+    icon: "Factory",
+    category: "industrial",
+    baseArea: 100,
+    items: [
+      { category: "Работы", name: "Демонтаж старого пола", unit: "м²", quantity: 100, price: 450 },
+      { category: "Работы", name: "Уплотнение и подготовка основания", unit: "м²", quantity: 100, price: 180 },
+      { category: "Работы", name: "Устройство щебёночной подушки", unit: "м²", quantity: 100, price: 250 },
+      { category: "Работы", name: "Укладка гидроизоляции под бетон", unit: "м²", quantity: 100, price: 120 },
+      { category: "Работы", name: "Монтаж армирующей сетки", unit: "м²", quantity: 100, price: 150 },
+      { category: "Работы", name: "Установка маяков и опалубки", unit: "м²", quantity: 100, price: 120 },
+      { category: "Работы", name: "Заливка бетонного пола (100-150 мм)", unit: "м²", quantity: 100, price: 750 },
+      { category: "Работы", name: "Виброуплотнение бетона (рейка)", unit: "м²", quantity: 100, price: 120 },
+      { category: "Работы", name: "Устройство топпинга (упрочнённый слой)", unit: "м²", quantity: 100, price: 350 },
+      { category: "Работы", name: "Затирка бетона вертолётом (1 проход)", unit: "м²", quantity: 100, price: 180 },
+      { category: "Работы", name: "Финишная затирка топпинга вертолётом", unit: "м²", quantity: 100, price: 200 },
+      { category: "Работы", name: "Шлифовка бетонного пола", unit: "м²", quantity: 100, price: 350 },
+      { category: "Работы", name: "Нанесение упрочняющей пропитки", unit: "м²", quantity: 100, price: 180 },
+      { category: "Работы", name: "Нарезка деформационных швов", unit: "п.м", quantity: 40, price: 150 },
+      { category: "Работы", name: "Заполнение швов герметиком", unit: "п.м", quantity: 40, price: 250 },
+    ],
+  },
+  {
+    id: "industrial-floor-corundum",
+    name: "Бетонный пол в цеху (корундовый, под высокие нагрузки)",
+    description: "Усиленный пол с фиброй, корундовым топпингом и пропиткой для большегрузной техники. База — 100 м²",
+    icon: "Factory",
+    category: "industrial",
+    baseArea: 100,
+    items: [
+      { category: "Работы", name: "Демонтаж старого пола", unit: "м²", quantity: 100, price: 450 },
+      { category: "Работы", name: "Уплотнение и подготовка основания", unit: "м²", quantity: 100, price: 180 },
+      { category: "Работы", name: "Устройство щебёночной подушки", unit: "м²", quantity: 100, price: 250 },
+      { category: "Работы", name: "Укладка гидроизоляции под бетон", unit: "м²", quantity: 100, price: 120 },
+      { category: "Работы", name: "Монтаж армирующей сетки", unit: "м²", quantity: 100, price: 150 },
+      { category: "Работы", name: "Армирование фиброй (добавка)", unit: "м²", quantity: 100, price: 80 },
+      { category: "Работы", name: "Установка маяков и опалубки", unit: "м²", quantity: 100, price: 120 },
+      { category: "Работы", name: "Заливка бетонного пола (свыше 150 мм)", unit: "м²", quantity: 100, price: 950 },
+      { category: "Работы", name: "Виброуплотнение бетона (рейка)", unit: "м²", quantity: 100, price: 120 },
+      { category: "Работы", name: "Топпинг корундовый", unit: "м²", quantity: 100, price: 550 },
+      { category: "Работы", name: "Затирка бетона вертолётом (1 проход)", unit: "м²", quantity: 100, price: 180 },
+      { category: "Работы", name: "Финишная затирка топпинга вертолётом", unit: "м²", quantity: 100, price: 200 },
+      { category: "Работы", name: "Шлифовка бетонного пола", unit: "м²", quantity: 100, price: 350 },
+      { category: "Работы", name: "Нанесение упрочняющей пропитки", unit: "м²", quantity: 100, price: 180 },
+      { category: "Работы", name: "Нарезка деформационных швов", unit: "п.м", quantity: 45, price: 150 },
+      { category: "Работы", name: "Заполнение швов герметиком", unit: "п.м", quantity: 45, price: 250 },
+    ],
+  },
+  {
+    id: "industrial-floor-polymer",
+    name: "Бетонный пол в цеху (полимерное покрытие)",
+    description: "Бетонная плита с шлифовкой и наливным эпоксидным покрытием для пищевых и фарм-производств. База — 100 м²",
+    icon: "Factory",
+    category: "industrial",
+    baseArea: 100,
+    items: [
+      { category: "Работы", name: "Демонтаж старого пола", unit: "м²", quantity: 100, price: 450 },
+      { category: "Работы", name: "Уплотнение и подготовка основания", unit: "м²", quantity: 100, price: 180 },
+      { category: "Работы", name: "Устройство щебёночной подушки", unit: "м²", quantity: 100, price: 250 },
+      { category: "Работы", name: "Укладка гидроизоляции под бетон", unit: "м²", quantity: 100, price: 120 },
+      { category: "Работы", name: "Монтаж армирующей сетки", unit: "м²", quantity: 100, price: 150 },
+      { category: "Работы", name: "Установка маяков и опалубки", unit: "м²", quantity: 100, price: 120 },
+      { category: "Работы", name: "Заливка бетонного пола (100-150 мм)", unit: "м²", quantity: 100, price: 750 },
+      { category: "Работы", name: "Виброуплотнение бетона (рейка)", unit: "м²", quantity: 100, price: 120 },
+      { category: "Работы", name: "Затирка бетона вертолётом (1 проход)", unit: "м²", quantity: 100, price: 180 },
+      { category: "Работы", name: "Шлифовка бетонного пола", unit: "м²", quantity: 100, price: 350 },
+      { category: "Работы", name: "Полимерное (эпоксидное) покрытие пола", unit: "м²", quantity: 100, price: 950 },
+      { category: "Работы", name: "Нарезка деформационных швов", unit: "п.м", quantity: 40, price: 150 },
+      { category: "Работы", name: "Заполнение швов герметиком", unit: "п.м", quantity: 40, price: 250 },
     ],
   },
 ];

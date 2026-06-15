@@ -92,6 +92,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   kitchen: "Кухня",
   room: "Комната",
   full: "Квартира",
+  industrial: "Промышленные полы",
   custom: "Мои шаблоны",
 };
 
@@ -100,6 +101,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   kitchen: "bg-orange-100 text-orange-700",
   room: "bg-green-100 text-green-700",
   full: "bg-purple-100 text-purple-700",
+  industrial: "bg-slate-200 text-slate-700",
   custom: "bg-amber-100 text-amber-700",
 };
 
@@ -219,7 +221,7 @@ export default function TemplatesDialog({ open, onClose, currentItems, priceCata
         <div className="flex-1 overflow-y-auto space-y-3 pr-1">
           {tab === "presets" && (
             <>
-              {["bathroom", "kitchen", "room", "full"].map((cat) => (
+              {["bathroom", "kitchen", "room", "full", "industrial"].map((cat) => (
                 <div key={cat}>
                   <p className="text-xs font-semibold text-gray-400 uppercase mb-2 mt-3">{CATEGORY_LABELS[cat]}</p>
                   <div className="space-y-2">
@@ -264,12 +266,14 @@ export default function TemplatesDialog({ open, onClose, currentItems, priceCata
                           {tpl.baseArea && (
                             <div className="px-3 pb-3 flex items-center gap-2">
                               <Icon name="Ruler" size={14} className="text-gray-400 shrink-0" />
-                              <span className="text-xs text-gray-500 shrink-0">Площадь квартиры:</span>
+                              <span className="text-xs text-gray-500 shrink-0">
+                                {tpl.category === "industrial" ? "Площадь пола:" : "Площадь квартиры:"}
+                              </span>
                               <div className="relative w-28">
                                 <Input
                                   type="number"
                                   min={10}
-                                  max={500}
+                                  max={tpl.category === "industrial" ? 50000 : 500}
                                   placeholder={String(tpl.baseArea)}
                                   value={areaInputs[tpl.id] || ""}
                                   onChange={(e) =>
