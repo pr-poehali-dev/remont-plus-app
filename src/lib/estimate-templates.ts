@@ -1,4 +1,4 @@
-import type { EstimateItem } from "@/pages/Calculator";
+import type { EstimateItem } from "@/hooks/useCalculatorState";
 
 export interface EstimateTemplate {
   id: string;

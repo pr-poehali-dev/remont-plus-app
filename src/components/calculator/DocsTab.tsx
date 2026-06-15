@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
-import type { EstimateItem } from "@/pages/Calculator";
+import type { EstimateItem } from "@/hooks/useCalculatorState";
 import type { EstimateSavedItem } from "@/lib/lemanapro-data";
 
 interface DocsTabProps {

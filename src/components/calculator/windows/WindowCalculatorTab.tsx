@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import type { EstimateItem } from "@/pages/Calculator";
+import type { EstimateItem } from "@/hooks/useCalculatorState";
 import {
   CONSTRUCTION_TYPES, GLASS_UNITS, LAMINATION_TYPES, PROFILE_SYSTEMS,
 } from "./WindowTypes";

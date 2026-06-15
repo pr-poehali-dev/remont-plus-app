@@ -17,7 +17,7 @@ import {
   deleteCustomTemplate,
   type SavedTemplate,
 } from "@/lib/estimate-templates";
-import type { EstimateItem, PriceCategory } from "@/pages/Calculator";
+import type { EstimateItem, PriceCategory } from "@/hooks/useCalculatorState";
 
 interface TemplatesDialogProps {
   open: boolean;

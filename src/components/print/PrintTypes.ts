@@ -1,4 +1,4 @@
-import type { EstimateItem } from "@/pages/Calculator";
+import type { EstimateItem } from "@/hooks/useCalculatorState";
 import type { EstimateSavedItem } from "@/lib/lemanapro-data";
 
 export interface PrintData {

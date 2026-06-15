@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Icon from "@/components/ui/icon";
 import { getSuggestionsForWork, type MaterialVariant, type MaterialSuggestion } from "@/lib/materials-data";
-import type { EstimateItem } from "@/pages/Calculator";
+import type { EstimateItem } from "@/hooks/useCalculatorState";
 
 interface MaterialSuggestProps {
   workItem: EstimateItem;

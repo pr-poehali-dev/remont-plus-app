@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import SharePanel from "@/components/print/SharePanel";
 import { roundUpToPackaging } from "@/lib/lemanapro-data";
-import type { EstimateItem } from "@/pages/Calculator";
+import type { EstimateItem } from "@/hooks/useCalculatorState";
 import type { EstimateSavedItem } from "@/lib/lemanapro-data";
 
 interface DocForm {

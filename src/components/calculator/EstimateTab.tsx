@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Icon from "@/components/ui/icon";
-import type { EstimateItem, PriceCategory, PriceItem } from "@/pages/Calculator";
+import type { EstimateItem, PriceCategory, PriceItem } from "@/hooks/useCalculatorState";
 import MaterialSuggest from "@/components/calculator/MaterialSuggest";
 import RoomScanHint from "@/components/calculator/RoomScanHint";
 

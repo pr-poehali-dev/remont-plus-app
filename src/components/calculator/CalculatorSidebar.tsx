@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
-import type { Region } from "@/pages/Calculator";
+import type { Region } from "@/hooks/useCalculatorState";
 
 interface CalculatorSidebarProps {
   lemanaItemsCount: number;

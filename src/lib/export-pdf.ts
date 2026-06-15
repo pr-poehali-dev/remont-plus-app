@@ -1,5 +1,5 @@
 import { type EstimateSavedItem, roundUpToPackaging } from "./lemanapro-data";
-import type { EstimateItem } from "@/pages/Calculator";
+import type { EstimateItem } from "@/hooks/useCalculatorState";
 
 const JSPDF_PKG = "jspdf";
 const JSPDF_AT_PKG = "jspdf-autotable";

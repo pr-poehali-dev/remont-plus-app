@@ -1,5 +1,5 @@
 import { roundUpToPackaging } from "@/lib/lemanapro-data";
-import type { EstimateItem } from "@/pages/Calculator";
+import type { EstimateItem } from "@/hooks/useCalculatorState";
 import type { EstimateSavedItem } from "@/lib/lemanapro-data";
 import SharePanel from "./SharePanel";
 
