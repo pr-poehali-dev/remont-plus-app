@@ -61,16 +61,23 @@ export default function Prices() {
     if (selectedCategory !== "all") params.set("category", selectedCategory);
     if (search.trim()) params.set("search", search.trim());
 
-    const response = await fetch(`${API_URL}?${params}`);
-    const data = await response.json();
+    try {
+      const response = await fetch(`${API_URL}?${params}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
 
-    setRegions(data.regions);
-    setCategories(data.categories);
-    setPrices(data.prices);
-    setLoading(false);
+      const safePrices: PriceCategory[] = Array.isArray(data?.prices) ? data.prices : [];
+      setRegions(Array.isArray(data?.regions) ? data.regions : []);
+      setCategories(Array.isArray(data?.categories) ? data.categories : []);
+      setPrices(safePrices);
 
-    if (data.prices.length > 0 && expandedCategories.size === 0) {
-      setExpandedCategories(new Set(data.prices.map((c: PriceCategory) => c.slug)));
+      if (safePrices.length > 0 && expandedCategories.size === 0) {
+        setExpandedCategories(new Set(safePrices.map((c) => c.slug)));
+      }
+    } catch {
+      setPrices([]);
+    } finally {
+      setLoading(false);
     }
   };
 

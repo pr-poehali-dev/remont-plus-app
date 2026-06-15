@@ -118,9 +118,9 @@ function RegionSearch({
 }
 
 export default function PriceListTable({
-  regions,
-  categories,
-  prices,
+  regions: regionsProp,
+  categories: categoriesProp,
+  prices: pricesProp,
   selectedRegion,
   selectedCategory,
   search,
@@ -135,6 +135,13 @@ export default function PriceListTable({
   formatPrice,
 }: PriceListTableProps) {
   const navigate = useNavigate();
+
+  const regions = Array.isArray(regionsProp) ? regionsProp : [];
+  const categories = Array.isArray(categoriesProp) ? categoriesProp : [];
+  const prices = (Array.isArray(pricesProp) ? pricesProp : []).map((c) => ({
+    ...c,
+    items: Array.isArray(c?.items) ? c.items : [],
+  }));
 
   return (
     <div className="border-t border-gray-200 mb-8 pt-8">

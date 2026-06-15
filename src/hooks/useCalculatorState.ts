@@ -48,7 +48,12 @@ export function useCalculatorState() {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
 
-  const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
+  let storedUser: { id?: number } | null = null;
+  try {
+    storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
+  } catch {
+    storedUser = null;
+  }
   const userId: number | null = storedUser?.id ?? null;
 
   const [deliveryFloor, setDeliveryFloor] = useState<number>(1);
@@ -101,31 +106,42 @@ export function useCalculatorState() {
       const tm = items.filter(i => i.category === "Материалы").reduce((s, i) => s + i.total, 0);
       const tw = items.filter(i => i.category === "Работы").reduce((s, i) => s + i.total, 0);
       const regionName = regions.find(r => r.code === selectedRegion)?.name || selectedRegion;
-      await fetch(ESTIMATES_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-User-Id": String(userId) },
-        body: JSON.stringify({
-          name: `Смета — ${regionName}`,
-          items,
-          total_materials: tm,
-          total_works: tw,
-          total: tm + tw,
-          region: selectedRegion,
-        }),
-      });
-      setSavedToDb(true);
+      try {
+        const res = await fetch(ESTIMATES_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-User-Id": String(userId) },
+          body: JSON.stringify({
+            name: `Смета — ${regionName}`,
+            items,
+            total_materials: tm,
+            total_works: tw,
+            total: tm + tw,
+            region: selectedRegion,
+          }),
+        });
+        if (res.ok) setSavedToDb(true);
+      } catch {
+        /* сеть недоступна — смета остаётся в localStorage */
+      }
     }, 3000);
     return () => clearTimeout(timer);
   }, [items, userId, selectedRegion, regions]);
 
   const loadPrices = useCallback(async () => {
     setLoading(true);
-    const response = await fetch(`${SERVICE_PRICES_URL}?region=${selectedRegion}`);
-    const data = await response.json();
-    setPriceCatalog(data.prices);
-    setRegions(data.regions);
-    setLoading(false);
-    localStorage.setItem("avangard_calc_region", selectedRegion);
+    try {
+      const response = await fetch(`${SERVICE_PRICES_URL}?region=${selectedRegion}`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      setPriceCatalog(Array.isArray(data?.prices) ? data.prices : []);
+      setRegions(Array.isArray(data?.regions) ? data.regions : []);
+      localStorage.setItem("avangard_calc_region", selectedRegion);
+    } catch {
+      setPriceCatalog([]);
+      setRegions([]);
+    } finally {
+      setLoading(false);
+    }
   }, [selectedRegion]);
 
   useEffect(() => {

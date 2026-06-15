@@ -11,7 +11,12 @@ import SubscriptionStatus from "@/components/SubscriptionStatus";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
+  let storedUser: { id?: number } | null = null;
+  try {
+    storedUser = JSON.parse(localStorage.getItem("avangard_user") || "null");
+  } catch {
+    storedUser = null;
+  }
   const userId: number | null = storedUser?.id ?? null;
   const { subscription, loading: subLoading, reload } = useSubscription(userId);
 
