@@ -1,6 +1,7 @@
 import { REGIONS, BATHROOM_TYPES, FLOOR_TILES, WALL_TILES, WATERPROOFING_TYPES } from "@/components/calculator/bathroom/BathroomTypes";
 import type { BathroomConfig } from "@/components/calculator/bathroom/BathroomTypes";
-import { calcBathroomPrice, fmt } from "@/components/calculator/bathroom/bathroomUtils";
+import { calcBathroomPrice, calcBathroomMaterials, fmt } from "@/components/calculator/bathroom/bathroomUtils";
+import { calcBathroomWorks } from "@/components/calculator/bathroom/bathroomWorks";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 import { usePrintState } from "@/hooks/usePrintState";
@@ -49,10 +50,18 @@ export default function BathroomPrint() {
     const wallTile = WALL_TILES.find(t => t.id === z.wallTileId);
     const waterproofing = WATERPROOFING_TYPES.find(w => w.id === z.waterproofingType);
     const bd = calcBathroomPrice(z, regionId, markupPct);
-    return { z, bathroomType, floorTile, wallTile, waterproofing, bd };
+    const works = calcBathroomWorks(z, bd, regionId);
+    const materials = calcBathroomMaterials(z, bd, regionId);
+    return { z, bathroomType, floorTile, wallTile, waterproofing, bd, works, materials };
   });
 
-  const totalSum = rowsData.reduce((s, r) => s + r.bd.total, 0);
+  const totalSum = rowsData.reduce(
+    (s, r) =>
+      s +
+      r.works.reduce((a, w) => a + w.total, 0) +
+      r.materials.reduce((a, m) => a + m.total, 0),
+    0,
+  );
 
   if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
     const universalItems = rowsData.map(({ z, bathroomType, bd }, idx) => ({
@@ -140,7 +149,10 @@ export default function BathroomPrint() {
 
         {/* Таблица по помещениям */}
         <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ и материалов</h2>
-        {rowsData.map(({ z, bathroomType, floorTile, wallTile, waterproofing, bd }, idx) => (
+        {rowsData.map(({ z, bathroomType, bd, works, materials }, idx) => {
+          const worksSum = works.reduce((s, w) => s + w.total, 0);
+          const matSum = materials.reduce((s, m) => s + m.total, 0);
+          return (
           <div key={z.id} className="mb-6">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">{idx + 1}</div>
@@ -150,156 +162,81 @@ export default function BathroomPrint() {
             <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden mb-1">
               <thead>
                 <tr className="bg-gray-50 text-gray-500">
-                  <th className="text-left px-2 py-1.5 font-medium">Позиция</th>
+                  <th className="text-left px-2 py-1.5 font-medium">Наименование</th>
                   <th className="text-center px-2 py-1.5 font-medium">Кол-во</th>
                   <th className="text-center px-2 py-1.5 font-medium">Ед.</th>
                   <th className="text-right px-2 py-1.5 font-medium">Цена</th>
-                  <th className="text-right px-2 py-1.5 font-medium">Итого</th>
+                  <th className="text-right px-2 py-1.5 font-medium">Сумма</th>
                 </tr>
               </thead>
               <tbody>
-                {bd.demolitionCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Демонтаж старой отделки</td>
-                    <td className="px-2 py-1.5 text-center">{z.area + z.wallArea}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">м²</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.demolitionCost)} ₽</td>
+                {works.length > 0 && (
+                  <tr className="bg-teal-50/50">
+                    <td colSpan={5} className="px-2 py-1 font-semibold text-teal-700 uppercase text-[10px] tracking-wide">Работы</td>
                   </tr>
                 )}
-                {bd.cabinDemolitionCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Демонтаж сантехнической кабины (стены)</td>
-                    <td className="px-2 py-1.5 text-center">1</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">компл.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.cabinDemolitionCost)} ₽</td>
-                  </tr>
-                )}
-                {bd.cabinConstructionCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Возведение сантехнической кабины (пеноблоки / ПГБ)</td>
-                    <td className="px-2 py-1.5 text-center">1</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">компл.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.cabinConstructionCost)} ₽</td>
-                  </tr>
-                )}
-                {bd.screedCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Цементная стяжка пола</td>
-                    <td className="px-2 py-1.5 text-center">{z.area}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">м²</td>
-                    <td className="px-2 py-1.5 text-right">1 600 ₽</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.screedCost)} ₽</td>
-                  </tr>
-                )}
-                {bd.waterproofingCost > 0 && waterproofing && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Гидроизоляция: {waterproofing.label}</td>
-                    <td className="px-2 py-1.5 text-center">{z.area}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">м²</td>
-                    <td className="px-2 py-1.5 text-right">{fmt(waterproofing.priceM2)} ₽</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.waterproofingCost)} ₽</td>
-                  </tr>
-                )}
-                {bd.floorTileCost > 0 && floorTile && (
-                  <tr className="border-t border-gray-100 bg-teal-50/30">
-                    <td className="px-2 py-1.5">Плитка пола: {floorTile.label} (материал + укладка)</td>
-                    <td className="px-2 py-1.5 text-center">{z.area}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">м²</td>
-                    <td className="px-2 py-1.5 text-right">{fmt(floorTile.materialPriceM2 + floorTile.installPriceM2)} ₽</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.floorTileCost)} ₽</td>
-                  </tr>
-                )}
-                {bd.wallTileCost > 0 && wallTile && (
-                  <tr className="border-t border-gray-100 bg-teal-50/30">
-                    <td className="px-2 py-1.5">Плитка стен: {wallTile.label} (материал + укладка)</td>
-                    <td className="px-2 py-1.5 text-center">{z.wallArea}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">м²</td>
-                    <td className="px-2 py-1.5 text-right">{fmt(wallTile.materialPriceM2 + wallTile.installPriceM2)} ₽</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.wallTileCost)} ₽</td>
-                  </tr>
-                )}
-                {bd.plumbingCost > 0 && (
-                  <tr className="border-t border-gray-100">
+                {works.map((w, i) => (
+                  <tr key={`w${i}`} className="border-t border-gray-100">
                     <td className="px-2 py-1.5">
-                      Сантехника: {[
-                        z.toiletInstall && "унитаз",
-                        z.sinkInstall && "раковина",
-                        z.bathInstall && "ванна",
-                        z.showerCabinInstall && "душевая",
-                        z.mixersCount > 0 && `${z.mixersCount} смес.`,
-                        z.installationSystemIncluded && "инсталляция",
-                      ].filter(Boolean).join(", ")}
+                      {w.name}
+                      {w.spec && <span className="text-gray-400"> · {w.spec}</span>}
                     </td>
-                    <td className="px-2 py-1.5 text-center">1</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">компл.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.plumbingCost)} ₽</td>
+                    <td className="px-2 py-1.5 text-center">{w.qty}</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">{w.unit}</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(w.pricePerUnit)} ₽</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(w.total)} ₽</td>
+                  </tr>
+                ))}
+                {works.length > 0 && (
+                  <tr className="border-t border-gray-200 bg-gray-50/60">
+                    <td className="px-2 py-1 font-medium" colSpan={4}>Итого работы</td>
+                    <td className="px-2 py-1 text-right font-semibold">{fmt(worksSum)} ₽</td>
                   </tr>
                 )}
-                {bd.heatedFloorCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Тёплый пол {z.heatedFloorType === "electric" ? "(электрический)" : "(водяной)"}</td>
-                    <td className="px-2 py-1.5 text-center">{z.area}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">м²</td>
-                    <td className="px-2 py-1.5 text-right">{z.heatedFloorType === "electric" ? "2 200" : "3 500"} ₽</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.heatedFloorCost)} ₽</td>
+
+                {materials.length > 0 && (
+                  <tr className="bg-amber-50/50">
+                    <td colSpan={5} className="px-2 py-1 font-semibold text-amber-700 uppercase text-[10px] tracking-wide">Материалы</td>
                   </tr>
                 )}
-                {bd.ventilationCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Вентиляция</td>
-                    <td className="px-2 py-1.5 text-center">1</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">компл.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.ventilationCost)} ₽</td>
-                  </tr>
-                )}
-                {(bd.furnitureCost + bd.accessoriesCost) > 0 && (
-                  <tr className="border-t border-gray-100">
+                {materials.map((m, i) => (
+                  <tr key={`m${i}`} className="border-t border-gray-100">
                     <td className="px-2 py-1.5">
-                      Мебель и аксессуары: {[
-                        z.vanityInstall && "тумба",
-                        z.mirrorInstall && "зеркало",
-                        z.accessoriesIncluded && "аксессуары",
-                      ].filter(Boolean).join(", ")}
+                      {m.name}
+                      {m.spec && <span className="text-gray-400"> · {m.spec}</span>}
                     </td>
-                    <td className="px-2 py-1.5 text-center">1</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">компл.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.furnitureCost + bd.accessoriesCost)} ₽</td>
+                    <td className="px-2 py-1.5 text-center">{m.qty}</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">{m.unit}</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(m.pricePerUnit)} ₽</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(m.total)} ₽</td>
+                  </tr>
+                ))}
+                {materials.length > 0 && (
+                  <tr className="border-t border-gray-200 bg-gray-50/60">
+                    <td className="px-2 py-1 font-medium" colSpan={4}>Итого материалы</td>
+                    <td className="px-2 py-1 text-right font-semibold">{fmt(matSum)} ₽</td>
                   </tr>
                 )}
-                {markupPct > 0 && (
-                  <tr className="border-t border-gray-100 text-orange-600">
-                    <td className="px-2 py-1.5">Наценка {markupPct}%</td>
-                    <td colSpan={3} />
-                    <td className="px-2 py-1.5 text-right font-medium">+ {fmt(bd.markupAmount)} ₽</td>
-                  </tr>
-                )}
+
                 <tr className="border-t-2 border-gray-300 bg-gray-50 font-bold">
-                  <td className="px-2 py-2">Итого по помещению</td>
-                  <td colSpan={3} />
-                  <td className="px-2 py-2 text-right text-teal-700">{fmt(bd.total)} ₽</td>
+                  <td className="px-2 py-2" colSpan={4}>Итого по помещению</td>
+                  <td className="px-2 py-2 text-right text-teal-700">{fmt(worksSum + matSum)} ₽</td>
                 </tr>
               </tbody>
             </table>
             {z.note && <p className="text-xs text-gray-500 italic mt-1">Примечание: {z.note}</p>}
           </div>
-        ))}
+          );
+        })}
 
         {/* Итого */}
         <div className="border-t-2 border-gray-800 pt-4 mt-4">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-lg font-bold text-gray-900">ИТОГО ПО СМЕТЕ</p>
-              <p className="text-sm text-gray-500">Регион: {region.label}</p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-teal-700">{fmt(totalSum)} ₽</p>
-              {markupPct > 0 && <p className="text-xs text-gray-400">Включая наценку {markupPct}%</p>}
             </div>
           </div>
         </div>
