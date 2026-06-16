@@ -163,8 +163,6 @@ export default function NewbuildPrint() {
           </div>
         )}
 
-        <p className="text-xs text-gray-400 mb-4">Регион: {region.label}</p>
-
         <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ по помещениям</h2>
 
         {rowsData.map(({ z, roomType, level, screedType, plasterType, ceilingType, flooringType, doorType, heatedFloorType, backsplashType, countertopType, conditionerType, soundproofType, plumbingPipesType, bd }, idx) => (

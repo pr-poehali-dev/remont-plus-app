@@ -138,9 +138,6 @@ export default function BathroomPrint() {
           </div>
         )}
 
-        {/* Регион */}
-        <p className="text-xs text-gray-400 mb-4">Регион: {region.label} (коэффициент {region.coeff})</p>
-
         {/* Таблица по помещениям */}
         <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ и материалов</h2>
         {rowsData.map(({ z, bathroomType, floorTile, wallTile, waterproofing, bd }, idx) => (

@@ -222,7 +222,6 @@ export default function TurnkeyPrint() {
             <div><span className="text-gray-500">Санузлов: </span><span className="font-medium">{cfg.bathroomCount}</span></div>
             <div><span className="text-gray-500">Балконов: </span><span className="font-medium">{cfg.balconyCount}</span></div>
             <div><span className="text-gray-500">Уровень: </span><span className="font-medium">{level?.label}</span></div>
-            <div><span className="text-gray-500">Регион: </span><span className="font-medium">{region.label}</span></div>
           </div>
         </div>
 
@@ -251,16 +250,6 @@ export default function TurnkeyPrint() {
               </tr>
             ))}
 
-            {/* Наценка */}
-            {markupPct > 0 && bd.markupAmount > 0 && (
-              <tr className="border-t border-gray-100 text-orange-600">
-                <td />
-                <td className="px-3 py-1.5">Наценка {markupPct}%</td>
-                <td colSpan={3} />
-                <td className="px-3 py-1.5 text-right font-medium">+ {fmt(bd.markupAmount)} ₽</td>
-              </tr>
-            )}
-
             {/* Итого */}
             <tr className="border-t-2 border-gray-300 bg-gray-50 font-bold">
               <td />
@@ -285,11 +274,10 @@ export default function TurnkeyPrint() {
           <div className="flex justify-between items-center">
             <div>
               <p className="text-lg font-bold text-gray-900">ИТОГО ПО СМЕТЕ</p>
-              <p className="text-sm text-gray-500">{level?.label} · {region.label}</p>
+              <p className="text-sm text-gray-500">{level?.label}</p>
             </div>
             <div className="text-right">
               <p className="text-3xl font-bold text-emerald-700">{fmt(totalSum)} ₽</p>
-              {markupPct > 0 && <p className="text-xs text-gray-400">Включая наценку {markupPct}%</p>}
               <p className="text-xs text-gray-400">
                 {fmt(cfg.totalAreaM2 > 0 ? Math.round(totalSum / cfg.totalAreaM2) : 0)} ₽/м²
               </p>

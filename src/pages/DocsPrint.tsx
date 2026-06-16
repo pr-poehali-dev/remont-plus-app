@@ -293,7 +293,6 @@ function KS3({ form, grandTotal, materialSurcharge, totalMaterials, adjustedWork
         <tbody>
           <tr><td className="c">1</td><td>Строительно-монтажные работы</td><td className="r">{fmtN(adjustedWorks)}</td></tr>
           <tr><td className="c">2</td><td>Материалы</td><td className="r">{fmtN(totalMaterials)}</td></tr>
-          {materialSurcharge > 0 && <tr><td className="c"></td><td style={{ color: "#888", fontSize: "9pt" }}>&nbsp;&nbsp;в т.ч. надбавка за объём материалов</td><td className="r" style={{ color: "#888", fontSize: "9pt" }}>{fmtN(materialSurcharge)}</td></tr>}
           <tr style={{ fontWeight: 700 }}><td className="c"></td><td>ИТОГО</td><td className="r">{fmtN(grandTotal)}</td></tr>
         </tbody>
       </table>

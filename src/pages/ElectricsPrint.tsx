@@ -136,9 +136,6 @@ export default function ElectricsPrint() {
           </div>
         )}
 
-        {/* Регион */}
-        <p className="text-xs text-gray-400 mb-4">Регион: {region.label} (коэффициент {region.coeff})</p>
-
         {/* Таблица по помещениям */}
         <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ</h2>
         {rowsData.map(({ z, roomType, cablingType, bd }, idx) => (

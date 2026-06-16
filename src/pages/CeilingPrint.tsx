@@ -210,12 +210,6 @@ export default function CeilingPrint() {
             </tbody>
           </table>
           <div className="totals">
-            {markupPct > 0 && (
-              <div className="row">
-                <span>в т.ч. торговая наценка ({markupPct}%)</span>
-                <span className="val">+{fmt(Math.round(totalSum - totalSum / (1 + markupPct / 100)))} руб.</span>
-              </div>
-            )}
             <div className="row grand">
               <span>ИТОГО:</span>
               <span className="val">{fmt(totalSum)} руб.</span>

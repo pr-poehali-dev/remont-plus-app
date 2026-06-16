@@ -55,12 +55,6 @@ export default function SmetaView({ data }: { data: PrintData }) {
           <div className="totals">
             <div className="row"><span>Итого материалы:</span><span className="val">{fmt(totalMaterials)}</span></div>
             <div className="row"><span>Итого работы:</span><span className="val">{fmt(adjustedWorks)}</span></div>
-            {materialSurcharge > 0 && (
-              <div className="row note">
-                <span>в т.ч. надбавка за объём материалов (×1,3):</span>
-                <span className="val">+{fmt(materialSurcharge)}</span>
-              </div>
-            )}
             {deliveryCost > 0 && (
               <div className="row">
                 <span>Доставка и подъём на {deliveryFloor} эт. ({deliveryHasElevator ? "с лифтом" : "без лифта"}):</span>

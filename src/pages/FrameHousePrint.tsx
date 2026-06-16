@@ -251,18 +251,12 @@ export default function FrameHousePrint() {
           <div className="w-80 space-y-1 text-sm">
             <div className="flex justify-between text-gray-600 py-1">
               <span>Работы</span>
-              <span className="font-medium">{fmt(bd.worksCost)} ₽</span>
+              <span className="font-medium">{fmt(bd.total - bd.materialsCost)} ₽</span>
             </div>
             <div className="flex justify-between text-gray-600 py-1">
               <span>Материалы</span>
               <span className="font-medium">{fmt(bd.materialsCost)} ₽</span>
             </div>
-            {markupPct > 0 && (
-              <div className="flex justify-between text-orange-600 py-1">
-                <span>Наценка {markupPct}%</span>
-                <span>+ {fmt(bd.markupAmount)} ₽</span>
-              </div>
-            )}
             <div className="flex justify-between font-extrabold text-base text-green-700 pt-2 border-t-2 border-gray-300">
               <span>ИТОГО</span>
               <span>{fmt(bd.total)} ₽</span>
@@ -321,7 +315,7 @@ export default function FrameHousePrint() {
         {/* Примечание */}
         <div className="mt-8 pt-4 border-t text-xs text-gray-400">
           <p>* Расчёт является ориентировочным. Окончательная стоимость определяется после осмотра участка, согласования проекта и подписания договора.</p>
-          <p className="mt-1">* Цены указаны для региона {region.label}. Дата расчёта: {date}.</p>
+          <p className="mt-1">* Дата расчёта: {date}.</p>
           {isKp && validDays && <p className="mt-1">* Коммерческое предложение действительно {validDays} дней с даты составления.</p>}
         </div>
       </div>

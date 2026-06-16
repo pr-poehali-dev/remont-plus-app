@@ -233,7 +233,7 @@ export default function FlooringPrint() {
               </tbody>
             </table>
             <p className="text-[10px] text-gray-400 pl-2">
-              {cat?.label} · {product?.wear} · Толщина {product?.thickness} мм · Гарантия {product?.warranty} лет · Регион: {region.label}
+              {cat?.label} · {product?.wear} · Толщина {product?.thickness} мм · Гарантия {product?.warranty} лет
               {pattern && ` · Схема: ${pattern.name} (+${pattern.wastePct}% отходов)`}
             </p>
           </div>

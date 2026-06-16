@@ -119,9 +119,6 @@ export async function exportEstimatePdf(
       ["Итого материалы:", fmt(totalMaterials)],
       ["Итого работы:", fmt(adjustedWorks)],
     ];
-    if (materialSurcharge > 0) {
-      summaryRows.push([`  в т.ч. надбавка за объём материалов (×1,3):`, `+${fmt(materialSurcharge)}`]);
-    }
     summaryRows.push(["ИТОГО ПО СМЕТЕ:", fmt(grandTotal)]);
 
     for (let i = 0; i < summaryRows.length; i++) {

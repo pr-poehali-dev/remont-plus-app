@@ -269,24 +269,12 @@ export default function BathHousePrint() {
             <tbody>
               <tr>
                 <td className="py-1.5 text-gray-600">Материалы + монтаж</td>
-                <td className="py-1.5 text-right font-medium tabular-nums">{fmt(bd.subtotal - bd.foreman - bd.supplier)} ₽</td>
+                <td className="py-1.5 text-right font-medium tabular-nums">{fmt(bd.subtotal - bd.foreman + bd.markupAmount)} ₽</td>
               </tr>
               {bd.foreman > 0 && (
                 <tr>
-                  <td className="py-1.5 text-gray-600">Прораб {config.foremanPct}% (от работ+материалов)</td>
+                  <td className="py-1.5 text-gray-600">Организация и контроль работ</td>
                   <td className="py-1.5 text-right font-medium tabular-nums">+ {fmt(bd.foreman)} ₽</td>
-                </tr>
-              )}
-              {bd.supplier > 0 && (
-                <tr>
-                  <td className="py-1.5 text-gray-600">Снабженец {config.supplierPct}% (от материалов {fmt(bd.materialsBase)} ₽)</td>
-                  <td className="py-1.5 text-right font-medium tabular-nums">+ {fmt(bd.supplier)} ₽</td>
-                </tr>
-              )}
-              {markupPct > 0 && (
-                <tr>
-                  <td className="py-1.5 text-orange-600">Наценка {markupPct}%</td>
-                  <td className="py-1.5 text-right font-medium text-orange-600 tabular-nums">+ {fmt(bd.markupAmount)} ₽</td>
                 </tr>
               )}
               <tr className="border-t-2 border-amber-400">
