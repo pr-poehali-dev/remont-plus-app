@@ -1,7 +1,6 @@
 import { REGIONS, BATHROOM_TYPES, FLOOR_TILES, WALL_TILES, WATERPROOFING_TYPES } from "@/components/calculator/bathroom/BathroomTypes";
 import type { BathroomConfig } from "@/components/calculator/bathroom/BathroomTypes";
-import { calcBathroomPrice, calcBathroomMaterials, fmt } from "@/components/calculator/bathroom/bathroomUtils";
-import { calcBathroomWorks } from "@/components/calculator/bathroom/bathroomWorks";
+import { calcBathroomPrice, calcBathroomMaterials, calcBathroomWorks, fmt } from "@/components/calculator/bathroom/bathroomUtils";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 import { usePrintState } from "@/hooks/usePrintState";
@@ -46,13 +45,14 @@ export default function BathroomPrint() {
 
   const rowsData = zones.map(z => {
     const bathroomType = BATHROOM_TYPES.find(b => b.id === z.bathroomType);
-    const floorTile = FLOOR_TILES.find(t => t.id === z.floorTileId);
-    const wallTile = WALL_TILES.find(t => t.id === z.wallTileId);
-    const waterproofing = WATERPROOFING_TYPES.find(w => w.id === z.waterproofingType);
     const bd = calcBathroomPrice(z, regionId, markupPct);
-    const works = calcBathroomWorks(z, bd, regionId);
-    const materials = calcBathroomMaterials(z, bd, regionId);
-    return { z, bathroomType, floorTile, wallTile, waterproofing, bd, works, materials };
+    // Наценка мастера «зашивается» в цены позиций, отдельной строкой не показывается
+    const k = 1 + (markupPct || 0) / 100;
+    const scale = (arr: ReturnType<typeof calcBathroomWorks>) =>
+      arr.map((i) => ({ ...i, pricePerUnit: Math.round(i.pricePerUnit * k), total: Math.round(i.total * k) }));
+    const works = scale(calcBathroomWorks(z, bd, regionId));
+    const materials = scale(calcBathroomMaterials(z, bd, regionId).filter((m) => !m.isWork));
+    return { z, bathroomType, bd, works, materials };
   });
 
   const totalSum = rowsData.reduce(
