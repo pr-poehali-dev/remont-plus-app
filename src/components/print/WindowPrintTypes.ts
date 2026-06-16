@@ -56,6 +56,12 @@ export const WINDOW_PRINT_STYLES = `
   .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   .sig-line { margin-bottom: 8px; font-size: 8.5pt; }
   .sig-line .line { border-bottom: 1px solid #666; margin-top: 4px; height: 16px; }
+  .detail-block { break-inside: avoid; margin-bottom: 14px; }
+  .detail-block .detail-title { font-size: 9pt; font-weight: 700; margin-bottom: 4px; }
+  .detail-block .detail-title .dim { color: #666; font-weight: 400; font-size: 8pt; margin-left: 6px; }
+  .sec-row td { background: #eef0f4 !important; font-weight: 700; text-transform: uppercase; font-size: 7.5pt; letter-spacing: 0.4px; padding: 3px 5px; }
+  .sub-row td { background: #fafafa !important; font-weight: 700; }
+  .room-total td { border-top: 1.5px solid #000; font-weight: 700; }
   .footer { text-align: center; font-size: 7.5pt; color: #888; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 8px; }
   .no-print { display: block; }
   @media print {

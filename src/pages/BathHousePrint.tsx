@@ -1,12 +1,12 @@
 import {
-  REGIONS, BATH_STYLES, BATH_LAYOUTS,
+  BATH_STYLES, BATH_LAYOUTS,
   WALL_MATERIALS, FOUNDATION_TYPES, ROOF_TYPES, ROOFING_MATERIALS,
   STOVE_TYPES, VENTILATION_TYPES, WALL_FINISHES, FLOOR_MATERIALS,
   INSULATION_MATERIALS, SHELF_MATERIALS,
 } from "@/components/calculator/bathhouse/BathHouseTypes";
 import type { BathHouseConfig } from "@/components/calculator/bathhouse/BathHouseTypes";
 import type { BathHouseBreakdown } from "@/components/calculator/bathhouse/bathHouseUtils";
-import { fmt, calcBathHouseMaterials } from "@/components/calculator/bathhouse/bathHouseUtils";
+import { fmt, calcBathHouseMaterials, calcBathHouseWorks } from "@/components/calculator/bathhouse/bathHouseUtils";
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
@@ -36,29 +36,6 @@ interface PrintState {
   warrantyMonths?: string;
 }
 
-const BREAKDOWN_ROWS: { key: keyof BathHouseBreakdown; label: string; unit: string; getQty: (c: BathHouseConfig) => string }[] = [
-  { key: "foundation",      label: "Фундамент",                       unit: "компл.",  getQty: () => "1" },
-  { key: "walls",           label: "Стены (коробка)",                  unit: "м²",      getQty: c => String((Math.sqrt(c.totalArea) * 4 * c.wallHeight).toFixed(1)) },
-  { key: "roofStructure",   label: "Кровельная конструкция (стропила, обрешётка)", unit: "м²", getQty: c => String((c.totalArea * 1.25).toFixed(1)) },
-  { key: "roofing",         label: "Кровельный материал",              unit: "м²",      getQty: c => String((c.totalArea * 1.25).toFixed(1)) },
-  { key: "insulation",      label: "Утепление",                        unit: "м³",      getQty: c => String(((Math.sqrt(c.totalArea) * 4 * c.wallHeight + c.totalArea) * (c.insulationThickness / 1000)).toFixed(2)) },
-  { key: "wallFinishSteam", label: "Отделка стен — парная",            unit: "м²",      getQty: c => String((c.steamRoomArea * 4 * 0.8).toFixed(1)) },
-  { key: "wallFinishWash",  label: "Отделка стен — мойка",             unit: "м²",      getQty: c => String((c.washRoomArea * 4 * 0.8).toFixed(1)) },
-  { key: "wallFinishRest",  label: "Отделка стен — комната отдыха",    unit: "м²",      getQty: c => String(((c.restRoomArea + c.dressingRoomArea) * 4 * 0.8).toFixed(1)) },
-  { key: "floor",           label: "Полы",                             unit: "м²",      getQty: c => String(c.totalArea) },
-  { key: "stove",           label: "Печь",                             unit: "шт.",     getQty: () => "1" },
-  { key: "ventilation",     label: "Вентиляция",                       unit: "компл.",  getQty: () => "1" },
-  { key: "shelves",         label: "Полок",                            unit: "компл.",  getQty: () => "1" },
-  { key: "windows",         label: "Окна",                             unit: "шт.",     getQty: c => String(c.windowCount) },
-  { key: "chimney",         label: "Дымоход (сэндвич-труба)",          unit: "компл.",  getQty: () => "1" },
-  { key: "tank",            label: "Бак для воды",                     unit: "шт.",     getQty: () => "1" },
-  { key: "terrace",         label: "Терраса",                          unit: "м²",      getQty: c => String(c.terraceArea) },
-  { key: "electrical",      label: "Электрика",                        unit: "компл.",  getQty: () => "1" },
-  { key: "assembly",        label: "Монтаж и строительные работы",     unit: "компл.",  getQty: () => "1" },
-  { key: "foreman",         label: "Прораб — технический надзор и координация", unit: "от работ+материалов", getQty: c => `${c.foremanPct}%` },
-  { key: "supplier",        label: "Снабженец — закупка и логистика материалов", unit: "от материалов", getQty: c => `${c.supplierPct}%` },
-];
-
 export default function BathHousePrint() {
   const state = usePrintState<PrintState>({
     storageKey: "bathhouse_print_state",
@@ -74,27 +51,28 @@ export default function BathHousePrint() {
     return <PrintEmptyState backHref="/bathhouse" calculatorName="калькулятор бани" accentClass="text-amber-600" />;
   }
 
-  const { config, regionId, markupPct, bd, docNum, date, docType, customer, contractor, address, phone, email, inn, validDays,
+  const { config, regionId, bd, docNum, date, docType, customer, contractor, address, phone, email, inn, validDays,
     startDate, endDate, contractNum, contractDate, advancePct, warrantyMonths } = state;
   const isKp = docType === "kp";
-  const region = REGIONS[regionId] ?? REGIONS["moscow"];
   const style = BATH_STYLES[config.style];
   const layout = BATH_LAYOUTS[config.layout];
 
-  const rows = BREAKDOWN_ROWS
-    .map(row => {
-      const value = (bd as Record<string, number>)[row.key as string] ?? 0;
-      if (!value) return null;
-      const qty = row.getQty(config);
-      const unitPrice = qty && parseFloat(qty) > 0 ? value / parseFloat(qty) : value;
-      return { ...row, value, qty, unitPrice };
-    })
-    .filter(Boolean) as NonNullable<(typeof BREAKDOWN_ROWS[0] & { value: number; qty: string; unitPrice: number })>[];
-
-  const matItems = calcBathHouseMaterials(config, bd, regionId);
-  const matMaterials = matItems.filter((i: MaterialItem) => !i.isWork && !i.isConsumable);
-  const matConsumables = matItems.filter((i: MaterialItem) => i.isConsumable);
-  const matWorks = matItems.filter((i: MaterialItem) => i.isWork);
+  // Детальные позиции. Наценка + прораб + снабженец «зашиваются» в цены позиций
+  // через коэффициент k = total / (работы+материалы), отдельными строками не показываются.
+  const rawWorks = calcBathHouseWorks(config, bd, regionId);
+  const rawMaterialsAll = calcBathHouseMaterials(config, bd, regionId).filter((i: MaterialItem) => !i.isWork);
+  const baseSum =
+    rawWorks.reduce((s, w) => s + w.total, 0) +
+    rawMaterialsAll.reduce((s, m) => s + m.total, 0);
+  const k = baseSum > 0 ? bd.total / baseSum : 1;
+  const scale = (arr: MaterialItem[]) =>
+    arr.map((i) => ({ ...i, pricePerUnit: Math.round(i.pricePerUnit * k), total: Math.round(i.total * k) }));
+  const works = scale(rawWorks);
+  const materials = scale(rawMaterialsAll.filter((i) => !i.isConsumable));
+  const consumables = scale(rawMaterialsAll.filter((i) => i.isConsumable));
+  const worksSum = works.reduce((s, w) => s + w.total, 0);
+  const matSum = materials.reduce((s, m) => s + m.total, 0);
+  const consSum = consumables.reduce((s, m) => s + m.total, 0);
 
   function fmtN(n: number) {
     if (Number.isInteger(n)) return n.toLocaleString("ru-RU");
@@ -103,8 +81,7 @@ export default function BathHousePrint() {
 
   // Для КС-2, КС-3, Акта и Договора — универсальный рендер
   if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
-    const matItems = calcBathHouseMaterials(config, bd, regionId);
-    const universalItems = matItems.map((item: MaterialItem, idx: number) => ({
+    const universalItems = [...works, ...materials, ...consumables].map((item, idx) => ({
       num: idx + 1,
       name: item.name,
       unit: item.unit,
@@ -112,8 +89,8 @@ export default function BathHousePrint() {
       pricePerUnit: item.pricePerUnit,
       total: item.total,
     }));
-    const totalWorks = matItems.filter((i: MaterialItem) => i.isWork).reduce((s: number, i: MaterialItem) => s + i.total, 0);
-    const totalMaterials = matItems.filter((i: MaterialItem) => !i.isWork).reduce((s: number, i: MaterialItem) => s + i.total, 0);
+    const totalWorks = worksSum;
+    const totalMaterials = matSum + consSum;
     const docData: UniversalDocData = {
       docType,
       docNum,
@@ -224,7 +201,6 @@ export default function BathHousePrint() {
               config.underfloorHeating ? ["Тёплый пол", "Да"] : null,
               ["Дымоход", config.chimney ? "Да (сэндвич-труба)" : "Нет"],
               ["Электрика", config.electricalFull ? "Полная" : config.electricalBasic ? "Базовая" : "Нет"],
-              ["Регион", region.label],
             ]
               .filter(Boolean)
               .map((row, i) => (
@@ -236,103 +212,91 @@ export default function BathHousePrint() {
           </div>
         </div>
 
-        {/* Смета */}
+        {/* Смета: детальный построчный состав работ и материалов */}
         <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ и материалов</h2>
         <table className="w-full text-xs mb-6">
           <thead>
             <tr className="bg-amber-50">
-              <th className="text-left px-3 py-2 font-semibold text-gray-600">№</th>
-              <th className="text-left px-3 py-2 font-semibold text-gray-600">Позиция</th>
+              <th className="text-left px-3 py-2 font-semibold text-gray-600">Наименование</th>
+              <th className="text-left px-3 py-2 font-semibold text-gray-500">Характеристика</th>
               <th className="text-center px-3 py-2 font-semibold text-gray-600">Кол-во</th>
               <th className="text-center px-3 py-2 font-semibold text-gray-600">Ед.</th>
-              <th className="text-right px-3 py-2 font-semibold text-gray-600">Цена за ед.</th>
-              <th className="text-right px-3 py-2 font-semibold text-gray-600">Итого</th>
+              <th className="text-right px-3 py-2 font-semibold text-gray-600">Цена</th>
+              <th className="text-right px-3 py-2 font-semibold text-gray-700">Сумма, ₽</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr key={row.key} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                <td className="px-3 py-2 text-gray-400">{i + 1}</td>
-                <td className="px-3 py-2 text-gray-700">{row.label}</td>
-                <td className="px-3 py-2 text-center text-gray-600">{row.qty}</td>
-                <td className="px-3 py-2 text-center text-gray-500">{row.unit}</td>
-                <td className="px-3 py-2 text-right text-gray-600 tabular-nums">{fmt(row.unitPrice)} ₽</td>
-                <td className="px-3 py-2 text-right font-semibold text-gray-800 tabular-nums">{fmt(row.value)} ₽</td>
+            {works.length > 0 && (
+              <tr style={{ background: "#f0f9ff" }}>
+                <td colSpan={6} className="px-3 py-1 font-bold text-sky-700 uppercase text-[10px] tracking-wider">Работы</td>
+              </tr>
+            )}
+            {works.map((w, i) => (
+              <tr key={`w${i}`} style={{ background: i % 2 === 0 ? "white" : "#f9fafb" }}>
+                <td className="px-3 py-1.5 text-gray-800">{w.name}</td>
+                <td className="px-3 py-1.5 text-gray-400 text-[10px]">{w.spec ?? ""}</td>
+                <td className="px-3 py-1.5 text-center text-gray-600 tabular-nums">{fmtN(w.qty)}</td>
+                <td className="px-3 py-1.5 text-center text-gray-400">{w.unit}</td>
+                <td className="px-3 py-1.5 text-right text-gray-500 tabular-nums">{fmt(w.pricePerUnit)}</td>
+                <td className="px-3 py-1.5 text-right font-semibold text-gray-800 tabular-nums">{fmt(w.total)}</td>
               </tr>
             ))}
+            {works.length > 0 && (
+              <tr className="bg-gray-50 font-semibold">
+                <td className="px-3 py-1.5" colSpan={5}>Итого работы</td>
+                <td className="px-3 py-1.5 text-right tabular-nums">{fmt(worksSum)}</td>
+              </tr>
+            )}
+
+            {materials.length > 0 && (
+              <tr style={{ background: "#fffbeb" }}>
+                <td colSpan={6} className="px-3 py-1 font-bold text-amber-700 uppercase text-[10px] tracking-wider">Материалы</td>
+              </tr>
+            )}
+            {materials.map((m, i) => (
+              <tr key={`m${i}`} style={{ background: i % 2 === 0 ? "white" : "#f9fafb" }}>
+                <td className="px-3 py-1.5 text-gray-800">{m.name}</td>
+                <td className="px-3 py-1.5 text-gray-400 text-[10px]">{m.spec ?? ""}</td>
+                <td className="px-3 py-1.5 text-center text-gray-600 tabular-nums">{fmtN(m.qty)}</td>
+                <td className="px-3 py-1.5 text-center text-gray-400">{m.unit}</td>
+                <td className="px-3 py-1.5 text-right text-gray-500 tabular-nums">{fmt(m.pricePerUnit)}</td>
+                <td className="px-3 py-1.5 text-right font-semibold text-gray-800 tabular-nums">{fmt(m.total)}</td>
+              </tr>
+            ))}
+            {consumables.map((m, i) => (
+              <tr key={`c${i}`} className="text-gray-400" style={{ background: i % 2 === 0 ? "white" : "#f9fafb" }}>
+                <td className="px-3 py-1.5">{m.name}</td>
+                <td className="px-3 py-1.5 text-[10px]">{m.spec ?? "расходник"}</td>
+                <td className="px-3 py-1.5 text-center tabular-nums">{fmtN(m.qty)}</td>
+                <td className="px-3 py-1.5 text-center">{m.unit}</td>
+                <td className="px-3 py-1.5 text-right tabular-nums">{fmt(m.pricePerUnit)}</td>
+                <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{fmt(m.total)}</td>
+              </tr>
+            ))}
+            {(materials.length > 0 || consumables.length > 0) && (
+              <tr className="bg-gray-50 font-semibold">
+                <td className="px-3 py-1.5" colSpan={5}>Итого материалы</td>
+                <td className="px-3 py-1.5 text-right tabular-nums">{fmt(matSum + consSum)}</td>
+              </tr>
+            )}
           </tbody>
         </table>
 
-        {/* Итоги */}
+        {/* Итог */}
         <div className="ml-auto max-w-sm">
           <table className="w-full text-sm">
             <tbody>
-              <tr>
-                <td className="py-1.5 text-gray-600">Материалы + монтаж</td>
-                <td className="py-1.5 text-right font-medium tabular-nums">{fmt(bd.subtotal - bd.foreman + bd.markupAmount)} ₽</td>
-              </tr>
-              {bd.foreman > 0 && (
-                <tr>
-                  <td className="py-1.5 text-gray-600">Организация и контроль работ</td>
-                  <td className="py-1.5 text-right font-medium tabular-nums">+ {fmt(bd.foreman)} ₽</td>
-                </tr>
-              )}
               <tr className="border-t-2 border-amber-400">
                 <td className="pt-3 font-bold text-base text-gray-900">ИТОГО</td>
-                <td className="pt-3 text-right font-extrabold text-xl text-amber-700 tabular-nums">{fmt(bd.total)} ₽</td>
+                <td className="pt-3 text-right font-extrabold text-xl text-amber-700 tabular-nums">{fmt(worksSum + matSum + consSum)} ₽</td>
               </tr>
               <tr>
                 <td colSpan={2} className="pt-1 text-center text-xs text-gray-400">
-                  {fmt(bd.total / Math.max(config.totalArea, 1))} ₽ за 1 м² · площадь {config.totalArea} м²
+                  {fmt((worksSum + matSum + consSum) / Math.max(config.totalArea, 1))} ₽ за 1 м² · площадь {config.totalArea} м²
                 </td>
               </tr>
             </tbody>
           </table>
-        </div>
-
-        {/* Ведомость материалов */}
-        <div className="mt-8 pt-6 border-t border-gray-200 page-break">
-          <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4">Ведомость материалов и работ</h2>
-
-          {[
-            { label: "МАТЕРИАЛЫ", rows: matMaterials, bg: "#fffbeb" },
-            { label: "РАСХОДНИКИ", rows: matConsumables, bg: "#f0fdf4" },
-            { label: "РАБОТЫ", rows: matWorks, bg: "#f0f9ff" },
-          ].map(section => section.rows.length > 0 && (
-            <div key={section.label} className="mb-5">
-              <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#6b7280", marginBottom: 4 }}>{section.label}</p>
-              <table className="w-full text-xs">
-                <thead>
-                  <tr style={{ background: section.bg }}>
-                    <th className="text-left px-2 py-1.5 font-semibold text-gray-600" style={{ width: "40%" }}>Наименование</th>
-                    <th className="text-left px-2 py-1.5 font-semibold text-gray-500" style={{ width: "15%" }}>Характеристика</th>
-                    <th className="text-center px-2 py-1.5 font-semibold text-gray-600" style={{ width: "10%" }}>Кол-во</th>
-                    <th className="text-center px-2 py-1.5 font-semibold text-gray-600" style={{ width: "8%" }}>Ед.</th>
-                    <th className="text-right px-2 py-1.5 font-semibold text-gray-600" style={{ width: "12%" }}>Цена/ед.</th>
-                    <th className="text-right px-2 py-1.5 font-semibold text-gray-700" style={{ width: "15%" }}>Сумма, ₽</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {section.rows.map((item: MaterialItem, i: number) => (
-                    <tr key={i} style={{ background: i % 2 === 0 ? "white" : "#f9fafb" }}>
-                      <td className="px-2 py-1.5 text-gray-800">{item.name}</td>
-                      <td className="px-2 py-1.5 text-gray-400 text-[10px]">{item.spec ?? ""}</td>
-                      <td className="px-2 py-1.5 text-center text-gray-600 tabular-nums">{fmtN(item.qty)}</td>
-                      <td className="px-2 py-1.5 text-center text-gray-400">{item.unit}</td>
-                      <td className="px-2 py-1.5 text-right text-gray-500 tabular-nums">{fmt(item.pricePerUnit)}</td>
-                      <td className="px-2 py-1.5 text-right font-semibold text-gray-800 tabular-nums">{fmt(item.total)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ))}
-
-          <div className="flex justify-end mt-2">
-            <div className="text-xs text-gray-400">
-              Итого по ведомости: <span className="font-bold text-amber-700 text-sm">{fmt(bd.total)} ₽</span>
-            </div>
-          </div>
         </div>
 
         {/* Рекомендации */}

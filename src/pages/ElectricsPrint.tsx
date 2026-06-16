@@ -1,6 +1,6 @@
-import { REGIONS, ROOM_TYPES, CABLING_TYPES } from "@/components/calculator/electrics/ElectricsTypes";
+import { ROOM_TYPES } from "@/components/calculator/electrics/ElectricsTypes";
 import type { ElectricsConfig } from "@/components/calculator/electrics/ElectricsTypes";
-import { calcElectricsPrice, fmt } from "@/components/calculator/electrics/electricsUtils";
+import { calcElectricsPrice, calcElectricsMaterials, calcElectricsWorks, fmt } from "@/components/calculator/electrics/electricsUtils";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 import { usePrintState } from "@/hooks/usePrintState";
@@ -41,16 +41,26 @@ export default function ElectricsPrint() {
 
   const { zones, markupPct, regionId, docNum, date, docType, customer, contractor, address, phone, email, validDays, inn, kpp } = state;
   const isKp = docType === "kp";
-  const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];
 
   const rowsData = zones.map(z => {
     const roomType = ROOM_TYPES.find(r => r.value === z.roomType);
-    const cablingType = CABLING_TYPES.find(c => c.id === z.cablingType);
     const bd = calcElectricsPrice(z, regionId, markupPct);
-    return { z, roomType, cablingType, bd };
+    // Наценка мастера «зашивается» в цены позиций, отдельной строкой не показывается
+    const k = 1 + (markupPct || 0) / 100;
+    const scale = (arr: ReturnType<typeof calcElectricsWorks>) =>
+      arr.map((i) => ({ ...i, pricePerUnit: Math.round(i.pricePerUnit * k), total: Math.round(i.total * k) }));
+    const works = scale(calcElectricsWorks(z, bd, regionId));
+    const materials = scale(calcElectricsMaterials(z, bd, regionId).filter((m) => !m.isWork));
+    return { z, roomType, bd, works, materials };
   });
 
-  const totalSum = rowsData.reduce((s, r) => s + r.bd.total, 0);
+  const totalSum = rowsData.reduce(
+    (s, r) =>
+      s +
+      r.works.reduce((a, w) => a + w.total, 0) +
+      r.materials.reduce((a, m) => a + m.total, 0),
+    0,
+  );
 
   if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
     const universalItems = rowsData.map(({ z, roomType, bd }, idx) => ({
@@ -62,6 +72,8 @@ export default function ElectricsPrint() {
       total: bd.total,
     }));
     const grandTotal = totalSum;
+    const totalWorks = rowsData.reduce((s, r) => s + r.works.reduce((a, w) => a + w.total, 0), 0);
+    const totalMaterials = rowsData.reduce((s, r) => s + r.materials.reduce((a, m) => a + m.total, 0), 0);
     const docData: UniversalDocData = {
       docType,
       docNum,
@@ -74,8 +86,8 @@ export default function ElectricsPrint() {
       contractor: { name: contractor || "", inn: inn || undefined, phone, email },
       objectAddress: address || "",
       items: universalItems,
-      totalWorks: Math.round(grandTotal * 0.4),
-      totalMaterials: Math.round(grandTotal * 0.6),
+      totalWorks,
+      totalMaterials,
       grandTotal,
       advancePct: parseFloat((state as Record<string, unknown>).advancePct as string || "30"),
       warrantyMonths: parseInt((state as Record<string, unknown>).warrantyMonths as string || "12"),
@@ -137,8 +149,11 @@ export default function ElectricsPrint() {
         )}
 
         {/* Таблица по помещениям */}
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ</h2>
-        {rowsData.map(({ z, roomType, cablingType, bd }, idx) => (
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ и материалов</h2>
+        {rowsData.map(({ z, roomType, works, materials }, idx) => {
+          const worksSum = works.reduce((s, w) => s + w.total, 0);
+          const matSum = materials.reduce((s, m) => s + m.total, 0);
+          return (
           <div key={z.id} className="mb-6">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">{idx + 1}</div>
@@ -148,105 +163,81 @@ export default function ElectricsPrint() {
             <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden mb-1">
               <thead>
                 <tr className="bg-gray-50 text-gray-500">
-                  <th className="text-left px-2 py-1.5 font-medium">Позиция</th>
+                  <th className="text-left px-2 py-1.5 font-medium">Наименование</th>
                   <th className="text-center px-2 py-1.5 font-medium">Кол-во</th>
                   <th className="text-center px-2 py-1.5 font-medium">Ед.</th>
                   <th className="text-right px-2 py-1.5 font-medium">Цена</th>
-                  <th className="text-right px-2 py-1.5 font-medium">Итого</th>
+                  <th className="text-right px-2 py-1.5 font-medium">Сумма</th>
                 </tr>
               </thead>
               <tbody>
-                {(z.outletsCount + z.doubleOutletsCount + z.groundedOutletsCount) > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Монтаж розеток (одинарные/двойные/заземление: {z.outletsCount}/{z.doubleOutletsCount}/{z.groundedOutletsCount})</td>
-                    <td className="px-2 py-1.5 text-center">{z.outletsCount + z.doubleOutletsCount + z.groundedOutletsCount}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">шт.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.outletsCost)} ₽</td>
+                {works.length > 0 && (
+                  <tr className="bg-blue-50/50">
+                    <td colSpan={5} className="px-2 py-1 font-semibold text-blue-700 uppercase text-[10px] tracking-wide">Работы</td>
                   </tr>
                 )}
-                {(z.switchesCount + z.doubleSwitchesCount + z.dimmersCount) > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Монтаж выключателей/диммеров ({z.switchesCount}/{z.doubleSwitchesCount}/{z.dimmersCount})</td>
-                    <td className="px-2 py-1.5 text-center">{z.switchesCount + z.doubleSwitchesCount + z.dimmersCount}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">шт.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.switchesCost)} ₽</td>
+                {works.map((w, i) => (
+                  <tr key={`w${i}`} className="border-t border-gray-100">
+                    <td className="px-2 py-1.5">
+                      {w.name}
+                      {w.spec && <span className="text-gray-400"> · {w.spec}</span>}
+                    </td>
+                    <td className="px-2 py-1.5 text-center">{w.qty}</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">{w.unit}</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(w.pricePerUnit)} ₽</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(w.total)} ₽</td>
+                  </tr>
+                ))}
+                {works.length > 0 && (
+                  <tr className="border-t border-gray-200 bg-gray-50/60">
+                    <td className="px-2 py-1 font-medium" colSpan={4}>Итого работы</td>
+                    <td className="px-2 py-1 text-right font-semibold">{fmt(worksSum)} ₽</td>
                   </tr>
                 )}
-                {bd.lightingCost > 0 && (
-                  <tr className="border-t border-gray-100 bg-yellow-50/30">
-                    <td className="px-2 py-1.5">Освещение: {z.lightGroupsCount} гр. + {z.spotLightsCount} споты</td>
-                    <td className="px-2 py-1.5 text-center">{z.lightGroupsCount + z.spotLightsCount}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">шт.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.lightingCost)} ₽</td>
+
+                {materials.length > 0 && (
+                  <tr className="bg-amber-50/50">
+                    <td colSpan={5} className="px-2 py-1 font-semibold text-amber-700 uppercase text-[10px] tracking-wide">Материалы</td>
                   </tr>
                 )}
-                {bd.cablingCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Прокладка кабеля: {cablingType?.label}</td>
-                    <td className="px-2 py-1.5 text-center">{z.cableRunM}</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">м</td>
-                    <td className="px-2 py-1.5 text-right">{fmt(cablingType?.pricePerM ?? 0)} ₽</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.cablingCost)} ₽</td>
+                {materials.map((m, i) => (
+                  <tr key={`m${i}`} className="border-t border-gray-100">
+                    <td className="px-2 py-1.5">
+                      {m.name}
+                      {m.spec && <span className="text-gray-400"> · {m.spec}</span>}
+                    </td>
+                    <td className="px-2 py-1.5 text-center">{m.qty}</td>
+                    <td className="px-2 py-1.5 text-center text-gray-500">{m.unit}</td>
+                    <td className="px-2 py-1.5 text-right">{fmt(m.pricePerUnit)} ₽</td>
+                    <td className="px-2 py-1.5 text-right font-medium">{fmt(m.total)} ₽</td>
+                  </tr>
+                ))}
+                {materials.length > 0 && (
+                  <tr className="border-t border-gray-200 bg-gray-50/60">
+                    <td className="px-2 py-1 font-medium" colSpan={4}>Итого материалы</td>
+                    <td className="px-2 py-1 text-right font-semibold">{fmt(matSum)} ₽</td>
                   </tr>
                 )}
-                {bd.panelCost > 0 && (
-                  <tr className="border-t border-gray-100 bg-blue-50/30">
-                    <td className="px-2 py-1.5">Монтаж электрощитка ({z.breakersCount} авт.)</td>
-                    <td className="px-2 py-1.5 text-center">1</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">компл.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.panelCost)} ₽</td>
-                  </tr>
-                )}
-                {bd.groundingCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Контур заземления</td>
-                    <td className="px-2 py-1.5 text-center">1</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">компл.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.groundingCost)} ₽</td>
-                  </tr>
-                )}
-                {bd.testingCost > 0 && (
-                  <tr className="border-t border-gray-100">
-                    <td className="px-2 py-1.5">Проверка и тестирование</td>
-                    <td className="px-2 py-1.5 text-center">1</td>
-                    <td className="px-2 py-1.5 text-center text-gray-500">компл.</td>
-                    <td className="px-2 py-1.5 text-right">—</td>
-                    <td className="px-2 py-1.5 text-right font-medium">{fmt(bd.testingCost)} ₽</td>
-                  </tr>
-                )}
-                {markupPct > 0 && (
-                  <tr className="border-t border-gray-100 text-orange-600">
-                    <td className="px-2 py-1.5">Наценка {markupPct}%</td>
-                    <td colSpan={3} />
-                    <td className="px-2 py-1.5 text-right font-medium">+ {fmt(bd.markupAmount)} ₽</td>
-                  </tr>
-                )}
+
                 <tr className="border-t-2 border-gray-300 bg-gray-50 font-bold">
-                  <td className="px-2 py-2">Итого по помещению</td>
-                  <td colSpan={3} />
-                  <td className="px-2 py-2 text-right text-blue-700">{fmt(bd.total)} ₽</td>
+                  <td className="px-2 py-2" colSpan={4}>Итого по помещению</td>
+                  <td className="px-2 py-2 text-right text-blue-700">{fmt(worksSum + matSum)} ₽</td>
                 </tr>
               </tbody>
             </table>
             {z.note && <p className="text-xs text-gray-500 italic mt-1">Примечание: {z.note}</p>}
           </div>
-        ))}
+          );
+        })}
 
         {/* Итого */}
         <div className="border-t-2 border-gray-800 pt-4 mt-4">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-lg font-bold text-gray-900">ИТОГО ПО СМЕТЕ</p>
-              <p className="text-sm text-gray-500">Регион: {region.label}</p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-blue-700">{fmt(totalSum)} ₽</p>
-              {markupPct > 0 && <p className="text-xs text-gray-400">Включая наценку {markupPct}%</p>}
             </div>
           </div>
         </div>

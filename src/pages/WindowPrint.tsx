@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { CONSTRUCTION_TYPES, PROFILE_SYSTEMS, GLASS_UNITS } from "@/components/calculator/windows/WindowTypes";
+import { calcWindowWorks, calcWindowMaterials } from "@/components/calculator/windows/windowUtils";
 import { fmt, WINDOW_PRINT_STYLES } from "@/components/print/WindowPrintTypes";
 import type { WindowPrintState } from "@/components/print/WindowPrintTypes";
 import WindowCard from "@/components/print/WindowCard";
@@ -40,6 +41,19 @@ export default function WindowPrint() {
   const isKp = docType === "kp";
   const hasReq = inn || kpp || ogrn || legalAddress || bank;
 
+  // Детальные позиции по каждой конструкции. Наценка мастера «зашивается»
+  // в цены позиций (×k), отдельной строкой не показывается.
+  const k = 1 + (markupPct || 0) / 100;
+  const scale = (arr: ReturnType<typeof calcWindowWorks>) =>
+    arr.map((i) => ({ ...i, pricePerUnit: Math.round(i.pricePerUnit * k), total: Math.round(i.total * k) }));
+  const rowsData = configs.map((cfg) => {
+    const works = scale(calcWindowWorks(cfg, undefined, cfg.regionId));
+    const materials = scale(calcWindowMaterials(cfg, undefined, cfg.regionId).filter((m) => !m.isWork));
+    return { cfg, works, materials };
+  });
+  const grandWorks = rowsData.reduce((s, r) => s + r.works.reduce((a, w) => a + w.total, 0), 0);
+  const grandMaterials = rowsData.reduce((s, r) => s + r.materials.reduce((a, m) => a + m.total, 0), 0);
+
   if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
     const universalItems = configs.map((cfg, idx) => {
       const ct = CONSTRUCTION_TYPES.find(c => c.value === cfg.constructionType);
@@ -66,8 +80,8 @@ export default function WindowPrint() {
       contractor: { name: contractor || "", inn: inn || undefined, phone, email },
       objectAddress: address || "",
       items: universalItems,
-      totalWorks: Math.round(totalSum * 0.3),
-      totalMaterials: Math.round(totalSum * 0.7),
+      totalWorks: grandWorks,
+      totalMaterials: grandMaterials,
       grandTotal: totalSum,
       advancePct: parseFloat((state as { advancePct?: string }).advancePct || "30"),
       warrantyMonths: parseInt((state as { warrantyMonths?: string }).warrantyMonths || "12"),
@@ -137,6 +151,68 @@ export default function WindowPrint() {
           {configs.map((cfg, i) => (
             <WindowCard key={cfg.id} cfg={cfg} idx={i} markupPct={markupPct} />
           ))}
+        </section>
+
+        {/* Детальная ведомость работ и материалов */}
+        <section>
+          <h2>Состав работ и материалов</h2>
+          {rowsData.map(({ cfg, works, materials }, idx) => {
+            const ct = CONSTRUCTION_TYPES.find(c => c.value === cfg.constructionType);
+            const worksSum = works.reduce((s, w) => s + w.total, 0);
+            const matSum = materials.reduce((s, m) => s + m.total, 0);
+            return (
+              <div key={cfg.id} className="detail-block">
+                <p className="detail-title">
+                  Позиция {idx + 1}. {ct?.label}
+                  <span className="dim">{cfg.width}×{cfg.height} мм · {cfg.quantity} шт.</span>
+                </p>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Наименование</th>
+                      <th style={{ width: 50 }} className="c">Кол-во</th>
+                      <th style={{ width: 40 }} className="c">Ед.</th>
+                      <th style={{ width: 80 }} className="r">Цена, ₽</th>
+                      <th style={{ width: 90 }} className="r">Сумма, ₽</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {works.length > 0 && (
+                      <tr className="sec-row"><td colSpan={5}>Работы</td></tr>
+                    )}
+                    {works.map((w, i) => (
+                      <tr key={`w${i}`}>
+                        <td>{w.name}{w.spec ? <span style={{ color: "#666" }}> · {w.spec}</span> : null}</td>
+                        <td className="c">{w.qty}</td>
+                        <td className="c">{w.unit}</td>
+                        <td className="r">{fmt(w.pricePerUnit)}</td>
+                        <td className="r">{fmt(w.total)}</td>
+                      </tr>
+                    ))}
+                    {works.length > 0 && (
+                      <tr className="sub-row"><td colSpan={4}>Итого работы</td><td className="r">{fmt(worksSum)}</td></tr>
+                    )}
+                    {materials.length > 0 && (
+                      <tr className="sec-row"><td colSpan={5}>Материалы</td></tr>
+                    )}
+                    {materials.map((m, i) => (
+                      <tr key={`m${i}`}>
+                        <td>{m.name}{m.spec ? <span style={{ color: "#666" }}> · {m.spec}</span> : null}</td>
+                        <td className="c">{m.qty}</td>
+                        <td className="c">{m.unit}</td>
+                        <td className="r">{fmt(m.pricePerUnit)}</td>
+                        <td className="r">{fmt(m.total)}</td>
+                      </tr>
+                    ))}
+                    {materials.length > 0 && (
+                      <tr className="sub-row"><td colSpan={4}>Итого материалы</td><td className="r">{fmt(matSum)}</td></tr>
+                    )}
+                    <tr className="room-total"><td colSpan={4}>Итого по позиции</td><td className="r">{fmt(worksSum + matSum)}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            );
+          })}
         </section>
 
         {/* Сводная ведомость */}

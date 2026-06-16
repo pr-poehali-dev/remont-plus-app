@@ -1,9 +1,11 @@
 import {
   PROFILE_SYSTEMS, GLASS_UNITS, GLASS_COATINGS, LAMINATION_TYPES,
-  HARDWARE_OPTIONS, WINDOW_SILLS, SLOPES, OPENING_TYPES, WINDOW_REGIONS,
+  HARDWARE_OPTIONS, WINDOW_SILLS, SLOPES,
   BASE_PRICE_PER_M2, INSTALLATION_PRICE_PER_M2, TRANSOM_PRICE_ADDON,
 } from "./WindowTypes";
 import type { WindowConfig, ProfileMaterial, OpeningType } from "./WindowTypes";
+import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
+import { calcWindow } from "./windowEngine";
 
 export const MAT_LABEL: Record<ProfileMaterial, string> = {
   pvc: "ПВХ",
@@ -100,82 +102,34 @@ export const DEFAULT_CONFIG: Omit<WindowConfig, "id" | "totalPrice"> = {
   note: "",
 };
 
+/**
+ * Цена окна БЕЗ наценки (с региональным коэффициентом и количеством).
+ * Совместимая обёртка над единым движком calcWindow: возвращает строго то же
+ * число, что и прежняя формула (subtotal движка считается по той же
+ * последовательности). PriceOverrides учитываются через движок без изменений.
+ */
 export function calcPrice(cfg: Omit<WindowConfig, "id" | "totalPrice">, overrides?: PriceOverrides): number {
-  const o = overrides ?? getDefaultOverrides();
+  return calcWindow(cfg, overrides, cfg.regionId).subtotal;
+}
 
-  const isStandaloneTransom = cfg.constructionType === "transom";
-  const isEntranceGroup = cfg.constructionType === "entrance_group";
-  const isShtulpDoor = cfg.constructionType === "shtulp_door";
-  const totalH = cfg.hasTransom && !isStandaloneTransom
-    ? cfg.height + cfg.transomHeight
-    : cfg.height;
-  const area = (cfg.width / 1000) * (totalH / 1000);
+/** Детальная ведомость МАТЕРИАЛОВ + работ (для таблиц). */
+export function calcWindowMaterials(
+  cfg: Omit<WindowConfig, "id" | "totalPrice">,
+  overrides?: PriceOverrides,
+  regionId?: string,
+): MaterialItem[] {
+  const e = calcWindow(cfg, overrides, regionId ?? cfg.regionId, 0);
+  return e.lines.map(({ block: _block, ...item }) => item);
+}
 
-  const profile = PROFILE_SYSTEMS.find(p => p.id === cfg.profileSystemId);
-  const glass = GLASS_UNITS.find(g => g.id === cfg.glassUnitId);
-  const lam = LAMINATION_TYPES.find(l => l.id === cfg.laminationId);
-  const hw = HARDWARE_OPTIONS.find(h => h.id === cfg.hardwareId);
-  const sill = WINDOW_SILLS.find(s => s.id === cfg.windowSillId);
-  const slope = SLOPES.find(s => s.id === cfg.slopeId);
-  const opening = OPENING_TYPES.find(ot => ot.value === (cfg.openingTypes[0] ?? "tilt_swing"));
-
-  if (!profile || !glass) return 0;
-
-  const baseMat = o.basePricePerM2[profile.material] ?? BASE_PRICE_PER_M2[profile.material];
-  const profCoeff = o.profileCoeffs[profile.id] ?? profile.priceCoeff;
-  const glassCoeff = o.glassCoeffs[glass.id] ?? glass.priceCoeff;
-  let price = baseMat * profCoeff * glassCoeff * area;
-
-  const avgOpenCoeff = cfg.openingTypes.length > 0
-    ? cfg.openingTypes.reduce((s, ov) => {
-        const opt = OPENING_TYPES.find(x => x.value === ov);
-        return s + (opt?.priceCoeff ?? 1);
-      }, 0) / cfg.openingTypes.length
-    : (opening?.priceCoeff ?? 1);
-  price *= avgOpenCoeff;
-
-  const coatingAdd = o.coatingPrices[cfg.glassCoatingId] ?? GLASS_COATINGS.find(c => c.id === cfg.glassCoatingId)?.priceAdd ?? 0;
-  price += coatingAdd * area;
-
-  const perim = 2 * ((cfg.width + totalH) / 1000);
-  const lamAdd = o.laminationPrices[cfg.laminationId] ?? lam?.priceAdd ?? 0;
-  const lamSides = cfg.laminationBothSides && lam && lam.id !== "none" ? 2 : 1;
-  price += lamAdd * perim * lamSides;
-
-  const hwPrice = o.hardwarePrices[cfg.hardwareId] ?? hw?.pricePerSash ?? 0;
-  const openSashes = cfg.openingTypes.filter(x => x !== "fixed").length;
-  price += hwPrice * openSashes;
-
-  if (cfg.hasTransom && !isStandaloneTransom) {
-    price += o.transomAddon;
-    if (cfg.transomOpeningType !== "fixed") {
-      price += hwPrice;
-    }
-  }
-
-  if (isShtulpDoor) {
-    price *= 2.06;
-    price += 2336;
-  }
-
-  if (isEntranceGroup) {
-    price *= 2.0;
-    price += 2336;
-  }
-
-  const sillPrice = o.sillPrices[cfg.windowSillId] ?? sill?.pricePerMeter ?? 0;
-  const sillLen = cfg.windowSillWidth > 0 ? cfg.width / 1000 : 0;
-  price += sillPrice * sillLen;
-
-  const slopePrice = o.slopePrices[cfg.slopeId] ?? slope?.pricePerMeter ?? 0;
-  price += slopePrice * cfg.slopePerimeter;
-
-  if (cfg.installationIncluded) price += o.installationPricePerM2 * area;
-
-  const region = WINDOW_REGIONS.find(r => r.id === cfg.regionId);
-  price *= region?.priceCoeff ?? 1.0;
-
-  return Math.round(price * cfg.quantity);
+/** Детальные РАБОТЫ. */
+export function calcWindowWorks(
+  cfg: Omit<WindowConfig, "id" | "totalPrice">,
+  overrides?: PriceOverrides,
+  regionId?: string,
+): MaterialItem[] {
+  const e = calcWindow(cfg, overrides, regionId ?? cfg.regionId, 0);
+  return e.works.map(({ block: _block, ...item }) => item);
 }
 
 export function syncSashes(type: WindowConfig["constructionType"], CONSTRUCTION_TYPES: typeof import("./WindowTypes").CONSTRUCTION_TYPES): OpeningType[] {

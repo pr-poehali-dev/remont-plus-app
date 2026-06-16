@@ -1,9 +1,6 @@
-import {
-  CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS, CEILING_COLORS,
-  LIGHTING_OPTIONS, PROFILE_OPTIONS, CEILING_REGIONS,
-  BASE_PRICE_PER_M2, INSTALLATION_PRICE_PER_M2,
-} from "./CeilingTypes";
 import type { CeilingConfig } from "./CeilingTypes";
+import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
+import { calcCeiling } from "./ceilingEngine";
 
 export function fmt(n: number) {
   return n.toLocaleString("ru-RU");
@@ -25,35 +22,30 @@ export const DEFAULT_CONFIG: Omit<CeilingConfig, "id" | "totalPrice"> = {
   note: "",
 };
 
+/**
+ * Базовая цена потолка БЕЗ наценки (с региональным коэффициентом).
+ * Совместимая обёртка над единым движком calcCeiling: возвращает строгую
+ * сумму детальных позиций (норма × цена 2026). Экранный калькулятор
+ * добавляет наценку поверх этого значения — поведение сохранено.
+ */
 export function calcPrice(cfg: Omit<CeilingConfig, "id" | "totalPrice">): number {
-  const type = CEILING_TYPES.find(t => t.value === cfg.ceilingType);
-  const level = CEILING_LEVELS.find(l => l.value === cfg.level);
-  const brand = CEILING_BRANDS.find(b => b.id === cfg.brandId);
-  const color = CEILING_COLORS.find(c => c.id === cfg.colorId);
-  const lighting = LIGHTING_OPTIONS.find(l => l.id === cfg.lightingId);
-  const profile = PROFILE_OPTIONS.find(p => p.id === cfg.profileId);
-  const region = CEILING_REGIONS.find(r => r.id === cfg.regionId);
+  return calcCeiling(cfg, cfg.regionId).subtotal;
+}
 
-  if (!type || !level || !brand) return 0;
+/** Детальная ведомость МАТЕРИАЛОВ + работ (для таблиц). */
+export function calcCeilingMaterials(
+  cfg: Omit<CeilingConfig, "id" | "totalPrice">,
+  regionId?: string,
+): MaterialItem[] {
+  const e = calcCeiling(cfg, regionId ?? cfg.regionId, 0);
+  return e.lines.map(({ block: _block, ...item }) => item);
+}
 
-  let price = BASE_PRICE_PER_M2
-    * type.priceCoeff
-    * level.priceCoeff
-    * (brand.priceCoeff)
-    * (profile?.priceCoeff ?? 1.0)
-    * cfg.area;
-
-  price += (color?.priceAdd ?? 0) * cfg.area;
-
-  if (lighting && lighting.id !== "none") {
-    price += lighting.pricePerUnit * cfg.lightingCount;
-  }
-
-  if (cfg.installationIncluded) {
-    price += INSTALLATION_PRICE_PER_M2 * cfg.area;
-  }
-
-  price *= (region?.coeff ?? 1.0);
-
-  return Math.round(price);
+/** Детальные РАБОТЫ. */
+export function calcCeilingWorks(
+  cfg: Omit<CeilingConfig, "id" | "totalPrice">,
+  regionId?: string,
+): MaterialItem[] {
+  const e = calcCeiling(cfg, regionId ?? cfg.regionId, 0);
+  return e.works.map(({ block: _block, ...item }) => item);
 }

@@ -1,9 +1,8 @@
 import {
-  REGIONS, APARTMENT_TYPES, RENOVATION_LEVELS,
-  FLOOR_TYPES, CEILING_TYPES, BATHROOM_LEVELS,
+  APARTMENT_TYPES, RENOVATION_LEVELS,
 } from "@/components/calculator/turnkey/TurnkeyTypes";
 import type { TurnkeyConfig } from "@/components/calculator/turnkey/TurnkeyTypes";
-import { calcTurnkeyPrice, calcTurnkeyMaterials, fmt } from "@/components/calculator/turnkey/turnkeyUtils";
+import { calcTurnkeyPrice, calcTurnkeyMaterials, calcTurnkeyWorks, fmt } from "@/components/calculator/turnkey/turnkeyUtils";
 import UniversalDocView from "@/components/print/UniversalDocView";
 import type { UniversalDocData } from "@/components/print/UniversalDocView";
 import { usePrintState } from "@/hooks/usePrintState";
@@ -48,95 +47,35 @@ export default function TurnkeyPrint() {
   } = state;
   const isKp = docType === "kp";
 
-  const region = REGIONS.find(r => r.id === regionId) ?? REGIONS[3];
   const aptType = APARTMENT_TYPES.find(a => a.id === cfg.apartmentType);
   const level = RENOVATION_LEVELS.find(l => l.id === cfg.renovationLevel);
-  const floorType = FLOOR_TYPES.find(f => f.id === cfg.floorType);
-  const ceilingType = CEILING_TYPES.find(c => c.id === cfg.ceilingType);
-  const bathroomLevel = BATHROOM_LEVELS.find(b => b.id === cfg.bathroomLevel);
 
   const bd = calcTurnkeyPrice(cfg, regionId, markupPct);
   const totalSum = bd.total;
-  const materials = calcTurnkeyMaterials(cfg, bd, regionId);
 
-  const rows: { label: string; qty: number | string; unit: string; price: string; total: number }[] = [
-    cfg.demolitionIncluded && bd.demolitionCost > 0 && {
-      label: "Демонтажные работы (полы, стены — снятие покрытий)",
-      qty: cfg.totalAreaM2, unit: "м²", price: `${fmt(Math.round(bd.demolitionCost / (cfg.totalAreaM2 || 1)))} ₽/м²`, total: bd.demolitionCost,
-    },
-    cfg.demolitionIncluded && bd.debrisRemovalCost > 0 && {
-      label: `Вывоз строительного мусора (${bd.debrisTruckCount} маш.)`,
-      qty: bd.debrisTruckCount, unit: "маш.", price: "18 000 ₽/маш.", total: bd.debrisRemovalCost,
-    },
-    cfg.bathroomCabinDemolition && bd.bathroomCabinDemolitionCost > 0 && {
-      label: "Демонтаж сантехнической кабины (ванная, туалет)",
-      qty: cfg.bathroomCount, unit: "шт.", price: "—", total: bd.bathroomCabinDemolitionCost,
-    },
-    cfg.bathroomCabinConstruction && bd.bathroomCabinConstructionCost > 0 && {
-      label: "Возведение сантехнической кабины (пеноблоки / ПГБ)",
-      qty: cfg.bathroomCount, unit: "шт.", price: "—", total: bd.bathroomCabinConstructionCost,
-    },
-    cfg.electricsIncluded && bd.electricsCost > 0 && {
-      label: "Электромонтаж (разводка, щит, розетки, выключатели)",
-      qty: cfg.totalAreaM2, unit: "м²", price: `${fmt(Math.round(bd.electricsCost / (cfg.totalAreaM2 || 1)))} ₽/м²`, total: bd.electricsCost,
-    },
-    cfg.plumbingIncluded && bd.plumbingCost > 0 && {
-      label: "Сантехника (разводка труб ХВС/ГВС/канализация)",
-      qty: cfg.bathroomCount, unit: "санузел", price: `${fmt(Math.round(bd.plumbingCost / (cfg.bathroomCount || 1)))} ₽/шт.`, total: bd.plumbingCost,
-    },
-    cfg.plastersIncluded && bd.plasterCost > 0 && {
-      label: "Штукатурка стен + стяжка пола",
-      qty: cfg.totalAreaM2, unit: "м²", price: `${fmt(Math.round(bd.plasterCost / (cfg.totalAreaM2 || 1)))} ₽/м²`, total: bd.plasterCost,
-    },
-    cfg.floorsIncluded && bd.floorsCost > 0 && {
-      label: `Напольное покрытие: ${floorType?.label}`,
-      qty: cfg.totalAreaM2, unit: "м²", price: `${fmt(floorType?.priceM2 ?? 0)} ₽/м²`, total: bd.floorsCost,
-    },
-    cfg.ceilingsIncluded && bd.ceilingsCost > 0 && {
-      label: `Потолки: ${ceilingType?.label}`,
-      qty: cfg.totalAreaM2, unit: "м²", price: `${fmt(ceilingType?.priceM2 ?? 0)} ₽/м²`, total: bd.ceilingsCost,
-    },
-    cfg.bathroomIncluded && bd.bathroomsCost > 0 && {
-      label: `Санузлы под ключ: ${bathroomLevel?.label}`,
-      qty: cfg.bathroomCount, unit: "шт.", price: `${fmt(bathroomLevel?.pricePerUnit ?? 0)} ₽/шт.`, total: bd.bathroomsCost,
-    },
-    cfg.kitchenIncluded && bd.kitchenCost > 0 && {
-      label: "Монтаж кухонного гарнитура",
-      qty: 1, unit: "компл.", price: `${fmt(bd.kitchenCost)} ₽`, total: bd.kitchenCost,
-    },
-    cfg.doorsIncluded && bd.doorsCost > 0 && {
-      label: "Установка межкомнатных дверей (материал + монтаж)",
-      qty: cfg.doorsCount, unit: "шт.", price: `${fmt(Math.round(bd.doorsCost / (cfg.doorsCount || 1)))} ₽/шт.`, total: bd.doorsCost,
-    },
-    cfg.windowslopeIncluded && bd.windowSlopesCost > 0 && {
-      label: "Откосы на окна и балконные двери",
-      qty: (cfg.balconyCount || 0) + Math.max(1, Math.ceil(cfg.totalAreaM2 / 18)), unit: "проём", price: "3 500 ₽/проём", total: bd.windowSlopesCost,
-    },
-    cfg.furnitureAssembly && bd.furnitureCost > 0 && {
-      label: "Сборка и навеска мебели",
-      qty: Math.max(1, Math.round(cfg.totalAreaM2 / 20)), unit: "комн.", price: "8 000 ₽/комн.", total: bd.furnitureCost,
-    },
-    cfg.cleaningIncluded && bd.cleaningCost > 0 && {
-      label: "Финальная уборка после ремонта",
-      qty: cfg.totalAreaM2, unit: "м²", price: "120 ₽/м²", total: bd.cleaningCost,
-    },
-    cfg.foremanIncluded && bd.foremanCost > 0 && {
-      label: `Прораб — технический надзор и координация`,
-      qty: `${cfg.foremanPct}%`, unit: "от работ+материалов", price: `база ${fmt(bd.subtotal - bd.foremanCost - bd.supplierCost)} ₽`, total: bd.foremanCost,
-    },
-    cfg.supplierIncluded && bd.supplierCost > 0 && {
-      label: `Снабженец — закупка и логистика материалов`,
-      qty: `${cfg.supplierPct}%`, unit: "от материалов", price: `база ${fmt(bd.materialsCost)} ₽`, total: bd.supplierCost,
-    },
-  ].filter(Boolean) as { label: string; qty: number | string; unit: string; price: string; total: number }[];
+  // Детальные позиции. Наценка И услуги мастера (прораб/снабженец) «зашиваются»
+  // в цены позиций через коэффициент k = total / (работы+материалы),
+  // отдельными строками не показываются.
+  const rawWorks = calcTurnkeyWorks(cfg, bd, regionId);
+  const rawMaterials = calcTurnkeyMaterials(cfg, bd, regionId).filter((m) => !m.isWork);
+  const baseSum =
+    rawWorks.reduce((s, w) => s + w.total, 0) +
+    rawMaterials.reduce((s, m) => s + m.total, 0);
+  const k = baseSum > 0 ? totalSum / baseSum : 1;
+  const scale = (arr: ReturnType<typeof calcTurnkeyWorks>) =>
+    arr.map((i) => ({ ...i, pricePerUnit: Math.round(i.pricePerUnit * k), total: Math.round(i.total * k) }));
+  const works = scale(rawWorks);
+  const materials = scale(rawMaterials);
+  const worksSum = works.reduce((s, w) => s + w.total, 0);
+  const matSum = materials.reduce((s, m) => s + m.total, 0);
 
   if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
-    const universalItems = rows.map((row, idx) => ({
+    const universalItems = [...works, ...materials].map((row, idx) => ({
       num: idx + 1,
-      name: row.label,
+      name: row.name,
       unit: row.unit,
-      qty: typeof row.qty === "number" ? row.qty : 1,
-      pricePerUnit: typeof row.qty === "number" && row.qty > 0 ? Math.round(row.total / row.qty) : row.total,
+      qty: row.qty || 1,
+      pricePerUnit: row.pricePerUnit,
       total: row.total,
     }));
     const grandTotal = totalSum;
@@ -152,8 +91,8 @@ export default function TurnkeyPrint() {
       contractor: { name: contractor || "", inn: inn || undefined, phone: phone || undefined, email: email || undefined },
       objectAddress: address || "",
       items: universalItems,
-      totalWorks: Math.round(grandTotal * 0.45),
-      totalMaterials: Math.round(grandTotal * 0.55),
+      totalWorks: worksSum,
+      totalMaterials: matSum,
       grandTotal,
       advancePct: parseFloat((state as Record<string, unknown>).advancePct as string || "30"),
       warrantyMonths: parseInt((state as Record<string, unknown>).warrantyMonths as string || "12"),
@@ -225,39 +164,68 @@ export default function TurnkeyPrint() {
           </div>
         </div>
 
-        {/* Таблица работ */}
-        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ</h2>
+        {/* Таблица работ и материалов */}
+        <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Состав работ и материалов</h2>
         <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden mb-6">
           <thead>
             <tr className="bg-gray-50 text-gray-500">
-              <th className="text-left px-3 py-2 font-medium w-6">№</th>
-              <th className="text-left px-3 py-2 font-medium">Вид работ</th>
+              <th className="text-left px-3 py-2 font-medium">Наименование</th>
               <th className="text-center px-3 py-2 font-medium">Кол-во</th>
               <th className="text-center px-3 py-2 font-medium">Ед.</th>
               <th className="text-right px-3 py-2 font-medium">Цена</th>
-              <th className="text-right px-3 py-2 font-medium">Итого</th>
+              <th className="text-right px-3 py-2 font-medium">Сумма</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr key={i} className={`border-t border-gray-100 ${i % 2 === 0 ? "" : "bg-gray-50/50"}`}>
-                <td className="px-3 py-1.5 text-gray-400">{i + 1}</td>
-                <td className="px-3 py-1.5">{row.label}</td>
-                <td className="px-3 py-1.5 text-center">{row.qty}</td>
-                <td className="px-3 py-1.5 text-center text-gray-500">{row.unit}</td>
-                <td className="px-3 py-1.5 text-right">{row.price}</td>
-                <td className="px-3 py-1.5 text-right font-medium">{fmt(row.total)} ₽</td>
+            {works.length > 0 && (
+              <tr className="bg-emerald-50/50">
+                <td colSpan={5} className="px-3 py-1 font-semibold text-emerald-700 uppercase text-[10px] tracking-wide">Работы</td>
+              </tr>
+            )}
+            {works.map((w, i) => (
+              <tr key={`w${i}`} className="border-t border-gray-100">
+                <td className="px-3 py-1.5">{w.name}{w.spec && <span className="text-gray-400"> · {w.spec}</span>}</td>
+                <td className="px-3 py-1.5 text-center">{w.qty}</td>
+                <td className="px-3 py-1.5 text-center text-gray-500">{w.unit}</td>
+                <td className="px-3 py-1.5 text-right">{fmt(w.pricePerUnit)} ₽</td>
+                <td className="px-3 py-1.5 text-right font-medium">{fmt(w.total)} ₽</td>
               </tr>
             ))}
+            {works.length > 0 && (
+              <tr className="border-t border-gray-200 bg-gray-50/60">
+                <td className="px-3 py-1 font-medium" colSpan={4}>Итого работы</td>
+                <td className="px-3 py-1 text-right font-semibold">{fmt(worksSum)} ₽</td>
+              </tr>
+            )}
+
+            {materials.length > 0 && (
+              <tr className="bg-amber-50/50">
+                <td colSpan={5} className="px-3 py-1 font-semibold text-amber-700 uppercase text-[10px] tracking-wide">Материалы</td>
+              </tr>
+            )}
+            {materials.map((m, i) => (
+              <tr key={`m${i}`} className={`border-t border-gray-100 ${m.isConsumable ? "text-gray-400" : ""}`}>
+                <td className="px-3 py-1.5">{m.name}{m.spec && <span className="text-gray-400"> · {m.spec}</span>}</td>
+                <td className="px-3 py-1.5 text-center">{m.qty}</td>
+                <td className="px-3 py-1.5 text-center text-gray-500">{m.unit}</td>
+                <td className="px-3 py-1.5 text-right">{fmt(m.pricePerUnit)} ₽</td>
+                <td className="px-3 py-1.5 text-right font-medium">{fmt(m.total)} ₽</td>
+              </tr>
+            ))}
+            {materials.length > 0 && (
+              <tr className="border-t border-gray-200 bg-gray-50/60">
+                <td className="px-3 py-1 font-medium" colSpan={4}>Итого материалы</td>
+                <td className="px-3 py-1 text-right font-semibold">{fmt(matSum)} ₽</td>
+              </tr>
+            )}
 
             {/* Итого */}
             <tr className="border-t-2 border-gray-300 bg-gray-50 font-bold">
-              <td />
               <td className="px-3 py-2">ИТОГО ПО СМЕТЕ</td>
               <td colSpan={3} className="px-3 py-2 text-xs font-normal text-gray-500 text-center">
-                {fmt(cfg.totalAreaM2 > 0 ? Math.round(totalSum / cfg.totalAreaM2) : 0)} ₽/м²
+                {fmt(cfg.totalAreaM2 > 0 ? Math.round((worksSum + matSum) / cfg.totalAreaM2) : 0)} ₽/м²
               </td>
-              <td className="px-3 py-2 text-right text-emerald-700 text-base">{fmt(totalSum)} ₽</td>
+              <td className="px-3 py-2 text-right text-emerald-700 text-base">{fmt(worksSum + matSum)} ₽</td>
             </tr>
           </tbody>
         </table>
@@ -277,9 +245,9 @@ export default function TurnkeyPrint() {
               <p className="text-sm text-gray-500">{level?.label}</p>
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold text-emerald-700">{fmt(totalSum)} ₽</p>
+              <p className="text-3xl font-bold text-emerald-700">{fmt(worksSum + matSum)} ₽</p>
               <p className="text-xs text-gray-400">
-                {fmt(cfg.totalAreaM2 > 0 ? Math.round(totalSum / cfg.totalAreaM2) : 0)} ₽/м²
+                {fmt(cfg.totalAreaM2 > 0 ? Math.round((worksSum + matSum) / cfg.totalAreaM2) : 0)} ₽/м²
               </p>
             </div>
           </div>
@@ -298,45 +266,7 @@ export default function TurnkeyPrint() {
           </div>
         </div>
 
-        {/* Перечень материалов */}
-        {materials.length > 0 && (
-          <div className="mt-10 pt-6 border-t border-gray-200" style={{ pageBreakBefore: "always" }}>
-            <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wide mb-3">Перечень материалов</h2>
-            <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden">
-              <thead>
-                <tr className="bg-gray-50 text-gray-500">
-                  <th className="text-left px-3 py-2 font-medium w-6">№</th>
-                  <th className="text-left px-3 py-2 font-medium">Наименование</th>
-                  <th className="text-left px-3 py-2 font-medium">Спецификация</th>
-                  <th className="text-center px-3 py-2 font-medium">Кол-во</th>
-                  <th className="text-center px-3 py-2 font-medium">Ед.</th>
-                  <th className="text-right px-3 py-2 font-medium">Цена</th>
-                  <th className="text-right px-3 py-2 font-medium">Сумма</th>
-                </tr>
-              </thead>
-              <tbody>
-                {materials.map((m, i) => (
-                  <tr key={i} className={`border-t border-gray-100 ${m.isConsumable ? "text-gray-400" : ""} ${i % 2 === 0 ? "" : "bg-gray-50/50"}`}>
-                    <td className="px-3 py-1.5 text-gray-400">{i + 1}</td>
-                    <td className="px-3 py-1.5">{m.name}</td>
-                    <td className="px-3 py-1.5 text-gray-400">{m.spec ?? "—"}</td>
-                    <td className="px-3 py-1.5 text-center">{m.qty}</td>
-                    <td className="px-3 py-1.5 text-center text-gray-500">{m.unit}</td>
-                    <td className="px-3 py-1.5 text-right">{fmt(m.pricePerUnit)} ₽</td>
-                    <td className="px-3 py-1.5 text-right font-medium">{fmt(m.total)} ₽</td>
-                  </tr>
-                ))}
-                <tr className="border-t-2 border-gray-300 bg-gray-50 font-bold">
-                  <td colSpan={6} className="px-3 py-2">Итого материалы</td>
-                  <td className="px-3 py-2 text-right text-emerald-700">
-                    {fmt(materials.reduce((s, m) => s + m.total, 0))} ₽
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p className="text-xs text-gray-400 mt-2">* Серым выделены расходные материалы и комплектующие</p>
-          </div>
-        )}
+        <p className="text-xs text-gray-400 mt-6">* Серым выделены расходные материалы и комплектующие. Стоимость организации работ включена в цены позиций.</p>
       </div>
       </>
     </>

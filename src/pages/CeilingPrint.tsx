@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { CEILING_TYPES, CEILING_LEVELS, CEILING_BRANDS, CEILING_COLORS, LIGHTING_OPTIONS, PROFILE_OPTIONS } from "@/components/calculator/ceilings/CeilingTypes";
+import { calcCeilingWorks, calcCeilingMaterials } from "@/components/calculator/ceilings/ceilingUtils";
 import { fmt, CEILING_PRINT_STYLES } from "@/components/print/CeilingPrintTypes";
 import type { CeilingPrintState } from "@/components/print/CeilingPrintTypes";
 import UniversalDocView from "@/components/print/UniversalDocView";
@@ -39,6 +40,19 @@ export default function CeilingPrint() {
   const isKp = docType === "kp";
   const hasReq = inn || kpp || ogrn || legalAddress || bank;
 
+  // Детальные позиции по каждому потолку. Наценка мастера «зашивается»
+  // в цены позиций (×k), отдельной строкой не показывается.
+  const k = 1 + (markupPct || 0) / 100;
+  const scale = (arr: ReturnType<typeof calcCeilingWorks>) =>
+    arr.map((i) => ({ ...i, pricePerUnit: Math.round(i.pricePerUnit * k), total: Math.round(i.total * k) }));
+  const rowsData = configs.map((cfg) => {
+    const works = scale(calcCeilingWorks(cfg, cfg.regionId));
+    const materials = scale(calcCeilingMaterials(cfg, cfg.regionId).filter((m) => !m.isWork));
+    return { cfg, works, materials };
+  });
+  const grandWorks = rowsData.reduce((s, r) => s + r.works.reduce((a, w) => a + w.total, 0), 0);
+  const grandMaterials = rowsData.reduce((s, r) => s + r.materials.reduce((a, m) => a + m.total, 0), 0);
+
   if (docType === "ks2" || docType === "ks3" || docType === "act" || docType === "contract") {
     const universalItems = configs.map((cfg, idx) => {
       const ct = CEILING_TYPES.find(t => t.value === cfg.ceilingType);
@@ -66,8 +80,8 @@ export default function CeilingPrint() {
       contractor: { name: contractor || "", inn: inn || undefined, phone, email },
       objectAddress: address || "",
       items: universalItems,
-      totalWorks: Math.round(grandTotal * 0.4),
-      totalMaterials: Math.round(grandTotal * 0.6),
+      totalWorks: grandWorks,
+      totalMaterials: grandMaterials,
       grandTotal,
       advancePct: parseFloat((state as Record<string, unknown>).advancePct as string || "30"),
       warrantyMonths: parseInt((state as Record<string, unknown>).warrantyMonths as string || "12"),
@@ -174,6 +188,69 @@ export default function CeilingPrint() {
                   <span>{basePerM2} ₽/м²</span>
                   <span className="total">{fmt(cfg.totalPrice)} ₽</span>
                 </div>
+              </div>
+            );
+          })}
+        </section>
+
+        {/* Детальная ведомость работ и материалов */}
+        <section>
+          <h2>Состав работ и материалов</h2>
+          {rowsData.map(({ cfg, works, materials }, idx) => {
+            const ct = CEILING_TYPES.find(t => t.value === cfg.ceilingType);
+            const lv = CEILING_LEVELS.find(l => l.value === cfg.level);
+            const worksSum = works.reduce((s, w) => s + w.total, 0);
+            const matSum = materials.reduce((s, m) => s + m.total, 0);
+            return (
+              <div key={cfg.id} className="detail-block">
+                <p className="detail-title">
+                  Позиция {idx + 1}. {cfg.roomName || `${ct?.label} потолок`}
+                  <span className="dim">{lv?.label} · {cfg.area} м² · периметр {cfg.perimeter} пм</span>
+                </p>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Наименование</th>
+                      <th style={{ width: 50 }} className="c">Кол-во</th>
+                      <th style={{ width: 40 }} className="c">Ед.</th>
+                      <th style={{ width: 80 }} className="r">Цена, ₽</th>
+                      <th style={{ width: 90 }} className="r">Сумма, ₽</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {works.length > 0 && (
+                      <tr className="sec-row"><td colSpan={5}>Работы</td></tr>
+                    )}
+                    {works.map((w, i) => (
+                      <tr key={`w${i}`}>
+                        <td>{w.name}{w.spec ? <span style={{ color: "#666" }}> · {w.spec}</span> : null}</td>
+                        <td className="c">{w.qty}</td>
+                        <td className="c">{w.unit}</td>
+                        <td className="r">{fmt(w.pricePerUnit)}</td>
+                        <td className="r">{fmt(w.total)}</td>
+                      </tr>
+                    ))}
+                    {works.length > 0 && (
+                      <tr className="sub-row"><td colSpan={4}>Итого работы</td><td className="r">{fmt(worksSum)}</td></tr>
+                    )}
+                    {materials.length > 0 && (
+                      <tr className="sec-row"><td colSpan={5}>Материалы</td></tr>
+                    )}
+                    {materials.map((m, i) => (
+                      <tr key={`m${i}`}>
+                        <td>{m.name}{m.spec ? <span style={{ color: "#666" }}> · {m.spec}</span> : null}</td>
+                        <td className="c">{m.qty}</td>
+                        <td className="c">{m.unit}</td>
+                        <td className="r">{fmt(m.pricePerUnit)}</td>
+                        <td className="r">{fmt(m.total)}</td>
+                      </tr>
+                    ))}
+                    {materials.length > 0 && (
+                      <tr className="sub-row"><td colSpan={4}>Итого материалы</td><td className="r">{fmt(matSum)}</td></tr>
+                    )}
+                    <tr className="room-total"><td colSpan={4}>Итого по позиции</td><td className="r">{fmt(worksSum + matSum)}</td></tr>
+                  </tbody>
+                </table>
               </div>
             );
           })}
