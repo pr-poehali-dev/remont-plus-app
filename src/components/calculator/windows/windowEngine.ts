@@ -172,11 +172,15 @@ export function calcWindow(
 
   const pushMat = (block: WindowBlock, name: string, unit: string, unitQty: number, perUnitComponent: number, spec?: string, isConsumable?: boolean) => {
     if (perUnitComponent <= 0 || unitQty <= 0) return;
-    lines.push({ block, name, spec, unit, qty: Math.round(unitQty * 100) / 100, pricePerUnit: unitQty > 0 ? round(px(perUnitComponent) / unitQty) : 0, total: px(perUnitComponent), isConsumable, isWork: false });
+    const q = Math.round(unitQty * 100) / 100;
+    const price = q > 0 ? round(px(perUnitComponent) / q) : 0;
+    lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isConsumable, isWork: false });
   };
   const pushWork = (block: WindowBlock, name: string, unit: string, unitQty: number, perUnitComponent: number, spec?: string) => {
     if (perUnitComponent <= 0 || unitQty <= 0) return;
-    lines.push({ block, name, spec, unit, qty: Math.round(unitQty * 100) / 100, pricePerUnit: unitQty > 0 ? round(px(perUnitComponent) / unitQty) : 0, total: px(perUnitComponent), isWork: true });
+    const q = Math.round(unitQty * 100) / 100;
+    const price = q > 0 ? round(px(perUnitComponent) / q) : 0;
+    lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isWork: true });
   };
 
   // профиль/рама: материал (часть) + изготовление (часть)

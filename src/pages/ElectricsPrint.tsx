@@ -48,7 +48,10 @@ export default function ElectricsPrint() {
     // Наценка мастера «зашивается» в цены позиций, отдельной строкой не показывается
     const k = 1 + (markupPct || 0) / 100;
     const scale = (arr: ReturnType<typeof calcElectricsWorks>) =>
-      arr.map((i) => ({ ...i, pricePerUnit: Math.round(i.pricePerUnit * k), total: Math.round(i.total * k) }));
+      arr.map((i) => {
+        const pricePerUnit = Math.round(i.pricePerUnit * k);
+        return { ...i, pricePerUnit, total: Math.round(pricePerUnit * i.qty) };
+      });
     const works = scale(calcElectricsWorks(z, bd, regionId));
     const materials = scale(calcElectricsMaterials(z, bd, regionId).filter((m) => !m.isWork));
     return { z, roomType, bd, works, materials };

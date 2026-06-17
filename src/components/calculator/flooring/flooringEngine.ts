@@ -114,14 +114,15 @@ export function calcFlooring(
   ) => {
     if (qty <= 0 || ratePerUnit <= 0) return;
     const price = round(ratePerUnit * rc);
+    const q = Math.round(qty * 10) / 10;
     lines.push({
       block,
       name,
       spec,
       unit,
-      qty: Math.round(qty * 10) / 10,
+      qty: q,
       pricePerUnit: price,
-      total: round(price * qty),
+      total: round(price * q),
       isWork: true,
     });
   };
@@ -137,14 +138,16 @@ export function calcFlooring(
     isConsumable?: boolean,
   ) => {
     if (qty <= 0 || pricePerUnit <= 0) return;
+    const q = Math.round(qty * 100) / 100;
+    const price = round(pricePerUnit);
     lines.push({
       block,
       name,
       spec,
       unit,
-      qty: Math.round(qty * 100) / 100,
-      pricePerUnit: round(pricePerUnit),
-      total: round(pricePerUnit * qty),
+      qty: q,
+      pricePerUnit: price,
+      total: round(price * q),
       isConsumable,
       isWork: false,
     });

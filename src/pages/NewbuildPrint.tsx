@@ -56,7 +56,10 @@ export default function NewbuildPrint() {
   // Наценка мастера «зашивается» в цены позиций (×k), отдельной строкой не показывается.
   const k = 1 + (markupPct || 0) / 100;
   const scale = (arr: ReturnType<typeof calcNewbuildWorks>) =>
-    arr.map((i) => ({ ...i, pricePerUnit: Math.round(i.pricePerUnit * k), total: Math.round(i.total * k) }));
+    arr.map((i) => {
+      const pricePerUnit = Math.round(i.pricePerUnit * k);
+      return { ...i, pricePerUnit, total: Math.round(pricePerUnit * i.qty) };
+    });
 
   const rowsData = zones.map(z => {
     const roomType = ROOM_TYPES.find(r => r.id === z.roomType);

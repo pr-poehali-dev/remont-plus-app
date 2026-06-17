@@ -110,7 +110,8 @@ export function calcElectrics(
   ) => {
     if (qty <= 0 || ratePerUnit <= 0) return;
     const price = round(ratePerUnit * tc * rc);
-    lines.push({ block, name, spec, unit, qty: Math.round(qty * 10) / 10, pricePerUnit: price, total: round(price * qty), isWork: true });
+    const q = Math.round(qty * 10) / 10;
+    lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isWork: true });
   };
 
   // material: цена по прайсу поставщика (без rc/tc)
@@ -124,7 +125,9 @@ export function calcElectrics(
     isConsumable?: boolean,
   ) => {
     if (qty <= 0 || pricePerUnit <= 0) return;
-    lines.push({ block, name, spec, unit, qty: Math.round(qty * 100) / 100, pricePerUnit: round(pricePerUnit), total: round(pricePerUnit * qty), isConsumable, isWork: false });
+    const q = Math.round(qty * 100) / 100;
+    const price = round(pricePerUnit);
+    lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isConsumable, isWork: false });
   };
 
   const totalOutlets = cfg.outletsCount + cfg.doubleOutletsCount + cfg.groundedOutletsCount;

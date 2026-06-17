@@ -111,14 +111,17 @@ export function calcBathHouse(cfg: BathHouseConfig, regionId: string, markupPct 
   const material = (block: BathHouseBlock, name: string, unit: string, qty: number, pricePerUnit: number, spec?: string, isConsumable?: boolean) => {
     if (qty <= 0 || pricePerUnit <= 0) return;
     const price = round(pricePerUnit * rc);
-    lines.push({ block, name, spec, unit, qty: Math.round(qty * 100) / 100, pricePerUnit: price, total: round(pricePerUnit * qty * rc), isConsumable, isWork: false });
+    const q = Math.round(qty * 100) / 100;
+    lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isConsumable, isWork: false });
   };
 
   // work: цена работы × rc (block "assembly" для общестроя или собственный блок)
   const work = (block: BathHouseBlock, name: string, unit: string, qty: number, totalWork: number, spec?: string) => {
     if (qty <= 0 || totalWork <= 0) return;
     const t = round(totalWork * rc);
-    lines.push({ block, name, spec, unit, qty: Math.round(qty * 100) / 100, pricePerUnit: round(t / qty), total: t, isWork: true });
+    const q = Math.round(qty * 100) / 100;
+    const price = q > 0 ? round(t / q) : 0;
+    lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isWork: true });
   };
 
   // ── ФУНДАМЕНТ (цена «под ключ» = материал + работа) ─────────

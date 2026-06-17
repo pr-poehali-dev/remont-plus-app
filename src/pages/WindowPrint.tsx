@@ -45,7 +45,10 @@ export default function WindowPrint() {
   // в цены позиций (×k), отдельной строкой не показывается.
   const k = 1 + (markupPct || 0) / 100;
   const scale = (arr: ReturnType<typeof calcWindowWorks>) =>
-    arr.map((i) => ({ ...i, pricePerUnit: Math.round(i.pricePerUnit * k), total: Math.round(i.total * k) }));
+    arr.map((i) => {
+      const pricePerUnit = Math.round(i.pricePerUnit * k);
+      return { ...i, pricePerUnit, total: Math.round(pricePerUnit * i.qty) };
+    });
   const rowsData = configs.map((cfg) => {
     const works = scale(calcWindowWorks(cfg, undefined, cfg.regionId));
     const materials = scale(calcWindowMaterials(cfg, undefined, cfg.regionId).filter((m) => !m.isWork));

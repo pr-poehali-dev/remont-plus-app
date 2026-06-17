@@ -122,14 +122,17 @@ export function calcBathroom(
   const work = (block: BathroomBlock, name: string, unit: string, qty: number, ratePerUnit: number, spec?: string) => {
     if (qty <= 0 || ratePerUnit <= 0) return;
     const price = round(ratePerUnit * rc);
-    lines.push({ block, name, spec, unit, qty: Math.round(qty * 10) / 10, pricePerUnit: price, total: round(price * qty), isWork: true });
+    const q = Math.round(qty * 10) / 10;
+    lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isWork: true });
   };
 
   // material: цена материала (региональный коэффициент применяем к работам и
   // оборудованию; сыпучие материалы по прайсу поставщика без rc)
   const material = (block: BathroomBlock, name: string, unit: string, qty: number, pricePerUnit: number, spec?: string, isConsumable?: boolean) => {
     if (qty <= 0 || pricePerUnit <= 0) return;
-    lines.push({ block, name, spec, unit, qty: Math.round(qty * 100) / 100, pricePerUnit: round(pricePerUnit), total: round(pricePerUnit * qty), isConsumable, isWork: false });
+    const q = Math.round(qty * 100) / 100;
+    const price = round(pricePerUnit);
+    lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isConsumable, isWork: false });
   };
 
   // ── ДЕМОНТАЖ ───────────────────────────────────────────────

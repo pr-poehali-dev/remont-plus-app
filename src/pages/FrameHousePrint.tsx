@@ -65,7 +65,10 @@ export default function FrameHousePrint() {
     rawMaterialsAll.reduce((s, m) => s + m.total, 0);
   const k = baseSum > 0 ? bd.total / baseSum : 1;
   const scale = (arr: MaterialItem[]) =>
-    arr.map((i) => ({ ...i, pricePerUnit: Math.round(i.pricePerUnit * k), total: Math.round(i.total * k) }));
+    arr.map((i) => {
+      const pricePerUnit = Math.round(i.pricePerUnit * k);
+      return { ...i, pricePerUnit, total: Math.round(pricePerUnit * i.qty) };
+    });
   const works = scale(rawWorks);
   const materials = scale(rawMaterialsAll.filter((i) => !i.isConsumable));
   const consumables = scale(rawMaterialsAll.filter((i) => i.isConsumable));
