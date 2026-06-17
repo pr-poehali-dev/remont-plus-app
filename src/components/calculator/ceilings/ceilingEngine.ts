@@ -57,8 +57,8 @@ const WORK_RATES = {
 
 // ─── ЦЕНЫ МАТЕРИАЛОВ 2026, ₽ ─────────────────────────────────────────────────
 const MAT_PRICES = {
-  canvasBaseM2: 1850,        // полотно ПВХ матовое стандарт, ₽/м² (= BASE_PRICE_PER_M2)
-  profilePerM: 110,          // алюминиевый/ПВХ багет, ₽/м.п.
+  canvasBaseM2: 1650,        // полотно ПВХ матовое стандарт, ₽/м² (рынок 2026: 1500–1700; было 1850 — высоко)
+  profilePerM: 95,           // алюминиевый/ПВХ багет, ₽/м.п. (рынок 2026: 80–100; было 110)
   garpunPerM: 35,            // гарпун (привар к полотну), ₽/м.п.
   dowelPerM: 18,             // дюбель-гвозди + саморезы, ₽/м.п. профиля
   gklSheetM2: 320,           // лист ГКЛ влагостойкий, ₽/м² короба
@@ -135,7 +135,11 @@ export function calcCeiling(
 
   // ── ПРОФИЛЬ / БАГЕТ (материал + монтаж) ────────────────────
   if (perimeter > 0) {
-    work("profile", "Монтаж крепёжного профиля (багета)", "м.п.", perimeter, round(WORK_RATES.profileMount * profileCoeff), profile?.label);
+    // Прозрачность: работа монтажа багета не зависит от типа профиля —
+    // трудозатраты на 1 м.п. одинаковы. Коэффициент типа профиля (profileCoeff)
+    // применяется ТОЛЬКО к цене материала багета (гарпунный/штапиковый/клиновой),
+    // а не к работе. Раньше profileCoeff неявно завышал/занижал и стоимость работы.
+    work("profile", "Монтаж крепёжного профиля (багета)", "м.п.", perimeter, WORK_RATES.profileMount, profile?.label);
     material("profile", `Багет ${profile?.label?.toLowerCase() ?? ""}`.trim(), "м.п.", perimeter, round(MAT_PRICES.profilePerM * profileCoeff), profile?.description);
     material("profile", "Дюбель-гвозди, саморезы", "м.п.", perimeter, MAT_PRICES.dowelPerM, "крепёж профиля", true);
   }
@@ -150,8 +154,12 @@ export function calcCeiling(
   const extraLevels = level?.value === "double" ? 1 : level?.value === "triple" ? 2 : 0;
   if (extraLevels > 0 && perimeter > 0) {
     const boxRunM = perimeter * extraLevels;
-    const boxAreaM2 = boxRunM * 0.4; // короб шириной ~0,4 м
+    // Площадь обшивки короба = длина короба × ширина 0.4 м. Коэффициент 0.4 —
+    // типовая ширина ступени короба (≈40 см) в двух-/трёхуровневом потолке.
+    const boxAreaM2 = boxRunM * 0.4;
     work("levels", `Устройство ${level?.label?.toLowerCase()} короба (каркас ГКЛ)`, "м.п.", boxRunM, WORK_RATES.levelFrame, "каркас, гнутьё, шпаклёвка");
+    // Расход профиля CD/UD = 2.5 м.п. на 1 м.п. короба (несущий CD + направляющий
+    // UD + поперечины и подвесы). Стандартная норма каркаса ГКЛ.
     material("levels", "Профиль каркаса CD/UD", "м.п.", round(boxRunM * 2.5), MAT_PRICES.profileFrameM, "подвесы, соединители", true);
     material("levels", "Лист ГКЛ влагостойкий", "м²", round(boxAreaM2 * 1.15), MAT_PRICES.gklSheetM2, "обшивка короба");
   }
@@ -179,7 +187,9 @@ export function calcCeiling(
   }
 
   // ── ОБВОДЫ ТРУБ / УГЛЫ (расходники) ────────────────────────
-  // оценка количества обводов труб по площади (стояки/радиаторы)
+  // Оценка количества обводов труб по площади. Типовая практика: в комнате
+  // до 12 м² обычно 1 стояк/вывод отопления, в комнате ≥12 м² — 2 (стояк +
+  // подводка радиатора). Приближение при отсутствии точной геометрии.
   if (area > 0) {
     const bypassCount = area >= 12 ? 2 : 1;
     work("extras", "Обвод труб / стоек отопления", "шт.", bypassCount, WORK_RATES.pipeBypass, "герметичный обвод");

@@ -92,7 +92,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.laminate,
     features: ["Гидрофобное покрытие", "Фаска 4V", "Замок Uniclic"],
     suitable: ["Гостиная", "Спальня", "Детская"],
-    installPrice: 450,
+    installPrice: 600, // укладка ламината 2026, рынок 500–700 ₽/м²
   },
   {
     id: "lam-pergo-33",
@@ -106,7 +106,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.laminate,
     features: ["TitanX покрытие", "Защита от царапин", "PerfectFold 3.0"],
     suitable: ["Гостиная", "Кухня", "Прихожая"],
-    installPrice: 450,
+    installPrice: 650, // укладка ламината премиум 2026 (широкая доска)
   },
   {
     id: "lam-egger-32",
@@ -120,7 +120,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.laminate,
     features: ["Антистатик", "EPL замок", "Широкая доска"],
     suitable: ["Спальня", "Детская", "Кабинет"],
-    installPrice: 400,
+    installPrice: 550, // укладка ламината эконом 2026
   },
 
   // ПАРКЕТ (штучный)
@@ -196,7 +196,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.vinyl,
     features: ["100% водостойкий", "Каменная основа", "Без подложки"],
     suitable: ["Кухня", "Ванная", "Прихожая", "Везде"],
-    installPrice: 480,
+    installPrice: 600, // укладка SPC click 2026, рынок 550–700 ₽/м²
   },
   {
     id: "spc-alpine-floor",
@@ -210,7 +210,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.vinyl,
     features: ["Коммерческий класс", "Антибактериальный", "Встроенная подложка"],
     suitable: ["Кухня", "Прихожая", "Коммерция"],
-    installPrice: 480,
+    installPrice: 620, // укладка SPC коммерческий 2026
   },
 
   // ВИНИЛОВАЯ ПЛИТКА LVT
@@ -226,7 +226,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.vinyl,
     features: ["Click замок", "Фаска", "Теплый на ощупь"],
     suitable: ["Гостиная", "Кухня", "Спальня"],
-    installPrice: 520,
+    installPrice: 650, // укладка LVT click 2026
   },
   {
     id: "vinyl-moduleo",
@@ -240,7 +240,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.vinyl,
     features: ["Pure Click", "Водостойкий", "Скошенная кромка"],
     suitable: ["Везде"],
-    installPrice: 540,
+    installPrice: 680, // укладка LVT click премиум 2026
   },
 
   // КЕРАМОГРАНИТ
@@ -286,7 +286,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.vinyl,
     features: ["Утеплённая основа", "Под дерево", "Ширина 3 м"],
     suitable: ["Спальня", "Детская", "Дача"],
-    installPrice: 340,
+    installPrice: 400, // настил линолеума 2026, рынок 350–450 ₽/м²
   },
   {
     id: "lino-forbo-commercial",
@@ -300,7 +300,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.vinyl,
     features: ["Антистатик", "Коммерческий", "Без основы"],
     suitable: ["Офис", "Кухня", "Прихожая"],
-    installPrice: 400,
+    installPrice: 480, // настил коммерческого линолеума на клей 2026
   },
 
   // ПРОБКА
@@ -346,7 +346,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.carpet,
     features: ["Петлевой ворс", "Антистатик", "Ширина 4 м"],
     suitable: ["Спальня", "Гостиная", "Кабинет"],
-    installPrice: 460,
+    installPrice: 480, // настил ковролина на клей 2026
   },
   {
     id: "carpet-ideal",
@@ -360,7 +360,7 @@ export const FLOORING_PRODUCTS: FlooringProduct[] = [
     image: IMG.carpet,
     features: ["Разрезной ворс", "Бюджетный", "Ширина 3/4 м"],
     suitable: ["Спальня", "Детская"],
-    installPrice: 340,
+    installPrice: 380, // настил ковролина эконом 2026
   },
 
   // БАМБУК

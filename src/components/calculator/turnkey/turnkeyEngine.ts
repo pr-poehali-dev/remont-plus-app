@@ -59,17 +59,17 @@ export interface TurnkeyEstimate {
 }
 
 // ─── РАСЦЕНКИ РАБОТ 2026, ₽ (база, до lc и rc) ───────────────────────────────
+// Ставки приведены к рыночным ориентирам Москвы 2026 (только работа).
 const WORK_RATES = {
   cabinDemolition: 1700,     // демонтаж сантехкабины, ₽/м.п. перегородок
   cabinMasonry: 1350,        // кладка перегородок сантехкабины, ₽/м²
-  electricsM2: 1450,         // электромонтаж, ₽/м²
-  plumbingPerBath: 24000,    // разводка сантехники, ₽/санузел
-  plasterWall: 720,          // штукатурка стен, ₽/м²
-  screedFloor: 750,          // стяжка пола, ₽/м²
-  floorLay: 650,             // укладка напольного покрытия, ₽/м²
-  ceilingPaint: 520,         // покраска потолка, ₽/м²
+  electricsM2: 1100,         // электромонтаж, ₽/м² (рынок 1000–1200; было 1450 — завышено)
+  plumbingPerBath: 20000,    // разводка сантехники, ₽/санузел (рынок 18000–22000; было 24000)
+  plasterWall: 950,          // штукатурка стен, ₽/м² (рынок 900–1100; было 720 — занижено)
+  screedFloor: 900,          // стяжка пола, ₽/м² (рынок 850–1000; было 750)
+  floorLay: 850,             // укладка напольного покрытия, ₽/м² (рынок 800–1000; было 650)
+  ceilingPaint: 520,         // покраска потолка, ₽/м² (рынок 500–600)
   ceilingStretch: 480,       // монтаж натяжного потолка, ₽/м²
-  bathroomWorkShare: 0.45,   // доля работ в санузле «под ключ» от pricePerUnit
   kitchenInstall: 38000,     // монтаж кухонного гарнитура, ₽/компл
   doorInstall: 4500,         // установка двери, ₽/шт
   windowSlope: 3000,         // монтаж откоса, ₽/проём
@@ -77,22 +77,36 @@ const WORK_RATES = {
   cleaningM2: 180,           // финальная уборка, ₽/м²
 };
 
+// ─── СТРУКТУРА САНУЗЛА «ПОД КЛЮЧ» (раскладка опорного прайса) ─────────────────
+// Раньше санузел дробился непрозрачно: работа = 45%, материал = 55% от прайса.
+// Теперь опорный прайс санузла (pricePerUnit) раскладывается на ПОНЯТНЫЕ
+// позиции с явным типом (работа/материал). Сумма долей = 1.0 (100%), поэтому
+// итог по санузлам = pricePerUnit × кол-во санузлов (как и прежде — инвариант
+// сохранён). Каждая доля — это укрупнённый этап санузла «под ключ».
+const BATHROOM_PARTS = [
+  { key: "tile",    label: "Плитка + укладка (стены и пол)",            share: 0.40, isWork: false },
+  { key: "plumb",   label: "Сантехника + монтаж (санфаянс, смесители)", share: 0.25, isWork: false },
+  { key: "waterpr", label: "Гидроизоляция + стяжка (работа)",            share: 0.12, isWork: true  },
+  { key: "cabin",   label: "Сантехкабина / перегородки (работа)",        share: 0.10, isWork: true  },
+  { key: "finish",  label: "Прочая отделка и расходники",                share: 0.13, isWork: false },
+] as const;
+
 // ─── ЦЕНЫ МАТЕРИАЛОВ 2026, ₽ ─────────────────────────────────────────────────
 const MAT_PRICES = {
   block: 95,                 // пеноблок/ПГБ 600×300×100, ₽/шт
   blockGlue: 28,             // клей для блоков, ₽/кг
   serpyanka: 18,             // сетка-серпянка, ₽/м.п.
   rebar: 35,                 // арматура ∅6, ₽/м.п.
-  cablePower: 72,            // кабель ВВГнг 3×2,5, ₽/м.п.
-  cableLight: 50,            // кабель ВВГнг 3×1,5, ₽/м.п.
+  cablePower: 105,           // кабель ВВГнг 3×2,5, ₽/м.п. (рынок 95–120; было 72 — занижено)
+  cableLight: 68,            // кабель ВВГнг 3×1,5, ₽/м.п. (рынок 60–75; было 50)
   panel: 8500,               // щиток распределительный, ₽/шт
   electricFittings: 360,     // автоматы/розетки/выключатели, ₽/м² (компл.)
   corrugation: 110,          // гофра/подрозетники, ₽/м² (компл.)
   pipePpr: 125,              // труба PPR, ₽/м.п.
   pprFittings: 4500,         // фитинги PPR, ₽/санузел
   sewerPipe: 160,            // канализационная гофра/труба, ₽/м.п.
-  plasterMix: 16,            // гипсовая штукатурка, ₽/кг (~12 кг/м²)
-  screedMix: 12,             // ЦПС М200, ₽/кг (~22 кг/м²)
+  plasterMix: 24,            // гипсовая штукатурка, ₽/кг (~12 кг/м²; рынок 22–28; было 16 — занижено)
+  screedMix: 18,             // ЦПС М200, ₽/кг (~22 кг/м²; рынок 16–20; было 12 — занижено)
   putty: 24,                 // финишная шпаклёвка, ₽/кг (~1,2 кг/м²)
   primer: 120,               // грунтовка, ₽/л
   beacons: 58,               // маяки/профили, ₽/м² (компл.)
@@ -124,8 +138,13 @@ export function calcTurnkey(
   const area = cfg.totalAreaM2 || 0;
   const baths = cfg.bathroomCount || 1;
   const ceilH = cfg.ceilingHeightM || 2.8;
+  // Оценка площади стен по площади квартиры: √площадь даёт сторону условного
+  // квадрата, ×3.5 — приведение к суммарной длине стен (с учётом внутренних
+  // перегородок), ×ceilH — высота. Приближение при отсутствии точной планировки.
   const wallArea = Math.round(Math.sqrt(area) * 3.5 * ceilH * 10) / 10;
+  // Оценка числа оконных проёмов: балконы + ~1 окно на каждые 18 м² площади.
   const windowCount = (cfg.balconyCount || 0) + Math.max(1, Math.ceil(area / 18));
+  // Оценка числа комнат: ~1 комната на каждые 20 м² площади квартиры.
   const roomCount = Math.max(1, Math.round(area / 20));
   const cabinPerimPerBath = 12;
 
@@ -237,16 +256,35 @@ export function calcTurnkey(
   }
 
   // ── САНУЗЛЫ ПОД КЛЮЧ ───────────────────────────────────────
+  // Опорный прайс санузла (pricePerUnit) раскладывается на понятные этапы
+  // (BATHROOM_PARTS) с явным типом работа/материал вместо абстрактных «45/55».
   if (cfg.bathroomIncluded && bathroomLevel) {
     const unit = bathroomLevel.pricePerUnit;
-    // работа (укладка плитки, гидроизоляция, монтаж сантехники) и материалы (плитка, санфаянс)
-    work("bathrooms", `Санузел под ключ — работы (${bathroomLevel.label})`, "шт.", baths, round(unit * WORK_RATES.bathroomWorkShare), "плитка, гидроизоляция, сантехника", false);
-    const bathroomArea = baths * 6;
-    material("bathrooms", `Плитка настенная (${bathroomLevel.label})`, "м²", Math.round(bathroomArea * 2.8 * 1.1), round(unit * 0.15 * baths / Math.max(1, Math.round(bathroomArea * 2.8 * 1.1))), bathroomLevel.description);
-    material("bathrooms", "Плитка напольная для санузлов", "м²", Math.round(bathroomArea * 1.1), round(unit * 0.08 * baths / Math.max(1, Math.round(bathroomArea * 1.1))));
-    material("bathrooms", "Унитаз + инсталляция", "компл.", baths, round(unit * 0.12), "санфаянс");
-    material("bathrooms", "Смеситель, душ, полотенцесушитель", "компл.", baths, round(unit * 0.10));
-    material("bathrooms", "Гидроизоляция, клей для плитки, затирка", "компл.", baths, round(unit * 0.05), undefined, true);
+    // Разносим ЦЕНУ ОДНОГО САНУЗЛА на целочисленные доли так, чтобы их сумма
+    // была ровно = unit. Тогда каждая строка: total = pricePerUnit × baths
+    // (оба целые → деление/округление не нужно, инвариант total=round(price×q)
+    // выполняется точно), а блок санузлов = unit × baths.
+    let pricedSoFar = 0;
+    BATHROOM_PARTS.forEach((part, idx) => {
+      const isLast = idx === BATHROOM_PARTS.length - 1;
+      const pricePerUnit = isLast ? unit - pricedSoFar : round(unit * part.share);
+      if (pricePerUnit <= 0) return;
+      pricedSoFar += pricePerUnit;
+      const spec = idx === 0 && bathroomLevel.description
+        ? `${bathroomLevel.label}, ${bathroomLevel.description}`
+        : bathroomLevel.label;
+      lines.push({
+        block: "bathrooms",
+        name: `Санузел под ключ — ${part.label}`,
+        spec,
+        unit: "санузел",
+        qty: baths,
+        pricePerUnit,
+        total: round(pricePerUnit * baths),
+        isWork: part.isWork,
+        isConsumable: false,
+      });
+    });
   }
 
   // ── КУХНЯ ──────────────────────────────────────────────────

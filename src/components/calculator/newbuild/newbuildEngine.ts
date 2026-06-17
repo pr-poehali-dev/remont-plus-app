@@ -58,16 +58,17 @@ export interface NewbuildEstimate {
 }
 
 // ─── РАСЦЕНКИ РАБОТ 2026, ₽ (база, до lc и rc) ───────────────────────────────
+// Ставки приведены к рыночным ориентирам Москвы 2026 (только работа).
 const WORK_RATES = {
   screedDry: 620,            // монтаж сухой стяжки, ₽/м²
-  screedWet: 720,            // устройство мокрой стяжки по маякам, ₽/м²
+  screedWet: 900,            // устройство мокрой стяжки по маякам, ₽/м² (рынок 850–1000; было 720)
   screedSelf: 480,           // заливка наливного пола, ₽/м²
-  plaster: 650,              // штукатурка стен по маякам, ₽/м²
-  ceilingPaint: 520,         // шпаклёвка+покраска потолка, ₽/м²
+  plaster: 950,              // штукатурка стен по маякам, ₽/м² (рынок 900–1100; было 650)
+  ceilingPaint: 520,         // шпаклёвка+покраска потолка, ₽/м² (рынок 500–600)
   ceilingStretch: 480,       // монтаж натяжного потолка, ₽/м²
   ceilingGkl: 1150,          // монтаж ГКЛ-потолка, ₽/м²
   paint: 280,                // покраска поверхности (1 слой), ₽/м²
-  flooringLay: 550,          // укладка напольного покрытия, ₽/м²
+  flooringLay: 850,          // укладка напольного покрытия, ₽/м² (рынок 800–1000; было 550)
   electricPoint: 950,        // монтаж точки (розетка/выключатель), ₽/шт
   electricWiring: 320,       // штробление+разводка, ₽/м² площади
   doorInstall: 4500,         // установка двери с коробкой, ₽/шт
@@ -88,12 +89,12 @@ const WORK_RATES = {
 const MAT_PRICES = {
   screedDryGvl: 380,         // лист ГВЛ Knauf суперпол, ₽/м²
   keramzit: 3600,            // керамзит, ₽/м³
-  cementMix: 12,             // ЦПС М200, ₽/кг
+  cementMix: 18,             // ЦПС М200, ₽/кг (рынок 16–20; было 12 — занижено)
   fibre: 480,                // фибра, ₽/кг
   selfLevel: 32,             // наливная смесь, ₽/кг
   primer: 150,               // грунтовка, ₽/л
   beacons: 45,               // маяки, ₽/шт
-  plasterMix: 18,            // штукатурная смесь, ₽/кг (~12 кг/м²)
+  plasterMix: 24,            // штукатурная смесь (гипсовая), ₽/кг (~12 кг/м²; рынок 22–28; было 18)
   plasterPrimer: 120,        // грунтовка стен, ₽/л
   plasterBeacons: 58,        // маячный профиль, ₽/шт
   stretchCanvas: 480,        // натяжное полотно ПВХ, ₽/м²
@@ -105,7 +106,7 @@ const MAT_PRICES = {
   paintPrimer: 110,          // грунт под краску, ₽/л
   underlay: 75,              // подложка, ₽/м²
   skirting: 240,             // плинтус, ₽/м.п.
-  cable: 72,                 // кабель ВВГнг 3×2,5, ₽/м.п.
+  cable: 105,                // кабель ВВГнг 3×2,5, ₽/м.п. (рынок 95–120; было 72 — занижено)
   socket: 420,               // розетка, ₽/шт
   switch: 360,               // выключатель, ₽/шт
   corrugation: 80,           // гофра+подрозетники, ₽/м² (компл.)
@@ -144,6 +145,10 @@ export function calcNewbuild(
   const area = cfg.area || 0;
   const ceilH = cfg.ceilingHeightM || 2.8;
   const wallCoeff = roomType?.wallCoeff ?? 2.4;
+  // Оценка площади стен по площади пола: wallArea = area × wallCoeff × (ceilH/2.8).
+  // wallCoeff (≈2.4) — типовое отношение площади стен к площади пола для комнаты
+  // при высоте 2.8 м; множитель ceilH/2.8 корректирует под фактическую высоту.
+  // Приближение при отсутствии точной геометрии помещения.
   const wallArea = Math.round(area * wallCoeff * ceilH / 2.8 * 10) / 10;
 
   const lines: NewbuildLine[] = [];
@@ -330,6 +335,9 @@ export function calcNewbuild(
     const pipesType = PLUMBING_PIPES_TYPES.find((p) => p.id === cfg.plumbingPipesType);
     const pts = cfg.plumbingPointsCount || 4;
     work("plumbing", "Разводка сантехнических точек", "точка", pts, WORK_RATES.plumbingPoint, pipesType?.label);
+    // pricePerPoint в справочнике = полная стоимость трубной обвязки точки.
+    // Работа вынесена отдельной строкой (plumbingPoint), поэтому в материале
+    // учитываем ~50% pricePerPoint — это материальная часть (трубы, изоляция).
     material("plumbing", `Трубы: ${pipesType?.label ?? "ППР"}`, "точка", pts, round((pipesType?.pricePerPoint ?? 4400) * 0.5), "разводка");
     material("plumbing", "Фитинги, запорная арматура, краны", "точка", pts, MAT_PRICES.plumbFittings, undefined, true);
 

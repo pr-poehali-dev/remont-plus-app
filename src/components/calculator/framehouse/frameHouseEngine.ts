@@ -60,24 +60,22 @@ export interface FrameHouseEstimate {
   blockTotals: Record<FrameHouseBlock, number>;
 }
 
-// Доля монтажа от стоимости материалов соответствующего блока (работа = % материала)
-const ASSEMBLY_SHARE: Record<FrameHouseBlock, number> = {
-  foundation: 0.0,        // фундамент — цена «под ключ» (ниже отдельная позиция работ)
-  frame: 0.45,            // монтаж каркаса
-  insulation: 0.40,       // монтаж утепления + ветрозащита + пароизоляция
-  roofStructure: 0.65,    // монтаж стропил/обрешётки
-  roofing: 0.40,          // монтаж кровли
-  facade: 0.55,           // монтаж фасада
-  windows: 0.18,          // установка окон (часто в цене)
-  floor: 0.50,            // устройство пола
-  underfloorHeating: 0.45,// монтаж тёплого пола
-  heating: 0.0,           // отопление — цена «под ключ» (работа отдельно)
-  electrical: 0.0,        // электрика — цена «под ключ»
-  plumbing: 0.0,          // водоснабжение — цена «под ключ»
-  sewage: 0.0,            // канализация — цена «под ключ»
-  interiorFinish: 0.55,   // внутренняя отделка
-  terrace: 0.0,           // терраса — цена материал+монтаж
-  garage: 0.0,            // гараж — цена материал+монтаж
+// ─── РАСЦЕНКИ РАБОТ 2026, ₽ (база, до регионального коэффициента rc) ──────────
+// Прозрачно: работа = СТАВКА × КОЛИЧЕСТВО в реальных единицах (₽/м², ₽/м.п.,
+// ₽/шт). Никаких долей от стоимости материала (раньше ASSEMBLY_SHARE).
+// Ставки приведены к рыночным ориентирам строительства Москвы/области 2026.
+const WORK_RATES = {
+  frame: 1500,            // сборка каркаса стен и перекрытий, ₽/м² стены
+  insulation: 450,        // утепление + ветрозащита + пароизоляция, ₽/м²
+  roofStructure: 800,     // монтаж стропил + обрешётки, ₽/м² кровли
+  roofing: 600,           // монтаж кровельного покрытия, ₽/м² кровли
+  facade: 700,            // монтаж фасада, ₽/м²
+  windows: 2800,          // установка окна + откосы, ₽/шт
+  floor: 1100,            // устройство пола (стяжка/лаги + покрытие), ₽/м²
+  underfloorHeating: 1300,// монтаж тёплого пола, ₽/м²
+  interiorFinish: 900,    // внутренняя отделка и финишные работы, ₽/м²
+  terrace: 2600,          // монтаж террасы, ₽/м²
+  garage: 3500,           // монтаж гаража, ₽/м²
 };
 
 export function calcFrameHouse(cfg: FrameHouseConfig, regionId: string, markupPct = 0): FrameHouseEstimate {
@@ -103,122 +101,108 @@ export function calcFrameHouse(cfg: FrameHouseConfig, regionId: string, markupPc
     lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isConsumable, isWork: false });
   };
 
-  // work: общая стоимость работы × rc
-  const work = (block: FrameHouseBlock, name: string, unit: string, qty: number, totalWork: number, spec?: string) => {
-    if (qty <= 0 || totalWork <= 0) return;
-    const t = round(totalWork * rc);
+  // work: работа = СТАВКА × КОЛИЧЕСТВО. price = round(rate × rc), total = round(price × q).
+  // (как в bathroomEngine — прозрачно, без долей от материала).
+  const work = (block: FrameHouseBlock, name: string, unit: string, qty: number, ratePerUnit: number, spec?: string) => {
+    if (qty <= 0 || ratePerUnit <= 0) return;
+    const price = round(ratePerUnit * rc);
     const q = Math.round(qty * 100) / 100;
-    const price = q > 0 ? round(t / q) : 0;
     lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isWork: true });
   };
 
-  // ── ФУНДАМЕНТ (цена «под ключ» = материал 55% + работа 45%) ─
+  // ── ФУНДАМЕНТ (одна понятная позиция «под ключ») ───────────
+  // Базовая цена фундамента уже включает и материалы, и работы (земляные,
+  // опалубка, армирование, бетон). Оставляем единой позицией «под ключ».
   const foundData = FOUNDATION_TYPES[cfg.foundation];
   const foundationBase = foundData.basePrice * (1 + (area - 50) * 0.008);
-  material("foundation", `Фундамент: ${foundData.label}`, "компл.", 1, foundationBase * 0.55, foundData.desc);
-  work("foundation", "Устройство фундамента", "компл.", 1, foundationBase * 0.45, foundData.label);
+  material("foundation", `Фундамент под ключ: ${foundData.label}`, "компл.", 1, foundationBase, `${foundData.desc} (материалы + работы)`);
 
   // ── КАРКАС СТЕН ────────────────────────────────────────────
   const frameTech = FRAME_WALL_TECHS[cfg.wallTech];
-  const frameMatBase = wallArea * frameTech.pricePerM2;
   material("frame", frameTech.label, "м²", wallArea, frameTech.pricePerM2, frameTech.desc);
-  work("frame", "Монтаж каркаса стен и перекрытий", "м²", wallArea, frameMatBase * ASSEMBLY_SHARE.frame);
+  work("frame", "Монтаж каркаса стен и перекрытий", "м²", wallArea, WORK_RATES.frame);
 
   // ── УТЕПЛЕНИЕ ──────────────────────────────────────────────
   const insulData = FRAME_INSULATIONS[cfg.insulation];
-  const insulMatBase = insulArea * insulData.pricePerM2;
   material("insulation", insulData.label, "м²", insulArea, insulData.pricePerM2, `${insulData.thickness} мм`);
   material("insulation", "Пароизоляция", "м²", (wallArea + area) * 1.15, 58, "ТЕХНОНИКОЛЬ Паробарьер", true);
   material("insulation", "Ветрозащитная мембрана", "м²", roofArea * 1.1 + wallArea * 0.5, 36, "Изоспан A / Ютавек", true);
-  work("insulation", "Утепление + ветрозащита + пароизоляция", "м²", insulArea, insulMatBase * ASSEMBLY_SHARE.insulation);
+  work("insulation", "Утепление + ветрозащита + пароизоляция", "м²", insulArea, WORK_RATES.insulation);
 
   // ── КРОВЛЯ: КАРКАС ─────────────────────────────────────────
-  const roofStructBase = roofArea * 1650;
   material("roofStructure", "Стропильная система и обрешётка", "м²", roofArea, 1650, "доска 50×200 / 25×100, сосна");
-  work("roofStructure", "Монтаж стропильной системы и обрешётки", "м²", roofArea, roofStructBase * ASSEMBLY_SHARE.roofStructure);
+  work("roofStructure", "Монтаж стропильной системы и обрешётки", "м²", roofArea, WORK_RATES.roofStructure);
 
   // ── КРОВЛЯ: ПОКРЫТИЕ ───────────────────────────────────────
   const roofMat = ROOFING_MATERIALS[cfg.roofingMaterial];
-  const roofingMatBase = roofArea * roofMat.pricePerM2;
   material("roofing", roofMat.label, "м²", roofArea, roofMat.pricePerM2);
-  work("roofing", "Монтаж кровельного покрытия", "м²", roofArea, roofingMatBase * ASSEMBLY_SHARE.roofing);
+  work("roofing", "Монтаж кровельного покрытия", "м²", roofArea, WORK_RATES.roofing);
 
   // ── ФАСАД ──────────────────────────────────────────────────
   const facadeData = FACADE_TYPES[cfg.facade];
-  const facadeMatBase = wallArea * facadeData.pricePerM2;
   material("facade", facadeData.label, "м²", wallArea, facadeData.pricePerM2, facadeData.desc);
-  work("facade", "Монтаж фасада", "м²", wallArea, facadeMatBase * ASSEMBLY_SHARE.facade);
+  work("facade", "Монтаж фасада", "м²", wallArea, WORK_RATES.facade);
 
   // ── ОКНА ───────────────────────────────────────────────────
   if (cfg.windowCount > 0) {
     const winData = WINDOW_TYPES[cfg.windowType];
-    const windowsBase = cfg.windowCount * winData.pricePerUnit;
     material("windows", winData.label, "шт.", cfg.windowCount, winData.pricePerUnit, "стеклопакет, фурнитура");
-    work("windows", "Установка окон, откосы", "шт.", cfg.windowCount, windowsBase * ASSEMBLY_SHARE.windows);
+    work("windows", "Установка окон, откосы", "шт.", cfg.windowCount, WORK_RATES.windows);
   }
 
   // ── ПОЛЫ ───────────────────────────────────────────────────
   const floorData = FLOOR_TYPES[cfg.floorType];
-  const floorMatBase = area * floorData.pricePerM2;
   material("floor", floorData.label, "м²", area, floorData.pricePerM2);
-  work("floor", "Устройство пола (стяжка/лаги + покрытие)", "м²", area, floorMatBase * ASSEMBLY_SHARE.floor);
+  work("floor", "Устройство пола (стяжка/лаги + покрытие)", "м²", area, WORK_RATES.floor);
 
   // ── ТЁПЛЫЙ ПОЛ ─────────────────────────────────────────────
   if (cfg.underfloorHeating) {
-    const ufhBase = area * 2800;
-    material("underfloorHeating", "Тёплый пол водяной (коллектор + трубы)", "м²", area, 2800 * 0.55, "PE-RT ∅16, шаг 150 мм");
-    work("underfloorHeating", "Монтаж тёплого пола", "м²", area, ufhBase * ASSEMBLY_SHARE.underfloorHeating);
+    material("underfloorHeating", "Тёплый пол водяной (коллектор + трубы)", "м²", area, 1540, "PE-RT ∅16, шаг 150 мм");
+    work("underfloorHeating", "Монтаж тёплого пола", "м²", area, WORK_RATES.underfloorHeating);
   }
 
-  // ── ОТОПЛЕНИЕ (под ключ = материал + работа) ───────────────
+  // ── ОТОПЛЕНИЕ (одна понятная позиция «под ключ») ───────────
   {
     const heatData = HEATING_TYPES[cfg.heating];
     const heatingBase = heatData.basePrice + area * 320;
-    material("heating", heatData.label, "компл.", 1, heatingBase * 0.6, heatData.desc);
-    work("heating", "Монтаж системы отопления", "компл.", 1, heatingBase * 0.4);
+    material("heating", `Отопление под ключ: ${heatData.label}`, "компл.", 1, heatingBase, `${heatData.desc} (материалы + работы)`);
   }
 
-  // ── ЭЛЕКТРИКА (под ключ) ───────────────────────────────────
+  // ── ЭЛЕКТРИКА (одна понятная позиция «под ключ») ───────────
   if (cfg.electricalIncluded) {
     const electricalBase = area * 1650 + 28000;
-    material("electrical", "Электрика: кабель, щиток ABB/IEK, автоматы, розетки", "компл.", 1, electricalBase * 0.45, "ВВГнг-LS, 16–32 А");
-    work("electrical", "Электромонтаж под ключ", "компл.", 1, electricalBase * 0.55);
+    material("electrical", "Электрика под ключ: кабель, щиток ABB/IEK, автоматы, розетки, монтаж", "компл.", 1, electricalBase, "ВВГнг-LS, 16–32 А (материалы + работы)");
   }
 
-  // ── ВОДОСНАБЖЕНИЕ (под ключ) ───────────────────────────────
+  // ── ВОДОСНАБЖЕНИЕ (одна понятная позиция «под ключ») ───────
   if (cfg.plumbingIncluded) {
     const plumbingBase = area * 880 + 38000;
-    material("plumbing", "Водоснабжение: трубы PPR, сантехника Grohe/Iddis", "компл.", 1, plumbingBase * 0.55, "ХВС/ГВС, смесители, унитаз, ванна");
-    work("plumbing", "Монтаж водоснабжения", "компл.", 1, plumbingBase * 0.45);
+    material("plumbing", "Водоснабжение под ключ: трубы PPR, сантехника Grohe/Iddis, монтаж", "компл.", 1, plumbingBase, "ХВС/ГВС, смесители, унитаз, ванна (материалы + работы)");
   }
 
-  // ── КАНАЛИЗАЦИЯ / СЕПТИК (под ключ) ────────────────────────
+  // ── КАНАЛИЗАЦИЯ / СЕПТИК (одна понятная позиция «под ключ») ─
   if (cfg.sewageIncluded) {
     const sewageBase = 75000 + area * 320;
-    material("sewage", "Септик энергонезависимый + трубы ПВХ ∅110", "компл.", 1, sewageBase * 0.6, "Тритон / Росток");
-    work("sewage", "Монтаж канализации и септика", "компл.", 1, sewageBase * 0.4);
+    material("sewage", "Канализация и септик под ключ: септик + трубы ПВХ ∅110, монтаж", "компл.", 1, sewageBase, "Тритон / Росток (материалы + работы)");
   }
 
   // ── ВНУТРЕННЯЯ ОТДЕЛКА ─────────────────────────────────────
   const finishData = INTERIOR_FINISHES[cfg.interiorFinish];
   if (finishData.pricePerM2 > 0) {
-    const finishMatBase = area * finishData.pricePerM2;
     material("interiorFinish", finishData.label, "м²", area, finishData.pricePerM2, finishData.desc);
-    work("interiorFinish", "Внутренняя отделка и финишные работы", "м²", area, finishMatBase * ASSEMBLY_SHARE.interiorFinish);
+    work("interiorFinish", "Внутренняя отделка и финишные работы", "м²", area, WORK_RATES.interiorFinish);
   }
 
-  // ── ТЕРРАСА (материал + монтаж) ────────────────────────────
+  // ── ТЕРРАСА (материал по прайсу + монтаж по ставке) ────────
   if (cfg.terrace && cfg.terraceArea > 0) {
-    const terraceBase = cfg.terraceArea * 6800;
-    material("terrace", "Терраса: доска ДПК, перила", "м²", cfg.terraceArea, 6800 * 0.6, "материалы");
-    work("terrace", "Монтаж террасы", "м²", cfg.terraceArea, terraceBase * 0.4);
+    material("terrace", "Терраса: доска ДПК, перила", "м²", cfg.terraceArea, 4100, "материалы (доска ДПК, перила, лаги)");
+    work("terrace", "Монтаж террасы", "м²", cfg.terraceArea, WORK_RATES.terrace);
   }
 
-  // ── ГАРАЖ (материал + монтаж) ──────────────────────────────
+  // ── ГАРАЖ (материал по прайсу + монтаж по ставке) ──────────
   if (cfg.garage && cfg.garageArea > 0) {
-    const garageBase = cfg.garageArea * 22000;
-    material("garage", "Гараж: каркас + сэндвич-панели, ворота", "м²", cfg.garageArea, 22000 * 0.6, "секционные ворота");
-    work("garage", "Монтаж гаража", "м²", cfg.garageArea, garageBase * 0.4);
+    material("garage", "Гараж: каркас + сэндвич-панели, ворота", "м²", cfg.garageArea, 13200, "секционные ворота");
+    work("garage", "Монтаж гаража", "м²", cfg.garageArea, WORK_RATES.garage);
   }
 
   // ── ОБЩИЕ РАСХОДНИКИ ───────────────────────────────────────

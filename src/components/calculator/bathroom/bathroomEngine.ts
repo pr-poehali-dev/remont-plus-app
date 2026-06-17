@@ -50,24 +50,26 @@ export interface BathroomEstimate {
 }
 
 // ─── РАСЦЕНКИ РАБОТ 2026, ₽ (база, до регионального коэффициента) ─────────────
+// Ставки приведены к рыночным ориентирам Москвы 2026 г. (только работа, без
+// материалов). Источник проверки — прайсы бригад/сметные нормативы 2026.
 const WORK_RATES = {
-  demolitionFloor: 950,      // демонтаж напольной плитки+стяжки, ₽/м²
-  demolitionWall: 780,       // демонтаж настенной плитки+штукатурки, ₽/м²
+  demolitionFloor: 700,      // демонтаж напольной плитки+стяжки, ₽/м² (рынок 600–800; было 950 — завышено)
+  demolitionWall: 600,       // демонтаж настенной плитки+штукатурки, ₽/м² (рынок 500–700; было 780)
   cabinDemolition: 2400,     // снос перегородок сантехкабины, ₽/м.п.
   cabinMasonry: 1350,        // кладка перегородок из блоков, ₽/м²
-  screed: 750,               // устройство стяжки, ₽/м²
-  waterproofing: 480,        // нанесение гидроизоляции, ₽/м²
+  screed: 900,               // устройство стяжки по маякам, ₽/м² (рынок 850–1000; было 750 — занижено)
+  waterproofing: 500,        // нанесение гидроизоляции, ₽/м² (рынок 450–550; было 480)
   tileFloorBase: 0,          // берётся из плитки (installPriceM2)
-  groutFloor: 220,           // затирка швов пола, ₽/м²
-  groutWall: 190,            // затирка швов стен, ₽/м²
+  groutFloor: 170,           // затирка швов пола, ₽/м² (рынок 150–180; было 220 — завышено)
+  groutWall: 150,            // затирка швов стен, ₽/м² (рынок 150–180; было 190 — завышено)
   toilet: 3800,              // установка унитаза, ₽/шт
   installSystem: 6500,       // монтаж инсталляции, ₽/шт
   sink: 2900,                // установка раковины, ₽/шт
   bath: 5400,                // установка ванны, ₽/шт
-  showerCabin: 7200,         // монтаж душевого поддона/кабины, ₽/шт
+  showerCabin: 6000,         // монтаж душевого поддона/кабины, ₽/шт (было 7200 — завышено)
   mixer: 1800,               // установка смесителя, ₽/шт
   heatedFloorElectric: 900,  // монтаж электрического тёплого пола, ₽/м²
-  heatedFloorWater: 1300,    // монтаж водяного тёплого пола, ₽/м²
+  heatedFloorWater: 1600,    // монтаж водяного тёплого пола, ₽/м² (было 1300 — занижено)
   ventilation: 3400,         // монтаж вытяжного вентилятора, ₽/шт
   vanity: 3200,              // монтаж тумбы с раковиной, ₽/шт
   mirror: 1600,              // установка зеркала, ₽/шт
@@ -111,6 +113,9 @@ export function calcBathroom(
 
   const area = cfg.area || 0;
   const wallArea = cfg.wallArea || 0;
+  // Оценка периметра по площади для квадратного помещения: сторона = √площадь,
+  // периметр = 4·сторона. Приближение для типового санузла (точную геометрию
+  // не вводим). Минимум 6 м.п. — нижняя граница для малых санузлов.
   const perimeter = Math.max(6, Math.round(Math.sqrt(area) * 4));
   const cabinWallSqm = perimeter * 2.5;
 
@@ -167,6 +172,9 @@ export function calcBathroom(
 
   // ── ГИДРОИЗОЛЯЦИЯ ──────────────────────────────────────────
   if (waterproofing && waterproofing.id !== "none") {
+    // Площадь гидроизоляции = весь пол + 30% площади стен. Коэффициент 0.3 —
+    // это гидроизоляция стен на высоту ~30 см от пола (зона у пола и мокрые
+    // зоны: периметр, ванна, душ). Стандартная инженерная практика СП 29.13330.
     const hydroArea = area + wallArea * 0.3;
     work("waterproofing", "Нанесение гидроизоляции", "м²", hydroArea, WORK_RATES.waterproofing, `${waterproofing.label}, 2 слоя`);
     material("waterproofing", `Гидроизоляция: ${waterproofing.label}`, "м²", Math.ceil(hydroArea), waterproofing.priceM2, "расход на 2 слоя");
@@ -179,6 +187,7 @@ export function calcBathroom(
     work("floorTile", "Затирка межплиточных швов (пол)", "м²", area, WORK_RATES.groutFloor);
     material("floorTile", `Плитка пол: ${floorTile.label}`, "м²", tileQty, floorTile.materialPriceM2, floorTile.description);
     material("floorTile", "Клей плиточный C2 (пол)", "кг", Math.ceil(area * 6), MAT_PRICES.tileGlue, "эластичный", true);
+    // Норма затирки пола: 0.5 кг/м² (крупный формат, шов 2–3 мм). Оставлено.
     material("floorTile", "Затирка-фуга (пол)", "кг", Math.ceil(area * 0.5), MAT_PRICES.groutMaterial, "влагостойкая", true);
   }
 
@@ -189,6 +198,8 @@ export function calcBathroom(
     work("wallTile", "Затирка межплиточных швов (стены)", "м²", wallArea, WORK_RATES.groutWall);
     material("wallTile", `Плитка стены: ${wallTile.label}`, "м²", tileQty, wallTile.materialPriceM2, wallTile.description);
     material("wallTile", "Клей плиточный C2 (стены)", "кг", Math.ceil(wallArea * 5), MAT_PRICES.tileGlue, "белый", true);
+    // Норма затирки стен: 0.4 кг/м² — тонкий шов 1.5–2 мм у настенной плитки
+    // (расход ниже, чем у пола). Ранее завышенные нормы 2 кг/м² не используются.
     material("wallTile", "Затирка-фуга (стены)", "кг", Math.ceil(wallArea * 0.4), MAT_PRICES.groutMaterial, "влагостойкая", true);
   }
 
