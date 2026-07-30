@@ -12,6 +12,9 @@ import type { SeasonId } from "@/components/calculator/shared/seasonality";
 import { extractFromFiles } from "@/lib/documentExtract";
 import TenderEstimateTable from "@/components/tender/TenderEstimateTable";
 import type { TenderResult } from "@/components/tender/TenderEstimateTable";
+import OverheadsPanel from "@/components/calculator/shared/OverheadsPanel";
+import { loadOverheads, saveOverheads } from "@/components/calculator/shared/overheads";
+import type { OverheadState } from "@/components/calculator/shared/overheads";
 import funcUrls from "@/../backend/func2url.json";
 
 const TENDER_URL = (funcUrls as Record<string, string>)["tender-estimate"];
@@ -30,6 +33,12 @@ export default function TenderEstimate() {
   const [regionId, setRegionId] = useState("moscow");
   const [seasonId, setSeasonId] = useState<SeasonId>("auto");
   const [markupPct, setMarkupPct] = useState(0);
+  const [overheads, setOverheads] = useState<OverheadState>(loadOverheads);
+
+  const updateOverheads = (next: OverheadState) => {
+    setOverheads(next);
+    saveOverheads(next);
+  };
 
   const region = CALC_REGIONS.find((r) => r.id === regionId) ?? CALC_REGIONS[0];
   const sCoeff = seasonCoeff(seasonId);
@@ -205,6 +214,8 @@ export default function TenderEstimate() {
               />
             </div>
 
+            <OverheadsPanel value={overheads} onChange={updateOverheads} className="pt-1" />
+
             <Button onClick={runEstimate} disabled={loading || parsing} className="w-full bg-teal-600 hover:bg-teal-700">
               {loading ? (
                 <><Icon name="LoaderCircle" size={16} className="animate-spin mr-2" /> Считаем смету…</>
@@ -218,7 +229,7 @@ export default function TenderEstimate() {
         {/* Правая колонка — результат */}
         <div className="lg:col-span-3">
           {result ? (
-            <TenderEstimateTable result={result} workCoeff={workCoeff} markupPct={markupPct} />
+            <TenderEstimateTable result={result} workCoeff={workCoeff} markupPct={markupPct} overheads={overheads} />
           ) : (
             <Card className="p-10 text-center text-gray-400 h-full flex flex-col items-center justify-center">
               <Icon name="FileSearch" size={44} className="mb-3 opacity-40" />

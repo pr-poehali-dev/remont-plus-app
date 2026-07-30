@@ -110,18 +110,19 @@ export const INTERIOR_FINISHES: Record<InteriorFinish, { label: string; desc: st
   turnkey_premium:  { label: "Под ключ — Премиум",          desc: "Дизайнерская отделка, паркет, премиум-материалы", pricePerM2: 24000 },
 };
 
+// Москва = 1.0 (база), регионы дешевле в реальных пределах 2026 (разброс ~10%).
 export const REGIONS: Record<string, { label: string; coeff: number }> = {
   moscow:        { label: "Москва и МО",      coeff: 1.00 },
-  spb:           { label: "Санкт-Петербург",  coeff: 0.95 },
-  ekaterinburg:  { label: "Екатеринбург",     coeff: 0.83 },
-  novosibirsk:   { label: "Новосибирск",      coeff: 0.79 },
-  kazan:         { label: "Казань",           coeff: 0.81 },
-  krasnodar:     { label: "Краснодар",        coeff: 0.89 },
-  rostov:        { label: "Ростов-на-Дону",   coeff: 0.84 },
-  samara:        { label: "Самара",           coeff: 0.80 },
-  voronezh:      { label: "Воронеж",          coeff: 0.77 },
-  chelyabinsk:   { label: "Челябинск",        coeff: 0.80 },
-  other:         { label: "Другой регион",    coeff: 0.76 },
+  spb:           { label: "Санкт-Петербург",  coeff: 0.96 },
+  ekaterinburg:  { label: "Екатеринбург",     coeff: 0.92 },
+  novosibirsk:   { label: "Новосибирск",      coeff: 0.90 },
+  kazan:         { label: "Казань",           coeff: 0.91 },
+  krasnodar:     { label: "Краснодар",        coeff: 0.93 },
+  rostov:        { label: "Ростов-на-Дону",   coeff: 0.91 },
+  samara:        { label: "Самара",           coeff: 0.90 },
+  voronezh:      { label: "Воронеж",          coeff: 0.89 },
+  chelyabinsk:   { label: "Челябинск",        coeff: 0.90 },
+  other:         { label: "Другой регион",    coeff: 0.90 },
 };
 
 // ─── Конфигурация ───────────────────────────────────────────────────────────

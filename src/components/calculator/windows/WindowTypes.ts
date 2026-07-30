@@ -161,23 +161,24 @@ export interface WindowRegion {
   priceCoeff: number; // множитель к базовой цене
 }
 
+// Москва = 1.0 (база), регионы дешевле в реальных пределах 2026 (разброс ~10%).
 export const WINDOW_REGIONS: WindowRegion[] = [
   { id: "moscow",       name: "Москва и МО",             priceCoeff: 1.0  },
-  { id: "spb",          name: "Санкт-Петербург и ЛО",    priceCoeff: 0.95 },
-  { id: "ekb",          name: "Екатеринбург",            priceCoeff: 0.85 },
-  { id: "novosibirsk",  name: "Новосибирск",             priceCoeff: 0.82 },
-  { id: "kazan",        name: "Казань",                  priceCoeff: 0.87 },
-  { id: "samara",       name: "Самара",                  priceCoeff: 0.84 },
-  { id: "nizhny",       name: "Нижний Новгород",         priceCoeff: 0.86 },
-  { id: "chelyabinsk",  name: "Челябинск",               priceCoeff: 0.80 },
-  { id: "krasnodar",    name: "Краснодар",               priceCoeff: 0.88 },
-  { id: "rostov",       name: "Ростов-на-Дону",          priceCoeff: 0.86 },
-  { id: "ufa",          name: "Уфа",                     priceCoeff: 0.83 },
-  { id: "perm",         name: "Пермь",                   priceCoeff: 0.83 },
-  { id: "voronezh",     name: "Воронеж",                 priceCoeff: 0.84 },
-  { id: "volgograd",    name: "Волгоград",               priceCoeff: 0.82 },
-  { id: "saratov",      name: "Саратов",                 priceCoeff: 0.81 },
-  { id: "other",        name: "Другой регион",           priceCoeff: 0.85 },
+  { id: "spb",          name: "Санкт-Петербург и ЛО",    priceCoeff: 0.96 },
+  { id: "ekb",          name: "Екатеринбург",            priceCoeff: 0.92 },
+  { id: "novosibirsk",  name: "Новосибирск",             priceCoeff: 0.90 },
+  { id: "kazan",        name: "Казань",                  priceCoeff: 0.91 },
+  { id: "samara",       name: "Самара",                  priceCoeff: 0.90 },
+  { id: "nizhny",       name: "Нижний Новгород",         priceCoeff: 0.91 },
+  { id: "chelyabinsk",  name: "Челябинск",               priceCoeff: 0.90 },
+  { id: "krasnodar",    name: "Краснодар",               priceCoeff: 0.93 },
+  { id: "rostov",       name: "Ростов-на-Дону",          priceCoeff: 0.91 },
+  { id: "ufa",          name: "Уфа",                     priceCoeff: 0.90 },
+  { id: "perm",         name: "Пермь",                   priceCoeff: 0.90 },
+  { id: "voronezh",     name: "Воронеж",                 priceCoeff: 0.89 },
+  { id: "volgograd",    name: "Волгоград",               priceCoeff: 0.90 },
+  { id: "saratov",      name: "Саратов",                 priceCoeff: 0.89 },
+  { id: "other",        name: "Другой регион",           priceCoeff: 0.90 },
 ];
 
 // ─── Фурнитура ───────────────────────────────────────────────────────────────

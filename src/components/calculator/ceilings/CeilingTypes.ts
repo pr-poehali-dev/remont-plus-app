@@ -112,6 +112,7 @@ export interface CeilingConfig {
   lightingCount: number;
   profileId: string;
   installationIncluded: boolean;
+  demolitionIncluded: boolean;
   regionId: string;
   note: string;
   totalPrice: number;

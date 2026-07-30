@@ -18,6 +18,7 @@ export const DEFAULT_CONFIG: Omit<CeilingConfig, "id" | "totalPrice"> = {
   lightingCount: 6,
   profileId: "garpun",
   installationIncluded: true,
+  demolitionIncluded: false,
   regionId: "moscow",
   note: "",
 };

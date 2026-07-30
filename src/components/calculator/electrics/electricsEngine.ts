@@ -17,6 +17,7 @@ import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable
  */
 
 export type ElectricsBlock =
+  | "demolition"
   | "outlets"
   | "switches"
   | "lighting"
@@ -56,6 +57,7 @@ const WORK_RATES = {
     corrugated: 160,         // в гофре поверх стен: прокладка + монтаж гофры
     hidden: 340,             // скрытая: штробление (~270) + прокладка (~70) + заделка
   } as Record<string, number>,
+  demolition: 140,           // демонтаж старой проводки/точек, ₽/м² площади помещения
   panelAssembly: 4500,       // сборка и навеска щитка, ₽/компл
   breakerConnect: 350,       // подключение автомата/УЗО в щитке, ₽/шт (≈600 ₽/модуль вместе со сборкой)
   grounding: 7100,           // устройство контура заземления, ₽/компл
@@ -139,6 +141,11 @@ export function calcElectrics(
 
   const totalOutlets = cfg.outletsCount + cfg.doubleOutletsCount + cfg.groundedOutletsCount;
   const totalSwitches = cfg.switchesCount + cfg.doubleSwitchesCount + cfg.dimmersCount;
+
+  // ── ДЕМОНТАЖ ───────────────────────────────────────────────
+  if (cfg.demolitionIncluded && cfg.area > 0) {
+    work("demolition", "Демонтаж старой проводки", "м²", cfg.area, WORK_RATES.demolition, "снятие кабеля, розеток, выключателей, старого щитка");
+  }
 
   // ── РОЗЕТКИ ────────────────────────────────────────────────
   if (totalOutlets > 0) {
@@ -228,7 +235,7 @@ export function calcElectrics(
   const total = subtotal + markupAmount;
 
   const blocks: ElectricsBlock[] = [
-    "outlets", "switches", "lighting", "cabling", "panel", "grounding", "testing",
+    "demolition", "outlets", "switches", "lighting", "cabling", "panel", "grounding", "testing",
   ];
   const blockTotals = blocks.reduce((acc, b) => {
     acc[b] = lines.filter((l) => l.block === b).reduce((s, l) => s + l.total, 0);

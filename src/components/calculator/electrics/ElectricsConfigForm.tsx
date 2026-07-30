@@ -342,6 +342,13 @@ export default function ElectricsConfigForm({ cfg, onUpdate }: Props) {
             onChange={v => onUpdate({ testingIncluded: v })}
           />
 
+          <ToggleRow
+            label="Демонтаж старой проводки"
+            description="Снятие старого кабеля, розеток, выключателей, щитка"
+            checked={cfg.demolitionIncluded}
+            onChange={v => onUpdate({ demolitionIncluded: v })}
+          />
+
           <div>
             <Label className="text-xs text-gray-500 mb-1 block">Примечания</Label>
             <textarea

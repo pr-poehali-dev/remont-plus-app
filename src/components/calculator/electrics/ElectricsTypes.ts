@@ -17,6 +17,7 @@ export interface ElectricsConfig {
   breakersCount: number;
   groundingIncluded: boolean;
   testingIncluded: boolean;
+  demolitionIncluded: boolean;
   note: string;
   totalPrice: number;
 }
@@ -71,5 +72,6 @@ export const DEFAULT_ELECTRICS_CONFIG: Omit<ElectricsConfig, "id" | "totalPrice"
   breakersCount: 4,
   groundingIncluded: false,
   testingIncluded: true,
+  demolitionIncluded: false,
   note: "",
 };

@@ -387,6 +387,17 @@ export default function CeilingConfigForm({ cfg, onUpdate }: Props) {
                 <p className="text-xs text-gray-400 mt-0.5">+200 ₽/м² — натяжка полотна и установка профиля</p>
               </div>
             </label>
+            <label className="flex items-center gap-3 cursor-pointer mt-3">
+              <Checkbox
+                checked={cfg.demolitionIncluded}
+                onCheckedChange={v => onUpdate({ demolitionIncluded: !!v })}
+                className="data-[state=checked]:bg-violet-600 data-[state=checked]:border-violet-600"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-700">Демонтаж старого потолка</span>
+                <p className="text-xs text-gray-400 mt-0.5">Снятие побелки/плитки/ГКЛ, вынос мусора</p>
+              </div>
+            </label>
           </Card>
 
           <Card className="p-4">

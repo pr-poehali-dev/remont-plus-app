@@ -19,6 +19,7 @@ import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable
  */
 
 export type CeilingBlock =
+  | "demolition"  // демонтаж старого потолка
   | "canvas"      // полотно / плёнка
   | "profile"     // багет / профиль + крепёж
   | "install"     // монтаж полотна
@@ -45,6 +46,7 @@ export interface CeilingEstimate {
 
 // ─── РАСЦЕНКИ РАБОТ 2026, ₽ (база, до регионального коэффициента) ─────────────
 const WORK_RATES = {
+  demolition: 150,           // демонтаж старого потолка (побелка/плитка/ГКЛ), ₽/м²
   installM2: 480,            // монтаж полотна, ₽/м² (= INSTALLATION_PRICE_PER_M2)
   profileMount: 95,          // монтаж/крепление профиля (багета), ₽/м.п.
   levelFrame: 1450,          // устройство доп. уровня (каркас ГКЛ+гнутьё), ₽/м.п. короба
@@ -121,6 +123,11 @@ export function calcCeiling(
     const price = round(pricePerUnit);
     lines.push({ block, name, spec, unit, qty: q, pricePerUnit: price, total: round(price * q), isConsumable, isWork: false });
   };
+
+  // ── ДЕМОНТАЖ СТАРОГО ПОТОЛКА (работа) ──────────────────────
+  if (cfg.demolitionIncluded && area > 0) {
+    work("demolition", "Демонтаж старого потолка", "м²", area, WORK_RATES.demolition, "снятие побелки/плитки/ГКЛ, вынос");
+  }
 
   // ── ПОЛОТНО / ПЛЁНКА (материал) ────────────────────────────
   if (area > 0) {
@@ -208,7 +215,7 @@ export function calcCeiling(
   const markupAmount = markupPct > 0 ? Math.round(subtotal * markupPct / 100) : 0;
   const total = subtotal + markupAmount;
 
-  const blocks: CeilingBlock[] = ["canvas", "profile", "install", "levels", "lighting", "extras"];
+  const blocks: CeilingBlock[] = ["demolition", "canvas", "profile", "install", "levels", "lighting", "extras"];
   const blockTotals = blocks.reduce((acc, b) => {
     acc[b] = lines.filter((l) => l.block === b).reduce((s, l) => s + l.total, 0);
     return acc;

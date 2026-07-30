@@ -1,5 +1,7 @@
 import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
+import { calcOverheads } from "@/components/calculator/shared/overheads";
+import type { OverheadState } from "@/components/calculator/shared/overheads";
 
 export interface TenderItem {
   name: string;
@@ -29,9 +31,10 @@ interface Props {
   /** множитель к работам (регион × сезон) */
   workCoeff: number;
   markupPct: number;
+  overheads: OverheadState;
 }
 
-export default function TenderEstimateTable({ result, workCoeff, markupPct }: Props) {
+export default function TenderEstimateTable({ result, workCoeff, markupPct, overheads }: Props) {
   const scaledItems = result.items.map((it) => {
     const price = it.type === "work" ? Math.round(it.pricePerUnit * workCoeff) : it.pricePerUnit;
     return { ...it, pricePerUnit: price, total: Math.round(price * it.qty) };
@@ -43,7 +46,10 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct }: Pr
   const materialsTotal = materials.reduce((s, i) => s + i.total, 0);
   const base = worksTotal + materialsTotal;
   const markup = markupPct > 0 ? Math.round(base * markupPct / 100) : 0;
-  const total = base + markup;
+  // Накладные считаются от работ/материалов (после наценки распределяем пропорц.)
+  const kMarkup = base > 0 ? (base + markup) / base : 1;
+  const oh = calcOverheads(overheads, Math.round(worksTotal * kMarkup), Math.round(materialsTotal * kMarkup));
+  const total = base + markup + oh.total;
 
   const renderRows = (rows: TenderItem[]) =>
     rows.map((it, i) => (
@@ -130,6 +136,12 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct }: Pr
             <span className="tabular-nums">+ {fmt(markup)} ₽</span>
           </div>
         )}
+        {oh.lines.map((l) => (
+          <div key={l.id} className="flex justify-between text-sm text-gray-500">
+            <span>{l.label} ({l.pct}%)</span>
+            <span className="tabular-nums">+ {fmt(l.amount)} ₽</span>
+          </div>
+        ))}
         <div className="flex justify-between items-baseline">
           <span className="text-base font-bold text-gray-900">ИТОГО по смете</span>
           <span className="text-xl font-extrabold text-teal-700 tabular-nums">{fmt(total)} ₽</span>

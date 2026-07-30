@@ -223,15 +223,16 @@ export const BATH_LAYOUTS: Record<BathLayout, { label: string; desc: string; roo
   "house_bath": { label: "Дом-баня", desc: "Баня + жилая мансарда/второй этаж", rooms: ["Парная", "Мойка", "КО", "Спальня"], svgId: "layoutHB" },
 };
 
+// Москва = 1.0 (база), регионы дешевле в реальных пределах 2026 (разброс ~10%).
 export const REGIONS: Record<string, { label: string; coeff: number }> = {
   moscow:       { label: "Москва и МО", coeff: 1.0 },
-  spb:          { label: "Санкт-Петербург", coeff: 0.95 },
-  ekaterinburg: { label: "Екатеринбург", coeff: 0.82 },
-  novosibirsk:  { label: "Новосибирск", coeff: 0.78 },
-  kazan:        { label: "Казань", coeff: 0.80 },
-  krasnodar:    { label: "Краснодар", coeff: 0.88 },
-  rostov:       { label: "Ростов-на-Дону", coeff: 0.83 },
-  samara:       { label: "Самара", coeff: 0.79 },
-  voronezh:     { label: "Воронеж", coeff: 0.76 },
-  other:        { label: "Другой регион", coeff: 0.75 },
+  spb:          { label: "Санкт-Петербург", coeff: 0.96 },
+  ekaterinburg: { label: "Екатеринбург", coeff: 0.92 },
+  novosibirsk:  { label: "Новосибирск", coeff: 0.90 },
+  kazan:        { label: "Казань", coeff: 0.91 },
+  krasnodar:    { label: "Краснодар", coeff: 0.93 },
+  rostov:       { label: "Ростов-на-Дону", coeff: 0.91 },
+  samara:       { label: "Самара", coeff: 0.90 },
+  voronezh:     { label: "Воронеж", coeff: 0.89 },
+  other:        { label: "Другой регион", coeff: 0.90 },
 };
