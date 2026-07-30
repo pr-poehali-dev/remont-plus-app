@@ -54,6 +54,7 @@ const Electrics = lazy(() => import("./pages/Electrics"));
 const ElectricsPrint = lazy(() => import("./pages/ElectricsPrint"));
 const Bathroom = lazy(() => import("./pages/Bathroom"));
 const BathroomPrint = lazy(() => import("./pages/BathroomPrint"));
+const TenderEstimate = lazy(() => import("./pages/TenderEstimate"));
 const NewbuildRenovation = lazy(() => import("./pages/NewbuildRenovation"));
 const NewbuildPrint = lazy(() => import("./pages/NewbuildPrint"));
 const TurnkeyRenovation = lazy(() => import("./pages/TurnkeyRenovation"));
@@ -156,6 +157,7 @@ const App = () => {
                 <Route path="/electrics/print" element={<ElectricsPrint />} />
                 <Route path="/bathroom" element={<Bathroom />} />
                 <Route path="/bathroom/print" element={<BathroomPrint />} />
+                <Route path="/tender" element={<TenderEstimate />} />
                 <Route path="/newbuild" element={<NewbuildRenovation />} />
                 <Route path="/newbuild/print" element={<NewbuildPrint />} />
                 <Route path="/turnkey" element={<TurnkeyRenovation />} />

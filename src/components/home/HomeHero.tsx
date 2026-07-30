@@ -179,6 +179,17 @@ const sections = [
     requireAuth: false,
   },
   {
+    id: "tender",
+    title: "СМЕТА ПО ТЗ",
+    description: "Загрузите ТЗ в PDF, скан или фото — ИИ распознает позиции и оценит стоимость работ и материалов для тендера",
+    emoji: "📄",
+    icon: "FileText",
+    gradient: "from-violet-500 via-purple-500 to-fuchsia-500",
+    glow: "group-hover:shadow-purple-300/50",
+    path: "/tender",
+    requireAuth: false,
+  },
+  {
     id: "organizer",
     title: "ОРГАНАЙЗЕР",
     description: "Календарный план ремонта: этапы, сроки, бюджет план/факт и контрольные точки",

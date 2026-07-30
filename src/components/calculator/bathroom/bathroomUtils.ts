@@ -34,8 +34,9 @@ export function calcBathroomPrice(
   cfg: Omit<BathroomConfig, "id" | "totalPrice">,
   regionId = "moscow",
   markupPct = 0,
+  seasonCoeff = 1.0,
 ): BathroomPriceBreakdown {
-  const e = calcBathroom(cfg, regionId, markupPct);
+  const e = calcBathroom(cfg, regionId, markupPct, seasonCoeff);
   const b = e.blockTotals;
   return {
     demolitionCost: b.demolition,
@@ -63,8 +64,9 @@ export function calcBathroomMaterials(
   cfg: Omit<BathroomConfig, "id" | "totalPrice">,
   _bd: BathroomPriceBreakdown,
   regionId = "moscow",
+  seasonCoeff = 1.0,
 ): MaterialItem[] {
-  const e = calcBathroom(cfg, regionId, 0);
+  const e = calcBathroom(cfg, regionId, 0, seasonCoeff);
   return e.lines.map(({ block: _block, ...item }) => item);
 }
 
@@ -73,7 +75,8 @@ export function calcBathroomWorks(
   cfg: Omit<BathroomConfig, "id" | "totalPrice">,
   _bd: BathroomPriceBreakdown,
   regionId = "moscow",
+  seasonCoeff = 1.0,
 ): MaterialItem[] {
-  const e = calcBathroom(cfg, regionId, 0);
+  const e = calcBathroom(cfg, regionId, 0, seasonCoeff);
   return e.works.map(({ block: _block, ...item }) => item);
 }

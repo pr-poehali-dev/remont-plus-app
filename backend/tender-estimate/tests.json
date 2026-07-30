@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Пустой запрос без текста и изображений",
+      "method": "POST",
+      "path": "/",
+      "body": {},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Расчёт по тексту ТЗ",
+      "method": "POST",
+      "path": "/",
+      "body": {"text": "Штукатурка стен 40 м2. Стяжка пола 25 м2. Укладка плитки на пол 25 м2. Установка унитаза 1 шт."},
+      "expectedStatus": 200,
+      "expectedBody": {"subtotal": "number", "items": "array"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

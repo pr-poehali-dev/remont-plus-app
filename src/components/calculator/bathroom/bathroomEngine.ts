@@ -103,9 +103,11 @@ export function calcBathroom(
   cfg: Omit<BathroomConfig, "id" | "totalPrice">,
   regionId = "moscow",
   markupPct = 0,
+  seasonCoeff = 1.0,
 ): BathroomEstimate {
   const region = REGIONS.find((r) => r.id === regionId) ?? REGIONS[3];
-  const rc = region.coeff;
+  // Сезонный коэффициент применяется ТОЛЬКО к работам (спрос на мастеров).
+  const rc = region.coeff * seasonCoeff;
   const tc = BATHROOM_TYPES.find((b) => b.id === cfg.bathroomType)?.priceCoeff ?? 1.0;
   const floorTile = FLOOR_TILES.find((t) => t.id === cfg.floorTileId);
   const wallTile = WALL_TILES.find((t) => t.id === cfg.wallTileId);
