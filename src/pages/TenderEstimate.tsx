@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SEOMeta, { breadcrumbJsonLd } from "@/components/SEOMeta";
 import { Card } from "@/components/ui/card";
@@ -15,9 +15,13 @@ import type { TenderResult } from "@/components/tender/TenderEstimateTable";
 import OverheadsPanel from "@/components/calculator/shared/OverheadsPanel";
 import { loadOverheads, saveOverheads } from "@/components/calculator/shared/overheads";
 import type { OverheadState } from "@/components/calculator/shared/overheads";
+import { exportTenderToExcel } from "@/components/tender/tenderExport";
+import { printTenderKP } from "@/components/tender/tenderPrint";
 import funcUrls from "@/../backend/func2url.json";
 
 const TENDER_URL = (funcUrls as Record<string, string>)["tender-estimate"];
+const PAY_URL = (funcUrls as Record<string, string>)["estimate-payment"];
+const PAID_KEY = "tender_estimate_paid";
 
 export default function TenderEstimate() {
   const navigate = useNavigate();
@@ -33,12 +37,62 @@ export default function TenderEstimate() {
   const [regionId, setRegionId] = useState("moscow");
   const [seasonId, setSeasonId] = useState<SeasonId>("auto");
   const [markupPct, setMarkupPct] = useState(0);
+  const [profitPct, setProfitPct] = useState(0);
   const [overheads, setOverheads] = useState<OverheadState>(loadOverheads);
+  const [paid, setPaid] = useState<boolean>(() => localStorage.getItem(PAID_KEY) === "1");
+  const [unlocking, setUnlocking] = useState(false);
 
   const updateOverheads = (next: OverheadState) => {
     setOverheads(next);
     saveOverheads(next);
   };
+
+  const handleUnlock = async () => {
+    setUnlocking(true);
+    try {
+      let user: { id?: number; email?: string; name?: string } | null = null;
+      try { user = JSON.parse(localStorage.getItem("avangard_user") || "null"); } catch { user = null; }
+      const resp = await fetch(PAY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create_order",
+          plan_type: "tender_estimate",
+          client_name: user?.name || "",
+          client_email: user?.email || "",
+          user_id: user?.id,
+          return_url: window.location.href,
+        }),
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.payment_url) throw new Error(data.error || "Не удалось создать оплату");
+      localStorage.setItem("tender_pending_order", data.order_number || "");
+      window.location.href = data.payment_url;
+    } catch (e) {
+      toast({ title: "Оплата недоступна", description: e instanceof Error ? e.message : "", variant: "destructive" });
+      setUnlocking(false);
+    }
+  };
+
+  useEffect(() => {
+    const orderNumber = localStorage.getItem("tender_pending_order");
+    if (!orderNumber || paid) return;
+    fetch(PAY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "check_status", order_number: orderNumber }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.status === "paid") {
+          localStorage.setItem(PAID_KEY, "1");
+          localStorage.removeItem("tender_pending_order");
+          setPaid(true);
+          toast({ title: "Оплата получена", description: "Смета открыта полностью" });
+        }
+      })
+      .catch(() => {});
+  }, [paid]);
 
   const region = CALC_REGIONS.find((r) => r.id === regionId) ?? CALC_REGIONS[0];
   const sCoeff = seasonCoeff(seasonId);
@@ -76,6 +130,8 @@ export default function TenderEstimate() {
     }
     setLoading(true);
     setResult(null);
+    setPaid(false);
+    localStorage.removeItem(PAID_KEY);
     try {
       const resp = await fetch(TENDER_URL, {
         method: "POST",
@@ -202,16 +258,29 @@ export default function TenderEstimate() {
               </p>
             </div>
 
-            <div>
-              <label className="text-xs text-gray-500">Наценка, %</label>
-              <input
-                type="number"
-                min={0}
-                max={200}
-                value={markupPct}
-                onChange={(e) => setMarkupPct(Math.max(0, Math.min(200, parseFloat(e.target.value) || 0)))}
-                className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500">Наценка, %</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={200}
+                  value={markupPct}
+                  onChange={(e) => setMarkupPct(Math.max(0, Math.min(200, parseFloat(e.target.value) || 0)))}
+                  className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Сметная прибыль, %</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={profitPct}
+                  onChange={(e) => setProfitPct(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
+                  className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
             </div>
 
             <OverheadsPanel value={overheads} onChange={updateOverheads} className="pt-1" />
@@ -227,9 +296,38 @@ export default function TenderEstimate() {
         </div>
 
         {/* Правая колонка — результат */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 space-y-4">
           {result ? (
-            <TenderEstimateTable result={result} workCoeff={workCoeff} markupPct={markupPct} overheads={overheads} />
+            <>
+            <TenderEstimateTable
+              result={result}
+              workCoeff={workCoeff}
+              markupPct={markupPct}
+              overheads={overheads}
+              profitPct={profitPct}
+              locked={!paid}
+              onUnlock={handleUnlock}
+              unlocking={unlocking}
+            />
+            {paid && (
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => exportTenderToExcel(result, workCoeff, markupPct, overheads, profitPct)}
+                  className="flex-1"
+                >
+                  <Icon name="Sheet" size={16} className="mr-2" /> Скачать Excel
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => printTenderKP(result, workCoeff, markupPct, overheads, profitPct)}
+                  className="flex-1"
+                >
+                  <Icon name="Printer" size={16} className="mr-2" /> Печать / PDF
+                </Button>
+              </div>
+            )}
+            </>
           ) : (
             <Card className="p-10 text-center text-gray-400 h-full flex flex-col items-center justify-center">
               <Icon name="FileSearch" size={44} className="mb-3 opacity-40" />

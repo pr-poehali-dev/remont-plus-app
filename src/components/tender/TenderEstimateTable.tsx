@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import { calcOverheads } from "@/components/calculator/shared/overheads";
 import type { OverheadState } from "@/components/calculator/shared/overheads";
+import { computeTenderTotals } from "./tenderTotals";
 
 export interface TenderItem {
   name: string;
@@ -32,24 +33,16 @@ interface Props {
   workCoeff: number;
   markupPct: number;
   overheads: OverheadState;
+  profitPct: number;
+  /** true — детали скрыты (не оплачено), показываем только итог */
+  locked?: boolean;
+  onUnlock?: () => void;
+  unlocking?: boolean;
 }
 
-export default function TenderEstimateTable({ result, workCoeff, markupPct, overheads }: Props) {
-  const scaledItems = result.items.map((it) => {
-    const price = it.type === "work" ? Math.round(it.pricePerUnit * workCoeff) : it.pricePerUnit;
-    return { ...it, pricePerUnit: price, total: Math.round(price * it.qty) };
-  });
-
-  const works = scaledItems.filter((i) => i.type === "work");
-  const materials = scaledItems.filter((i) => i.type === "material");
-  const worksTotal = works.reduce((s, i) => s + i.total, 0);
-  const materialsTotal = materials.reduce((s, i) => s + i.total, 0);
-  const base = worksTotal + materialsTotal;
-  const markup = markupPct > 0 ? Math.round(base * markupPct / 100) : 0;
-  // Накладные считаются от работ/материалов (после наценки распределяем пропорц.)
-  const kMarkup = base > 0 ? (base + markup) / base : 1;
-  const oh = calcOverheads(overheads, Math.round(worksTotal * kMarkup), Math.round(materialsTotal * kMarkup));
-  const total = base + markup + oh.total;
+export default function TenderEstimateTable({ result, workCoeff, markupPct, overheads, profitPct, locked = false, onUnlock, unlocking }: Props) {
+  const t = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct);
+  const { works, materials, worksTotal, materialsTotal, total } = t;
 
   const renderRows = (rows: TenderItem[]) =>
     rows.map((it, i) => (
@@ -91,8 +84,28 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      <div className={`overflow-x-auto relative ${locked ? "select-none" : ""}`}>
+        {locked && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-lg">
+            <div className="bg-white shadow-lg border border-gray-200 rounded-xl px-6 py-5 text-center max-w-xs">
+              <Icon name="Lock" size={28} className="mx-auto text-teal-600 mb-2" />
+              <p className="text-sm font-semibold text-gray-900">Детализация скрыта</p>
+              <p className="text-xs text-gray-500 mt-1 mb-3">
+                Итоговая сумма видна. Откройте позиции, цены и экспорт за разовую оплату.
+              </p>
+              {onUnlock && (
+                <Button onClick={onUnlock} disabled={unlocking} className="w-full bg-teal-600 hover:bg-teal-700">
+                  {unlocking ? (
+                    <><Icon name="LoaderCircle" size={15} className="animate-spin mr-2" /> Открываем…</>
+                  ) : (
+                    <><Icon name="Unlock" size={15} className="mr-2" /> Открыть смету — 490 ₽</>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+        <table className={`w-full ${locked ? "blur-[6px] pointer-events-none" : ""}`}>
           <thead>
             <tr className="border-b-2 border-gray-200 text-xs text-gray-500 uppercase">
               <th className="py-2 pr-2 text-left font-medium">Наименование</th>
@@ -130,15 +143,9 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
       </div>
 
       <div className="mt-4 pt-3 border-t-2 border-gray-200 space-y-1">
-        {markup > 0 && (
-          <div className="flex justify-between text-sm text-gray-500">
-            <span>Наценка {markupPct}%</span>
-            <span className="tabular-nums">+ {fmt(markup)} ₽</span>
-          </div>
-        )}
-        {oh.lines.map((l) => (
-          <div key={l.id} className="flex justify-between text-sm text-gray-500">
-            <span>{l.label} ({l.pct}%)</span>
+        {!locked && t.extraLines.map((l) => (
+          <div key={l.key} className="flex justify-between text-sm text-gray-500">
+            <span>{l.label}</span>
             <span className="tabular-nums">+ {fmt(l.amount)} ₽</span>
           </div>
         ))}
