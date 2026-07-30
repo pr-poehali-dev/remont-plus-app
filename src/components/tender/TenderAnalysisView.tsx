@@ -8,9 +8,10 @@ interface Props {
   locked?: boolean;
   onUnlock?: () => void;
   unlocking?: boolean;
+  price?: number;
 }
 
-export default function TenderAnalysisView({ data, locked = false, onUnlock, unlocking }: Props) {
+export default function TenderAnalysisView({ data, locked = false, onUnlock, unlocking, price = 1490 }: Props) {
   const a = data.analysis;
   const marginPositive = a.margin >= 0;
   const verdictTone =
@@ -120,7 +121,7 @@ export default function TenderAnalysisView({ data, locked = false, onUnlock, unl
                 >
                   {unlocking
                     ? <><Icon name="LoaderCircle" size={15} className="animate-spin" /> Открываем…</>
-                    : <><Icon name="Unlock" size={15} /> Открыть анализ — 490 ₽</>}
+                    : <><Icon name="Unlock" size={15} /> Открыть анализ — {price} ₽</>}
                 </button>
               )}
             </div>

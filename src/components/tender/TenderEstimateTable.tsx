@@ -38,9 +38,10 @@ interface Props {
   locked?: boolean;
   onUnlock?: () => void;
   unlocking?: boolean;
+  price?: number;
 }
 
-export default function TenderEstimateTable({ result, workCoeff, markupPct, overheads, profitPct, locked = false, onUnlock, unlocking }: Props) {
+export default function TenderEstimateTable({ result, workCoeff, markupPct, overheads, profitPct, locked = false, onUnlock, unlocking, price = 1490 }: Props) {
   const t = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct);
   const { works, materials, worksTotal, materialsTotal, total } = t;
 
@@ -98,7 +99,7 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
                   {unlocking ? (
                     <><Icon name="LoaderCircle" size={15} className="animate-spin mr-2" /> Открываем…</>
                   ) : (
-                    <><Icon name="Unlock" size={15} className="mr-2" /> Открыть смету — 490 ₽</>
+                    <><Icon name="Unlock" size={15} className="mr-2" /> Открыть смету — {price} ₽</>
                   )}
                 </Button>
               )}

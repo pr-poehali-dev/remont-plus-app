@@ -24,7 +24,7 @@ import funcUrls from "@/../backend/func2url.json";
 const TENDER_URL = (funcUrls as Record<string, string>)["tender-estimate"];
 const PAY_URL = (funcUrls as Record<string, string>)["yookassa-yookassa"];
 const PAID_KEY = "tender_estimate_paid";
-const TENDER_PRICE = 490;
+const TENDER_PRICE = 1490;
 
 export default function TenderEstimate() {
   const navigate = useNavigate();
@@ -373,6 +373,7 @@ export default function TenderEstimate() {
               locked={!paid}
               onUnlock={handleUnlock}
               unlocking={unlocking}
+              price={TENDER_PRICE}
             />
           ) : result ? (
             <>
@@ -385,6 +386,7 @@ export default function TenderEstimate() {
               locked={!paid}
               onUnlock={handleUnlock}
               unlocking={unlocking}
+              price={TENDER_PRICE}
             />
             {paid && (
               <div className="flex flex-wrap gap-3">
