@@ -97,8 +97,9 @@ def handler(event: dict, context) -> dict:
         if isinstance(img, str) and img.startswith('data:'):
             user_content.append({'type': 'image_url', 'image_url': {'url': img}})
 
-    # gpt-4o понимает изображения (OCR сканов/фото), для текста — экономичная mini
-    model = 'gpt-4o' if images else 'gpt-4o-mini'
+    # gpt-4o-mini поддерживает vision (OCR сканов/фото) и текст, дешевле gpt-4o.
+    # Единая модель снижает расход баланса ИИ-сервиса и время ответа.
+    model = 'gpt-4o-mini'
 
     try:
         resp = requests.post(
@@ -111,8 +112,11 @@ def handler(event: dict, context) -> dict:
                 'max_tokens': 4000,
                 'response_format': {'type': 'json_object'},
             },
-            timeout=120,
+            timeout=25,
         )
+    except requests.Timeout:
+        return {'statusCode': 504, 'headers': cors_headers(),
+                'body': json.dumps({'error': 'ИИ не успел обработать документ за отведённое время. Сократите объём (меньше страниц/фото) или вставьте текст ТЗ и повторите.'}), 'isBase64Encoded': False}
     except requests.RequestException as e:
         return {'statusCode': 502, 'headers': cors_headers(),
                 'body': json.dumps({'error': f'Ошибка соединения с ИИ-сервисом: {str(e)}'}), 'isBase64Encoded': False}
@@ -121,6 +125,8 @@ def handler(event: dict, context) -> dict:
         detail = resp.text[:300]
         if resp.status_code in (401, 403):
             msg = 'ИИ-сервис отклонил запрос (ошибка авторизации ключа). Обратитесь в поддержку.'
+        elif resp.status_code == 402:
+            msg = 'На балансе ИИ-сервиса закончились средства. Пополните баланс Polza.ai и повторите расчёт.'
         elif resp.status_code == 429:
             msg = 'ИИ-сервис перегружен, попробуйте через минуту.'
         else:
