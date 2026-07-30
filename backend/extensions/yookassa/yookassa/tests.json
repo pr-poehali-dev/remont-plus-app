@@ -1,0 +1,46 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Check status - order not found",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "check_status", "order_number": "YK-00000000-XXXXXXXX" },
+      "expectedStatus": 404,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Check status - missing order_number",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "check_status" },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create payment - invalid amount",
+      "method": "POST",
+      "path": "/",
+      "body": { "amount": 0, "user_email": "test@example.com", "return_url": "https://example.com" },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create payment - invalid email",
+      "method": "POST",
+      "path": "/",
+      "body": { "amount": 490, "user_email": "bad", "return_url": "https://example.com" },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

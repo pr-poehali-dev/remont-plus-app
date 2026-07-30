@@ -163,6 +163,32 @@ def handler(event, context):
             'body': json.dumps({'error': 'Invalid JSON'})
         }
 
+    # Проверка статуса оплаты по номеру заказа (после возврата с оплаты)
+    if data.get('action') == 'check_status':
+        order_number = str(data.get('order_number', '')).strip()
+        if not order_number:
+            return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'order_number required'})}
+        S = get_schema()
+        conn = get_connection()
+        try:
+            cur = conn.cursor()
+            cur.execute(f"SELECT id, status, amount, paid_at FROM {S}orders WHERE order_number = %s", (order_number,))
+            row = cur.fetchone()
+        finally:
+            conn.close()
+        if not row:
+            return {'statusCode': 404, 'headers': HEADERS, 'body': json.dumps({'error': 'Order not found'})}
+        return {
+            'statusCode': 200,
+            'headers': HEADERS,
+            'body': json.dumps({
+                'order_id': row[0],
+                'status': row[1],
+                'amount': float(row[2]) if row[2] is not None else 0,
+                'paid_at': str(row[3]) if row[3] else None,
+            }, ensure_ascii=False, default=str)
+        }
+
     # Validate required fields
     amount = data.get('amount', 0)
     user_name = data.get('user_name', '').strip()

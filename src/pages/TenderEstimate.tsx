@@ -20,8 +20,9 @@ import { printTenderKP } from "@/components/tender/tenderPrint";
 import funcUrls from "@/../backend/func2url.json";
 
 const TENDER_URL = (funcUrls as Record<string, string>)["tender-estimate"];
-const PAY_URL = (funcUrls as Record<string, string>)["estimate-payment"];
+const PAY_URL = (funcUrls as Record<string, string>)["yookassa-yookassa"];
 const PAID_KEY = "tender_estimate_paid";
+const TENDER_PRICE = 490;
 
 export default function TenderEstimate() {
   const navigate = useNavigate();
@@ -48,20 +49,32 @@ export default function TenderEstimate() {
   };
 
   const handleUnlock = async () => {
+    let user: { id?: number; email?: string; name?: string } | null = null;
+    try { user = JSON.parse(localStorage.getItem("avangard_user") || "null"); } catch { user = null; }
+
+    let email = user?.email || localStorage.getItem("tender_email") || "";
+    if (!email) {
+      email = (window.prompt("Укажите email для чека и доступа к смете:", "") || "").trim();
+      if (!email) return;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        toast({ title: "Некорректный email", variant: "destructive" });
+        return;
+      }
+      localStorage.setItem("tender_email", email);
+    }
+
     setUnlocking(true);
     try {
-      let user: { id?: number; email?: string; name?: string } | null = null;
-      try { user = JSON.parse(localStorage.getItem("avangard_user") || "null"); } catch { user = null; }
       const resp = await fetch(PAY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "create_order",
-          plan_type: "tender_estimate",
-          client_name: user?.name || "",
-          client_email: user?.email || "",
-          user_id: user?.id,
+          amount: TENDER_PRICE,
+          user_name: user?.name || "",
+          user_email: email,
+          description: "Смета по ТЗ (разовый расчёт)",
           return_url: window.location.href,
+          cart_items: [{ id: "tender_estimate", name: "Смета по ТЗ (разовый расчёт)", price: TENDER_PRICE, quantity: 1 }],
         }),
       });
       const data = await resp.json();
