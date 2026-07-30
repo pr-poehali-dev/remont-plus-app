@@ -12,6 +12,7 @@ export interface AnalyzeItem {
   margin: number;
   verdict: Verdict;
   source: "book" | "estimated";
+  coeff?: string;
   note: string;
 }
 
@@ -21,6 +22,7 @@ export interface AnalyzeSummary {
   margin: number;
   marginPct: number;
   recommendation: string;
+  coeffsSummary?: string[];
   risks: string[];
   missingWorks: string[];
 }

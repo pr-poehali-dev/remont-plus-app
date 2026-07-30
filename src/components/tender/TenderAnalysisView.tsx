@@ -57,6 +57,25 @@ export default function TenderAnalysisView({ data, locked = false, onUnlock, unl
         )}
       </Card>
 
+      {/* Коэффициенты сметы */}
+      {a.coeffsSummary && a.coeffsSummary.length > 0 && (
+        <Card className="p-4">
+          <p className="text-xs font-semibold text-indigo-600 uppercase mb-2 flex items-center gap-1">
+            <Icon name="Percent" size={13} /> Учтённые коэффициенты и индексы
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {a.coeffsSummary.map((c, i) => (
+              <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-50 text-indigo-700">
+                <Icon name="X" size={11} /> {c}
+              </span>
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 mt-2">
+            Цены заказчика в анализе приведены с учётом этих коэффициентов и индексов пересчёта.
+          </p>
+        </Card>
+      )}
+
       {/* Риски и забытые работы */}
       {(a.risks.length > 0 || a.missingWorks.length > 0) && (
         <div className="grid sm:grid-cols-2 gap-4">
@@ -126,6 +145,11 @@ export default function TenderAnalysisView({ data, locked = false, onUnlock, unl
                   <tr key={i} className="border-b border-gray-100">
                     <td className="py-2 pr-2">
                       <div className="text-sm text-gray-900">{it.name}</div>
+                      {it.coeff && (
+                        <div className="text-xs text-indigo-600 flex items-center gap-1 mt-0.5">
+                          <Icon name="Percent" size={10} /> {it.coeff}
+                        </div>
+                      )}
                       {it.note && <div className="text-xs text-amber-600">{it.note}</div>}
                     </td>
                     <td className="py-2 px-2 text-right text-sm tabular-nums whitespace-nowrap">{it.qty} {it.unit}</td>
