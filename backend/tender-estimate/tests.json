@@ -23,6 +23,15 @@
       "expectedStatus": 200,
       "expectedBody": {"subtotal": "number", "items": "array"},
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Анализ сметы заказчика (маржа)",
+      "method": "POST",
+      "path": "/",
+      "body": {"mode": "analyze", "text": "Смета заказчика: Штукатурка стен 40 м2 по 1200 руб. Стяжка пола 25 м2 по 950 руб. Укладка плитки 25 м2 по 1500 руб."},
+      "expectedStatus": 200,
+      "expectedBody": {"mode": "analyze", "items": "array", "analysis": "object"},
+      "bodyMatcher": "partial"
     }
   ]
 }

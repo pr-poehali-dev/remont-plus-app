@@ -17,6 +17,8 @@ import { loadOverheads, saveOverheads } from "@/components/calculator/shared/ove
 import type { OverheadState } from "@/components/calculator/shared/overheads";
 import { exportTenderToExcel } from "@/components/tender/tenderExport";
 import { printTenderKP } from "@/components/tender/tenderPrint";
+import TenderAnalysisView from "@/components/tender/TenderAnalysisView";
+import type { AnalyzeResult } from "@/components/tender/tenderAnalysis";
 import funcUrls from "@/../backend/func2url.json";
 
 const TENDER_URL = (funcUrls as Record<string, string>)["tender-estimate"];
@@ -33,7 +35,9 @@ export default function TenderEstimate() {
   const [extracted, setExtracted] = useState<{ text: string; images: string[] } | null>(null);
   const [parsing, setParsing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"estimate" | "analyze">("estimate");
   const [result, setResult] = useState<TenderResult | null>(null);
+  const [analyzeResult, setAnalyzeResult] = useState<AnalyzeResult | null>(null);
 
   const [regionId, setRegionId] = useState("moscow");
   const [seasonId, setSeasonId] = useState<SeasonId>("auto");
@@ -138,25 +142,37 @@ export default function TenderEstimate() {
     const payloadText = (text || extracted?.text || "").trim();
     const images = extracted?.images ?? [];
     if (!payloadText && images.length === 0) {
-      toast({ title: "Добавьте ТЗ", description: "Загрузите документ или вставьте текст задания", variant: "destructive" });
+      toast({
+        title: mode === "analyze" ? "Добавьте смету" : "Добавьте ТЗ",
+        description: mode === "analyze"
+          ? "Загрузите готовую смету заказчика (Excel, PDF, фото)"
+          : "Загрузите документ или вставьте текст задания",
+        variant: "destructive",
+      });
       return;
     }
     setLoading(true);
     setResult(null);
+    setAnalyzeResult(null);
     setPaid(false);
     localStorage.removeItem(PAID_KEY);
     try {
       const resp = await fetch(TENDER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: payloadText, images }),
+        body: JSON.stringify({ text: payloadText, images, mode }),
       });
       const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || "Ошибка расчёта");
-      setResult(data as TenderResult);
-      toast({ title: "Смета готова", description: `Позиций: ${data.items?.length ?? 0}` });
+      if (!resp.ok) throw new Error(data.error || "Ошибка обработки");
+      if (mode === "analyze" || data.mode === "analyze") {
+        setAnalyzeResult(data as AnalyzeResult);
+        toast({ title: "Анализ готов", description: `Проверено позиций: ${data.items?.length ?? 0}` });
+      } else {
+        setResult(data as TenderResult);
+        toast({ title: "Смета готова", description: `Позиций: ${data.items?.length ?? 0}` });
+      }
     } catch (e) {
-      toast({ title: "Не удалось рассчитать", description: e instanceof Error ? e.message : "", variant: "destructive" });
+      toast({ title: "Не удалось обработать", description: e instanceof Error ? e.message : "", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -189,6 +205,32 @@ export default function TenderEstimate() {
       <div className="container mx-auto px-4 py-6 grid lg:grid-cols-5 gap-6">
         {/* Левая колонка — ввод */}
         <div className="lg:col-span-2 space-y-4">
+          <Card className="p-2">
+            <div className="grid grid-cols-2 gap-1">
+              <button
+                onClick={() => setMode("estimate")}
+                className={`rounded-lg py-2.5 px-3 text-sm font-medium transition flex items-center justify-center gap-2 ${
+                  mode === "estimate" ? "bg-teal-600 text-white shadow" : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <Icon name="Calculator" size={16} /> Посчитать по ТЗ
+              </button>
+              <button
+                onClick={() => setMode("analyze")}
+                className={`rounded-lg py-2.5 px-3 text-sm font-medium transition flex items-center justify-center gap-2 ${
+                  mode === "analyze" ? "bg-indigo-600 text-white shadow" : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <Icon name="ChartLine" size={16} /> Анализ сметы
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 px-2 py-1.5">
+              {mode === "estimate"
+                ? "Загрузите ТЗ — рассчитаем стоимость работ и материалов."
+                : "Загрузите готовую смету заказчика — покажем вашу прибыль и риски."}
+            </p>
+          </Card>
+
           <Card className="p-5">
             <p className="text-xs font-semibold text-gray-500 uppercase mb-3">1. Загрузите документы</p>
             <div
@@ -198,13 +240,13 @@ export default function TenderEstimate() {
               className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-teal-400 hover:bg-teal-50/40 transition"
             >
               <Icon name="Upload" size={28} className="mx-auto text-gray-400 mb-2" />
-              <p className="text-sm text-gray-600">PDF, JPG, PNG — ТЗ, смета Estimate, фото документа</p>
+              <p className="text-sm text-gray-600">Excel, PDF, JPG, PNG — ТЗ, смета Estimate, фото документа</p>
               <p className="text-xs text-gray-400 mt-1">Нажмите или перетащите файлы</p>
             </div>
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,image/*"
+              accept=".pdf,.xlsx,.xls,.csv,image/*"
               multiple
               className="hidden"
               onChange={(e) => handleFiles(e.target.files)}
@@ -238,6 +280,7 @@ export default function TenderEstimate() {
             />
           </Card>
 
+          {mode === "estimate" ? (
           <Card className="p-5 space-y-4">
             <p className="text-xs font-semibold text-gray-500 uppercase">3. Параметры расчёта</p>
 
@@ -306,11 +349,32 @@ export default function TenderEstimate() {
               )}
             </Button>
           </Card>
+          ) : (
+            <Card className="p-5">
+              <Button onClick={runEstimate} disabled={loading || parsing} className="w-full bg-indigo-600 hover:bg-indigo-700">
+                {loading ? (
+                  <><Icon name="LoaderCircle" size={16} className="animate-spin mr-2" /> Анализируем смету…</>
+                ) : (
+                  <><Icon name="ChartLine" size={16} className="mr-2" /> Проанализировать смету</>
+                )}
+              </Button>
+              <p className="text-xs text-gray-400 mt-2 text-center">
+                Покажем вашу прибыль по позициям, риски и забытые работы
+              </p>
+            </Card>
+          )}
         </div>
 
         {/* Правая колонка — результат */}
         <div className="lg:col-span-3 space-y-4">
-          {result ? (
+          {analyzeResult ? (
+            <TenderAnalysisView
+              data={analyzeResult}
+              locked={!paid}
+              onUnlock={handleUnlock}
+              unlocking={unlocking}
+            />
+          ) : result ? (
             <>
             <TenderEstimateTable
               result={result}
@@ -343,14 +407,17 @@ export default function TenderEstimate() {
             </>
           ) : (
             <Card className="p-10 text-center text-gray-400 h-full flex flex-col items-center justify-center">
-              <Icon name="FileSearch" size={44} className="mb-3 opacity-40" />
+              <Icon name={mode === "analyze" ? "ChartLine" : "FileSearch"} size={44} className="mb-3 opacity-40" />
               <p className="text-sm max-w-xs">
-                Загрузите ТЗ или вставьте текст — ИИ распознает позиции и оценит стоимость
-                работ и материалов по вашим расценкам 2026 и рынку.
+                {mode === "analyze"
+                  ? "Загрузите готовую смету заказчика (Excel, PDF, фото) — ИИ посчитает вашу прибыль, выделит выгодные и убыточные позиции, риски и забытые работы."
+                  : "Загрузите ТЗ или вставьте текст — ИИ распознает позиции и оценит стоимость работ и материалов по вашим расценкам 2026 и рынку."}
               </p>
-              <p className="text-xs mt-3 text-gray-400">
-                Сезон учтён: {seasonLabel(seasonId)} · работы ×{workCoeff.toFixed(2)}
-              </p>
+              {mode === "estimate" && (
+                <p className="text-xs mt-3 text-gray-400">
+                  Сезон учтён: {seasonLabel(seasonId)} · работы ×{workCoeff.toFixed(2)}
+                </p>
+              )}
             </Card>
           )}
         </div>
