@@ -97,8 +97,8 @@ def handler(event: dict, context) -> dict:
         if isinstance(img, str) and img.startswith('data:'):
             user_content.append({'type': 'image_url', 'image_url': {'url': img}})
 
-    # gpt-4o понимает изображения (OCR сканов/фото), для текста тоже подходит
-    model = 'openai/gpt-4o' if images else 'openai/gpt-4o-mini'
+    # gpt-4o понимает изображения (OCR сканов/фото), для текста — экономичная mini
+    model = 'gpt-4o' if images else 'gpt-4o-mini'
 
     try:
         resp = requests.post(
@@ -113,14 +113,26 @@ def handler(event: dict, context) -> dict:
             },
             timeout=120,
         )
-        resp.raise_for_status()
+    except requests.RequestException as e:
+        return {'statusCode': 502, 'headers': cors_headers(),
+                'body': json.dumps({'error': f'Ошибка соединения с ИИ-сервисом: {str(e)}'}), 'isBase64Encoded': False}
+
+    if resp.status_code != 200:
+        detail = resp.text[:300]
+        if resp.status_code in (401, 403):
+            msg = 'ИИ-сервис отклонил запрос (ошибка авторизации ключа). Обратитесь в поддержку.'
+        elif resp.status_code == 429:
+            msg = 'ИИ-сервис перегружен, попробуйте через минуту.'
+        else:
+            msg = f'ИИ-сервис вернул ошибку {resp.status_code}. {detail}'
+        return {'statusCode': 502, 'headers': cors_headers(),
+                'body': json.dumps({'error': msg}), 'isBase64Encoded': False}
+
+    try:
         data = resp.json()
         raw = data['choices'][0]['message']['content']
         result = extract_json(raw)
-    except requests.RequestException as e:
-        return {'statusCode': 502, 'headers': cors_headers(),
-                'body': json.dumps({'error': f'Ошибка ИИ-сервиса: {str(e)}'}), 'isBase64Encoded': False}
-    except (json.JSONDecodeError, KeyError, ValueError) as e:
+    except (json.JSONDecodeError, KeyError, ValueError, IndexError) as e:
         return {'statusCode': 502, 'headers': cors_headers(),
                 'body': json.dumps({'error': f'Не удалось разобрать ответ ИИ: {str(e)}'}), 'isBase64Encoded': False}
 
