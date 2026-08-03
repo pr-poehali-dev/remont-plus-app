@@ -25,6 +25,9 @@ const TENDER_URL = (funcUrls as Record<string, string>)["tender-estimate"];
 const PAY_URL = (funcUrls as Record<string, string>)["yookassa-yookassa"];
 const PAID_KEY = "tender_estimate_paid";
 const TENDER_PRICE = 1490;
+const MASTER_KEY = "tender_master";
+// Секретный код автономного доступа (без оплаты). Активация: /tender?unlock=КОД
+const MASTER_CODE = "avangard-2026";
 
 export default function TenderEstimate() {
   const navigate = useNavigate();
@@ -44,8 +47,23 @@ export default function TenderEstimate() {
   const [markupPct, setMarkupPct] = useState(0);
   const [profitPct, setProfitPct] = useState(0);
   const [overheads, setOverheads] = useState<OverheadState>(loadOverheads);
-  const [paid, setPaid] = useState<boolean>(() => localStorage.getItem(PAID_KEY) === "1");
+  const [master, setMaster] = useState<boolean>(() => localStorage.getItem(MASTER_KEY) === "1");
+  const [paid, setPaid] = useState<boolean>(() => localStorage.getItem(PAID_KEY) === "1" || localStorage.getItem(MASTER_KEY) === "1");
   const [unlocking, setUnlocking] = useState(false);
+
+  // Автономный вход по секретному коду: /tender?unlock=КОД — сохраняется навсегда на устройстве
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("unlock") === MASTER_CODE) {
+      localStorage.setItem(MASTER_KEY, "1");
+      setMaster(true);
+      setPaid(true);
+      params.delete("unlock");
+      const clean = window.location.pathname + (params.toString() ? `?${params}` : "");
+      window.history.replaceState({}, "", clean);
+      toast({ title: "Автономный доступ активирован", description: "Все расчёты открыты без оплаты" });
+    }
+  }, []);
 
   const updateOverheads = (next: OverheadState) => {
     setOverheads(next);
@@ -154,8 +172,10 @@ export default function TenderEstimate() {
     setLoading(true);
     setResult(null);
     setAnalyzeResult(null);
-    setPaid(false);
-    localStorage.removeItem(PAID_KEY);
+    if (!master) {
+      setPaid(false);
+      localStorage.removeItem(PAID_KEY);
+    }
     try {
       const resp = await fetch(TENDER_URL, {
         method: "POST",
@@ -199,6 +219,11 @@ export default function TenderEstimate() {
             </h1>
             <p className="text-xs text-gray-500">Загрузите PDF, скан или фото задания — получите смету для тендера</p>
           </div>
+          {master && (
+            <span className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <Icon name="ShieldCheck" size={13} /> Автономный доступ
+            </span>
+          )}
         </div>
       </div>
 
