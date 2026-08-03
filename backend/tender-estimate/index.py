@@ -237,13 +237,23 @@ def handler(event: dict, context) -> dict:
         head = 'Техническое задание / смета:'
         img_hint = 'Распознай ТЗ/смету на изображениях и оцени стоимость.'
     if text:
-        user_content.append({'type': 'text', 'text': f'{head}\n\n{text[:15000]}'})
+        user_content.append({'type': 'text', 'text': f'{head}\n\n{text[:30000]}'})
     else:
         user_content.append({'type': 'text', 'text': img_hint})
 
-    # OCR картинок — самая долгая операция. В анализе ограничиваем сильнее,
-    # чтобы уложиться в таймаут функции и не обрываться на середине.
-    max_images = 4 if mode == 'analyze' else 6
+    # Лимит времени функции (задаётся в настройках: Ядро → Функции → Настройки).
+    # Код автоматически подстраивается: requests-таймаут держим на несколько секунд
+    # ниже лимита функции, чтобы успеть вернуть понятную ошибку вместо обрыва связи.
+    try:
+        func_timeout = int(os.environ.get('FUNCTION_TIMEOUT', '180'))
+    except (TypeError, ValueError):
+        func_timeout = 180
+    ai_timeout = max(20, func_timeout - 6)
+
+    # Чем больше времени у функции — тем больше страниц можем распознать за раз.
+    # OCR картинок — самая долгая операция, поэтому масштабируем от лимита.
+    per_image_budget = 12 if mode == 'analyze' else 9
+    max_images = max(3, min(12, ai_timeout // per_image_budget))
     for img in images[:max_images]:
         if isinstance(img, str) and img.startswith('data:'):
             user_content.append({'type': 'image_url', 'image_url': {'url': img}})
@@ -251,10 +261,6 @@ def handler(event: dict, context) -> dict:
     # gpt-4o-mini поддерживает vision (OCR сканов/фото) и текст, дешевле gpt-4o.
     # Единая модель снижает расход баланса ИИ-сервиса и время ответа.
     model = 'gpt-4o-mini'
-
-    # Таймаут requests держим ниже лимита функции, чтобы успеть вернуть
-    # понятную ошибку вместо обрыва соединения ("не удалось обработать").
-    ai_timeout = 24 if mode == 'analyze' else 22
 
     try:
         resp = requests.post(
@@ -264,7 +270,7 @@ def handler(event: dict, context) -> dict:
                 'model': model,
                 'messages': [system, {'role': 'user', 'content': user_content}],
                 'temperature': 0.2,
-                'max_tokens': 6000 if mode == 'analyze' else 4000,
+                'max_tokens': 8000 if mode == 'analyze' else 4500,
                 'response_format': {'type': 'json_object'},
             },
             timeout=ai_timeout,
