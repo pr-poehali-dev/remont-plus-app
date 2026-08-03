@@ -19,6 +19,9 @@ import { exportTenderToExcel } from "@/components/tender/tenderExport";
 import { printTenderKP } from "@/components/tender/tenderPrint";
 import TenderAnalysisView from "@/components/tender/TenderAnalysisView";
 import type { AnalyzeResult } from "@/components/tender/tenderAnalysis";
+import { computeTenderTotals } from "@/components/tender/tenderTotals";
+import MyEstimatesModal from "@/components/tender/MyEstimatesModal";
+import { saveEstimate, getEstimate, canSaveEstimates, type EstimatePayload } from "@/components/tender/tenderStorage";
 import { isMasterAccess } from "@/lib/masterAccess";
 import funcUrls from "@/../backend/func2url.json";
 
@@ -48,6 +51,10 @@ export default function TenderEstimate() {
   const master = isMasterAccess();
   const [paid, setPaid] = useState<boolean>(() => localStorage.getItem(PAID_KEY) === "1" || isMasterAccess());
   const [unlocking, setUnlocking] = useState(false);
+
+  const [currentId, setCurrentId] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [showMyEstimates, setShowMyEstimates] = useState(false);
 
   const updateOverheads = (next: OverheadState) => {
     setOverheads(next);
@@ -190,6 +197,69 @@ export default function TenderEstimate() {
     }
   };
 
+  const handleSave = async () => {
+    if (!result && !analyzeResult) return;
+    if (!canSaveEstimates()) {
+      const email = (window.prompt("Укажите email, чтобы сохранять сметы и открывать их с любого устройства:", "") || "").trim();
+      if (!email) return;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        toast({ title: "Некорректный email", variant: "destructive" });
+        return;
+      }
+      localStorage.setItem("tender_email", email);
+    }
+    setSaving(true);
+    try {
+      let title = "Смета по ТЗ";
+      let total = 0;
+      if (result) {
+        title = result.title || title;
+        total = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct).total;
+      } else if (analyzeResult) {
+        title = analyzeResult.title || "Анализ сметы";
+        total = analyzeResult.analysis?.revenue || 0;
+      }
+      const payload: EstimatePayload = {
+        result, analyzeResult: analyzeResult ?? undefined,
+        regionId, seasonId, markupPct, profitPct, overheads,
+      };
+      const id = await saveEstimate({
+        id: currentId ?? undefined,
+        title,
+        mode: analyzeResult ? "analyze" : "estimate",
+        total,
+        payload,
+      });
+      setCurrentId(id);
+      toast({ title: currentId ? "Смета обновлена" : "Смета сохранена", description: "Доступна в разделе «Мои сметы»" });
+    } catch (e) {
+      toast({ title: "Не удалось сохранить", description: e instanceof Error ? e.message : "", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleOpenSaved = async (id: number, duplicate = false) => {
+    setShowMyEstimates(false);
+    try {
+      const est = await getEstimate(id);
+      const p = est.payload;
+      if (p.regionId) setRegionId(p.regionId);
+      if (p.seasonId) setSeasonId(p.seasonId as SeasonId);
+      setMarkupPct(p.markupPct ?? 0);
+      setProfitPct(p.profitPct ?? 0);
+      if (p.overheads) updateOverheads(p.overheads as OverheadState);
+      setResult((p.result as TenderResult) ?? null);
+      setAnalyzeResult((p.analyzeResult as AnalyzeResult) ?? null);
+      setMode(p.analyzeResult ? "analyze" : "estimate");
+      setCurrentId(duplicate ? null : id);
+      if (master || localStorage.getItem(PAID_KEY) === "1") setPaid(true);
+      toast({ title: duplicate ? "Создана копия" : "Смета открыта", description: duplicate ? "Сохраните как новую" : est.title });
+    } catch (e) {
+      toast({ title: "Не удалось открыть", description: e instanceof Error ? e.message : "", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <SEOMeta
@@ -211,11 +281,16 @@ export default function TenderEstimate() {
             </h1>
             <p className="text-xs text-gray-500">Загрузите PDF, скан или фото задания — получите смету для тендера</p>
           </div>
-          {master && (
-            <span className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <Icon name="ShieldCheck" size={13} /> Автономный доступ
-            </span>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            {master && (
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <Icon name="ShieldCheck" size={13} /> Автономный доступ
+              </span>
+            )}
+            <Button variant="outline" size="sm" onClick={() => setShowMyEstimates(true)}>
+              <Icon name="FolderOpen" size={15} className="mr-1.5" /> Мои сметы
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -385,13 +460,24 @@ export default function TenderEstimate() {
         {/* Правая колонка — результат */}
         <div className="lg:col-span-3 space-y-4">
           {analyzeResult ? (
-            <TenderAnalysisView
-              data={analyzeResult}
-              locked={!paid}
-              onUnlock={handleUnlock}
-              unlocking={unlocking}
-              price={TENDER_PRICE}
-            />
+            <>
+              <TenderAnalysisView
+                data={analyzeResult}
+                locked={!paid}
+                onUnlock={handleUnlock}
+                unlocking={unlocking}
+                price={TENDER_PRICE}
+              />
+              {paid && (
+                <Button onClick={handleSave} disabled={saving} className="bg-teal-600 hover:bg-teal-700">
+                  {saving ? (
+                    <><Icon name="LoaderCircle" size={16} className="mr-2 animate-spin" /> Сохраняем…</>
+                  ) : (
+                    <><Icon name="Save" size={16} className="mr-2" /> {currentId ? "Обновить" : "Сохранить анализ"}</>
+                  )}
+                </Button>
+              )}
+            </>
           ) : result ? (
             <>
             <TenderEstimateTable
@@ -409,16 +495,27 @@ export default function TenderEstimate() {
             {paid && (
               <div className="flex flex-wrap gap-3">
                 <Button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex-1 bg-teal-600 hover:bg-teal-700 min-w-[140px]"
+                >
+                  {saving ? (
+                    <><Icon name="LoaderCircle" size={16} className="mr-2 animate-spin" /> Сохраняем…</>
+                  ) : (
+                    <><Icon name="Save" size={16} className="mr-2" /> {currentId ? "Обновить смету" : "Сохранить смету"}</>
+                  )}
+                </Button>
+                <Button
                   variant="outline"
                   onClick={() => exportTenderToExcel(result, workCoeff, markupPct, overheads, profitPct)}
-                  className="flex-1"
+                  className="flex-1 min-w-[140px]"
                 >
                   <Icon name="Sheet" size={16} className="mr-2" /> Скачать Excel
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => printTenderKP(result, workCoeff, markupPct, overheads, profitPct)}
-                  className="flex-1"
+                  className="flex-1 min-w-[140px]"
                 >
                   <Icon name="Printer" size={16} className="mr-2" /> Печать / PDF
                 </Button>
@@ -442,6 +539,10 @@ export default function TenderEstimate() {
           )}
         </div>
       </div>
+
+      {showMyEstimates && (
+        <MyEstimatesModal onClose={() => setShowMyEstimates(false)} onOpen={handleOpenSaved} />
+      )}
     </div>
   );
 }
