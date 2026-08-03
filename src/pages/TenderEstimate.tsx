@@ -404,6 +404,7 @@ export default function TenderEstimate() {
               onUnlock={handleUnlock}
               unlocking={unlocking}
               price={TENDER_PRICE}
+              onItemsChange={(items) => setResult({ ...result, items })}
             />
             {paid && (
               <div className="flex flex-wrap gap-3">

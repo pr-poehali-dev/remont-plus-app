@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import type { OverheadState } from "@/components/calculator/shared/overheads";
 import { computeTenderTotals } from "./tenderTotals";
@@ -27,6 +28,17 @@ export interface TenderResult {
 
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
 
+const newRow = (type: "work" | "material"): TenderItem => ({
+  name: "",
+  type,
+  unit: type === "work" ? "м²" : "шт",
+  qty: 1,
+  pricePerUnit: 0,
+  total: 0,
+  source: "estimated",
+  note: "",
+});
+
 interface Props {
   result: TenderResult;
   /** множитель к работам (регион × сезон) */
@@ -39,39 +51,126 @@ interface Props {
   onUnlock?: () => void;
   unlocking?: boolean;
   price?: number;
+  /** передан — включает ручное редактирование сметы (правка/удаление/добавление позиций) */
+  onItemsChange?: (items: TenderItem[]) => void;
 }
 
-export default function TenderEstimateTable({ result, workCoeff, markupPct, overheads, profitPct, locked = false, onUnlock, unlocking, price = 1490 }: Props) {
+export default function TenderEstimateTable({ result, workCoeff, markupPct, overheads, profitPct, locked = false, onUnlock, unlocking, price = 1490, onItemsChange }: Props) {
   const t = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct);
   const { works, materials, worksTotal, materialsTotal, total } = t;
+  const editable = !!onItemsChange && !locked;
+
+  const items = result.items;
+  const patchItem = (idx: number, patch: Partial<TenderItem>) => {
+    if (!onItemsChange) return;
+    onItemsChange(items.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
+  };
+  const removeItem = (idx: number) => {
+    if (!onItemsChange) return;
+    onItemsChange(items.filter((_, i) => i !== idx));
+  };
+  const addItem = (type: "work" | "material") => {
+    if (!onItemsChange) return;
+    onItemsChange([...items, newRow(type)]);
+  };
 
   const renderRows = (rows: TenderItem[]) =>
-    rows.map((it, i) => (
-      <tr key={i} className="border-b border-gray-100">
-        <td className="py-2 pr-2">
-          <div className="text-sm text-gray-900">{it.name}</div>
-          {it.note && <div className="text-xs text-amber-600">{it.note}</div>}
-        </td>
-        <td className="py-2 px-2 text-right text-sm tabular-nums whitespace-nowrap">
-          {it.qty} {it.unit}
-        </td>
-        <td className="py-2 px-2 text-right text-sm tabular-nums whitespace-nowrap">{fmt(it.pricePerUnit)} ₽</td>
-        <td className="py-2 pl-2 text-right text-sm font-medium tabular-nums whitespace-nowrap">{fmt(it.total)} ₽</td>
-        <td className="py-2 pl-2 text-center">
-          {it.source === "book" ? (
-            <span title="Ваша расценка" className="text-emerald-600"><Icon name="BadgeCheck" size={15} /></span>
-          ) : (
-            <span title="Оценка ИИ по рынку" className="text-gray-400"><Icon name="Sparkles" size={15} /></span>
-          )}
-        </td>
-      </tr>
-    ));
+    rows.map((it) => {
+      const idx = items.indexOf(it);
+      // цена работ в таблице масштабирована (× workCoeff); для правки приводим к базовой
+      const priceScale = it.type === "work" ? workCoeff : 1;
+      const shownPrice = Math.round(it.pricePerUnit * priceScale);
+
+      if (editable) {
+        return (
+          <tr key={idx} className="border-b border-gray-100">
+            <td className="py-1.5 pr-2">
+              <Input
+                value={it.name}
+                onChange={(e) => patchItem(idx, { name: e.target.value })}
+                placeholder="Наименование позиции"
+                className="h-8 text-sm border-transparent hover:border-gray-200 focus:border-teal-400 px-1"
+              />
+              {it.note && <div className="text-xs text-amber-600 px-1">{it.note}</div>}
+            </td>
+            <td className="py-1.5 px-1">
+              <div className="flex items-center gap-1 justify-end">
+                <Input
+                  type="number"
+                  value={it.qty}
+                  onChange={(e) => patchItem(idx, { qty: Math.max(0, Number(e.target.value) || 0) })}
+                  className="h-8 w-16 text-sm text-right tabular-nums px-1"
+                />
+                <Input
+                  value={it.unit}
+                  onChange={(e) => patchItem(idx, { unit: e.target.value })}
+                  className="h-8 w-12 text-xs text-center px-1"
+                />
+              </div>
+            </td>
+            <td className="py-1.5 px-1 text-right">
+              <Input
+                type="number"
+                value={shownPrice}
+                onChange={(e) => patchItem(idx, { pricePerUnit: Math.round((Number(e.target.value) || 0) / priceScale) })}
+                className="h-8 w-24 text-sm text-right tabular-nums px-1 ml-auto"
+              />
+            </td>
+            <td className="py-1.5 pl-2 text-right text-sm font-medium tabular-nums whitespace-nowrap">
+              {fmt(shownPrice * it.qty)} ₽
+            </td>
+            <td className="py-1.5 pl-2 text-center">
+              <button
+                onClick={() => removeItem(idx)}
+                title="Удалить позицию"
+                className="text-gray-300 hover:text-red-500 transition-colors"
+              >
+                <Icon name="Trash2" size={15} />
+              </button>
+            </td>
+          </tr>
+        );
+      }
+
+      return (
+        <tr key={idx} className="border-b border-gray-100">
+          <td className="py-2 pr-2">
+            <div className="text-sm text-gray-900">{it.name}</div>
+            {it.note && <div className="text-xs text-amber-600">{it.note}</div>}
+          </td>
+          <td className="py-2 px-2 text-right text-sm tabular-nums whitespace-nowrap">
+            {it.qty} {it.unit}
+          </td>
+          <td className="py-2 px-2 text-right text-sm tabular-nums whitespace-nowrap">{fmt(it.pricePerUnit)} ₽</td>
+          <td className="py-2 pl-2 text-right text-sm font-medium tabular-nums whitespace-nowrap">{fmt(it.total)} ₽</td>
+          <td className="py-2 pl-2 text-center">
+            {it.source === "book" ? (
+              <span title="Ваша расценка" className="text-emerald-600"><Icon name="BadgeCheck" size={15} /></span>
+            ) : (
+              <span title="Оценка ИИ по рынку" className="text-gray-400"><Icon name="Sparkles" size={15} /></span>
+            )}
+          </td>
+        </tr>
+      );
+    });
 
   return (
     <Card className="p-5">
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-gray-900">{result.title}</h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-lg font-bold text-gray-900">{result.title}</h2>
+          {editable && (
+            <span className="shrink-0 inline-flex items-center gap-1 text-xs text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2.5 py-1">
+              <Icon name="Pencil" size={12} /> Редактируется
+            </span>
+          )}
+        </div>
         {result.summary && <p className="text-sm text-gray-500 mt-1">{result.summary}</p>}
+        {editable && (
+          <p className="text-xs text-gray-400 mt-1">
+            Меняйте наименование, количество и цену прямо в таблице — итог пересчитается автоматически. Правки попадут в Excel и печать.
+          </p>
+        )}
       </div>
 
       {result.warnings.length > 0 && (
@@ -113,14 +212,23 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
               <th className="py-2 px-2 text-right font-medium">Кол-во</th>
               <th className="py-2 px-2 text-right font-medium">Цена</th>
               <th className="py-2 pl-2 text-right font-medium">Сумма</th>
-              <th className="py-2 pl-2 text-center font-medium">Ист.</th>
+              <th className="py-2 pl-2 text-center font-medium">{editable ? "" : "Ист."}</th>
             </tr>
           </thead>
           <tbody>
-            {works.length > 0 && (
+            {(works.length > 0 || editable) && (
               <>
                 <tr><td colSpan={5} className="pt-3 pb-1 text-xs font-bold text-teal-700 uppercase">Работы</td></tr>
                 {renderRows(works)}
+                {editable && (
+                  <tr>
+                    <td colSpan={5} className="py-1.5">
+                      <button onClick={() => addItem("work")} className="text-xs text-teal-600 hover:text-teal-800 font-medium flex items-center gap-1">
+                        <Icon name="Plus" size={13} /> Добавить работу
+                      </button>
+                    </td>
+                  </tr>
+                )}
                 <tr className="border-b border-gray-200">
                   <td colSpan={3} className="py-2 text-right text-sm font-semibold text-gray-600">Итого работы</td>
                   <td className="py-2 pl-2 text-right text-sm font-bold tabular-nums">{fmt(worksTotal)} ₽</td>
@@ -128,10 +236,19 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
                 </tr>
               </>
             )}
-            {materials.length > 0 && (
+            {(materials.length > 0 || editable) && (
               <>
                 <tr><td colSpan={5} className="pt-3 pb-1 text-xs font-bold text-orange-700 uppercase">Материалы</td></tr>
                 {renderRows(materials)}
+                {editable && (
+                  <tr>
+                    <td colSpan={5} className="py-1.5">
+                      <button onClick={() => addItem("material")} className="text-xs text-orange-600 hover:text-orange-800 font-medium flex items-center gap-1">
+                        <Icon name="Plus" size={13} /> Добавить материал
+                      </button>
+                    </td>
+                  </tr>
+                )}
                 <tr className="border-b border-gray-200">
                   <td colSpan={3} className="py-2 text-right text-sm font-semibold text-gray-600">Итого материалы</td>
                   <td className="py-2 pl-2 text-right text-sm font-bold tabular-nums">{fmt(materialsTotal)} ₽</td>
@@ -154,10 +271,12 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
           <span className="text-base font-bold text-gray-900">ИТОГО по смете</span>
           <span className="text-xl font-extrabold text-teal-700 tabular-nums">{fmt(total)} ₽</span>
         </div>
-        <p className="text-xs text-gray-400 flex items-center gap-1 pt-1">
-          <Icon name="BadgeCheck" size={12} className="text-emerald-600" /> — ваша расценка,
-          <Icon name="Sparkles" size={12} className="text-gray-400 ml-1" /> — оценка ИИ по рынку
-        </p>
+        {!editable && (
+          <p className="text-xs text-gray-400 flex items-center gap-1 pt-1">
+            <Icon name="BadgeCheck" size={12} className="text-emerald-600" /> — ваша расценка,
+            <Icon name="Sparkles" size={12} className="text-gray-400 ml-1" /> — оценка ИИ по рынку
+          </p>
+        )}
       </div>
     </Card>
   );
