@@ -4,11 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Icon from "@/components/ui/icon";
 import { trackCalcEvent } from "@/hooks/useCalcTracking";
+import { isMasterAccess } from "@/lib/masterAccess";
 
 const LEAD_GATE_URL = "https://functions.poehali.dev/1106f965-18b2-4e0f-b402-05fa69b8e3e1";
 const STORAGE_KEY = "avangard_lead_gate";
 
 export function isLeadGatePassed(): boolean {
+  if (isMasterAccess()) return true;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return false;

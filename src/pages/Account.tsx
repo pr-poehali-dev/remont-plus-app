@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import Icon from "@/components/ui/icon";
 import useTariffAccess from "@/hooks/useTariffAccess";
+import { isMasterAccess, disableMasterAccess } from "@/lib/masterAccess";
 import RecentActivityFeed from "@/components/account/RecentActivityFeed";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -150,6 +151,25 @@ export default function Account() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {isMasterAccess() && (
+              <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <Icon name="ShieldCheck" size={20} className="text-emerald-600" />
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-800">Автономный доступ активен</p>
+                    <p className="text-xs text-emerald-700">Все разделы и расчёты открыты без оплаты</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-emerald-700 hover:text-emerald-900"
+                  onClick={() => { disableMasterAccess(); window.location.reload(); }}
+                >
+                  Выключить
+                </Button>
+              </div>
+            )}
             {tariffLoading ? (
               <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
                 <Icon name="Loader2" size={18} className="animate-spin" />

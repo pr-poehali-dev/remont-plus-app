@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import Icon from "@/components/ui/icon";
 import { YOOKASSA_API } from "./pricingTypes";
 import { isPromoActive } from "@/lib/promo";
+import { isMasterAccess } from "@/lib/masterAccess";
 
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
 
@@ -199,6 +200,7 @@ function PaymentModal({ onClose }: { onClose: () => void }) {
 const PAID_KEY = "avangard_estimate_paid";
 
 function isPaidLocal(): boolean {
+  if (isMasterAccess()) return true;
   try {
     const raw = localStorage.getItem(PAID_KEY);
     if (!raw) return false;

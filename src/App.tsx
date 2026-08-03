@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import { checkUnlockParam } from "@/lib/masterAccess";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -85,6 +86,10 @@ const FrameHouseBuilder = lazy(() => import("./pages/FrameHouseBuilder"));
 const queryClient = new QueryClient();
 
 const App = () => {
+  useEffect(() => {
+    // Единый автономный доступ: активация по ?unlock=КОД на любой странице
+    checkUnlockParam();
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { useNavigate } from "react-router-dom";
 import { isPromoActive } from "@/lib/promo";
+import { isMasterAccess } from "@/lib/masterAccess";
 
 const YOOKASSA_API = "https://functions.poehali.dev/e6b5ad8a-7f98-42a1-bc93-3c36cbaef75d";
 const ESTIMATE_PAYMENT_URL = "https://functions.poehali.dev/610d6f7d-fc4b-4907-b4f2-2e678dc3217d";
@@ -53,6 +54,7 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    if (isMasterAccess()) { onSuccess(); return; }
     if (isAdmin) { onSuccess(); return; }
     if (isPromoActive()) { onSuccess(); return; }
     try {

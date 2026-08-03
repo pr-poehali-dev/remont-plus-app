@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { isMasterAccess } from "@/lib/masterAccess";
 
 export type DocType = "smeta" | "kp" | "ks2" | "ks3" | "act" | "contract";
 
@@ -70,24 +71,26 @@ function computeFromTariff(tariff: { plan_id: string; ts: number; days_total?: n
 
 export function useTariffAccess() {
   const user = useMemo(() => getStoredUser(), []);
+  const master = useMemo(() => isMasterAccess(), []);
   const isAdmin = user?.role === "admin";
+  const full = isAdmin || master;
 
   const cachedTariff = useMemo(() => getStoredTariff(), []);
   const legacy = useMemo(() => hasLegacyPaid(), []);
   const initial = useMemo(() => computeFromTariff(cachedTariff, legacy), [cachedTariff, legacy]);
 
   const [state, setState] = useState({
-    hasTariff: isAdmin ? true : initial.hasTariff,
-    planId: isAdmin ? ("admin" as string | null) : initial.planId,
-    planName: isAdmin ? "Администратор" : initial.planName,
-    daysRemaining: isAdmin ? 999 : initial.daysRemaining,
-    daysTotal: isAdmin ? 999 : initial.daysTotal,
-    allowedDocs: isAdmin ? (["smeta", "kp", "ks2", "ks3", "act", "contract"] as DocType[]) : initial.allowedDocs,
-    loading: !isAdmin,
+    hasTariff: full ? true : initial.hasTariff,
+    planId: full ? ("admin" as string | null) : initial.planId,
+    planName: full ? (isAdmin ? "Администратор" : "Автономный доступ") : initial.planName,
+    daysRemaining: full ? 999 : initial.daysRemaining,
+    daysTotal: full ? 999 : initial.daysTotal,
+    allowedDocs: full ? (["smeta", "kp", "ks2", "ks3", "act", "contract"] as DocType[]) : initial.allowedDocs,
+    loading: !full,
   });
 
   useEffect(() => {
-    if (isAdmin) return;
+    if (full) return;
     if (!user?.id && !user?.email) {
       setState((prev) => ({ ...prev, loading: false }));
       return;
@@ -143,17 +146,17 @@ export function useTariffAccess() {
     return () => {
       cancelled = true;
     };
-  }, [isAdmin, user?.id, user?.email]);
+  }, [full, user?.id, user?.email]);
 
   const canAccessDoc = useCallback(
     (docType: DocType): boolean => {
-      if (isAdmin) return true;
+      if (full) return true;
       if (!state.planId) return false;
       const allowed = TARIFF_DOCS[state.planId];
       if (!allowed) return false;
       return allowed.includes(docType);
     },
-    [isAdmin, state.planId],
+    [full, state.planId],
   );
 
   const redirectToTariffs = useCallback(() => {
