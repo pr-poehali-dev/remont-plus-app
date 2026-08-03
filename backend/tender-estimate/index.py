@@ -241,13 +241,20 @@ def handler(event: dict, context) -> dict:
     else:
         user_content.append({'type': 'text', 'text': img_hint})
 
-    for img in images[:8]:
+    # OCR картинок — самая долгая операция. В анализе ограничиваем сильнее,
+    # чтобы уложиться в таймаут функции и не обрываться на середине.
+    max_images = 4 if mode == 'analyze' else 6
+    for img in images[:max_images]:
         if isinstance(img, str) and img.startswith('data:'):
             user_content.append({'type': 'image_url', 'image_url': {'url': img}})
 
     # gpt-4o-mini поддерживает vision (OCR сканов/фото) и текст, дешевле gpt-4o.
     # Единая модель снижает расход баланса ИИ-сервиса и время ответа.
     model = 'gpt-4o-mini'
+
+    # Таймаут requests держим ниже лимита функции, чтобы успеть вернуть
+    # понятную ошибку вместо обрыва соединения ("не удалось обработать").
+    ai_timeout = 24 if mode == 'analyze' else 22
 
     try:
         resp = requests.post(
@@ -257,14 +264,16 @@ def handler(event: dict, context) -> dict:
                 'model': model,
                 'messages': [system, {'role': 'user', 'content': user_content}],
                 'temperature': 0.2,
-                'max_tokens': 8000 if mode == 'analyze' else 4000,
+                'max_tokens': 6000 if mode == 'analyze' else 4000,
                 'response_format': {'type': 'json_object'},
             },
-            timeout=55 if mode == 'analyze' else 25,
+            timeout=ai_timeout,
         )
     except requests.Timeout:
+        hint = ('Слишком большой документ для одного расчёта. Оставьте самые важные страницы '
+                '(1–3 листа сметы) или вставьте текст в поле — и повторите.')
         return {'statusCode': 504, 'headers': cors_headers(),
-                'body': json.dumps({'error': 'ИИ не успел обработать документ за отведённое время. Сократите объём (меньше страниц/фото) или вставьте текст ТЗ и повторите.'}), 'isBase64Encoded': False}
+                'body': json.dumps({'error': f'ИИ не успел обработать документ за отведённое время. {hint}'}), 'isBase64Encoded': False}
     except requests.RequestException as e:
         return {'statusCode': 502, 'headers': cors_headers(),
                 'body': json.dumps({'error': f'Ошибка соединения с ИИ-сервисом: {str(e)}'}), 'isBase64Encoded': False}

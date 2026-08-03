@@ -176,7 +176,15 @@ export default function TenderEstimate() {
         toast({ title: "Смета готова", description: `Позиций: ${data.items?.length ?? 0}` });
       }
     } catch (e) {
-      toast({ title: "Не удалось обработать", description: e instanceof Error ? e.message : "", variant: "destructive" });
+      const msg = e instanceof Error ? e.message : "";
+      const isNetwork = e instanceof TypeError || /Failed to fetch|NetworkError|network/i.test(msg);
+      toast({
+        title: "Не удалось обработать",
+        description: isNetwork
+          ? "Документ слишком большой — расчёт прервался. Оставьте 1–3 главные страницы или вставьте текст сметы в поле и повторите."
+          : msg,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
