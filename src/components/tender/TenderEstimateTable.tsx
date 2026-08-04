@@ -74,15 +74,16 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
     onItemsChange([...items, newRow(type)]);
   };
 
-  const renderRows = (rows: TenderItem[]) =>
-    rows.map((it) => {
-      const idx = items.indexOf(it);
-      // цена работ в таблице масштабирована (× workCoeff); для правки приводим к базовой
+  // Исходные позиции с реальными индексами в result.items — для режима редактирования
+  const rawWithIndex = (type: "work" | "material") =>
+    items.map((it, idx) => ({ it, idx })).filter((r) => r.it.type === type);
+
+  const renderEditRows = (rows: { it: TenderItem; idx: number }[]) =>
+    rows.map(({ it, idx }) => {
+      // при вводе цена работ хранится базовой; в таблице показываем масштабированную (× workCoeff)
       const priceScale = it.type === "work" ? workCoeff : 1;
       const shownPrice = Math.round(it.pricePerUnit * priceScale);
-
-      if (editable) {
-        return (
+      return (
           <tr key={idx} className="border-b border-gray-100">
             <td className="py-1.5 pr-2">
               <Input
@@ -129,30 +130,33 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
               </button>
             </td>
           </tr>
-        );
-      }
-
-      return (
-        <tr key={idx} className="border-b border-gray-100">
-          <td className="py-2 pr-2">
-            <div className="text-sm text-gray-900">{it.name}</div>
-            {it.note && <div className="text-xs text-amber-600">{it.note}</div>}
-          </td>
-          <td className="py-2 px-2 text-right text-sm tabular-nums whitespace-nowrap">
-            {it.qty} {it.unit}
-          </td>
-          <td className="py-2 px-2 text-right text-sm tabular-nums whitespace-nowrap">{fmt(it.pricePerUnit)} ₽</td>
-          <td className="py-2 pl-2 text-right text-sm font-medium tabular-nums whitespace-nowrap">{fmt(it.total)} ₽</td>
-          <td className="py-2 pl-2 text-center">
-            {it.source === "book" ? (
-              <span title="Ваша расценка" className="text-emerald-600"><Icon name="BadgeCheck" size={15} /></span>
-            ) : (
-              <span title="Оценка ИИ по рынку" className="text-gray-400"><Icon name="Sparkles" size={15} /></span>
-            )}
-          </td>
-        </tr>
       );
     });
+
+  const renderViewRows = (rows: TenderItem[]) =>
+    rows.map((it, i) => (
+      <tr key={i} className="border-b border-gray-100">
+        <td className="py-2 pr-2">
+          <div className="text-sm text-gray-900">{it.name}</div>
+          {it.note && <div className="text-xs text-amber-600">{it.note}</div>}
+        </td>
+        <td className="py-2 px-2 text-right text-sm tabular-nums whitespace-nowrap">
+          {it.qty} {it.unit}
+        </td>
+        <td className="py-2 px-2 text-right text-sm tabular-nums whitespace-nowrap">{fmt(it.pricePerUnit)} ₽</td>
+        <td className="py-2 pl-2 text-right text-sm font-medium tabular-nums whitespace-nowrap">{fmt(it.total)} ₽</td>
+        <td className="py-2 pl-2 text-center">
+          {it.source === "book" ? (
+            <span title="Ваша расценка" className="text-emerald-600"><Icon name="BadgeCheck" size={15} /></span>
+          ) : (
+            <span title="Оценка ИИ по рынку" className="text-gray-400"><Icon name="Sparkles" size={15} /></span>
+          )}
+        </td>
+      </tr>
+    ));
+
+  const renderWorks = () => (editable ? renderEditRows(rawWithIndex("work")) : renderViewRows(works));
+  const renderMaterials = () => (editable ? renderEditRows(rawWithIndex("material")) : renderViewRows(materials));
 
   return (
     <Card className="p-5">
@@ -219,7 +223,7 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
             {(works.length > 0 || editable) && (
               <>
                 <tr><td colSpan={5} className="pt-3 pb-1 text-xs font-bold text-teal-700 uppercase">Работы</td></tr>
-                {renderRows(works)}
+                {renderWorks()}
                 {editable && (
                   <tr>
                     <td colSpan={5} className="py-1.5">
@@ -239,7 +243,7 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
             {(materials.length > 0 || editable) && (
               <>
                 <tr><td colSpan={5} className="pt-3 pb-1 text-xs font-bold text-orange-700 uppercase">Материалы</td></tr>
-                {renderRows(materials)}
+                {renderMaterials()}
                 {editable && (
                   <tr>
                     <td colSpan={5} className="py-1.5">
