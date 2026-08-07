@@ -1,6 +1,6 @@
 import type { OverheadState } from "@/components/calculator/shared/overheads";
 import type { TenderResult, TenderItem } from "./TenderEstimateTable";
-import { computeTenderTotals } from "./tenderTotals";
+import { computeTenderTotals, DEFAULT_DISCOUNT, type DiscountState } from "./tenderTotals";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
 const esc = (s: string) =>
@@ -15,8 +15,9 @@ export function printTenderKP(
   markupPct: number,
   overheads: OverheadState,
   profitPct: number,
+  discount: DiscountState = DEFAULT_DISCOUNT,
 ) {
-  const t = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct);
+  const t = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct, discount);
   const today = new Date().toLocaleDateString("ru-RU");
 
   let idx = 0;
@@ -39,7 +40,10 @@ export function printTenderKP(
 
   const extra = t.extraLines.map((l) =>
     `<tr class="extra"><td colspan="5">${esc(l.label)}</td><td class="r">+ ${fmt(l.amount)} ₽</td></tr>`
-  ).join("");
+  ).join("") + (t.discount > 0
+    ? `<tr class="extra"><td colspan="5">Сумма до скидки</td><td class="r">${fmt(t.totalBeforeDiscount)} ₽</td></tr>
+       <tr class="extra disc"><td colspan="5">Скидка заказчику${t.discountPct >= 0.5 ? ` ${t.discountPct.toFixed(t.discountPct % 1 === 0 ? 0 : 1)}%` : ""}</td><td class="r">− ${fmt(t.discount)} ₽</td></tr>`
+    : "");
 
   const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">
 <title>Коммерческое предложение — ${esc(result.title || "Смета")}</title>
@@ -57,6 +61,7 @@ export function printTenderKP(
   tr.sect td { background: #ecfeff; font-weight: 700; color: #0f766e; text-transform: uppercase; font-size: 11px; }
   tr.sub td { font-weight: 700; background: #fafafa; }
   tr.extra td { color: #555; }
+  tr.disc td { color: #dc2626; font-weight: 600; }
   .note { color: #b45309; font-size: 11px; }
   .total { margin-top: 14px; display: flex; justify-content: flex-end; }
   .total .box { border: 2px solid #0d9488; border-radius: 8px; padding: 10px 20px; font-size: 17px; font-weight: 800; color: #0f766e; }

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Icon from "@/components/ui/icon";
 import type { OverheadState } from "@/components/calculator/shared/overheads";
-import { computeTenderTotals } from "./tenderTotals";
+import { computeTenderTotals, DEFAULT_DISCOUNT, type DiscountState } from "./tenderTotals";
 
 export interface TenderItem {
   name: string;
@@ -53,10 +53,11 @@ interface Props {
   price?: number;
   /** передан — включает ручное редактирование сметы (правка/удаление/добавление позиций) */
   onItemsChange?: (items: TenderItem[]) => void;
+  discount?: DiscountState;
 }
 
-export default function TenderEstimateTable({ result, workCoeff, markupPct, overheads, profitPct, locked = false, onUnlock, unlocking, price = 1490, onItemsChange }: Props) {
-  const t = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct);
+export default function TenderEstimateTable({ result, workCoeff, markupPct, overheads, profitPct, locked = false, onUnlock, unlocking, price = 1490, onItemsChange, discount = DEFAULT_DISCOUNT }: Props) {
+  const t = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct, discount);
   const { works, materials, worksTotal, materialsTotal, total } = t;
   const editable = !!onItemsChange && !locked;
 
@@ -271,6 +272,18 @@ export default function TenderEstimateTable({ result, workCoeff, markupPct, over
             <span className="tabular-nums">+ {fmt(l.amount)} ₽</span>
           </div>
         ))}
+        {!locked && t.discount > 0 && (
+          <>
+            <div className="flex justify-between text-sm text-gray-500 pt-1 border-t border-dashed border-gray-200">
+              <span>Сумма до скидки</span>
+              <span className="tabular-nums">{fmt(t.totalBeforeDiscount)} ₽</span>
+            </div>
+            <div className="flex justify-between text-sm font-medium text-red-600">
+              <span>Скидка заказчику {t.discountPct >= 0.5 ? `${t.discountPct.toFixed(t.discountPct % 1 === 0 ? 0 : 1)}%` : ""}</span>
+              <span className="tabular-nums">− {fmt(t.discount)} ₽</span>
+            </div>
+          </>
+        )}
         <div className="flex justify-between items-baseline">
           <span className="text-base font-bold text-gray-900">ИТОГО по смете</span>
           <span className="text-xl font-extrabold text-teal-700 tabular-nums">{fmt(total)} ₽</span>

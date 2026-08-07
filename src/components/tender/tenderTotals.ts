@@ -23,8 +23,21 @@ export interface TenderTotals {
   profit: number;
   profitPct: number;
   extraLines: TenderExtraLine[];
+  /** сумма до вычета скидки */
+  totalBeforeDiscount: number;
+  /** сумма скидки (положительное число), вычитается из итога */
+  discount: number;
+  discountPct: number;
   total: number;
 }
+
+/** Скидка: процент от итога или фиксированная сумма в рублях. */
+export interface DiscountState {
+  mode: "percent" | "amount";
+  value: number;
+}
+
+export const DEFAULT_DISCOUNT: DiscountState = { mode: "percent", value: 0 };
 
 /**
  * Единый расчёт итогов сметы по ТЗ (формат локальной сметы estimate.ru):
@@ -37,6 +50,7 @@ export function computeTenderTotals(
   markupPct: number,
   overheads: OverheadState,
   profitPct: number,
+  discount: DiscountState = DEFAULT_DISCOUNT,
 ): TenderTotals {
   const scaled = result.items.map((it) => {
     const price = it.type === "work" ? Math.round(it.pricePerUnit * workCoeff) : it.pricePerUnit;
@@ -66,7 +80,19 @@ export function computeTenderTotals(
   }
   if (profit > 0) extraLines.push({ key: "profit", label: `Сметная прибыль ${profitPct}%`, amount: profit });
 
-  const total = base + markup + oh.total + profit;
+  const totalBeforeDiscount = base + markup + oh.total + profit;
+
+  // Скидка заказчику — вычитается из итоговой суммы
+  let discountAmount = 0;
+  if (discount && discount.value > 0) {
+    discountAmount = discount.mode === "percent"
+      ? Math.round(totalBeforeDiscount * Math.min(discount.value, 100) / 100)
+      : Math.round(discount.value);
+    discountAmount = Math.min(discountAmount, totalBeforeDiscount);
+  }
+  const discountPct = totalBeforeDiscount > 0 ? (discountAmount / totalBeforeDiscount) * 100 : 0;
+
+  const total = totalBeforeDiscount - discountAmount;
 
   return {
     works, materials, worksTotal, materialsTotal, base,
@@ -74,6 +100,10 @@ export function computeTenderTotals(
     overheadLines: oh.lines.map((l) => ({ id: l.id, label: l.label, pct: l.pct, amount: l.amount })),
     overheadsTotal: oh.total,
     profit, profitPct,
-    extraLines, total,
+    extraLines,
+    totalBeforeDiscount,
+    discount: discountAmount,
+    discountPct,
+    total,
   };
 }

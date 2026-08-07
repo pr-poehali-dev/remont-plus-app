@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import type { OverheadState } from "@/components/calculator/shared/overheads";
 import type { TenderResult } from "./TenderEstimateTable";
-import { computeTenderTotals } from "./tenderTotals";
+import { computeTenderTotals, DEFAULT_DISCOUNT, type DiscountState } from "./tenderTotals";
 
 const r = (n: number) => Math.round(n);
 
@@ -15,8 +15,9 @@ export function exportTenderToExcel(
   markupPct: number,
   overheads: OverheadState,
   profitPct: number,
+  discount: DiscountState = DEFAULT_DISCOUNT,
 ) {
-  const t = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct);
+  const t = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct, discount);
 
   const rows: (string | number)[][] = [];
   rows.push([result.title || "Смета по ТЗ"]);
@@ -50,6 +51,10 @@ export function exportTenderToExcel(
   rows.push(["", "Прямые затраты (работы + материалы)", "", "", "", r(t.base), ""]);
   for (const l of t.extraLines) {
     rows.push(["", l.label, "", "", "", r(l.amount), ""]);
+  }
+  if (t.discount > 0) {
+    rows.push(["", "Сумма до скидки, ₽", "", "", "", r(t.totalBeforeDiscount), ""]);
+    rows.push(["", `Скидка заказчику${t.discountPct >= 0.5 ? ` (${t.discountPct.toFixed(t.discountPct % 1 === 0 ? 0 : 1)}%)` : ""}, ₽`, "", "", "", -r(t.discount), ""]);
   }
   rows.push(["", "ИТОГО ПО СМЕТЕ, ₽", "", "", "", r(t.total), ""]);
 

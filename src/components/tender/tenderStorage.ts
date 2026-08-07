@@ -19,6 +19,7 @@ export interface EstimatePayload {
   markupPct: number;
   profitPct: number;
   overheads: unknown;
+  discount?: { mode: "percent" | "amount"; value: number };
 }
 
 function identity(): { user_id?: number; email?: string } {

@@ -19,8 +19,11 @@ import { exportTenderToExcel } from "@/components/tender/tenderExport";
 import { printTenderKP } from "@/components/tender/tenderPrint";
 import TenderAnalysisView from "@/components/tender/TenderAnalysisView";
 import type { AnalyzeResult } from "@/components/tender/tenderAnalysis";
-import { computeTenderTotals } from "@/components/tender/tenderTotals";
+import { computeTenderTotals, DEFAULT_DISCOUNT, type DiscountState } from "@/components/tender/tenderTotals";
+import DiscountPanel from "@/components/tender/DiscountPanel";
 import MyEstimatesModal from "@/components/tender/MyEstimatesModal";
+import ContractModal from "@/components/tender/ContractModal";
+import { printContract, type ContractParty } from "@/components/tender/tenderContract";
 import { saveEstimate, getEstimate, canSaveEstimates, type EstimatePayload } from "@/components/tender/tenderStorage";
 import { isMasterAccess } from "@/lib/masterAccess";
 import funcUrls from "@/../backend/func2url.json";
@@ -52,9 +55,11 @@ export default function TenderEstimate() {
   const [paid, setPaid] = useState<boolean>(() => localStorage.getItem(PAID_KEY) === "1" || isMasterAccess());
   const [unlocking, setUnlocking] = useState(false);
 
+  const [discount, setDiscount] = useState<DiscountState>(DEFAULT_DISCOUNT);
   const [currentId, setCurrentId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [showMyEstimates, setShowMyEstimates] = useState(false);
+  const [showContract, setShowContract] = useState(false);
 
   const updateOverheads = (next: OverheadState) => {
     setOverheads(next);
@@ -214,14 +219,14 @@ export default function TenderEstimate() {
       let total = 0;
       if (result) {
         title = result.title || title;
-        total = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct).total;
+        total = computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct, discount).total;
       } else if (analyzeResult) {
         title = analyzeResult.title || "Анализ сметы";
         total = analyzeResult.analysis?.revenue || 0;
       }
       const payload: EstimatePayload = {
         result, analyzeResult: analyzeResult ?? undefined,
-        regionId, seasonId, markupPct, profitPct, overheads,
+        regionId, seasonId, markupPct, profitPct, overheads, discount,
       };
       const id = await saveEstimate({
         id: currentId ?? undefined,
@@ -249,6 +254,7 @@ export default function TenderEstimate() {
       setMarkupPct(p.markupPct ?? 0);
       setProfitPct(p.profitPct ?? 0);
       if (p.overheads) updateOverheads(p.overheads as OverheadState);
+      setDiscount(p.discount ?? DEFAULT_DISCOUNT);
       setResult((p.result as TenderResult) ?? null);
       setAnalyzeResult((p.analyzeResult as AnalyzeResult) ?? null);
       setMode(p.analyzeResult ? "analyze" : "estimate");
@@ -491,7 +497,15 @@ export default function TenderEstimate() {
               unlocking={unlocking}
               price={TENDER_PRICE}
               onItemsChange={(items) => setResult({ ...result, items })}
+              discount={discount}
             />
+            {paid && (
+              <DiscountPanel
+                value={discount}
+                onChange={setDiscount}
+                discountAmount={computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct, discount).discount}
+              />
+            )}
             {paid && (
               <div className="flex flex-wrap gap-3">
                 <Button
@@ -507,17 +521,24 @@ export default function TenderEstimate() {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => exportTenderToExcel(result, workCoeff, markupPct, overheads, profitPct)}
+                  onClick={() => exportTenderToExcel(result, workCoeff, markupPct, overheads, profitPct, discount)}
                   className="flex-1 min-w-[140px]"
                 >
                   <Icon name="Sheet" size={16} className="mr-2" /> Скачать Excel
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => printTenderKP(result, workCoeff, markupPct, overheads, profitPct)}
+                  onClick={() => printTenderKP(result, workCoeff, markupPct, overheads, profitPct, discount)}
                   className="flex-1 min-w-[140px]"
                 >
                   <Icon name="Printer" size={16} className="mr-2" /> Печать / PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowContract(true)}
+                  className="flex-1 min-w-[140px] border-teal-300 text-teal-700 hover:bg-teal-50"
+                >
+                  <Icon name="FileSignature" size={16} className="mr-2" /> Договор
                 </Button>
               </div>
             )}
@@ -542,6 +563,17 @@ export default function TenderEstimate() {
 
       {showMyEstimates && (
         <MyEstimatesModal onClose={() => setShowMyEstimates(false)} onOpen={handleOpenSaved} />
+      )}
+
+      {showContract && result && (
+        <ContractModal
+          totalWithDiscount={computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct, discount).total}
+          onClose={() => setShowContract(false)}
+          onPrint={(party: ContractParty) => {
+            printContract(result, workCoeff, markupPct, overheads, profitPct, discount, party);
+            setShowContract(false);
+          }}
+        />
       )}
     </div>
   );
