@@ -293,6 +293,9 @@ export default function TenderEstimate() {
                 <Icon name="ShieldCheck" size={13} /> Автономный доступ
               </span>
             )}
+            <Button variant="outline" size="sm" onClick={() => navigate("/contract-audit")} title="Проверить договор заказчика">
+              <Icon name="ShieldCheck" size={15} className="mr-1.5" /> Проверка договора
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setShowMyEstimates(true)}>
               <Icon name="FolderOpen" size={15} className="mr-1.5" /> Мои сметы
             </Button>
