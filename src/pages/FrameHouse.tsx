@@ -238,6 +238,7 @@ export default function FrameHouse() {
             { name: "Окна", price: bd.windows },
             { name: "Полы", price: bd.floor },
             { name: "Отопление", price: bd.heating },
+            { name: "Техническое помещение", price: bd.techRoom },
             { name: "Электрика", price: bd.electrical },
             { name: "Водоснабжение", price: bd.plumbing },
             { name: "Канализация", price: bd.sewage },

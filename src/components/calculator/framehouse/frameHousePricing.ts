@@ -19,6 +19,7 @@ export interface FrameHouseBreakdown {
   interiorFinish: number;
   terrace: number;
   garage: number;
+  techRoom: number;
   assembly: number;
   foreman: number;
   supplier: number;
@@ -71,6 +72,7 @@ export function calcFrameHousePrice(
     interiorFinish: matByBlock("interiorFinish"),
     terrace: matByBlock("terrace"),
     garage: matByBlock("garage"),
+    techRoom: matByBlock("techRoom"),
     assembly: e.worksTotal,
     foreman: e.foreman,
     supplier: e.supplier,

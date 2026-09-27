@@ -1,7 +1,13 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import Icon from "@/components/ui/icon";
 import { SectionTitle } from "./FrameHouseFormShared";
-import type { FrameHouseConfig } from "./FrameHouseTypes";
+import {
+  TECH_ROOM_MIN_AREA,
+  HEATING_REQUIRES_TECH_ROOM,
+  HEATING_TYPES,
+  type FrameHouseConfig,
+} from "./FrameHouseTypes";
 
 interface Props {
   config: FrameHouseConfig;
@@ -9,6 +15,8 @@ interface Props {
 }
 
 export default function FrameHouseFormExtras({ config, onChange }: Props) {
+  const techRoomRequired = HEATING_REQUIRES_TECH_ROOM.includes(config.heating);
+
   return (
     <>
       {/* Инженерия */}
@@ -51,6 +59,61 @@ export default function FrameHouseFormExtras({ config, onChange }: Props) {
           />
         </label>
       </div>
+
+      {/* Техническое помещение (котельная) */}
+      <SectionTitle icon="Flame">Техническое помещение</SectionTitle>
+      <label className="flex items-center gap-2 cursor-pointer mb-2">
+        <input
+          type="checkbox"
+          checked={config.techRoom}
+          onChange={e => onChange({
+            techRoom: e.target.checked,
+            techRoomArea: e.target.checked ? Math.max(config.techRoomArea || 0, TECH_ROOM_MIN_AREA) : 0,
+          })}
+          className="w-4 h-4 accent-green-600"
+        />
+        <span className="text-sm text-gray-700">Котельная / топочная</span>
+      </label>
+      <p className="text-xs text-gray-400 -mt-1 mb-2">
+        Отдельное помещение под котёл, бойлер, коллектор и щит автоматики
+      </p>
+
+      {techRoomRequired && !config.techRoom && (
+        <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 p-2.5 mb-2">
+          <Icon name="TriangleAlert" size={15} className="text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            Для выбранного котла ({HEATING_TYPES[config.heating].label.toLowerCase()}) отдельное
+            техпомещение обязательно по нормам — без него проект не согласуют.
+          </p>
+        </div>
+      )}
+
+      {config.techRoom && (
+        <div>
+          <Label className="text-xs text-gray-600 mb-1 block">Площадь техпомещения, м²</Label>
+          <Input
+            type="number" min={TECH_ROOM_MIN_AREA} max={40} step={0.5}
+            value={config.techRoomArea}
+            onChange={e => onChange({ techRoomArea: parseFloat(e.target.value) || TECH_ROOM_MIN_AREA })}
+            onBlur={e => {
+              const v = parseFloat(e.target.value) || 0;
+              if (v < TECH_ROOM_MIN_AREA) onChange({ techRoomArea: TECH_ROOM_MIN_AREA });
+            }}
+            className="h-9 text-sm w-28"
+          />
+          {config.techRoomArea < TECH_ROOM_MIN_AREA ? (
+            <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+              <Icon name="CircleAlert" size={12} />
+              По нормам не менее {TECH_ROOM_MIN_AREA} м² — площадь будет увеличена
+            </p>
+          ) : (
+            <p className="text-xs text-gray-400 mt-1">
+              СП 402.1325800.2018: минимум {TECH_ROOM_MIN_AREA} м², высота от 2,2 м, окно с форточкой,
+              дверь наружу, негорючая отделка и вентиляция
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Терраса */}
       <SectionTitle icon="Armchair">Терраса / веранда</SectionTitle>

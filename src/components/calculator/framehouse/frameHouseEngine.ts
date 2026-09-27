@@ -3,6 +3,7 @@ import {
   FRAME_WALL_TECHS, FRAME_INSULATIONS, FOUNDATION_TYPES,
   ROOF_TYPES, ROOFING_MATERIALS, FACADE_TYPES, FLOOR_TYPES,
   WINDOW_TYPES, HEATING_TYPES, INTERIOR_FINISHES, REGIONS,
+  TECH_ROOM_MIN_AREA,
 } from "./FrameHouseTypes";
 import type { MaterialItem } from "@/components/calculator/shared/MaterialsTable";
 
@@ -39,7 +40,8 @@ export type FrameHouseBlock =
   | "sewage"
   | "interiorFinish"
   | "terrace"
-  | "garage";
+  | "garage"
+  | "techRoom";
 
 export interface FrameHouseLine extends MaterialItem {
   block: FrameHouseBlock;
@@ -76,6 +78,7 @@ const WORK_RATES = {
   interiorFinish: 900,    // внутренняя отделка и финишные работы, ₽/м²
   terrace: 2600,          // монтаж террасы, ₽/м²
   garage: 3500,           // монтаж гаража, ₽/м²
+  techRoom: 1900,         // обустройство техпомещения (перегородки, отделка), ₽/м²
 };
 
 export function calcFrameHouse(cfg: FrameHouseConfig, regionId: string, markupPct = 0): FrameHouseEstimate {
@@ -168,6 +171,28 @@ export function calcFrameHouse(cfg: FrameHouseConfig, regionId: string, markupPc
     material("heating", `Отопление под ключ: ${heatData.label}`, "компл.", 1, heatingBase, `${heatData.desc} (материалы + работы)`);
   }
 
+  // ── ТЕХНИЧЕСКОЕ ПОМЕЩЕНИЕ (котельная / топочная) ───────────
+  // По СП 402.1325800.2018 для газового котла — не менее 6 м², высота от 2,2 м,
+  // окно с форточкой, дверь с порогом, негорючая отделка и приточная вентиляция.
+  if (cfg.techRoom && cfg.techRoomArea > 0) {
+    const tArea = Math.max(cfg.techRoomArea, TECH_ROOM_MIN_AREA);
+    const tPerimeter = Math.sqrt(tArea) * 4;
+    const tWallArea = tPerimeter * cfg.wallHeight;
+
+    material("techRoom", "Перегородки техпомещения: каркас + ГКЛО (огнестойкий)", "м²", tWallArea, 1450,
+      "Knauf ГКЛО 12,5 мм, профиль, негорючая отделка по нормам");
+    material("techRoom", "Негорючая отделка стен и пола (плитка / керамогранит)", "м²", tArea + tWallArea * 0.4, 1350,
+      "класс пожарной опасности КМ0–КМ1");
+    material("techRoom", "Дверь техническая с порогом (противопожарная EI-30)", "шт", 1, 18500,
+      "открывание наружу, порог по нормам");
+    material("techRoom", "Приточно-вытяжная вентиляция: решётки, канал ∅125", "компл.", 1, 12400,
+      "3-кратный воздухообмен + приток под дверью");
+    material("techRoom", "Окно с форточкой (легкосбрасываемая конструкция)", "шт", 1, 16800,
+      "не менее 0,03 м² остекления на 1 м³ объёма");
+
+    work("techRoom", "Обустройство техпомещения (перегородки, отделка, вентиляция)", "м²", tArea, WORK_RATES.techRoom);
+  }
+
   // ── ЭЛЕКТРИКА (одна понятная позиция «под ключ») ───────────
   if (cfg.electricalIncluded) {
     const electricalBase = area * 1650 + 28000;
@@ -227,7 +252,7 @@ export function calcFrameHouse(cfg: FrameHouseConfig, regionId: string, markupPc
   const blocks: FrameHouseBlock[] = [
     "foundation", "frame", "insulation", "roofStructure", "roofing", "facade",
     "windows", "floor", "underfloorHeating", "heating", "electrical", "plumbing",
-    "sewage", "interiorFinish", "terrace", "garage",
+    "sewage", "interiorFinish", "terrace", "garage", "techRoom",
   ];
   const blockTotals = blocks.reduce((acc, b) => {
     acc[b] = lines.filter((l) => l.block === b).reduce((s, l) => s + l.total, 0);

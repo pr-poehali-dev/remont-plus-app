@@ -125,6 +125,15 @@ export const REGIONS: Record<string, { label: string; coeff: number }> = {
   other:         { label: "Другой регион",    coeff: 0.90 },
 };
 
+// ─── Техническое помещение (котельная / топочная) ───────────────────────────
+// СП 402.1325800.2018 (СНиП 42-01-2002): помещение с газовым котлом — не менее
+// 6 м² при высоте от 2,2 м, с окном и отдельным выходом. Для электрокотла и
+// теплового насоса норматив мягче, но 6 м² — безопасный минимум для проекта.
+export const TECH_ROOM_MIN_AREA = 6;
+
+/** Типы отопления, при которых техпомещение обязательно по нормам. */
+export const HEATING_REQUIRES_TECH_ROOM: HeatingType[] = ["gas_boiler", "pellet_boiler"];
+
 // ─── Конфигурация ───────────────────────────────────────────────────────────
 
 export interface FrameHouseConfig {
@@ -159,6 +168,9 @@ export interface FrameHouseConfig {
   terraceArea: number;
   garage: boolean;
   garageArea: number;
+  /** Техническое помещение (котельная/топочная) — по СНиП не менее 6 м² */
+  techRoom: boolean;
+  techRoomArea: number;
   electricalIncluded: boolean;
   plumbingIncluded: boolean;
   sewageIncluded: boolean;
@@ -194,6 +206,8 @@ export const DEFAULT_FRAMEHOUSE_CONFIG: FrameHouseConfig = {
   terraceArea: 12,
   garage: false,
   garageArea: 0,
+  techRoom: true,
+  techRoomArea: TECH_ROOM_MIN_AREA,
   electricalIncluded: true,
   plumbingIncluded: true,
   sewageIncluded: false,
