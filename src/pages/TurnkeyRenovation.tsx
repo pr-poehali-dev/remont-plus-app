@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import SEOMeta, { calcJsonLd, breadcrumbJsonLd } from "@/components/SEOMeta";
 import { useMeta } from "@/hooks/useMeta";
-import { DEFAULT_TURNKEY_CONFIG } from "@/components/calculator/turnkey/TurnkeyTypes";
+import { DEFAULT_TURNKEY_CONFIG, APARTMENT_TYPES, REGIONS } from "@/components/calculator/turnkey/TurnkeyTypes";
 import type { TurnkeyConfig } from "@/components/calculator/turnkey/TurnkeyTypes";
 import { calcTurnkeyPrice } from "@/components/calculator/turnkey/turnkeyUtils";
 import ExportDialog from "@/components/calculator/ExportDialog";
@@ -36,6 +37,45 @@ function makeConfig(): TurnkeyConfig {
   };
 }
 
+/**
+ * Параметры из ссылки — форма быстрого расчёта на главной ведёт сюда:
+ * /turnkey?area=54&level=standard&region=samara
+ * Площадь определяет тип квартиры, если он не задан явно.
+ */
+function areaToApartmentType(area: number): string {
+  // Ближайший по площади тип: 28→студия, 42→1-комн., 62→2-комн., 82→3-комн., 105→4+
+  let best = APARTMENT_TYPES[0];
+  let bestDiff = Infinity;
+  for (const t of APARTMENT_TYPES) {
+    const diff = Math.abs(area - t.defaultArea);
+    if (diff < bestDiff) { bestDiff = diff; best = t; }
+  }
+  return best.id;
+}
+
+function configFromParams(params: URLSearchParams): Partial<TurnkeyConfig> {
+  const patch: Partial<TurnkeyConfig> = {};
+
+  const area = parseFloat(params.get("area") || "");
+  if (!isNaN(area) && area >= 10 && area <= 500) {
+    patch.totalAreaM2 = Math.round(area);
+    patch.apartmentType = areaToApartmentType(area);
+    patch.kitchenAreaM2 = Math.max(6, Math.round(area * 0.18));
+    patch.bathroomCount = area >= 80 ? 2 : 1;
+    patch.doorsCount = Math.max(2, Math.round(area / 16));
+  }
+
+  const type = params.get("type");
+  if (type && APARTMENT_TYPES.some(t => t.id === type)) patch.apartmentType = type;
+
+  const level = params.get("level");
+  if (level && ["economy", "standard", "comfort", "premium", "luxury"].includes(level)) {
+    patch.renovationLevel = level;
+  }
+
+  return patch;
+}
+
 export default function TurnkeyRenovation() {
   usePageGoal("view_calc_turnkey");
   const { trackInteract, trackResultView, trackExportClick } = useCalcFunnel('turnkey');
@@ -47,17 +87,28 @@ export default function TurnkeyRenovation() {
     canonical: "/turnkey",
   });
 
+  const [searchParams] = useSearchParams();
+
+  const initialRegion = (() => {
+    const r = searchParams.get("region");
+    return r && REGIONS.some(x => x.id === r) ? r : loadRegion();
+  })();
+
   const [cfg, setCfg] = useState<TurnkeyConfig>(() => {
     const mk = loadMarkup();
-    const rg = loadRegion();
-    const c = makeConfig();
-    const bd = calcTurnkeyPrice(c, rg, mk);
+    const c = { ...makeConfig(), ...configFromParams(searchParams) };
+    const bd = calcTurnkeyPrice(c, initialRegion, mk);
     return { ...c, totalPrice: bd.total };
   });
   const [markupPct, setMarkupPct] = useState<number>(loadMarkup);
-  const [regionId, setRegionId] = useState<string>(loadRegion);
+  const [regionId, setRegionId] = useState<string>(initialRegion);
   const [showMarkup, setShowMarkup] = useState(false);
   const [showExport, setShowExport] = useState(false);
+
+  useEffect(() => {
+    const r = searchParams.get("region");
+    if (r && REGIONS.some(x => x.id === r)) localStorage.setItem(REGION_KEY, r);
+  }, [searchParams]);
 
   const updateCfg = (patch: Partial<Omit<TurnkeyConfig, "id">>) => {
     trackInteract();
@@ -122,7 +173,7 @@ export default function TurnkeyRenovation() {
   );
 
   return (
-    <CalcAuthGate calcName="Ремонт под ключ" calcPath="/turnkey">
+    <CalcAuthGate calcName="Ремонт под ключ" calcPath="/turnkey" allowGuest>
     <SEOMeta
       title="Калькулятор ремонта под ключ онлайн 2026"
       description="Рассчитайте стоимость ремонта квартиры под ключ онлайн. Черновые и чистовые работы, материалы, сантехника, электрика — полная смета онлайн."

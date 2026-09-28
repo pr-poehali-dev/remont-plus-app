@@ -8,10 +8,15 @@ const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce
 interface Props {
   calcName: string;
   calcPath: string;
+  /**
+   * Открытый доступ: расчёт показывается сразу, без входа.
+   * Регистрация нужна только чтобы сохранить смету — так обещано на главной.
+   */
+  allowGuest?: boolean;
   children: React.ReactNode;
 }
 
-export default function CalcAuthGate({ calcName, calcPath, children }: Props) {
+export default function CalcAuthGate({ calcName, calcPath, allowGuest = false, children }: Props) {
   const navigate = useNavigate();
   const [isAuth, setIsAuth] = useState(false);
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -27,7 +32,7 @@ export default function CalcAuthGate({ calcName, calcPath, children }: Props) {
     if (saved) setIsAuth(true);
   }, []);
 
-  if (isAuth) return <>{children}</>;
+  if (isAuth || allowGuest) return <>{children}</>;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
