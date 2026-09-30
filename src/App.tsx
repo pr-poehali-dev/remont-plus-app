@@ -70,6 +70,7 @@ const FrameHousePrint = lazy(() => import("./pages/FrameHousePrint"));
 const RbcParser = lazy(() => import("./pages/RbcParser"));
 const OfficeCalc = lazy(() => import("./pages/OfficeCalc"));
 const CityLanding = lazy(() => import("./pages/CityLanding"));
+const CalcCityLanding = lazy(() => import("./pages/CalcCityLanding"));
 const Furniture = lazy(() => import("./pages/Furniture"));
 const ReadyProjects = lazy(() => import("./pages/ReadyProjects"));
 const Account = lazy(() => import("./pages/Account"));
@@ -202,6 +203,9 @@ const App = () => {
                 />
                 <Route path="/payment/success" element={<PaymentSuccess />} />
                 <Route path="/payment/failed" element={<PaymentFailed />} />
+                {/* Региональные посадочные: /turnkey/samara, /bathroom/kazan …
+                    Объявлен последним, чтобы не перехватывать /turnkey/print и т.п. */}
+                <Route path="/:calc/:citySlug" element={<CalcCityLanding />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

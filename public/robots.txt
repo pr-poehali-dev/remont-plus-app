@@ -28,6 +28,7 @@ Disallow: /newbuild/print
 Disallow: /turnkey/print
 Disallow: /bathhouse/print
 Disallow: /framehouse/print
+Disallow: /framehouse/builder
 
 # Yandex-специфичные
 User-agent: Yandex

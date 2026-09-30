@@ -9,7 +9,10 @@ import HomePriceTrust from "@/components/home/focus/HomePriceTrust";
 import HomeAfterEstimate from "@/components/home/focus/HomeAfterEstimate";
 import HomeReviews from "@/components/home/focus/HomeReviews";
 import HomeAllCalculators from "@/components/home/focus/HomeAllCalculators";
+import HomeCities from "@/components/home/focus/HomeCities";
 import HomeFaq, { faqJsonLd } from "@/components/home/focus/HomeFaq";
+import { organizationJsonLd, itemListJsonLd } from "@/components/SEOMeta";
+import { CITIES } from "@/data/cities";
 import HomeFinalCta from "@/components/home/focus/HomeFinalCta";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -61,7 +64,14 @@ export default function Home() {
         description="Укажите площадь и тип ремонта — получите расчёт работ и материалов с ценами по вашему городу. Бесплатно, без регистрации."
         keywords="смета на ремонт квартиры, расчёт стоимости ремонта, калькулятор ремонта онлайн"
         path="/"
-        jsonLd={[faqJsonLd]}
+        jsonLd={[
+          organizationJsonLd(),
+          faqJsonLd,
+          itemListJsonLd(
+            "Расчёт ремонта по городам России",
+            CITIES.map((c) => ({ name: `Ремонт в ${c.nameIn}`, url: `/city/${c.slug}` })),
+          ),
+        ]}
       />
 
       <FocusHeader user={user} onLogout={handleLogout} onCalcClick={scrollToCalc} />
@@ -74,6 +84,7 @@ export default function Home() {
         <HomeAfterEstimate />
         <HomeReviews />
         <HomeAllCalculators />
+        <HomeCities />
         <HomeFaq />
         <HomeFinalCta onCalcClick={scrollToCalc} />
       </main>
