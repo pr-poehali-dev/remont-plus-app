@@ -1,0 +1,1 @@
+UPDATE t_p46588937_remont_plus_app.users SET phone = '' WHERE email LIKE 'probe\_%@example.com';

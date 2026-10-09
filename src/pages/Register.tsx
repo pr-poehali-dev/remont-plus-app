@@ -23,6 +23,7 @@ export default function Register() {
   const [userType, setUserType] = useState("customer");
   const [formData, setFormData] = useState({ email: "", password: "", name: "", phone: "" });
   const [error, setError] = useState("");
+  const [errorCode, setErrorCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [emailConsent, setEmailConsent] = useState(false);
@@ -30,6 +31,7 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setErrorCode("");
     setIsLoading(true);
 
     try {
@@ -46,10 +48,11 @@ export default function Register() {
           email_consent: emailConsent,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setError(data.error || "Ошибка регистрации");
+        setError(data.error || "Не удалось создать аккаунт. Попробуйте ещё раз через минуту.");
+        setErrorCode(data.code || "");
         return;
       }
 
@@ -111,9 +114,30 @@ export default function Register() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg flex items-center gap-2">
-                  <Icon name="AlertCircle" className="h-4 w-4 flex-shrink-0" />
-                  {error}
+                <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Icon name="AlertCircle" className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <span>{error}</span>
+                  </div>
+                  {["email_taken", "phone_taken", "duplicate"].includes(errorCode) && (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 pl-6">
+                      <Link to={redirectTo ? `/login?redirect=${redirectTo}` : "/login"} className="font-semibold text-orange-600 hover:underline">
+                        Войти
+                      </Link>
+                      <Link to="/forgot-password" className="font-semibold text-orange-600 hover:underline">
+                        Восстановить пароль
+                      </Link>
+                      {errorCode === "phone_taken" && (
+                        <button
+                          type="button"
+                          onClick={() => { setFormData({ ...formData, phone: "" }); setError(""); setErrorCode(""); }}
+                          className="font-semibold text-orange-600 hover:underline"
+                        >
+                          Продолжить без телефона
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 

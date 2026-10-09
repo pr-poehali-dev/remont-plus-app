@@ -17,7 +17,18 @@ def send_telegram(message: str) -> None:
         data=data,
         headers={'Content-Type': 'application/json'}
     )
-    urllib.request.urlopen(req, timeout=10)
+    urllib.request.urlopen(req, timeout=3)
+
+def normalize_phone(raw: str) -> str:
+    digits = ''.join(ch for ch in (raw or '') if ch.isdigit())
+    if len(digits) < 10:
+        return ''
+    if len(digits) == 11 and digits[0] in '78':
+        digits = digits[1:]
+    if len(digits) == 10:
+        return '+7' + digits
+    return '+' + digits
+
 
 def hash_password(password: str) -> str:
     salt = secrets.token_hex(16)
@@ -65,8 +76,10 @@ def handler(event: dict, context) -> dict:
         email = (body.get('email') or '').strip().lower()
         password = body.get('password') or ''
         name = (body.get('name') or '').strip()
-        phone = (body.get('phone') or '').strip()
+        phone = normalize_phone(body.get('phone') or '')
         user_type = body.get('user_type', 'customer')
+        if user_type not in ('customer', 'contractor', 'supplier', 'designer'):
+            user_type = 'customer'
         email_consent = bool(body.get('email_consent', False))
 
         if not email or not password or not name:
@@ -83,15 +96,32 @@ def handler(event: dict, context) -> dict:
         if cursor.fetchone():
             cursor.close()
             conn.close()
-            return {'statusCode': 409, 'headers': headers, 'body': json.dumps({'error': 'Пользователь с таким email уже существует'}, ensure_ascii=False)}
+            return {'statusCode': 409, 'headers': headers, 'body': json.dumps({'error': 'Пользователь с таким email уже существует. Войдите или восстановите пароль.', 'code': 'email_taken'}, ensure_ascii=False)}
+
+        if phone:
+            cursor.execute(
+                "SELECT id FROM users WHERE phone <> '' AND right(regexp_replace(phone, '[^0-9]', '', 'g'), 10) = %s",
+                (phone[-10:],)
+            )
+            if cursor.fetchone():
+                cursor.close()
+                conn.close()
+                return {'statusCode': 409, 'headers': headers, 'body': json.dumps({'error': 'Этот номер телефона уже привязан к другому аккаунту. Войдите в него или укажите другой номер (телефон можно не указывать).', 'code': 'phone_taken'}, ensure_ascii=False)}
 
         pw_hash = hash_password(password)
-        cursor.execute(
-            "INSERT INTO users (phone, name, email, user_type, password_hash, is_verified, role, email_consent) VALUES (%s, %s, %s, %s, %s, TRUE, 'user', %s) RETURNING id, name, email, user_type, role",
-            (phone or '', name, email, user_type, pw_hash, email_consent)
-        )
-        user = cursor.fetchone()
-        conn.commit()
+        try:
+            cursor.execute(
+                "INSERT INTO users (phone, name, email, user_type, password_hash, is_verified, role, email_consent) VALUES (%s, %s, %s, %s, %s, TRUE, 'user', %s) RETURNING id, name, email, user_type, role",
+                (phone, name, email, user_type, pw_hash, email_consent)
+            )
+            user = cursor.fetchone()
+            conn.commit()
+        except psycopg2.IntegrityError as e:
+            conn.rollback()
+            print(f'REGISTER INTEGRITY ERROR: {e}')
+            cursor.close()
+            conn.close()
+            return {'statusCode': 409, 'headers': headers, 'body': json.dumps({'error': 'Аккаунт с такими email или телефоном уже существует. Попробуйте войти или восстановить пароль.', 'code': 'duplicate'}, ensure_ascii=False)}
 
         token = secrets.token_hex(32)
 

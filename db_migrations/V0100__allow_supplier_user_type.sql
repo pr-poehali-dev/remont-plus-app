@@ -1,0 +1,2 @@
+ALTER TABLE t_p46588937_remont_plus_app.users DROP CONSTRAINT users_user_type_check;
+ALTER TABLE t_p46588937_remont_plus_app.users ADD CONSTRAINT users_user_type_check CHECK (user_type IN ('customer', 'contractor', 'supplier', 'designer'));

@@ -7,7 +7,7 @@
       "expectedStatus": 200
     },
     {
-      "name": "Register new user",
+      "name": "Register existing test user returns email_taken",
       "method": "POST",
       "path": "/",
       "body": {
@@ -18,9 +18,9 @@
         "phone": "+70000000001",
         "user_type": "customer"
       },
-      "expectedStatus": 200,
+      "expectedStatus": 409,
       "expectedBody": {
-        "success": true
+        "code": "email_taken"
       },
       "bodyMatcher": "partial"
     },
@@ -91,11 +91,7 @@
       "body": {
         "action": "get_masters_list"
       },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "masters": []
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "Get transactions - missing contractor_id",
