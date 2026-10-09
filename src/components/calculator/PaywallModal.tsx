@@ -272,7 +272,7 @@ export default function PaywallModal({ onClose, onSuccess }: Props) {
 
         <p className="text-xs text-center text-gray-400 mt-4">
           Нет аккаунта?{" "}
-          <button className="text-orange-500 underline" onClick={() => navigate("/register")}>
+          <button className="text-orange-500 underline" onClick={() => navigate(`/register?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`)}>
             Зарегистрироваться
           </button>
         </p>

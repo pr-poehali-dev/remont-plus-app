@@ -7,6 +7,7 @@ import Icon from "@/components/ui/icon";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useState } from "react";
 import reachGoal from "@/lib/metrika";
+import { getAuthReturnPath, authReturnQuery } from "@/lib/authRedirect";
 
 const AUTH_URL = "https://functions.poehali.dev/2642096f-c763-42ef-8dc1-67e3acce37b3";
 
@@ -19,7 +20,7 @@ const userTypes = [
 export default function Register() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect");
+  const redirectTo = getAuthReturnPath(searchParams);
   const [userType, setUserType] = useState("customer");
   const [formData, setFormData] = useState({ email: "", password: "", name: "", phone: "" });
   const [error, setError] = useState("");
@@ -82,10 +83,14 @@ export default function Register() {
         /* ignore */
       }
 
-      if (userType === "contractor") {
-        navigate("/master-profile");
+      if (redirectTo) {
+        navigate(redirectTo);
+      } else if (userType === "contractor") {
+        navigate("/masters?join=1");
+      } else if (userType === "supplier") {
+        navigate("/suppliers");
       } else {
-        navigate(redirectTo || "/");
+        navigate("/");
       }
     } catch {
       setError("Сервер недоступен. Попробуйте позже.");
@@ -121,7 +126,7 @@ export default function Register() {
                   </div>
                   {["email_taken", "phone_taken", "duplicate"].includes(errorCode) && (
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 pl-6">
-                      <Link to={redirectTo ? `/login?redirect=${redirectTo}` : "/login"} className="font-semibold text-orange-600 hover:underline">
+                      <Link to={`/login${authReturnQuery(redirectTo)}`} className="font-semibold text-orange-600 hover:underline">
                         Войти
                       </Link>
                       <Link to="/forgot-password" className="font-semibold text-orange-600 hover:underline">
@@ -259,7 +264,7 @@ export default function Register() {
 
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Уже есть аккаунт? </span>
-              <Button variant="link" className="p-0 h-auto" onClick={() => navigate(redirectTo ? `/login?redirect=${redirectTo}` : "/login")}>
+              <Button variant="link" className="p-0 h-auto" onClick={() => navigate(`/login${authReturnQuery(redirectTo)}`)}>
                 Войти
               </Button>
             </div>

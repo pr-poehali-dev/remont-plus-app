@@ -117,7 +117,7 @@ export default function Masters() {
   }, [completed]);
 
   const loadContractorProfile = (cb: (id: number | null) => void) => {
-    if (!user) { navigate("/login"); return; }
+    if (!user) { navigate("/register?redirect=" + encodeURIComponent("/masters?join=1")); return; }
     fetch(AUTH_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -134,6 +134,13 @@ export default function Masters() {
       setShowQuestionnaire(true);
     });
   };
+
+  useEffect(() => {
+    if (user && new URLSearchParams(window.location.search).get("join") === "1") {
+      handleBecomeMaster();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleBuilderLogin = () => {
     loadContractorProfile((id) => {

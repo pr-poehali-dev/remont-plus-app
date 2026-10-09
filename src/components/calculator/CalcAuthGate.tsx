@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 
@@ -25,6 +25,8 @@ export default function CalcAuthGate({ calcName, calcPath, allowGuest = false, c
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
+  const [errorCode, setErrorCode] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,6 +39,15 @@ export default function CalcAuthGate({ calcName, calcPath, allowGuest = false, c
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setErrorCode("");
+    if (mode === "register" && !name.trim()) {
+      setError("Укажите имя");
+      return;
+    }
+    if (mode === "register" && !agreed) {
+      setError("Нужно согласие на обработку персональных данных");
+      return;
+    }
     setLoading(true);
     try {
       const body = mode === "login"
@@ -48,9 +59,10 @@ export default function CalcAuthGate({ calcName, calcPath, allowGuest = false, c
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error || "Ошибка");
+        setError(data.error || (mode === "login" ? "Не удалось войти" : "Не удалось создать аккаунт. Попробуйте ещё раз."));
+        setErrorCode(data.code || "");
         return;
       }
       localStorage.setItem("avangard_user", JSON.stringify(data.user));
@@ -81,13 +93,15 @@ export default function CalcAuthGate({ calcName, calcPath, allowGuest = false, c
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex rounded-xl bg-gray-100 p-1 mb-5">
             <button
-              onClick={() => setMode("login")}
+              type="button"
+              onClick={() => { setMode("login"); setError(""); setErrorCode(""); }}
               className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === "login" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
             >
               Войти
             </button>
             <button
-              onClick={() => setMode("register")}
+              type="button"
+              onClick={() => { setMode("register"); setError(""); setErrorCode(""); }}
               className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === "register" ? "bg-white shadow text-gray-900" : "text-gray-500"}`}
             >
               Регистрация
@@ -98,6 +112,7 @@ export default function CalcAuthGate({ calcName, calcPath, allowGuest = false, c
             {mode === "register" && (
               <>
                 <input
+                  required
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                   placeholder="Ваше имя"
                   value={name}
@@ -106,15 +121,16 @@ export default function CalcAuthGate({ calcName, calcPath, allowGuest = false, c
                 <input
                   type="tel"
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                  placeholder="Телефон"
+                  placeholder="Телефон (необязательно)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
               </>
             )}
             <input
-              type="text"
+              type="email"
               required
+              autoComplete="email"
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
               placeholder="Email"
               value={email}
@@ -124,16 +140,51 @@ export default function CalcAuthGate({ calcName, calcPath, allowGuest = false, c
               type="password"
               required
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-              placeholder="Пароль"
+              minLength={mode === "register" ? 6 : undefined}
+              placeholder={mode === "register" ? "Пароль (минимум 6 символов)" : "Пароль"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
 
+            {mode === "register" && (
+              <label className="flex items-start gap-2 cursor-pointer text-xs text-gray-500">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mt-0.5 accent-orange-500"
+                />
+                <span>
+                  Принимаю{" "}
+                  <Link to="/terms" target="_blank" className="text-orange-500 hover:underline">соглашение</Link>{" "}
+                  и{" "}
+                  <Link to="/privacy" target="_blank" className="text-orange-500 hover:underline">политику конфиденциальности</Link>
+                </span>
+              </label>
+            )}
+
             {error && (
-              <p className="text-sm text-red-500 flex items-center gap-1.5">
-                <Icon name="AlertCircle" size={14} />
-                {error}
-              </p>
+              <div className="text-sm text-red-600">
+                <p className="flex items-start gap-1.5">
+                  <Icon name="AlertCircle" size={14} className="mt-0.5 shrink-0" />
+                  {error}
+                </p>
+                {["email_taken", "phone_taken", "duplicate"].includes(errorCode) && (
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 pl-5">
+                    <button type="button" onClick={() => { setMode("login"); setError(""); setErrorCode(""); }} className="font-semibold text-orange-600 hover:underline">
+                      Войти
+                    </button>
+                    <Link to="/forgot-password" className="font-semibold text-orange-600 hover:underline">
+                      Восстановить пароль
+                    </Link>
+                    {errorCode === "phone_taken" && (
+                      <button type="button" onClick={() => { setPhone(""); setError(""); setErrorCode(""); }} className="font-semibold text-orange-600 hover:underline">
+                        Без телефона
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
 
             <Button
@@ -147,9 +198,11 @@ export default function CalcAuthGate({ calcName, calcPath, allowGuest = false, c
             </Button>
           </form>
 
-          <p className="text-xs text-center text-gray-400 mt-4">
-            Нажимая кнопку, вы соглашаетесь на обработку персональных данных
-          </p>
+          {mode === "login" && (
+            <p className="text-xs text-center mt-4">
+              <Link to="/forgot-password" className="text-orange-500 hover:underline">Забыли пароль?</Link>
+            </p>
+          )}
         </div>
       </div>
     </div>

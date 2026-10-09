@@ -6,6 +6,7 @@ import Icon from "@/components/ui/icon";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import reachGoal from "@/lib/metrika";
+import { getAuthReturnPath, authReturnQuery } from "@/lib/authRedirect";
 import { YandexLoginButton } from "@/components/extensions/yandex-auth/YandexLoginButton";
 import { useYandexAuth } from "@/components/extensions/yandex-auth/useYandexAuth";
 
@@ -15,7 +16,7 @@ const YANDEX_AUTH_URL = "https://functions.poehali.dev/e79ea16f-9897-425c-8f3a-6
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect");
+  const redirectTo = getAuthReturnPath(searchParams);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -162,7 +163,7 @@ export default function Login() {
 
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Нет аккаунта? </span>
-              <Button variant="link" className="p-0 h-auto" onClick={() => navigate(redirectTo ? `/register?redirect=${redirectTo}` : "/register")}>
+              <Button variant="link" className="p-0 h-auto" onClick={() => navigate(`/register${authReturnQuery(redirectTo)}`)}>
                 Зарегистрироваться
               </Button>
             </div>
