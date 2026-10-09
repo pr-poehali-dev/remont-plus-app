@@ -1,32 +1,25 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
 import SEOMeta, { breadcrumbJsonLd } from "@/components/SEOMeta";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import Icon from "@/components/ui/icon";
 import { toast } from "@/hooks/use-toast";
 import { CALC_REGIONS } from "@/components/calculator/shared/regions";
-import { SEASONS, seasonCoeff, seasonLabel, autoSeasonLabel } from "@/components/calculator/shared/seasonality";
+import { seasonCoeff } from "@/components/calculator/shared/seasonality";
 import type { SeasonId } from "@/components/calculator/shared/seasonality";
 import { extractFromFiles } from "@/lib/documentExtract";
-import TenderEstimateTable from "@/components/tender/TenderEstimateTable";
 import type { TenderResult } from "@/components/tender/TenderEstimateTable";
-import OverheadsPanel from "@/components/calculator/shared/OverheadsPanel";
 import { loadOverheads, saveOverheads } from "@/components/calculator/shared/overheads";
 import type { OverheadState } from "@/components/calculator/shared/overheads";
-import { exportTenderToExcel } from "@/components/tender/tenderExport";
-import { printTenderKP } from "@/components/tender/tenderPrint";
-import TenderAnalysisView from "@/components/tender/TenderAnalysisView";
 import type { AnalyzeResult } from "@/components/tender/tenderAnalysis";
 import { computeTenderTotals, DEFAULT_DISCOUNT, type DiscountState } from "@/components/tender/tenderTotals";
-import DiscountPanel from "@/components/tender/DiscountPanel";
 import MyEstimatesModal from "@/components/tender/MyEstimatesModal";
 import ContractModal from "@/components/tender/ContractModal";
 import { printContract, type ContractParty } from "@/components/tender/tenderContract";
 import { saveEstimate, getEstimate, canSaveEstimates, type EstimatePayload } from "@/components/tender/tenderStorage";
 import { isMasterAccess } from "@/lib/masterAccess";
 import funcUrls from "@/../backend/func2url.json";
+import TenderHeader from "@/components/tender/page/TenderHeader";
+import TenderInputPanel from "@/components/tender/page/TenderInputPanel";
+import TenderParamsCard from "@/components/tender/page/TenderParamsCard";
+import TenderResultPanel from "@/components/tender/page/TenderResultPanel";
 
 const TENDER_URL = (funcUrls as Record<string, string>)["tender-estimate"];
 const PAY_URL = (funcUrls as Record<string, string>)["yookassa-yookassa"];
@@ -34,9 +27,6 @@ const PAID_KEY = "tender_estimate_paid";
 const TENDER_PRICE = 1490;
 
 export default function TenderEstimate() {
-  const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const [text, setText] = useState("");
   const [fileNames, setFileNames] = useState<string[]>([]);
   const [extracted, setExtracted] = useState<{ text: string; images: string[] } | null>(null);
@@ -276,291 +266,65 @@ export default function TenderEstimate() {
         jsonLd={[breadcrumbJsonLd([{ name: "Главная", url: "/" }, { name: "Смета по ТЗ", url: "/tender" }])]}
       />
 
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <button onClick={() => navigate("/")} className="text-gray-400 hover:text-gray-600">
-            <Icon name="ArrowLeft" size={20} />
-          </button>
-          <div>
-            <h1 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Icon name="FileText" size={20} className="text-teal-600" /> Смета по ТЗ
-            </h1>
-            <p className="text-xs text-gray-500">Загрузите PDF, скан или фото задания — получите смету для тендера</p>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            {master && (
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <Icon name="ShieldCheck" size={13} /> Автономный доступ
-              </span>
-            )}
-            <Button variant="outline" size="sm" onClick={() => navigate("/contract-audit")} title="Проверить договор заказчика">
-              <Icon name="ShieldCheck" size={15} className="mr-1.5" /> Проверка договора
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowMyEstimates(true)}>
-              <Icon name="FolderOpen" size={15} className="mr-1.5" /> Мои сметы
-            </Button>
-          </div>
-        </div>
-      </div>
+      <TenderHeader master={master} onOpenMyEstimates={() => setShowMyEstimates(true)} />
 
       <div className="container mx-auto px-4 py-6 grid lg:grid-cols-5 gap-6">
         {/* Левая колонка — ввод */}
         <div className="lg:col-span-2 space-y-4">
-          <Card className="p-2">
-            <div className="grid grid-cols-2 gap-1">
-              <button
-                onClick={() => setMode("estimate")}
-                className={`rounded-lg py-2.5 px-3 text-sm font-medium transition flex items-center justify-center gap-2 ${
-                  mode === "estimate" ? "bg-teal-600 text-white shadow" : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <Icon name="Calculator" size={16} /> Посчитать по ТЗ
-              </button>
-              <button
-                onClick={() => setMode("analyze")}
-                className={`rounded-lg py-2.5 px-3 text-sm font-medium transition flex items-center justify-center gap-2 ${
-                  mode === "analyze" ? "bg-indigo-600 text-white shadow" : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                <Icon name="ChartLine" size={16} /> Анализ сметы
-              </button>
-            </div>
-            <p className="text-xs text-gray-400 px-2 py-1.5">
-              {mode === "estimate"
-                ? "Загрузите ТЗ — рассчитаем стоимость работ и материалов."
-                : "Загрузите готовую смету заказчика — покажем вашу прибыль и риски."}
-            </p>
-          </Card>
+          <TenderInputPanel
+            mode={mode}
+            onModeChange={setMode}
+            onFiles={handleFiles}
+            parsing={parsing}
+            fileNames={fileNames}
+            extracted={extracted}
+            text={text}
+            onTextChange={setText}
+          />
 
-          <Card className="p-5">
-            <p className="text-xs font-semibold text-gray-500 uppercase mb-3">1. Загрузите документы</p>
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-teal-400 hover:bg-teal-50/40 transition"
-            >
-              <Icon name="Upload" size={28} className="mx-auto text-gray-400 mb-2" />
-              <p className="text-sm text-gray-600">Excel, PDF, JPG, PNG — ТЗ, смета Estimate, фото документа</p>
-              <p className="text-xs text-gray-400 mt-1">Нажмите или перетащите файлы</p>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.xlsx,.xls,.csv,image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => handleFiles(e.target.files)}
-            />
-            {parsing && (
-              <p className="text-xs text-teal-600 mt-2 flex items-center gap-1">
-                <Icon name="LoaderCircle" size={13} className="animate-spin" /> Читаем документы…
-              </p>
-            )}
-            {fileNames.length > 0 && !parsing && (
-              <div className="mt-3 space-y-1">
-                {fileNames.map((n, i) => (
-                  <div key={i} className="text-xs text-gray-600 flex items-center gap-1">
-                    <Icon name="File" size={12} /> {n}
-                  </div>
-                ))}
-                {extracted?.images.length ? (
-                  <p className="text-xs text-gray-400">{extracted.images.length} стр. будут распознаны через ИИ (OCR)</p>
-                ) : null}
-              </div>
-            )}
-          </Card>
-
-          <Card className="p-5">
-            <p className="text-xs font-semibold text-gray-500 uppercase mb-3">2. Или вставьте текст ТЗ</p>
-            <Textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Например: Штукатурка стен 45 м². Стяжка пола 30 м². Укладка плитки на пол 30 м². Установка унитаза и раковины…"
-              className="min-h-[140px] text-sm"
-            />
-          </Card>
-
-          {mode === "estimate" ? (
-          <Card className="p-5 space-y-4">
-            <p className="text-xs font-semibold text-gray-500 uppercase">3. Параметры расчёта</p>
-
-            <div>
-              <label className="text-xs text-gray-500">Регион</label>
-              <select
-                value={regionId}
-                onChange={(e) => setRegionId(e.target.value)}
-                className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-              >
-                {CALC_REGIONS.map((r) => (
-                  <option key={r.id} value={r.id}>{r.label} (×{r.coeff})</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs text-gray-500">Сезон (влияет на работы)</label>
-              <select
-                value={seasonId}
-                onChange={(e) => setSeasonId(e.target.value as SeasonId)}
-                className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-              >
-                <option value="auto">Авто по месяцу — {autoSeasonLabel()}</option>
-                {SEASONS.map((s) => (
-                  <option key={s.id} value={s.id}>{s.label} (×{s.coeff})</option>
-                ))}
-              </select>
-              <p className="text-xs text-gray-400 mt-1">
-                Работы × {workCoeff.toFixed(2)} (регион × сезон {sCoeff.toFixed(2)})
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-gray-500">Наценка, %</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={200}
-                  value={markupPct}
-                  onChange={(e) => setMarkupPct(Math.max(0, Math.min(200, parseFloat(e.target.value) || 0)))}
-                  className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500">Сметная прибыль, %</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={profitPct}
-                  onChange={(e) => setProfitPct(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
-                  className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
-            </div>
-
-            <OverheadsPanel value={overheads} onChange={updateOverheads} className="pt-1" />
-
-            <Button onClick={runEstimate} disabled={loading || parsing} className="w-full bg-teal-600 hover:bg-teal-700">
-              {loading ? (
-                <><Icon name="LoaderCircle" size={16} className="animate-spin mr-2" /> Считаем смету…</>
-              ) : (
-                <><Icon name="Calculator" size={16} className="mr-2" /> Рассчитать смету</>
-              )}
-            </Button>
-          </Card>
-          ) : (
-            <Card className="p-5">
-              <Button onClick={runEstimate} disabled={loading || parsing} className="w-full bg-indigo-600 hover:bg-indigo-700">
-                {loading ? (
-                  <><Icon name="LoaderCircle" size={16} className="animate-spin mr-2" /> Анализируем смету…</>
-                ) : (
-                  <><Icon name="ChartLine" size={16} className="mr-2" /> Проанализировать смету</>
-                )}
-              </Button>
-              <p className="text-xs text-gray-400 mt-2 text-center">
-                Покажем вашу прибыль по позициям, риски и забытые работы
-              </p>
-            </Card>
-          )}
+          <TenderParamsCard
+            mode={mode}
+            regionId={regionId}
+            onRegionChange={setRegionId}
+            seasonId={seasonId}
+            onSeasonChange={setSeasonId}
+            workCoeff={workCoeff}
+            sCoeff={sCoeff}
+            markupPct={markupPct}
+            onMarkupChange={setMarkupPct}
+            profitPct={profitPct}
+            onProfitChange={setProfitPct}
+            overheads={overheads}
+            onOverheadsChange={updateOverheads}
+            onRun={runEstimate}
+            loading={loading}
+            parsing={parsing}
+          />
         </div>
 
         {/* Правая колонка — результат */}
         <div className="lg:col-span-3 space-y-4">
-          {analyzeResult ? (
-            <>
-              <TenderAnalysisView
-                data={analyzeResult}
-                locked={!paid}
-                onUnlock={handleUnlock}
-                unlocking={unlocking}
-                price={TENDER_PRICE}
-              />
-              {paid && (
-                <Button onClick={handleSave} disabled={saving} className="bg-teal-600 hover:bg-teal-700">
-                  {saving ? (
-                    <><Icon name="LoaderCircle" size={16} className="mr-2 animate-spin" /> Сохраняем…</>
-                  ) : (
-                    <><Icon name="Save" size={16} className="mr-2" /> {currentId ? "Обновить" : "Сохранить анализ"}</>
-                  )}
-                </Button>
-              )}
-            </>
-          ) : result ? (
-            <>
-            <TenderEstimateTable
-              result={result}
-              workCoeff={workCoeff}
-              markupPct={markupPct}
-              overheads={overheads}
-              profitPct={profitPct}
-              locked={!paid}
-              onUnlock={handleUnlock}
-              unlocking={unlocking}
-              price={TENDER_PRICE}
-              onItemsChange={(items) => setResult({ ...result, items })}
-              discount={discount}
-            />
-            {paid && (
-              <DiscountPanel
-                value={discount}
-                onChange={setDiscount}
-                discountAmount={computeTenderTotals(result, workCoeff, markupPct, overheads, profitPct, discount).discount}
-              />
-            )}
-            {paid && (
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex-1 bg-teal-600 hover:bg-teal-700 min-w-[140px]"
-                >
-                  {saving ? (
-                    <><Icon name="LoaderCircle" size={16} className="mr-2 animate-spin" /> Сохраняем…</>
-                  ) : (
-                    <><Icon name="Save" size={16} className="mr-2" /> {currentId ? "Обновить смету" : "Сохранить смету"}</>
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => exportTenderToExcel(result, workCoeff, markupPct, overheads, profitPct, discount)}
-                  className="flex-1 min-w-[140px]"
-                >
-                  <Icon name="Sheet" size={16} className="mr-2" /> Скачать Excel
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => printTenderKP(result, workCoeff, markupPct, overheads, profitPct, discount)}
-                  className="flex-1 min-w-[140px]"
-                >
-                  <Icon name="Printer" size={16} className="mr-2" /> Печать / PDF
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowContract(true)}
-                  className="flex-1 min-w-[140px] border-teal-300 text-teal-700 hover:bg-teal-50"
-                >
-                  <Icon name="FileSignature" size={16} className="mr-2" /> Договор
-                </Button>
-              </div>
-            )}
-            </>
-          ) : (
-            <Card className="p-10 text-center text-gray-400 h-full flex flex-col items-center justify-center">
-              <Icon name={mode === "analyze" ? "ChartLine" : "FileSearch"} size={44} className="mb-3 opacity-40" />
-              <p className="text-sm max-w-xs">
-                {mode === "analyze"
-                  ? "Загрузите готовую смету заказчика (Excel, PDF, фото) — ИИ посчитает вашу прибыль, выделит выгодные и убыточные позиции, риски и забытые работы."
-                  : "Загрузите ТЗ или вставьте текст — ИИ распознает позиции и оценит стоимость работ и материалов по вашим расценкам 2026 и рынку."}
-              </p>
-              {mode === "estimate" && (
-                <p className="text-xs mt-3 text-gray-400">
-                  Сезон учтён: {seasonLabel(seasonId)} · работы ×{workCoeff.toFixed(2)}
-                </p>
-              )}
-            </Card>
-          )}
+          <TenderResultPanel
+            mode={mode}
+            seasonId={seasonId}
+            result={result}
+            onResultChange={setResult}
+            analyzeResult={analyzeResult}
+            paid={paid}
+            onUnlock={handleUnlock}
+            unlocking={unlocking}
+            price={TENDER_PRICE}
+            workCoeff={workCoeff}
+            markupPct={markupPct}
+            overheads={overheads}
+            profitPct={profitPct}
+            discount={discount}
+            onDiscountChange={setDiscount}
+            onSave={handleSave}
+            saving={saving}
+            currentId={currentId}
+            onOpenContract={() => setShowContract(true)}
+          />
         </div>
       </div>
 
