@@ -78,7 +78,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="light-scope min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Button variant="ghost" onClick={() => navigate("/")} className="mb-4">
@@ -163,7 +163,7 @@ export default function Login() {
 
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Нет аккаунта? </span>
-              <Button variant="link" className="p-0 h-auto" onClick={() => navigate(`/register${authReturnQuery(redirectTo)}`)}>
+              <Button variant="link" className="p-0 h-auto text-orange-600" onClick={() => navigate(`/register${authReturnQuery(redirectTo)}`)}>
                 Зарегистрироваться
               </Button>
             </div>

@@ -74,7 +74,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-4">
+    <div className="light-scope min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center p-4">
       <SEOMeta
         title="Сброс пароля"
         description="Установите новый пароль для входа в личный кабинет."

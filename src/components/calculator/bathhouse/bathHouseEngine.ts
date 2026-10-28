@@ -77,21 +77,22 @@ export interface BathHouseEstimate {
 // ─── РАСЦЕНКИ РАБОТ 2026, ₽ (база, до регионального коэффициента rc) ──────────
 // Прозрачно: работа = СТАВКА × КОЛИЧЕСТВО в реальных единицах (₽/м², ₽/м³,
 // ₽/м.п., ₽/шт). Никаких долей от стоимости материала (раньше ASSEMBLY_SHARE).
-// Ставки приведены к рыночным ориентирам строительства Москвы/области 2026.
+// Ставки приведены к рыночным ориентирам строительства Москвы/области 2026
+// (повышены на 20% в октябре 2026 — рост стоимости работ и материалов).
 const WORK_RATES = {
-  wallsAssembly: 2200,    // возведение коробки (сруб/каркас/кладка), ₽/м² стены
-  roofStructure: 800,     // монтаж стропил + обрешётки, ₽/м² кровли
-  roofing: 600,           // монтаж кровельного покрытия, ₽/м² кровли
-  insulation: 450,        // утепление + пароизоляция, ₽/м² (стены+потолок)
-  wallFinish: 750,        // монтаж вагонки/отделка стен, ₽/м²
-  floor: 1100,            // устройство пола (лаги/стяжка + настил), ₽/м²
-  stove: 20000,           // монтаж и обвязка печи, ₽/шт
-  ventilation: 9000,      // монтаж вентиляции, ₽/компл
-  shelves: 1400,          // изготовление и монтаж полка, ₽/м²
-  windows: 2800,          // установка окна, ₽/шт
-  chimney: 11000,         // монтаж дымохода, ₽/компл
-  tank: 4500,             // установка бака для воды, ₽/шт
-  terrace: 2400,          // монтаж террасы, ₽/м²
+  wallsAssembly: 2600,    // возведение коробки (сруб/каркас/кладка), ₽/м² стены
+  roofStructure: 960,     // монтаж стропил + обрешётки, ₽/м² кровли
+  roofing: 720,           // монтаж кровельного покрытия, ₽/м² кровли
+  insulation: 540,        // утепление + пароизоляция, ₽/м² (стены+потолок)
+  wallFinish: 900,        // монтаж вагонки/отделка стен, ₽/м²
+  floor: 1320,            // устройство пола (лаги/стяжка + настил), ₽/м²
+  stove: 24000,           // монтаж и обвязка печи, ₽/шт
+  ventilation: 10800,      // монтаж вентиляции, ₽/компл
+  shelves: 1680,          // изготовление и монтаж полка, ₽/м²
+  windows: 3400,          // установка окна, ₽/шт
+  chimney: 13200,         // монтаж дымохода, ₽/компл
+  tank: 5400,             // установка бака для воды, ₽/шт
+  terrace: 2900,          // монтаж террасы, ₽/м²
 };
 
 export function calcBathHouse(cfg: BathHouseConfig, regionId: string, markupPct = 0): BathHouseEstimate {
@@ -136,7 +137,7 @@ export function calcBathHouse(cfg: BathHouseConfig, regionId: string, markupPct 
   work("walls", "Возведение коробки (стены)", "м²", wallArea, WORK_RATES.wallsAssembly);
 
   // ── КРОВЛЯ: КАРКАС (стропила, обрешётка) ───────────────────
-  material("roofStructure", "Стропильная система и обрешётка", "м²", roofArea, 1980, "доска 50×200 / 25×100, сосна");
+  material("roofStructure", "Стропильная система и обрешётка", "м²", roofArea, 2380, "доска 50×200 / 25×100, сосна");
   work("roofStructure", "Монтаж стропильной системы и обрешётки", "м²", roofArea, WORK_RATES.roofStructure);
 
   // ── КРОВЛЯ: ПОКРЫТИЕ ───────────────────────────────────────
@@ -148,8 +149,8 @@ export function calcBathHouse(cfg: BathHouseConfig, regionId: string, markupPct 
   const insulationMat = INSULATION_MATERIALS[cfg.insulation];
   const insulationVolume = (wallArea + area) * (cfg.insulationThickness / 1000);
   material("insulation", insulationMat.label, "м³", insulationVolume, insulationMat.pricePerM3, `${cfg.insulationThickness} мм`);
-  material("insulation", "Пароизоляция", "м²", wallArea * 1.15, 52, "Изоспан / Ютафол", true);
-  material("insulation", "Ветрозащитная мембрана", "м²", roofArea * 1.1, 32, "Изоспан A", true);
+  material("insulation", "Пароизоляция", "м²", wallArea * 1.15, 62, "Изоспан / Ютафол", true);
+  material("insulation", "Ветрозащитная мембрана", "м²", roofArea * 1.1, 38, "Изоспан A", true);
   work("insulation", "Монтаж утепления и пароизоляции", "м²", wallArea + area, WORK_RATES.insulation);
 
   // ── ОТДЕЛКА СТЕН ───────────────────────────────────────────
@@ -175,7 +176,7 @@ export function calcBathHouse(cfg: BathHouseConfig, regionId: string, markupPct 
   // ── ПОЛ ────────────────────────────────────────────────────
   const floorMat = FLOOR_MATERIALS[cfg.floorMaterial];
   material("floor", floorMat.label, "м²", area, floorMat.pricePerM2);
-  if (cfg.underfloorHeating) material("floor", "Тёплый пол электрический", "м²", area, 2420, "Теплолюкс, 150 Вт/м²");
+  if (cfg.underfloorHeating) material("floor", "Тёплый пол электрический", "м²", area, 2900, "Теплолюкс, 150 Вт/м²");
   work("floor", "Устройство пола", "м²", area, WORK_RATES.floor);
 
   // ── ПЕЧЬ ───────────────────────────────────────────────────
@@ -185,7 +186,7 @@ export function calcBathHouse(cfg: BathHouseConfig, regionId: string, markupPct 
 
   // ── ВЕНТИЛЯЦИЯ ─────────────────────────────────────────────
   const ventData = VENTILATION_TYPES[cfg.ventilation];
-  const ventBase = ventData.price + area * 240;
+  const ventBase = ventData.price + area * 290;
   material("ventilation", ventData.label, "компл.", 1, ventBase, ventData.desc);
   work("ventilation", "Монтаж вентиляции", "компл.", 1, WORK_RATES.ventilation);
 
@@ -198,7 +199,7 @@ export function calcBathHouse(cfg: BathHouseConfig, regionId: string, markupPct 
   }
 
   // ── ОКНА ───────────────────────────────────────────────────
-  const windowsBase = cfg.window_pvc ? 14000 : 23000;
+  const windowsBase = cfg.window_pvc ? 16800 : 27600;
   if (cfg.windowCount > 0) {
     material("windows", cfg.window_pvc ? "Окно ПВХ 600×600 мм" : "Окно деревянное 600×600 мм", "шт.", cfg.windowCount, windowsBase, cfg.window_pvc ? "двойной стеклопакет" : "со стеклопакетом");
     work("windows", "Установка окон", "шт.", cfg.windowCount, WORK_RATES.windows);
@@ -206,21 +207,21 @@ export function calcBathHouse(cfg: BathHouseConfig, regionId: string, markupPct 
 
   // ── ДЫМОХОД ────────────────────────────────────────────────
   if (cfg.chimney) {
-    const chimneyBase = 34500;
+    const chimneyBase = 41400;
     material("chimney", "Дымоход сэндвич-труба ∅115", "компл.", 1, chimneyBase, "нерж./оц., 8 секций");
     work("chimney", "Монтаж дымохода", "компл.", 1, WORK_RATES.chimney);
   }
 
   // ── БАК ДЛЯ ВОДЫ ───────────────────────────────────────────
   if (cfg.tankVolume > 0) {
-    const tankBase = 10500 + cfg.tankVolume * 55;
+    const tankBase = 12600 + cfg.tankVolume * 66;
     material("tank", `Бак для воды ${cfg.tankVolume} л`, "шт.", 1, tankBase, "нержавеющая сталь");
     work("tank", "Установка бака", "шт.", 1, WORK_RATES.tank);
   }
 
   // ── ТЕРРАСА (материал по прайсу + монтаж по ставке) ────────
   if (cfg.terrace && cfg.terraceArea > 0) {
-    material("terrace", "Терраса: доска лиственница, перила", "м²", cfg.terraceArea, 3500, "материалы (доска, перила, лаги)");
+    material("terrace", "Терраса: доска лиственница, перила", "м²", cfg.terraceArea, 4200, "материалы (доска, перила, лаги)");
     work("terrace", "Монтаж террасы", "м²", cfg.terraceArea, WORK_RATES.terrace);
   }
 
@@ -228,15 +229,15 @@ export function calcBathHouse(cfg: BathHouseConfig, regionId: string, markupPct 
   // Электрика остаётся комплексной позицией «под ключ»: цена включает и
   // материалы (кабель, автоматы, розетки), и электромонтажные работы.
   if (cfg.electricalFull || cfg.electricalBasic) {
-    const electricalBase = cfg.electricalFull ? area * 2200 + 27000 : area * 1050 + 15000;
+    const electricalBase = cfg.electricalFull ? area * 2640 + 32400 : area * 1260 + 18000;
     material("electrical", cfg.electricalFull ? "Электрика под ключ (полная): кабель, автоматы, розетки, монтаж" : "Электрика под ключ (базовая): кабель, автоматы, розетки, монтаж", "компл.", 1, electricalBase, "материалы + работы");
   }
 
   // ── РАСХОДНИКИ ОБЩИЕ ───────────────────────────────────────
-  material("assembly", "Крепёж (саморезы, нагели, анкеры)", "компл.", 1, area * 420, "ГОСТ, оцинк.", true);
+  material("assembly", "Крепёж (саморезы, нагели, анкеры)", "компл.", 1, area * 500, "ГОСТ, оцинк.", true);
   const woodArea = wallArea + steamWallArea + washWallArea + restWallArea;
-  material("assembly", "Антисептик для бани", "л", Math.round(woodArea * 0.18), 420, "Тиккурила Валтти / Сенеж", true);
-  material("assembly", "Монтажная пена + герметик", "компл.", 1, area * 110, undefined, true);
+  material("assembly", "Антисептик для бани", "л", Math.round(woodArea * 0.18), 500, "Тиккурила Валтти / Сенеж", true);
+  material("assembly", "Монтажная пена + герметик", "компл.", 1, area * 130, undefined, true);
 
   // ── ИТОГИ (строгая сумма позиций) ──────────────────────────
   const works = lines.filter((l) => l.isWork);

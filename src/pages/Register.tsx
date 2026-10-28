@@ -100,7 +100,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="light-scope min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
           <Button variant="ghost" onClick={() => navigate("/")} className="mb-4">
@@ -264,7 +264,7 @@ export default function Register() {
 
             <div className="mt-6 text-center text-sm">
               <span className="text-gray-600">Уже есть аккаунт? </span>
-              <Button variant="link" className="p-0 h-auto" onClick={() => navigate(`/login${authReturnQuery(redirectTo)}`)}>
+              <Button variant="link" className="p-0 h-auto text-orange-600" onClick={() => navigate(`/login${authReturnQuery(redirectTo)}`)}>
                 Войти
               </Button>
             </div>

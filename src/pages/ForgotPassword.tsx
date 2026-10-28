@@ -41,7 +41,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-4">
+    <div className="light-scope min-h-screen bg-gray-50 text-gray-900 flex items-center justify-center p-4">
       <SEOMeta
         title="Восстановление пароля"
         description="Сбросьте пароль и восстановите доступ к личному кабинету."
